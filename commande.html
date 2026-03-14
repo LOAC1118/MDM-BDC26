@@ -237,6 +237,8 @@ tbody tr.has-qty td.td-qty input{background:#ffe0b2;border-color:var(--terra)}
       // Nom utilisateur
       var el = document.getElementById("user-info");
       if(el) el.textContent = data.nom || data.login;
+      // Stocker l'email de destination pour FormSubmit
+      window._destEmail = data.email || "cspoto@moulindesmoines.com";
       // Bouton admin visible uniquement pour role=admin
       if(data.role === "admin"){
         var adminBtn = document.getElementById("btn-admin");
@@ -502,11 +504,13 @@ async function sendOrder(){
   btn.disabled=true;spinner.style.display="inline-block";label.textContent="Envoi…";
   var today=new Date().toLocaleDateString("fr-FR");
   try{
-    var res=await fetch("https://formsubmit.co/ajax/cspoto@moulindesmoines.com",{
+    var destEmail = window._destEmail || "cspoto@moulindesmoines.com";
+    var res=await fetch("https://formsubmit.co/ajax/"+destEmail,{
       method:"POST",
       headers:{"Content-Type":"application/json","Accept":"application/json"},
       body:JSON.stringify({
         _subject:"Bon de commande MDM 2026 — "+mag+" — "+today,
+        _cc:"cspoto@moulindesmoines.com",
         _replyto:mail,
         magasin:mag,
         email:mail,

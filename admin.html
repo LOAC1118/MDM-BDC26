@@ -223,7 +223,7 @@ tbody td{padding:10px 10px;font-size:12px;vertical-align:middle}
         <div class="table-wrap">
           <table>
             <thead><tr>
-              <th>Login</th><th>Nom</th><th>R&#244;le</th><th>Remise</th><th>Mot de passe</th><th>Actions</th>
+              <th>Login</th><th>Nom</th><th>R&#244;le</th><th>Remise</th><th>Email commandes</th><th>Mot de passe</th><th>Actions</th>
             </tr></thead>
             <tbody id="comptes-tbody"></tbody>
           </table>
@@ -336,6 +336,7 @@ tbody td{padding:10px 10px;font-size:12px;vertical-align:middle}
       <div class="fg"><label>Mot de passe *</label><input type="text" id="f-password" placeholder="ex: mag4-2026"></div>
     </div>
     <div class="fg"><label>Nom affich&#233; *</label><input type="text" id="f-nom" placeholder="ex: Magasin Bordeaux"></div>
+    <div class="fg"><label>Email r&#233;ception commandes *</label><input type="email" id="f-email" placeholder="ex: magasin@email.fr"></div>
     <div class="fg-row">
       <div class="fg">
         <label>R&#244;le *</label>
@@ -379,11 +380,11 @@ tbody td{padding:10px 10px;font-size:12px;vertical-align:middle}
 // COMPTES PAR DEFAUT (depuis index.html)
 // ════════════════════════════════════════════
 var COMPTES_DEFAULT = [
-  { login: "admin",      password: "mdm2026",      nom: "Administrateur",    role: "admin",  remise: 0  },
-  { login: "commercial", password: "mdm-ventes",   nom: "Commercial MDM",    role: "user",   remise: 0  },
-  { login: "magasin1",   password: "mag1-2026",    nom: "Magasin Alsace",    role: "client", remise: 5  },
-  { login: "magasin2",   password: "mag2-2026",    nom: "Magasin Lorraine",  role: "client", remise: 10 },
-  { login: "magasin3",   password: "mag3-2026",    nom: "Magasin Franche-C", role: "client", remise: 15 }
+  { login: "admin",      password: "mdm2026",      nom: "Administrateur",    role: "admin",  remise: 0,  email: "cspoto@moulindesmoines.com" },
+  { login: "commercial", password: "mdm-ventes",   nom: "Commercial MDM",    role: "user",   remise: 0,  email: "cspoto@moulindesmoines.com" },
+  { login: "magasin1",   password: "mag1-2026",    nom: "Magasin Alsace",    role: "client", remise: 5,  email: "magasin1@exemple.fr"        },
+  { login: "magasin2",   password: "mag2-2026",    nom: "Magasin Lorraine",  role: "client", remise: 10, email: "magasin2@exemple.fr"        },
+  { login: "magasin3",   password: "mag3-2026",    nom: "Magasin Franche-C", role: "client", remise: 15, email: "magasin3@exemple.fr"        }
 ];
 
 // ════════════════════════════════════════════
@@ -442,6 +443,7 @@ function renderComptes(){
       rows += "<td>"+escH(c.nom)+"</td>";
       rows += "<td>"+roleBadge(c.role)+"</td>";
       rows += "<td>"+(c.remise>0?"<span class='remise-pill'>-"+c.remise+"%</span>":"<span style='color:#ccc'>—</span>")+"</td>";
+      rows += "<td style='font-size:11px;color:#555'>"+escH(c.email||'—')+"</td>";
       rows += "<td><span style='font-family:monospace;font-size:11px;color:#888'>"+escH(c.password)+"</span></td>";
       if(!limit){
         rows += "<td style='white-space:nowrap;display:flex;gap:5px'>";
@@ -485,6 +487,7 @@ function openModal(idx){
     document.getElementById("f-nom").value      = c.nom;
     document.getElementById("f-role").value     = c.role;
     document.getElementById("f-remise").value   = c.remise || 0;
+    document.getElementById("f-email").value    = c.email  || "";
     document.getElementById("f-login").disabled = true; // login non modifiable
   } else {
     document.getElementById("f-login").value    = "";
@@ -492,6 +495,7 @@ function openModal(idx){
     document.getElementById("f-nom").value      = "";
     document.getElementById("f-role").value     = "client";
     document.getElementById("f-remise").value   = "0";
+    document.getElementById("f-email").value    = "";
     document.getElementById("f-login").disabled = false;
   }
   document.getElementById("modal").classList.add("open");
@@ -539,13 +543,15 @@ function saveCompte(){
       alertEl.style.display = "block";
       return;
     }
-    comptes.push({ login:login, password:password, nom:nom, role:role, remise:remise });
+    var femail = document.getElementById("f-email").value.trim();
+    comptes.push({ login:login, password:password, nom:nom, role:role, remise:remise, email:femail });
     showToast("\u2705 Compte cr\u00e9\u00e9 : "+login);
   } else {
     comptes[editIndex].password = password;
     comptes[editIndex].nom      = nom;
     comptes[editIndex].role     = role;
     comptes[editIndex].remise   = remise;
+    comptes[editIndex].email    = document.getElementById("f-email").value.trim();
     showToast("\u2705 Compte modifi\u00e9 : "+comptes[editIndex].login);
   }
 

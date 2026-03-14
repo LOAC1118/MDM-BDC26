@@ -239,6 +239,7 @@ tbody tr.has-qty td.td-qty input{background:#ffe0b2;border-color:var(--terra)}
       if(el) el.textContent = data.nom || data.login;
       // Stocker l'email de destination pour FormSubmit
       window._destEmail = data.email || "cspoto@moulindesmoines.com";
+      window._userName  = data.nom  || data.login || "";
       // Bouton admin visible uniquement pour role=admin
       if(data.role === "admin"){
         var adminBtn = document.getElementById("btn-admin");
@@ -505,14 +506,20 @@ async function sendOrder(){
   var today=new Date().toLocaleDateString("fr-FR");
   try{
     var destEmail = window._destEmail || "cspoto@moulindesmoines.com";
-    var res=await fetch("https://formsubmit.co/ajax/"+destEmail,{
+    var userName  = window._userName  || "";
+    // FormSubmit : on envoie toujours vers cspoto (adresse activée)
+    // Le destEmail du compte est mis en CC si différent
+    var ccList = destEmail !== "cspoto@moulindesmoines.com" ? destEmail : "";
+    var subjectUser = userName ? " [" + userName + "]" : "";
+    var res=await fetch("https://formsubmit.co/ajax/cspoto@moulindesmoines.com",{
       method:"POST",
       headers:{"Content-Type":"application/json","Accept":"application/json"},
       body:JSON.stringify({
-        _subject:"Bon de commande MDM 2026 — "+mag+" — "+today,
-        _cc:"cspoto@moulindesmoines.com",
+        _subject:"Bon de commande MDM 2026 — "+mag+" — "+today+subjectUser,
+        _cc: ccList,
         _replyto:mail,
         magasin:mag,
+        compte:userName||"non identifié",
         email:mail,
         commande:buildOrderText(),
         _template:"table"

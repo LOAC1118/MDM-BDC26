@@ -304,7 +304,7 @@ tbody td{padding:10px 10px;font-size:12px;vertical-align:middle}
 
       <div class="section-card">
         <div class="section-card-title"><span>&#128029; Publication GitHub Pages</span></div>
-        <p style="font-size:12px;color:#888;margin-bottom:16px;line-height:1.7">Configurez votre repository une seule fois. <code>index.html</code> sera publi&#233; <strong>automatiquement</strong> sur GitHub apr&#232;s chaque modification de compte.</p>
+        <p style="font-size:12px;color:#888;margin-bottom:16px;line-height:1.7">Configurez une seule fois. <code>index.html</code> sera publi&#233; <strong>automatiquement</strong> sur GitHub apr&#232;s chaque modification.</p>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
           <div class="fg"><label style="font-size:10px;font-weight:600;color:var(--brown);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Utilisateur GitHub</label><input type="text" id="gh-user" value="LOAC1118" style="width:100%;padding:9px 12px;border:1.5px solid #e0d0c4;border-radius:7px;font-family:Outfit,sans-serif;font-size:13px;background:var(--cream);outline:none"></div>
           <div class="fg"><label style="font-size:10px;font-weight:600;color:var(--brown);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Repository</label><input type="text" id="gh-repo" value="MDM-BDC26" style="width:100%;padding:9px 12px;border:1.5px solid #e0d0c4;border-radius:7px;font-family:Outfit,sans-serif;font-size:13px;background:var(--cream);outline:none"></div>
@@ -325,20 +325,19 @@ tbody td{padding:10px 10px;font-size:12px;vertical-align:middle}
       </div>
       <div class="section-card">
         <div class="section-card-title"><span>&#128229; Export manuel</span></div>
-        <p style="font-size:12px;color:#888;margin-bottom:14px;line-height:1.7">T&#233;l&#233;charge <code>index.html</code> si GitHub n&#8217;est pas configur&#233;.</p>
+        <p style="font-size:12px;color:#888;margin-bottom:14px">T&#233;l&#233;charge <code>index.html</code> si GitHub n&#8217;est pas configur&#233;.</p>
         <button class="btn-export" onclick="exportIndex(false)">&#128229; T&#233;l&#233;charger index.html</button>
       </div>
       <div class="section-card">
         <div class="section-card-title"><span>&#128260; R&#233;initialiser</span></div>
-        <p style="font-size:12px;color:#888;margin-bottom:14px;line-height:1.7">Restaure les comptes par d&#233;faut.</p>
-        <button class="btn-sm" style="background:#fdecea;color:var(--red);border:none;padding:8px 16px;border-radius:7px;font-weight:600;cursor:pointer;font-family:Outfit,sans-serif" onclick="resetComptes()">&#9888; R&#233;initialiser</button>
+        <button class="btn-sm" style="background:#fdecea;color:var(--red);border:none;padding:8px 16px;border-radius:7px;font-weight:600;cursor:pointer;font-family:Outfit,sans-serif" onclick="resetComptes()">&#9888; R&#233;initialiser les comptes</button>
       </div>
       <div class="section-card">
-        <div class="section-card-title"><span>&#8505; Informations syst&#232;me</span></div>
+        <div class="section-card-title"><span>&#8505; Informations</span></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:12px">
           <div><span style="color:#a08070">Repository :</span> <strong>LOAC1118/MDM-BDC26</strong></div>
           <div><span style="color:#a08070">Branche :</span> <strong>main</strong></div>
-          <div><span style="color:#a08070">Produits :</span> <strong>1 390 r&#233;f&#233;rences MDM 2026</strong></div>
+          <div><span style="color:#a08070">Produits :</span> <strong>1 390 MDM 2026</strong></div>
           <div><span style="color:#a08070">FormSubmit :</span> <strong>cspoto@moulindesmoines.com</strong></div>
         </div>
       </div>
@@ -383,21 +382,21 @@ tbody td{padding:10px 10px;font-size:12px;vertical-align:middle}
 
 <script>
 
-// ══════════════════════════════════════════════
+// ==============================================
 // EXPORT INDEX.HTML + GITHUB API
-// ══════════════════════════════════════════════
+// ==============================================
 
 // Template minimal index.html pour export local (sans base64)
 function exportIndex(silent) {
   try {
-    // Récupérer index.html depuis GitHub si token dispo, sinon générer localement
+    // R\u00e9cup\u00e9rer index.html depuis GitHub si token dispo, sinon g\u00e9n\u00e9rer localement
     var t = sessionStorage.getItem("mdm_gh_token") || ((document.getElementById("gh-token")||{value:""}).value.trim());
     if (t) {
       // Utiliser pushToGithub pour l'export (il lit depuis GitHub)
       pushToGithub(false);
       return;
     }
-    // Fallback : télécharger avec fetch depuis le même serveur
+    // Fallback : t\u00e9l\u00e9charger avec fetch depuis le m\u00eame serveur
     fetch("index.html")
       .then(function(r){ return r.text(); })
       .then(function(html){
@@ -477,7 +476,7 @@ async function testGithub() {
   try {
     var res = await fetch(
       "https://api.github.com/repos/"+cfg.user+"/"+cfg.repo+"/contents/"+cfg.file+"?ref="+cfg.branch,
-      {headers:{"Authorization":"token "+cfg.token,"Accept":"application/vnd.github.v3+json"}}
+      {headers:{"Authorization":"token "+cfg.token,"Accept":"application/vnd.github.v3+json"},mode:"cors"}
     );
     if (res.status===200) {
       var d = await res.json();
@@ -501,7 +500,7 @@ async function pushToGithub(silent) {
     // 1. Lire le fichier actuel sur GitHub (SHA + contenu)
     var gs = await fetch(
       "https://api.github.com/repos/"+cfg.user+"/"+cfg.repo+"/contents/"+cfg.file+"?ref="+cfg.branch+"&t="+Date.now(),
-      {headers:{"Authorization":"token "+cfg.token,"Accept":"application/vnd.github.v3+json","Cache-Control":"no-cache"}}
+      {headers:{"Authorization":"token "+cfg.token,"Accept":"application/vnd.github.v3+json","Cache-Control":"no-cache"},mode:"cors"}
     );
     if (gs.status===401) throw new Error("Token invalide (401)");
     if (gs.status===404) throw new Error("Fichier "+cfg.file+" introuvable sur "+cfg.user+"/"+cfg.repo);
@@ -511,7 +510,7 @@ async function pushToGithub(silent) {
     var sha = sd.sha;
     if (!silent) ghLog("SHA actuel : "+sha.substring(0,8)+"...","ok");
 
-    // 2. Décoder le contenu actuel de index.html
+    // 2. D\u00e9coder le contenu actuel de index.html
     var currentHtml = decodeURIComponent(escape(atob(sd.content.replace(/\n/g,""))));
 
     // 3. Remplacer uniquement le bloc var COMPTES
@@ -522,7 +521,7 @@ async function pushToGithub(silent) {
       if (!silent) ghLog("\u26a0 Pattern var COMPTES non trouv\u00e9 dans index.html","err");
     }
 
-    // 4. Ré-encoder en base64
+    // 4. R\u00e9-encoder en base64
     var newB64 = btoa(unescape(encodeURIComponent(updatedHtml)));
 
     // 5. Pusher avec le SHA frais
@@ -562,9 +561,9 @@ async function pushToGithub(silent) {
 }
 
 
-// ════════════════════════════════════════════
+// ============================================
 // PROTECTION ACCES ADMIN
-// ════════════════════════════════════════════
+// ============================================
 (function(){
   var token = sessionStorage.getItem("mdm_token");
   var valid = false;
@@ -578,9 +577,9 @@ async function pushToGithub(silent) {
   document.getElementById("admin-name").textContent = JSON.parse(atob(token)).nom || "Admin";
 })();
 
-// ════════════════════════════════════════════
+// ============================================
 // COMPTES PAR DEFAUT (depuis index.html)
-// ════════════════════════════════════════════
+// ============================================
 var COMPTES_DEFAULT = [
   { login: "admin",      password: "mdm2026",      nom: "Administrateur",    role: "admin",  remise: 0  },
   { login: "commercial", password: "mdm-ventes",   nom: "Commercial MDM",    role: "user",   remise: 0  },
@@ -589,9 +588,9 @@ var COMPTES_DEFAULT = [
   { login: "magasin3",   password: "mag3-2026",    nom: "Magasin Franche-C", role: "client", remise: 15 }
 ];
 
-// ════════════════════════════════════════════
+// ============================================
 // ETAT
-// ════════════════════════════════════════════
+// ============================================
 var comptes = [];
 var editIndex = -1;
 
@@ -608,9 +607,9 @@ function saveComptes(){
   localStorage.setItem("mdm_comptes", JSON.stringify(comptes));
 }
 
-// ════════════════════════════════════════════
+// ============================================
 // NAVIGATION
-// ════════════════════════════════════════════
+// ============================================
 function showPage(id, el){
   document.querySelectorAll(".page").forEach(function(p){ p.classList.remove("active"); });
   document.querySelectorAll(".nav-item").forEach(function(n){ n.classList.remove("active"); });
@@ -619,9 +618,9 @@ function showPage(id, el){
   if(id === "comptes" || id === "dashboard") renderComptes();
 }
 
-// ════════════════════════════════════════════
+// ============================================
 // RENDER
-// ════════════════════════════════════════════
+// ============================================
 function roleBadge(role){
   var labels = {admin:"Administrateur", user:"Commercial", client:"Client"};
   return "<span class='role-badge role-"+role+"'>"+(labels[role]||role)+"</span>";
@@ -644,7 +643,7 @@ function renderComptes(){
       rows += "<td><code style='font-size:11px;font-weight:700;color:var(--brown)'>"+escH(c.login)+"</code></td>";
       rows += "<td>"+escH(c.nom)+"</td>";
       rows += "<td>"+roleBadge(c.role)+"</td>";
-      rows += "<td>"+(c.remise>0?"<span class='remise-pill'>-"+c.remise+"%</span>":"<span style='color:#ccc'>—</span>")+"</td>";
+      rows += "<td>"+(c.remise>0?"<span class='remise-pill'>-"+c.remise+"%</span>":"<span style='color:#ccc'>-</span>")+"</td>";
       rows += "<td style='font-size:11px;color:#555'>"+escH(c.email||'—')+"</td>";
       rows += "<td><span style='font-family:monospace;font-size:11px;color:#888'>"+escH(c.password)+"</span></td>";
       if(!limit){
@@ -675,9 +674,9 @@ function escH(s){
   return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 }
 
-// ════════════════════════════════════════════
+// ============================================
 // MODAL AJOUT / EDIT
-// ════════════════════════════════════════════
+// ============================================
 function openModal(idx){
   editIndex = (idx !== undefined) ? idx : -1;
   document.getElementById("modal-title").textContent = editIndex >= 0 ? "Modifier le compte" : "Nouveau compte";
@@ -738,7 +737,7 @@ function saveCompte(){
   }
 
   if(editIndex < 0){
-    // Vérifier login unique
+    // V\u00e9rifier login unique
     var exists = comptes.some(function(c){ return c.login === login; });
     if(exists){
       alertEl.textContent = "Ce login existe d\u00e9j\u00e0.";
@@ -765,11 +764,11 @@ function saveCompte(){
   closeModal();
 }
 
-// ════════════════════════════════════════════
+// ============================================
 // EXPORT index.html
-// ════════════════════════════════════════════
+// ============================================
 function exportIndex(){
-  // Lire le index.html original via fetch (fonctionne en hébergé)
+  // Lire le index.html original via fetch (fonctionne en h\u00e9berg\u00e9)
   fetch("index.html")
     .then(function(r){ return r.text(); })
     .then(function(html){
@@ -784,7 +783,7 @@ function exportIndex(){
       showToast("\u2705 index.html t\u00e9l\u00e9charg\u00e9 avec "+comptes.length+" comptes");
     })
     .catch(function(){
-      // Fallback : générer depuis le template
+      // Fallback : g\u00e9n\u00e9rer depuis le template
       alert("Impossible de lire index.html. Assurez-vous d'\u00eatre en ligne (fichier h\u00e9berg\u00e9).");
     });
 }
@@ -797,9 +796,9 @@ function resetComptes(){
   showToast("&#128260; Comptes r\u00e9initialis\u00e9s");
 }
 
-// ════════════════════════════════════════════
+// ============================================
 // TOAST
-// ════════════════════════════════════════════
+// ============================================
 var toastTimer;
 function showToast(msg){
   var t = document.getElementById("toast");
@@ -809,18 +808,18 @@ function showToast(msg){
   toastTimer = setTimeout(function(){ t.classList.remove("show"); }, 3000);
 }
 
-// ════════════════════════════════════════════
+// ============================================
 // NAVIGATION EXTERNE
-// ════════════════════════════════════════════
+// ============================================
 function goCommande(){ window.location.href = "commande.html"; }
 function logout(){
   sessionStorage.removeItem("mdm_token");
   window.location.href = "index.html";
 }
 
-// ════════════════════════════════════════════
+// ============================================
 // INIT
-// ════════════════════════════════════════════
+// ============================================
 loadComptes();
 renderComptes();
 loadGhConfig();

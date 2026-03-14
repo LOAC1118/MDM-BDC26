@@ -300,10 +300,10 @@ tbody td{padding:10px 10px;font-size:12px;vertical-align:middle}
 
     <!-- PAGE : INSCRIPTIONS -->
     <div class="page" id="page-inscriptions">
-      <div class="page-title">Demandes d&#8217;inscription</div>
+      <div class="page-title">Demandes d'inscription</div>
       <div class="page-sub">Nouvelles demandes re&#231;ues via inscription-client.html</div>
       <div class="info-banner"><span class="icon">&#128231;</span><div>Envoy&#233;es &#224; <strong>cspoto@moulindesmoines.com</strong>. Cr&#233;er le compte dans Comptes puis envoyer les identifiants.</div></div>
-      <div class="section-card"><div class="section-card-title"><span>&#128203; Proc&#233;dure</span></div><div style="display:flex;flex-direction:column;gap:10px;padding:4px 0"><div style="display:flex;gap:12px;align-items:flex-start"><div style="width:24px;height:24px;border-radius:50%;background:var(--terra);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">1</div><div>Recevoir l'email de demande</div></div><div style="display:flex;gap:12px;align-items:flex-start"><div style="width:24px;height:24px;border-radius:50%;background:var(--terra);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">2</div><div>Cr&#233;er le compte dans Comptes (bouton + Nouveau compte)</div></div><div style="display:flex;gap:12px;align-items:flex-start"><div style="width:24px;height:24px;border-radius:50%;background:var(--terra);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">3</div><div>Exporter index.html depuis Param&#232;tres</div></div><div style="display:flex;gap:12px;align-items:flex-start"><div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">4</div><div>Envoyer les identifiants au magasin</div></div></div></div>
+      <div class="section-card"><div class="section-card-title"><span>&#128203; Proc&#233;dure</span></div><div style="display:flex;flex-direction:column;gap:10px;padding:4px 0"><div style="display:flex;gap:12px;align-items:flex-start"><div style="width:24px;height:24px;border-radius:50%;background:var(--terra);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">1</div><div>Recevoir l'email de demande</div></div><div style="display:flex;gap:12px;align-items:flex-start"><div style="width:24px;height:24px;border-radius:50%;background:var(--terra);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">2</div><div>Cr&#233;er le compte dans l'onglet Comptes</div></div><div style="display:flex;gap:12px;align-items:flex-start"><div style="width:24px;height:24px;border-radius:50%;background:var(--terra);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">3</div><div>Exporter index.html depuis Param&#232;tres</div></div><div style="display:flex;gap:12px;align-items:flex-start"><div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">4</div><div>Envoyer les identifiants au magasin</div></div></div></div>
     </div>
 
     <!-- PAGE : HISTORIQUE -->
@@ -387,6 +387,11 @@ tbody td{padding:10px 10px;font-size:12px;vertical-align:middle}
       <div class="fg-row">
         <div class="fg"><label>Email r&#233;ception commandes</label><input type="email" id="f-email" placeholder="commandes@magasin.fr"><div class="hint">Copie de chaque commande</div></div>
         <div class="fg"><label>T&#233;l&#233;phone</label><input type="tel" id="f-tel" placeholder="06 xx xx xx xx"></div>
+      </div>
+      <div class="fg" id="section-groupement">
+        <label>Groupement / centrale d&#8217;achat</label>
+        <input type="text" id="f-groupement" placeholder="ex: Biocoop, Nat&#38;Vie, Satoriz, ind&#233;pendant&#8230;">
+        <div class="hint">Laissez vide si magasin ind&#233;pendant</div>
       </div>
     </div>
 
@@ -729,14 +734,15 @@ function openModal(idx){
     document.getElementById("f-password").value = c.password;
     document.getElementById("f-nom").value      = c.nom;
     document.getElementById("f-role").value      = c.role;
-    document.getElementById("f-remise").value    = c.remise    || 0;
-    document.getElementById("f-email").value     = c.email     || "";
-    document.getElementById("f-tel").value       = c.tel       || "";
-    document.getElementById("f-ville").value     = c.ville     || "";
-    document.getElementById("f-cp").value        = c.cp        || "";
-    document.getElementById("f-region").value    = c.region    || "";
-    document.getElementById("f-numclient").value = c.numclient || "";
-    document.getElementById("f-notes").value     = c.notes     || "";
+    document.getElementById("f-remise").value    = c.remise     || 0;
+    document.getElementById("f-email").value     = c.email      || "";
+    document.getElementById("f-tel").value       = c.tel        || "";
+    document.getElementById("f-ville").value     = c.ville      || "";
+    document.getElementById("f-cp").value        = c.cp         || "";
+    document.getElementById("f-region").value    = c.region     || "";
+    document.getElementById("f-numclient").value = c.numclient  || "";
+    document.getElementById("f-notes").value     = c.notes      || "";
+    document.getElementById("f-groupement").value= c.groupement || "";
     document.getElementById("f-login").disabled  = true;
     updateRemiseChips(c.remise || 0);
     var rl=document.getElementById("f-remise-libre");if(rl)rl.value=c.remise||"";
@@ -755,6 +761,7 @@ function openModal(idx){
     document.getElementById("f-region").value    = "";
     document.getElementById("f-numclient").value = "";
     document.getElementById("f-notes").value     = "";
+    document.getElementById("f-groupement").value= "";
     document.getElementById("f-login").disabled  = false;
     updateRemiseChips(0);
     var rl=document.getElementById("f-remise-libre");if(rl)rl.value="";
@@ -811,21 +818,22 @@ function saveCompte(){
       alertEl.style.display = "block";
       return;
     }
-    var fe=document.getElementById("f-email").value.trim(),ft=document.getElementById("f-tel").value.trim(),fv=document.getElementById("f-ville").value.trim(),fc=document.getElementById("f-cp").value.trim(),fr=document.getElementById("f-region").value,fn=document.getElementById("f-numclient").value.trim(),fno=document.getElementById("f-notes").value.trim();
-    comptes.push({login:login,password:password,nom:nom,role:role,remise:remise,email:fe,tel:ft,ville:fv,cp:fc,region:fr,numclient:fn,notes:fno});
+    var fe=document.getElementById("f-email").value.trim(),ft=document.getElementById("f-tel").value.trim(),fv=document.getElementById("f-ville").value.trim(),fc=document.getElementById("f-cp").value.trim(),fr=document.getElementById("f-region").value,fn=document.getElementById("f-numclient").value.trim(),fno=document.getElementById("f-notes").value.trim(),fg=document.getElementById("f-groupement").value.trim();
+    comptes.push({login:login,password:password,nom:nom,role:role,remise:remise,email:fe,tel:ft,ville:fv,cp:fc,region:fr,numclient:fn,notes:fno,groupement:fg});
     showToast("\u2705 Compte cr\u00e9\u00e9 : "+login);
   } else {
-    comptes[editIndex].password  = password;
-    comptes[editIndex].nom       = nom;
-    comptes[editIndex].role      = role;
-    comptes[editIndex].remise    = remise;
-    comptes[editIndex].email     = document.getElementById("f-email").value.trim();
-    comptes[editIndex].tel       = document.getElementById("f-tel").value.trim();
-    comptes[editIndex].ville     = document.getElementById("f-ville").value.trim();
-    comptes[editIndex].cp        = document.getElementById("f-cp").value.trim();
-    comptes[editIndex].region    = document.getElementById("f-region").value;
-    comptes[editIndex].numclient = document.getElementById("f-numclient").value.trim();
-    comptes[editIndex].notes     = document.getElementById("f-notes").value.trim();
+    comptes[editIndex].password   = password;
+    comptes[editIndex].nom        = nom;
+    comptes[editIndex].role       = role;
+    comptes[editIndex].remise     = remise;
+    comptes[editIndex].email      = document.getElementById("f-email").value.trim();
+    comptes[editIndex].tel        = document.getElementById("f-tel").value.trim();
+    comptes[editIndex].ville      = document.getElementById("f-ville").value.trim();
+    comptes[editIndex].cp         = document.getElementById("f-cp").value.trim();
+    comptes[editIndex].region     = document.getElementById("f-region").value;
+    comptes[editIndex].numclient  = document.getElementById("f-numclient").value.trim();
+    comptes[editIndex].notes      = document.getElementById("f-notes").value.trim();
+    comptes[editIndex].groupement = document.getElementById("f-groupement").value.trim();
     showToast("\u2705 Compte modifi\u00e9 : "+comptes[editIndex].login);
   }
 
@@ -898,52 +906,42 @@ function showPage(id,el){document.querySelectorAll('.page').forEach(function(p){
 
 function onRoleChange(){
   var role=document.getElementById('f-role').value;
-  var sec=document.getElementById('section-localisation');
-  if(sec)sec.style.display=role==='client'?'block':'none';
-  var imp=document.getElementById('import-bloc');
-  if(imp)imp.style.display=role==='client'?'block':'none';
+  var isClient=role==='client';
+  ['section-localisation','import-bloc','section-groupement'].forEach(function(id){
+    var el=document.getElementById(id);if(el)el.style.display=isClient?'block':'none';
+  });
 }
 
-function toggleImport(){
-  var form=document.getElementById('import-form');
-  var btn=document.getElementById('btn-toggle-import');
-  if(!form)return;
-  var open=form.style.display==='none';
-  form.style.display=open?'block':'none';
-  btn.innerHTML=open?'&#9650; R&#233;duire':'&#9660; D&#233;plier';
-}
+function toggleImport(){var f=document.getElementById('import-form'),b=document.getElementById('btn-toggle-import');if(!f)return;var o=f.style.display==='none';f.style.display=o?'block':'none';b.innerHTML=o?'&#9650; R&#233;duire':'&#9660; D&#233;plier';}
 
 function importerDemande(){
-  var contact   =(document.getElementById('imp-contact').value||'').trim();
-  var email     =(document.getElementById('imp-email').value||'').trim();
-  var tel       =(document.getElementById('imp-tel').value||'').trim();
-  var magasin   =(document.getElementById('imp-magasin').value||'').trim();
-  var ville     =(document.getElementById('imp-ville').value||'').trim();
-  var cp        =(document.getElementById('imp-cp').value||'').trim();
-  var region    =(document.getElementById('imp-region').value||'');
-  var numclient =(document.getElementById('imp-numclient').value||'').trim();
-  var message   =(document.getElementById('imp-message').value||'').trim();
+  var contact=(document.getElementById('imp-contact').value||'').trim();
+  var email=(document.getElementById('imp-email').value||'').trim();
+  var tel=(document.getElementById('imp-tel').value||'').trim();
+  var magasin=(document.getElementById('imp-magasin').value||'').trim();
+  var ville=(document.getElementById('imp-ville').value||'').trim();
+  var cp=(document.getElementById('imp-cp').value||'').trim();
+  var region=(document.getElementById('imp-region').value||'');
+  var numclient=(document.getElementById('imp-numclient').value||'').trim();
+  var message=(document.getElementById('imp-message').value||'').trim();
   if(!magasin&&!email){showToast('\u26a0 Renseignez au moins le magasin ou l\'email.');return;}
-  // Nom affiché = magasin en priorité
-  if(magasin) document.getElementById('f-nom').value=magasin;
-  else if(contact) document.getElementById('f-nom').value=contact;
-  // Login suggéré (si vide)
+  if(magasin)document.getElementById('f-nom').value=magasin;
+  else if(contact)document.getElementById('f-nom').value=contact;
   if(magasin&&!document.getElementById('f-login').value){
     var s=magasin.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'').substring(0,20);
     document.getElementById('f-login').value=s;
   }
-  if(email)     document.getElementById('f-email').value=email;
-  if(tel)       document.getElementById('f-tel').value=tel;
-  if(ville)     document.getElementById('f-ville').value=ville;
-  if(cp)        document.getElementById('f-cp').value=cp;
-  if(region)    document.getElementById('f-region').value=region;
-  if(numclient) document.getElementById('f-numclient').value=numclient;
+  if(email)document.getElementById('f-email').value=email;
+  if(tel)document.getElementById('f-tel').value=tel;
+  if(ville)document.getElementById('f-ville').value=ville;
+  if(cp)document.getElementById('f-cp').value=cp;
+  if(region)document.getElementById('f-region').value=region;
+  if(numclient)document.getElementById('f-numclient').value=numclient;
   var notes=[];
-  if(contact) notes.push('Contact : '+contact);
-  if(message) notes.push('Commercial / message : '+message);
-  if(notes.length) document.getElementById('f-notes').value=notes.join('\n');
-  if(!document.getElementById('f-password').value) genPassword();
-  // Replier
+  if(contact)notes.push('Contact : '+contact);
+  if(message)notes.push('Commercial / message : '+message);
+  if(notes.length)document.getElementById('f-notes').value=notes.join('\n');
+  if(!document.getElementById('f-password').value)genPassword();
   document.getElementById('import-form').style.display='none';
   document.getElementById('btn-toggle-import').innerHTML='&#9660; D&#233;plier';
   showToast('\u2705 Formulaire pr\u00e9-rempli depuis la demande d\'inscription');

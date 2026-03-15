@@ -226,7 +226,10 @@ tbody tr.has-qty td.td-qty input{background:#ffe0b2;border-color:var(--terra)}
     <h2>&#128203; Mes commandes</h2>
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
       <span style="font-size:12px;color:#888">Historique des commandes envoy&#233;es depuis ce navigateur</span>
-      <button onclick="clearOrderHistory()" style="background:#fdecea;color:#c62828;border:none;padding:6px 12px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;font-family:Outfit,sans-serif">&#128465; Effacer tout</button>
+      <div style="display:flex;gap:8px">
+        <button onclick="exportHistoriqueClient()" style="background:var(--green);color:#fff;border:none;padding:6px 12px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;font-family:Outfit,sans-serif">&#128202; Export Excel</button>
+        <button onclick="clearOrderHistory()" style="background:#fdecea;color:#c62828;border:none;padding:6px 12px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;font-family:Outfit,sans-serif">&#128465; Effacer tout</button>
+      </div>
     </div>
     <div id="history-container"></div>
     <div style="margin-top:16px;text-align:right">
@@ -702,6 +705,105 @@ function reorderFromHistory(idx){
 }
 function openHistoryModal(){renderHistory();document.getElementById("modal-history").classList.add("open");}
 function closeHistoryModal(){document.getElementById("modal-history").classList.remove("open");}
+
+function exportHistoriqueClient(){
+  var h = getOrderHistory();
+  if(!h.length){ showToast('\u26a0 Aucune commande \u00e0 exporter.'); return; }
+  var mag = window._userName || 'Client';
+  var brown='#78503C', terra='#C87864', gold='#D2B469', cream='#FDF5EE',
+      green='#1A5C2E', white='#FFFFFF', orange='#FFF3E0';
+
+  function xc(v,t,bd,bg,co,al){
+    var st=[];
+    if(bd) st.push('font-weight:bold');
+    if(bg) st.push('background:'+bg);
+    if(co) st.push('color:'+co);
+    if(al) st.push('text-align:'+al);
+    var sa=st.length?' style="'+st.join(';')+'"':'';
+    var tp=t==='n'?'Number':'String';
+    var v2=String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    return '<Cell'+sa+'><Data ss:Type="'+tp+'">'+v2+'</Data></Cell>';
+  }
+  function xs(v,b,bg,c,a){ return xc(v,'s',b,bg,c,a||'left'); }
+  function xn(v,b,bg,c)  { return xc(v,'n',b,bg,c,'right'); }
+
+  var today = new Date().toLocaleDateString('fr-FR');
+  var rows1 = '', rows2 = '';
+
+  // ── Feuille 1 : Résumé des commandes ─────────────────────
+  rows1 += '<Row ss:Height="26"><Cell ss:MergeAcross="5" style="background:'+brown+';color:'+white+';font-weight:bold;font-size:13pt;text-align:center"><Data ss:Type="String">'+escHtml(mag)+' \u2014 Mes commandes</Data></Cell></Row>';
+  rows1 += '<Row ss:Height="16"><Cell ss:MergeAcross="5" style="background:'+cream+';color:#888;font-size:9pt;text-align:center"><Data ss:Type="String">Export\u00e9 le '+today+' \u2014 '+h.length+' commande(s)</Data></Cell></Row>';
+  rows1 += '<Row ss:Height="6"><Cell ss:MergeAcross="5"/></Row>';
+  rows1 += '<Row ss:Height="20">';
+  ['Date','Magasin','Email','Remise (%)','Nb r\u00e9f.','Total HT net'].forEach(function(hd,i){
+    rows1 += xs(hd, true, brown, white, i>=3?'center':'left');
+  });
+  rows1 += '</Row>';
+
+  var tGlobal = 0;
+  h.forEach(function(cmd, i){
+    var bg = i%2===0 ? white : cream;
+    var tn = typeof cmd.totalNet === 'number' ? cmd.totalNet : 0;
+    tGlobal += tn;
+    var dateStr = cmd.date ? cmd.date.split(' ')[0] : '';
+    rows1 += '<Row ss:Height="18">';
+    rows1 += xs(dateStr,        false, bg, '#555');
+    rows1 += xs(cmd.magasin||'',true,  bg, brown);
+    rows1 += xs(cmd.mail||'',   false, bg, '#555');
+    rows1 += (cmd.remise>0) ? xn(cmd.remise,false,orange,terra) : xs('-',false,bg,'#ccc','center');
+    rows1 += xn(cmd.nbRefs||(cmd.articles?cmd.articles.length:0), false, bg, '#555');
+    rows1 += xn(parseFloat(tn.toFixed(2)), true, orange, terra);
+    rows1 += '</Row>';
+  });
+  rows1 += '<Row ss:Height="6"><Cell ss:MergeAcross="5"/></Row>';
+  rows1 += '<Row ss:Height="20"><Cell ss:MergeAcross="4"/>' + xn(parseFloat(tGlobal.toFixed(2)), true, gold, brown) + '</Row>';
+
+  // ── Feuille 2 : Détail des articles ──────────────────────
+  rows2 += '<Row ss:Height="26"><Cell ss:MergeAcross="7" style="background:'+brown+';color:'+white+';font-weight:bold;font-size:13pt;text-align:center"><Data ss:Type="String">'+escHtml(mag)+' \u2014 D\u00e9tail des articles</Data></Cell></Row>';
+  rows2 += '<Row ss:Height="6"><Cell ss:MergeAcross="7"/></Row>';
+  rows2 += '<Row ss:Height="20">';
+  ['Date','Magasin','Code','D\u00e9signation','Qt\u00e9 colis','PCB','PU HT net','Total HT'].forEach(function(hd,i){
+    rows2 += xs(hd, true, brown, white, i>=4?'center':'left');
+  });
+  rows2 += '</Row>';
+
+  h.forEach(function(cmd){
+    var dateStr = cmd.date ? cmd.date.split(' ')[0] : '';
+    if(cmd.articles && cmd.articles.length){
+      cmd.articles.forEach(function(a, ai){
+        var bg = ai%2===0 ? white : cream;
+        rows2 += '<Row ss:Height="17">';
+        rows2 += xs(ai===0 ? dateStr : '',      false, bg, '#888');
+        rows2 += xs(ai===0 ? (cmd.magasin||'') : '', ai===0, bg, ai===0?brown:'#aaa');
+        rows2 += xs(a.code||'',    true,  bg, brown);
+        rows2 += xs(a.libelle||'', false, bg, '#3a2a20');
+        rows2 += xn(a.qty||0,      true,  orange, terra);
+        rows2 += xn(a.pcb||1,      false, bg, '#888');
+        rows2 += xn(typeof a.puHT==='number'   ? parseFloat(a.puHT.toFixed(2))   : 0, false, bg, green);
+        rows2 += xn(typeof a.totalHT==='number'? parseFloat(a.totalHT.toFixed(2)): 0, true,  orange, terra);
+        rows2 += '</Row>';
+      });
+    }
+  });
+
+  var cols1 = [80,160,140,60,60,90].map(function(w){ return '<Column ss:Width="'+w+'"/>'; }).join('');
+  var cols2 = [80,160,80,260,55,50,75,90].map(function(w){ return '<Column ss:Width="'+w+'"/>'; }).join('');
+
+  var xml = '<?xml version="1.0" encoding="UTF-8"?>\n<?mso-application progid="Excel.Sheet"?>\n'
+    + '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">\n'
+    + '<Styles><Style ss:ID="Default"><Font ss:FontName="Calibri" ss:Size="10"/></Style></Styles>\n'
+    + '<Worksheet ss:Name="R\u00e9sum\u00e9"><Table>\n' + cols1 + rows1 + '</Table></Worksheet>\n'
+    + '<Worksheet ss:Name="D\u00e9tail articles"><Table>\n' + cols2 + rows2 + '</Table></Worksheet>\n'
+    + '</Workbook>';
+
+  var blob = new Blob([xml], {type:'application/vnd.ms-excel;charset=utf-8'});
+  var a = document.createElement('a');
+  a.download = 'Mes_commandes_MDM_' + today.replace(/\//g,'-') + '.xls';
+  a.href = URL.createObjectURL(blob);
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(a.href); }, 1000);
+  showToast('\u2705 Export t\u00e9l\u00e9charg\u00e9 (' + h.length + ' commande(s))');
+}
 
 
 // ── EXPORT EXCEL ──────────────────────────────────────

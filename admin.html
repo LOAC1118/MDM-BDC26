@@ -1027,12 +1027,23 @@ function parseStockXlsx(buffer, filename){
           if(tAttr&&tAttr[1]==='s'){vals.push(strings[parseInt(v)]||'');}
           else{vals.push(v);}
         });
-        if(vals.length>=7){
+        if(vals.length>=1){
           var code=(vals[0]||'').trim().toUpperCase();
-          var dispo=vals[6];
           if(code){
-            var val=dispo!==''?parseInt(parseFloat(dispo)):null;
-            stock[code]=isNaN(val)?null:val;
+            // Priorité : Nb Colis (col 22), fallback Disponible (col 6) si négatif (rupture)
+            var nbcol = vals.length>22 ? vals[22] : '';
+            var dispo = vals.length>6  ? vals[6]  : '';
+            var nbcolVal = nbcol!=='' ? parseInt(parseFloat(nbcol)) : null;
+            var dispoVal = dispo!=='' ? parseInt(parseFloat(dispo)) : null;
+            var val;
+            if(nbcolVal!==null && !isNaN(nbcolVal)){
+              val = nbcolVal;           // colis disponibles
+            } else if(dispoVal!==null && !isNaN(dispoVal) && dispoVal<0){
+              val = dispoVal;           // rupture (valeur négative)
+            } else {
+              val = null;               // pas de donnée
+            }
+            stock[code]=val;
           }
         }
       });

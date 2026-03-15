@@ -301,6 +301,14 @@ tbody tr.has-qty td.td-qty input{background:#ffe0b2;border-color:var(--terra)}
       window._userName  = data.nom  || data.login || "";
       window._userLogin      = data.login      || "guest";
       window._userCommercial = data.commercial  || "";
+      remisesProduitsMap = {};
+      if(data.remises_produits && Array.isArray(data.remises_produits)){
+        data.remises_produits.forEach(function(r){
+          var rval = parseFloat(r.remise)||0; if(!rval) return;
+          if(r.type==="categorie") remisesProduitsMap["~"+(r.valeur||"").toUpperCase()]=rval;
+          else remisesProduitsMap[(r.valeur||r.code||"").toUpperCase()]=rval;
+        });
+      }
 
       // Afficher le commercial référent si compte client
       if(data.role === "client" && data.commercial){
@@ -576,8 +584,9 @@ function buildOrderText(){
     var p=PRODUCTS[i],q=qtys[p.code]||0;
     if(!q) continue;
     var pcb=parseFloat(p.pcb)||1;
-    tBrut+=p.pu_ht*q*pcb;tNet+=p.pu_ht*(1-remise/100)*q*pcb;nbC+=q;
-    lines.push(p.code+" | "+p.libelle+" | Qté: "+q+" colis | PCB: "+pcb+" | PU HT: "+fmt4(p.pu_ht)+" | Total HT: "+fmt2(p.pu_ht*(1-remise/100)*q*pcb));
+    tBrut+=p.pu_ht*q*pcb;tNet+=getPrixNet(p)*q*pcb;nbC+=q;
+    var rp2=getRemiseProduit(p);var remiseLine=rp2>0?" [remise produit -"+rp2+"%]":"";
+    lines.push(p.code+" | "+p.libelle+" | Qté: "+q+" colis | PCB: "+pcb+" | PU HT: "+fmt4(p.pu_ht)+remiseLine+" | Total HT: "+fmt2(getPrixNet(p)*q*pcb));
   }
   lines.push("","RÉCAPITULATIF","Nb références : "+Object.keys(qtys).length,
     "Total colis   : "+nbC,"Total HT brut : "+fmt2(tBrut));
@@ -674,7 +683,7 @@ function saveOrderToHistory(mag,mail,uname){
     var lines=[],tB=0,tN=0,nbC=0,nbR=0;
     for(var i=0;i<PRODUCTS.length;i++){
       var p=PRODUCTS[i],q=qtys[p.code]||0;if(!q)continue;
-      var pcb=parseFloat(p.pcb)||1,net=p.pu_ht*(1-remise/100)*q*pcb;
+      var pcb=parseFloat(p.pcb)||1,net=getPrixNet(p)*q*pcb;
       tB+=p.pu_ht*q*pcb;tN+=net;nbC+=q;nbR++;
       lines.push({code:p.code,libelle:p.libelle,qty:q,pcb:pcb,puHT:p.pu_ht,totalHT:net});
     }
@@ -1322,9 +1331,9 @@ async function sendOrderPDF(){
 
 // ── Thème couleur par compte ──────────────────────────────
 var ROLE_THEMES = {
-  client: {brown:'#1A5C2E',terra:'#2D8A57',cream:'#F0FBF4',gold:'#4CAF7D',green:'#1A5C2E',shadow:'rgba(26,92,46,0.12)'},
-  user:   {brown:'#1A3A6E',terra:'#2C5FA5',cream:'#F0F4FB',gold:'#4A7FD4',green:'#1A5C2E',shadow:'rgba(26,58,110,0.12)'},
-  admin:  {brown:'#7B1F1F',terra:'#C0392B',cream:'#FDF0F0',gold:'#E57373',green:'#276749',shadow:'rgba(123,31,31,0.12)'}
+  client: {brown:'#4A7C6E',terra:'#6FAE9E',cream:'#F2FAF8',gold:'#8DCFC3',green:'#4A7C6E',shadow:'rgba(74,124,110,0.10)'},
+  user:   {brown:'#4A6898',terra:'#7094C8',cream:'#F2F5FB',gold:'#90B0E0',green:'#4A7C6E',shadow:'rgba(74,104,152,0.10)'},
+  admin:  {brown:'#9E5A6A',terra:'#C97E90',cream:'#FDF2F4',gold:'#E8A8B8',green:'#4A7C6E',shadow:'rgba(158,90,106,0.10)'}
 };
 
 function applyTheme(data){

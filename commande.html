@@ -384,6 +384,27 @@ var PRODUCTS = [{"code":"ABRCOU200","libelle":"Abricots secs coupés bio - 200g"
 var remise = 0;
 var searchMode = "all";
 var qtys = {};
+var remisesProduitsMap = {};
+
+function getRemiseProduit(p){
+  if(!remisesProduitsMap) return 0;
+  var codeUp=(p.code||"").toUpperCase();
+  if(remisesProduitsMap[codeUp]!==undefined) return remisesProduitsMap[codeUp];
+  var libLow=(p.libelle||"").toLowerCase();
+  for(var key in remisesProduitsMap){
+    if(remisesProduitsMap.hasOwnProperty(key)&&key.charAt(0)==="~"){
+      var kw=key.slice(1).toLowerCase();
+      if(libLow.indexOf(kw)>=0||codeUp.indexOf(key.slice(1).toUpperCase())===0)
+        return remisesProduitsMap[key];
+    }
+  }
+  return 0;
+}
+
+function getPrixNet(p){
+  var rp=getRemiseProduit(p);
+  return p.pu_ht*(1-remise/100)*(1-rp/100);
+}
 
 function fmt4(n){ return n.toFixed(2).replace(".",",") + "€"; }
 function fmt2(n){ return n.toFixed(2).replace(".",",") + "€"; }

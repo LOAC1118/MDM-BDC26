@@ -145,6 +145,7 @@ table{font-size:11px}
 .actu-form input,.actu-form select,.actu-form textarea{width:100%;padding:9px 12px;border:1.5px solid #e0d0c4;border-radius:7px;font-family:Outfit,sans-serif;font-size:13px;background:#fff;color:#3a2a20;outline:none;transition:border .15s}
 .actu-form textarea{min-height:90px;resize:vertical}
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 </head>
 <body>
 
@@ -384,6 +385,7 @@ table{font-size:11px}
 
       <div class="section-card"><div class="section-card-title"><span>&#128029; GitHub Pages</span></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px"><div class="fg"><label style="font-size:10px;font-weight:600;color:var(--brown);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Utilisateur</label><input type="text" id="gh-user" value="LOAC1118" style="width:100%;padding:9px 12px;border:1.5px solid #e0d0c4;border-radius:7px;font-family:Outfit,sans-serif;font-size:13px;background:var(--cream);outline:none"></div><div class="fg"><label style="font-size:10px;font-weight:600;color:var(--brown);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Repository</label><input type="text" id="gh-repo" value="MDM-BDC26" style="width:100%;padding:9px 12px;border:1.5px solid #e0d0c4;border-radius:7px;font-family:Outfit,sans-serif;font-size:13px;background:var(--cream);outline:none"></div><div class="fg"><label style="font-size:10px;font-weight:600;color:var(--brown);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Branche</label><input type="text" id="gh-branch" value="main" style="width:100%;padding:9px 12px;border:1.5px solid #e0d0c4;border-radius:7px;font-family:Outfit,sans-serif;font-size:13px;background:var(--cream);outline:none"></div><div class="fg"><label style="font-size:10px;font-weight:600;color:var(--brown);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Fichier</label><input type="text" id="gh-file" value="index.html" style="width:100%;padding:9px 12px;border:1.5px solid #e0d0c4;border-radius:7px;font-family:Outfit,sans-serif;font-size:13px;background:var(--cream);outline:none"></div></div><div class="fg" style="margin-bottom:14px"><label style="font-size:10px;font-weight:600;color:var(--brown);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Token GitHub *</label><div class="github-token-wrap"><input type="password" id="gh-token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" style="width:100%;padding:9px 40px 9px 12px;border:1.5px solid #e0d0c4;border-radius:7px;font-family:monospace;font-size:12px;background:var(--cream);outline:none"><button class="toggle-token" onclick="toggleToken()">&#128065;</button></div></div><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><button class="btn-export" onclick="testGithub()">&#9654; Tester</button><button class="btn-add" onclick="pushToGithub(false)">&#128229; Pousser index.html</button><span id="gh-status"></span></div><div class="gh-push-log" id="gh-log"></div></div>
       <div class="section-card"><div class="section-card-title"><span>&#128229; Export manuel</span></div><button class="btn-export" onclick="exportIndex(false)">&#128229; T&#233;l&#233;charger index.html</button></div>
+      <div class="section-card" id="stock-section"><div class="section-card-title"><span>&#128230; Mise &#224; jour des stocks</span></div><div class="info-banner" style="margin-bottom:14px"><span class="icon">&#128196;</span><div>Importez le fichier <strong>stock.xlsx</strong> export&#233; depuis votre logiciel de gestion. Les stocks seront inject&#233;s dans <code>commande.html</code> et publi&#233;s sur GitHub Pages automatiquement.</div></div><div id="stock-drop-zone" style="border:2px dashed #d0c0b0;border-radius:10px;padding:28px 20px;text-align:center;cursor:pointer;transition:all .2s;background:var(--cream);margin-bottom:14px" onclick="document.getElementById('stock-file-input').click()" ondragover="event.preventDefault();this.style.borderColor='var(--terra)';this.style.background='#fff8f3'" ondragleave="this.style.borderColor='#d0c0b0';this.style.background='var(--cream)'" ondrop="event.preventDefault();this.style.borderColor='#d0c0b0';this.style.background='var(--cream)';handleStockFile(event.dataTransfer.files[0])"><div style="font-size:32px;margin-bottom:8px">&#128196;</div><div style="font-size:14px;font-weight:600;color:var(--brown);margin-bottom:4px">Glissez stock.xlsx ici</div><div style="font-size:12px;color:#b09080">ou cliquez pour choisir le fichier</div><input type="file" id="stock-file-input" accept=".xlsx,.xls" style="display:none" onchange="handleStockFile(this.files[0])"></div><div id="stock-result" style="display:none;margin-bottom:14px"><div style="background:#f0f7f2;border:1.5px solid rgba(26,92,46,.2);border-radius:8px;padding:12px 14px"><div id="stock-result-text" style="font-size:12px;color:#2e6e40;line-height:1.8"></div></div></div><div id="stock-log" style="display:none;background:#1e1e1e;color:#a8ff78;border-radius:8px;padding:12px 14px;font-family:monospace;font-size:11px;line-height:1.8;max-height:160px;overflow-y:auto;white-space:pre-wrap;margin-bottom:14px"></div><div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center"><button id="stock-push-btn" onclick="pushStockToGithub()" disabled style="padding:9px 18px;background:var(--green);color:#fff;border:none;border-radius:7px;font-family:Outfit,sans-serif;font-size:13px;font-weight:600;cursor:pointer;opacity:.5" title="Chargez d'abord un fichier stock">&#128229; Mettre &#224; jour commande.html sur GitHub</button><span id="stock-status"></span></div></div>
       <div class="section-card"><div class="section-card-title"><span>&#128260; R&#233;initialiser</span></div><button class="btn-sm" style="background:#fdecea;color:var(--red);border:none;padding:8px 16px;border-radius:7px;font-weight:600;cursor:pointer;font-family:Outfit,sans-serif" onclick="resetComptes()">&#9888; R&#233;initialiser les comptes</button></div>
     </div>
 
@@ -947,6 +949,234 @@ loadActus();
 updateActusBadge();
 if(document.getElementById("actu-type"))document.getElementById("actu-type").addEventListener("change",onActuTypeChange);
 loadGhConfig();
+
+// ============================================================
+// IMPORT STOCK XLSX
+// ============================================================
+var _stockData = null; // {code: disponible, ...}
+
+function stockLog(msg){
+  var el=document.getElementById('stock-log');
+  if(!el)return;
+  el.style.display='block';
+  el.textContent+=msg+'\n';
+  el.scrollTop=el.scrollHeight;
+}
+
+function handleStockFile(file){
+  if(!file)return;
+  if(!file.name.match(/\.xlsx?$/i)){showToast('\u26a0 Format non supporté. Utilisez .xlsx');return;}
+
+  var dz=document.getElementById('stock-drop-zone');
+  if(dz){ dz.innerHTML='<div style="font-size:20px">&#8987;</div><div style="font-size:13px;color:var(--brown);font-weight:600">Lecture en cours\u2026</div>'; }
+  document.getElementById('stock-log').textContent='';
+  document.getElementById('stock-log').style.display='none';
+  document.getElementById('stock-result').style.display='none';
+
+  var reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      parseStockXlsx(e.target.result, file.name);
+    }catch(err){
+      showToast('\u26a0 Erreur de lecture: '+err.message);
+      resetStockDropZone();
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function parseStockXlsx(buffer, filename){
+  // Parser le xlsx manuellement (pas de dépendance externe)
+  // Format: zip contenant xl/worksheets/sheet1.xml + xl/sharedStrings.xml
+  stockLog('Lecture du fichier: '+filename);
+
+  JSZip.loadAsync(buffer).then(function(zip){
+    var ssPromise = zip.file('xl/sharedStrings.xml')
+      ? zip.file('xl/sharedStrings.xml').async('string')
+      : Promise.resolve(null);
+    var wsPromise = zip.file('xl/worksheets/sheet1.xml').async('string');
+
+    Promise.all([ssPromise, wsPromise]).then(function(results){
+      var ssXml=results[0], wsXml=results[1];
+
+      // Parser les chaînes partagées
+      var strings=[];
+      if(ssXml){
+        var siMatches=ssXml.match(/<si>([\s\S]*?)<\/si>/g)||[];
+        siMatches.forEach(function(si){
+          var tMatches=si.match(/<t[^>]*>([^<]*)<\/t>/g)||[];
+          strings.push(tMatches.map(function(t){return t.replace(/<[^>]+>/g,'');}).join(''));
+        });
+      }
+
+      // Parser les cellules
+      stockLog('Analyse des cellules\u2026');
+      var stock={};
+      var rowMatches=wsXml.match(/<row[^>]*>([\s\S]*?)<\/row>/g)||[];
+      var firstRow=true;
+
+      rowMatches.forEach(function(rowXml){
+        if(firstRow){firstRow=false;return;} // Ignorer l'entête
+        var cellMatches=rowXml.match(/<c [^>]*>[\s\S]*?<\/c>/g)||[];
+        var vals=[];
+        cellMatches.forEach(function(cellXml){
+          var tAttr=cellXml.match(/t="([^"]+)"/);
+          var vMatch=cellXml.match(/<v>([^<]*)<\/v>/);
+          if(!vMatch){vals.push('');return;}
+          var v=vMatch[1];
+          if(tAttr&&tAttr[1]==='s'){vals.push(strings[parseInt(v)]||'');}
+          else{vals.push(v);}
+        });
+        if(vals.length>=7){
+          var code=(vals[0]||'').trim().toUpperCase();
+          var dispo=vals[6];
+          if(code){
+            var val=dispo!==''?parseInt(parseFloat(dispo)):null;
+            stock[code]=isNaN(val)?null:val;
+          }
+        }
+      });
+
+      var nbCodes=Object.keys(stock).length;
+      stockLog('Codes trouvés: '+nbCodes);
+      _stockData=stock;
+      showStockResult(stock, filename);
+    }).catch(function(e){showToast('\u26a0 Erreur XML: '+e.message);resetStockDropZone();});
+  }).catch(function(e){showToast('\u26a0 Fichier invalide: '+e.message);resetStockDropZone();});
+}
+
+function showStockResult(stock, filename){
+  var pos=0,neg=0,zero=0,keys=Object.keys(stock);
+  keys.forEach(function(k){
+    var v=stock[k];
+    if(v===null||v===undefined)return;
+    if(v>0)pos++;else if(v<0)neg++;else zero++;
+  });
+
+  var txt='<strong>&#128196; '+filename+'</strong><br>';
+  txt+=keys.length+' codes articles d\u00e9tect\u00e9s<br>';
+  txt+='<span style="color:var(--green)">&#9679; En stock: '+pos+'</span> &nbsp;';
+  txt+='<span style="color:#e65100">&#9679; Faible / rupture: '+(neg+zero)+'</span>';
+
+  document.getElementById('stock-result-text').innerHTML=txt;
+  document.getElementById('stock-result').style.display='block';
+
+  // Réinitialiser la drop zone
+  var dz=document.getElementById('stock-drop-zone');
+  if(dz){
+    dz.innerHTML='<div style="font-size:22px">&#9989;</div>'
+      +'<div style="font-size:13px;font-weight:600;color:var(--green)">'+filename+' charg\u00e9</div>'
+      +'<div style="font-size:11px;color:#a08070;margin-top:4px">Cliquez pour changer de fichier</div>'
+      +'<input type="file" id="stock-file-input" accept=".xlsx,.xls" style="display:none" onchange="handleStockFile(this.files[0])">';
+  }
+
+  // Activer le bouton de publication
+  var btn=document.getElementById('stock-push-btn');
+  if(btn){btn.disabled=false;btn.style.opacity='1';}
+  showToast('\u2705 Fichier analysé — '+keys.length+' codes chargés');
+}
+
+function resetStockDropZone(){
+  var dz=document.getElementById('stock-drop-zone');
+  if(!dz)return;
+  dz.innerHTML='<div style="font-size:32px;margin-bottom:8px">&#128196;</div>'
+    +'<div style="font-size:14px;font-weight:600;color:var(--brown);margin-bottom:4px">Glissez stock.xlsx ici</div>'
+    +'<div style="font-size:12px;color:#b09080">ou cliquez pour choisir le fichier</div>'
+    +'<input type="file" id="stock-file-input" accept=".xlsx,.xls" style="display:none" onchange="handleStockFile(this.files[0])">';
+  var btn=document.getElementById('stock-push-btn');
+  if(btn){btn.disabled=true;btn.style.opacity='.5';}
+}
+
+function pushStockToGithub(){
+  if(!_stockData){showToast('\u26a0 Chargez d\'abord un fichier stock');return;}
+  var token=document.getElementById('gh-token').value.trim();
+  var user =document.getElementById('gh-user').value.trim();
+  var repo =document.getElementById('gh-repo').value.trim();
+  var branch=document.getElementById('gh-branch').value.trim();
+  if(!token||!user||!repo){showToast('\u26a0 Configurez d\'abord GitHub dans les Paramètres');return;}
+
+  var btn=document.getElementById('stock-push-btn');
+  var status=document.getElementById('stock-status');
+  btn.disabled=true; btn.textContent='\u23f3 Mise à jour en cours\u2026';
+  document.getElementById('stock-log').textContent='';
+
+  stockLog('Récupération de commande.html depuis GitHub\u2026');
+
+  var apiBase='https://api.github.com/repos/'+user+'/'+repo+'/contents/';
+  var headers={'Authorization':'token '+token,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'};
+
+  // 1. GET commande.html
+  fetch(apiBase+'commande.html?ref='+branch,{headers:headers})
+  .then(function(r){
+    if(!r.ok)throw new Error('GET commande.html: '+r.status);
+    return r.json();
+  })
+  .then(function(data){
+    stockLog('Fichier récupéré ('+Math.round(data.size/1024)+' Ko)');
+    var sha=data.sha;
+    var content=atob(data.content.replace(/\n/g,''));
+    stockLog('Injection des stocks dans PRODUCTS\u2026');
+
+    // Remplacer les valeurs stock dans PRODUCTS
+    var updated=injectStockIntoHtml(content, _stockData);
+    stockLog('Stocks injectés: '+updated.count+' produits mis à jour');
+
+    // 2. PUT commande.html
+    stockLog('Publication sur GitHub\u2026');
+    var newContent=btoa(unescape(encodeURIComponent(updated.html)));
+    return fetch(apiBase+'commande.html',{
+      method:'PUT',
+      headers:headers,
+      body:JSON.stringify({
+        message:'MAJ stocks '+new Date().toLocaleDateString('fr-FR'),
+        content:newContent,
+        sha:sha,
+        branch:branch
+      })
+    });
+  })
+  .then(function(r){
+    if(!r.ok)return r.text().then(function(t){throw new Error('PUT: '+r.status+' '+t.substring(0,100));});
+    return r.json();
+  })
+  .then(function(){
+    stockLog('\u2705 commande.html mis à jour sur GitHub !');
+    if(status) status.innerHTML='<span class="github-status ok">&#9989; Stocks publiés</span>';
+    showToast('\u2705 Stocks mis à jour et publiés sur GitHub !');
+    btn.disabled=false; btn.textContent='&#128229; Mettre à jour commande.html sur GitHub';
+  })
+  .catch(function(e){
+    stockLog('\u274c Erreur: '+e.message);
+    if(status) status.innerHTML='<span class="github-status err">&#10060; Erreur</span>';
+    showToast('\u274c '+e.message);
+    btn.disabled=false; btn.textContent='&#128229; Mettre à jour commande.html sur GitHub';
+  });
+}
+
+function injectStockIntoHtml(htmlStr, stockDict){
+  // Trouver PRODUCTS et mettre à jour le champ stock de chaque produit
+  var match=htmlStr.match(/(var PRODUCTS\s*=\s*)(\[[\s\S]*?\]);/);
+  if(!match) throw new Error('PRODUCTS non trouvé dans commande.html');
+
+  var products=JSON.parse(match[2]);
+  var count=0;
+  products.forEach(function(p){
+    var code=(p.code||'').toUpperCase();
+    if(stockDict.hasOwnProperty(code)){
+      p.stock=stockDict[code];
+      count++;
+    } else {
+      p.stock=null;
+    }
+  });
+
+  var newHtml=htmlStr.replace(
+    /(var PRODUCTS\s*=\s*)(\[[\s\S]*?\]);/,
+    match[1]+JSON.stringify(products)+';'
+  );
+  return {html:newHtml, count:count};
+}
+
 </script>
 </body>
 </html>

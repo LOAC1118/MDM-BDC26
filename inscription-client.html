@@ -355,6 +355,27 @@ async function submitForm(){
     });
     var data = await res.json();
     if(data.success==='true'||data.success===true){
+      // Sauvegarder la demande dans localStorage pour l'admin
+      try {
+        var inscriptions = JSON.parse(localStorage.getItem('mdm_inscriptions') || '[]');
+        inscriptions.unshift({
+          id:         Date.now(),
+          date:       today,
+          contact:    prenom + ' ' + nom,
+          email:      email,
+          tel:        tel,
+          magasin:    magasin,
+          ville:      ville,
+          cp:         cp,
+          region:     region,
+          numclient:  numClient,
+          commercial: commercial,
+          message:    message,
+          statut:     'nouveau'   // nouveau | traite
+        });
+        if(inscriptions.length > 100) inscriptions = inscriptions.slice(0, 100);
+        localStorage.setItem('mdm_inscriptions', JSON.stringify(inscriptions));
+      } catch(err) {}
       document.getElementById('form-screen').style.display='none';
       document.getElementById('success-screen').style.display='block';
     } else { throw new Error('err'); }

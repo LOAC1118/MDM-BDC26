@@ -146,6 +146,7 @@ table{font-size:11px}
 .actu-form textarea{min-height:90px;resize:vertical}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -1093,74 +1094,38 @@ function handleStockFile(file){
 }
 
 function parseStockXlsx(buffer, filename){
-  // Parser le xlsx manuellement (pas de dépendance externe)
-  // Format: zip contenant xl/worksheets/sheet1.xml + xl/sharedStrings.xml
-  stockLog('Lecture du fichier: '+filename);
-
-  JSZip.loadAsync(buffer).then(function(zip){
-    var ssPromise = zip.file('xl/sharedStrings.xml')
-      ? zip.file('xl/sharedStrings.xml').async('string')
-      : Promise.resolve(null);
-    var wsPromise = zip.file('xl/worksheets/sheet1.xml').async('string');
-
-    Promise.all([ssPromise, wsPromise]).then(function(results){
-      var ssXml=results[0], wsXml=results[1];
-
-      // Parser les chaînes partagées
-      var strings=[];
-      if(ssXml){
-        var siMatches=ssXml.match(/<si>([\s\S]*?)<\/si>/g)||[];
-        siMatches.forEach(function(si){
-          var tMatches=si.match(/<t[^>]*>([^<]*)<\/t>/g)||[];
-          strings.push(tMatches.map(function(t){return t.replace(/<[^>]+>/g,'');}).join(''));
-        });
-      }
-
-      // Parser les cellules
-      stockLog('Analyse des cellules\u2026');
-      var stock={};
-      var rowMatches=wsXml.match(/<row[^>]*>([\s\S]*?)<\/row>/g)||[];
-      var firstRow=true;
-
-      rowMatches.forEach(function(rowXml){
-        if(firstRow){firstRow=false;return;} // Ignorer l'entête
-        var cellMatches=rowXml.match(/<c [^>]*>[\s\S]*?<\/c>/g)||[];
-        var vals=[];
-        cellMatches.forEach(function(cellXml){
-          var tAttr=cellXml.match(/t="([^"]+)"/);
-          var vMatch=cellXml.match(/<v>([^<]*)<\/v>/);
-          if(!vMatch){vals.push('');return;}
-          var v=vMatch[1];
-          if(tAttr&&tAttr[1]==='s'){vals.push(strings[parseInt(v)]||'');}
-          else{vals.push(v);}
-        });
-        if(vals.length>=1){
-          var code=(vals[0]||'').trim().toUpperCase();
-          if(code){
-            // Priorité : Nb Colis (col 22), fallback Disponible (col 6) si négatif (rupture)
-            var nbcol = vals.length>22 ? vals[22] : '';
-            var dispo = vals.length>6  ? vals[6]  : '';
-            var nbcolVal = nbcol!=='' ? parseInt(parseFloat(nbcol)) : null;
-            var dispoVal = dispo!=='' ? parseInt(parseFloat(dispo)) : null;
-            var val;
-            if(nbcolVal!==null && !isNaN(nbcolVal)){
-              val = nbcolVal;           // colis disponibles
-            } else if(dispoVal!==null && !isNaN(dispoVal) && dispoVal<0){
-              val = dispoVal;           // rupture (valeur négative)
-            } else {
-              val = null;               // pas de donnée
-            }
-            stock[code]=val;
-          }
-        }
-      });
-
-      var nbCodes=Object.keys(stock).length;
-      stockLog('Codes trouvés: '+nbCodes);
-      _stockData=stock;
-      showStockResult(stock, filename);
-    }).catch(function(e){showToast('\u26a0 Erreur XML: '+e.message);resetStockDropZone();});
-  }).catch(function(e){showToast('\u26a0 Fichier invalide: '+e.message);resetStockDropZone();});
+  try{
+    var XLSX_LIB=typeof XLSX!=='undefined'?XLSX:null;
+    if(!XLSX_LIB){showToast('\u26a0 SheetJS non charg\u00e9');resetStockDropZone();return;}
+    stockLog('Lecture avec SheetJS (.xls et .xlsx support\u00e9s)...');
+    var wb=XLSX_LIB.read(new Uint8Array(buffer),{type:'array'});
+    var ws=wb.Sheets[wb.SheetNames[0]];
+    var data=XLSX_LIB.utils.sheet_to_json(ws,{header:1,defval:''});
+    if(!data||data.length<2){showToast('\u26a0 Fichier vide');resetStockDropZone();return;}
+    stockLog('Analyse des lignes...');
+    var stock={};
+    for(var r=1;r<data.length;r++){
+      var row=data[r];
+      var code=String(row[0]||'').trim().toUpperCase();
+      if(!code)continue;
+      var nbcol=row.length>22?row[22]:'';
+      var dispo =row.length>6 ?row[6] :'';
+      var nbcolVal=nbcol!==''&&nbcol!==null?parseInt(parseFloat(String(nbcol).replace(',','.'))):null;
+      var dispoVal=dispo!==''&&dispo!==null?parseInt(parseFloat(String(dispo).replace(',','.'))):null;
+      var val;
+      if(nbcolVal!==null&&!isNaN(nbcolVal))val=nbcolVal;
+      else if(dispoVal!==null&&!isNaN(dispoVal)&&dispoVal<0)val=dispoVal;
+      else val=null;
+      stock[code]=val;
+    }
+    var nbCodes=Object.keys(stock).length;
+    stockLog('Codes trouv\u00e9s : '+nbCodes);
+    _stockData=stock;
+    showStockResult(stock,filename);
+  }catch(err){
+    showToast('\u26a0 Erreur : '+err.message);
+    resetStockDropZone();
+  }
 }
 
 function showStockResult(stock, filename){
@@ -1333,86 +1298,56 @@ function handlePromoFile(file){
 }
 
 function parsePromoXlsx(buffer,filename){
-  JSZip.loadAsync(buffer).then(function(zip){
-    var ssP=zip.file('xl/sharedStrings.xml')?zip.file('xl/sharedStrings.xml').async('string'):Promise.resolve(null);
-    var wsP=zip.file('xl/worksheets/sheet1.xml').async('string');
-    Promise.all([ssP,wsP]).then(function(res){
-      var ssXml=res[0],wsXml=res[1];
-      // Chaînes partagées
-      var strings=[];
-      if(ssXml){
-        (ssXml.match(/<si>([\s\S]*?)<\/si>/g)||[]).forEach(function(si){
-          strings.push((si.match(/<t[^>]*>([^<]*)<\/t>/g)||[]).map(function(t){return t.replace(/<[^>]+>/g,'');}).join(''));
-        });
-      }
-      // Cellules
-      var rows=(wsXml.match(/<row[^>]*>([\s\S]*?)<\/row>/g)||[]);
-      // Détecter les colonnes à partir de la première ligne (en-tête)
-      var headers=[];
-      var firstRow=rows[0]||'';
-      (firstRow.match(/<c [^>]*>[\s\S]*?<\/c>/g)||[]).forEach(function(cellXml){
-        var tA=cellXml.match(/t="([^"]+)"/);
-        var vM=cellXml.match(/<v>([^<]*)<\/v>/);
-        var val=vM?(tA&&tA[1]==='s'?strings[parseInt(vM[1])]||'':vM[1]):'';
-        headers.push(val.trim().toUpperCase());
-      });
-
-      // Mapping des colonnes (flexible)
-      function colIdx(names){
-        for(var i=0;i<names.length;i++){
-          for(var j=0;j<headers.length;j++){
-            if(headers[j].indexOf(names[i].toUpperCase())>=0) return j;
-          }
-        }
-        return -1;
-      }
-      var iCode   =colIdx(['CODE','REF','RÉFÉRENCE','ARTICLE']);
-      var iLib    =colIdx(['DÉSIGNATION','DESIGNATION','LIBELLÉ','LIBELLE','NOM','PRODUIT']);
-      var iPU     =colIdx(['PU HT','PUHT','PRIX HT','PRIX','TARIF','PU']);
-      var iPCB    =colIdx(['PCB','CONDITIONNEMENT','COND']);
-      var iTVA    =colIdx(['TVA','TAUX TVA']);
-      var iEAN    =colIdx(['EAN','GENCOD','CODE BARRE','BARCODE']);
-      var iOri    =colIdx(['ORIGINE','PAYS']);
-      var iCert   =colIdx(['CERTIF','CERTIFICATION','BIO','LABEL']);
-      var iPoids  =colIdx(['POIDS','POIDS NET','KG','WEIGHT']);
-
-      if(iCode<0||iLib<0||iPU<0){
-        showToast('\u26a0 Colonnes manquantes. Vérifiez : Code, Désignation, PU HT');
-        resetPromoDropZone(); return;
-      }
-
-      var produits=[];
-      for(var r=1;r<rows.length;r++){
-        var cells=(rows[r].match(/<c [^>]*>[\s\S]*?<\/c>/g)||[]);
-        var vals=[];
-        cells.forEach(function(cellXml){
-          var tA=cellXml.match(/t="([^"]+)"/);
-          var vM=cellXml.match(/<v>([^<]*)<\/v>/);
-          vals.push(vM?(tA&&tA[1]==='s'?strings[parseInt(vM[1])]||'':vM[1]):'');
-        });
-        var code=(vals[iCode]||'').trim();
-        var lib =(vals[iLib] ||'').trim();
-        var pu  =parseFloat((vals[iPU]||'').replace(',','.'));
-        if(!code||!lib||isNaN(pu)||pu<=0) continue;
-        produits.push({
-          code:   code,
-          libelle:lib,
-          pu_ht:  pu,
-          pcb:    parseFloat((vals[iPCB]||'1').replace(',','.'))||1,
-          tva:    parseFloat((vals[iTVA]||'5.5').replace(',','.'))||5.5,
-          ean:    vals[iEAN]||'',
-          origine:vals[iOri]||'',
-          certif: vals[iCert]||'',
-          poids:  parseFloat((vals[iPoids]||'0').replace(',','.'))||0,
-          stock:  null
-        });
-      }
-
-      if(!produits.length){ showToast('\u26a0 Aucun produit valide trouvé'); resetPromoDropZone(); return; }
-      _promoProduits=produits;
-      showPromoPreview(produits,filename);
-    }).catch(function(e){showToast('\u26a0 Erreur XML: '+e.message);resetPromoDropZone();});
-  }).catch(function(e){showToast('\u26a0 Fichier invalide: '+e.message);resetPromoDropZone();});
+  try{
+    var XLSX_LIB=typeof XLSX!=='undefined'?XLSX:null;
+    if(!XLSX_LIB){showToast('\u26a0 SheetJS non charg\u00e9');resetPromoDropZone();return;}
+    var wb=XLSX_LIB.read(new Uint8Array(buffer),{type:'array'});
+    var ws=wb.Sheets[wb.SheetNames[0]];
+    var data=XLSX_LIB.utils.sheet_to_json(ws,{header:1,defval:''});
+    if(!data||data.length<2){showToast('\u26a0 Fichier vide ou illisible');resetPromoDropZone();return;}
+    var headers=data[0].map(function(h){return String(h||'').trim().toUpperCase();});
+    function colIdx(names){
+      for(var i=0;i<names.length;i++)
+        for(var j=0;j<headers.length;j++)
+          if(headers[j].indexOf(names[i].toUpperCase())>=0)return j;
+      return -1;
+    }
+    var iCode=colIdx(['CODE','REF','R\u00c9F\u00c9RENCE','ARTICLE']);
+    var iLib =colIdx(['D\u00c9SIGNATION','DESIGNATION','LIBELL\u00c9','LIBELLE','NOM','PRODUIT']);
+    var iPU  =colIdx(['PU HT','PUHT','PRIX HT','PRIX','TARIF','PU']);
+    var iPCB =colIdx(['PCB','CONDITIONNEMENT','COND']);
+    var iTVA =colIdx(['TVA','TAUX']);
+    var iEAN =colIdx(['EAN','GENCOD','CODE BARRE','BARCODE']);
+    var iOri =colIdx(['ORIGINE','PAYS']);
+    var iCert=colIdx(['CERTIF','CERTIFICATION','BIO','LABEL']);
+    var iPoid=colIdx(['POIDS','KG','WEIGHT']);
+    if(iCode<0||iLib<0||iPU<0){
+      showToast('\u26a0 Colonnes manquantes (Code, D\u00e9signation, PU HT).\n\nEn-t\u00eates d\u00e9tect\u00e9s : '+headers.filter(Boolean).join(', '));
+      resetPromoDropZone();return;
+    }
+    var produits=[];
+    for(var r=1;r<data.length;r++){
+      var row=data[r];
+      var code=String(row[iCode]||'').trim();
+      var lib =String(row[iLib] ||'').trim();
+      var pu  =parseFloat(String(row[iPU]||'').replace(',','.'));
+      if(!code||!lib||isNaN(pu)||pu<=0)continue;
+      produits.push({code:code,libelle:lib,pu_ht:Math.round(pu*10000)/10000,
+        pcb:   parseFloat(String(iPCB>=0?row[iPCB]||1:1).replace(',','.'))||1,
+        tva:   parseFloat(String(iTVA>=0?row[iTVA]||5.5:5.5).replace(',','.'))||5.5,
+        ean:   iEAN>=0?String(row[iEAN]||''):'',
+        origine:iOri>=0?String(row[iOri]||''):'',
+        certif:iCert>=0?String(row[iCert]||''):'',
+        poids: parseFloat(String(iPoid>=0?row[iPoid]||0:0).replace(',','.'))||0,
+        stock:null});
+    }
+    if(!produits.length){showToast('\u26a0 Aucun produit valide trouv\u00e9');resetPromoDropZone();return;}
+    _promoProduits=produits;
+    showPromoPreview(produits,filename);
+  }catch(err){
+    showToast('\u26a0 Erreur lecture : '+err.message);
+    resetPromoDropZone();
+  }
 }
 
 function showPromoPreview(produits,filename){

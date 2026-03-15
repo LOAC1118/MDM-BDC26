@@ -546,6 +546,19 @@ table{font-size:11px}
       </div>
     </div>
 
+    <div class="modal-section" id="section-theme"><div class="modal-section-title">&#127912; Th&#232;me couleur</div>
+      <div class="fg">
+        <div style="font-size:10px;color:#b09080;margin-bottom:8px">Apparence de la page de commande pour ce compte</div>
+        <div class="palette-grid" id="palette-grid"></div>
+        <div class="color-custom-row">
+          <label>Principal</label><input type="color" id="f-theme-brown" title="Couleur principale" oninput="onCustomColor()">
+          <label>Accent</label><input type="color" id="f-theme-terra" title="Couleur accent" oninput="onCustomColor()">
+          <label>Fond</label><input type="color" id="f-theme-cream" title="Couleur fond" oninput="onCustomColor()">
+          <label>Or</label><input type="color" id="f-theme-gold" title="Couleur or" oninput="onCustomColor()">
+        </div>
+      </div>
+    </div>
+
     <div class="modal-section"><div class="modal-section-title">&#128203; Notes internes</div>
       <div class="fg"><textarea id="f-notes" placeholder="Informations compl&#233;mentaires&#8230;"></textarea></div>
     </div>
@@ -888,6 +901,7 @@ function openModal(idx){
     document.getElementById("f-groupement").value = c.groupement||"";
     document.getElementById("f-login").disabled   = true;
     if(c.role==="client"){populateCommercialSelect();var fco=document.getElementById("f-commercial");if(fco)fco.value=c.commercial||"";}
+    initThemeSection(c);
     updateRemiseChips(c.remise||0);
     var rl=document.getElementById("f-remise-libre");if(rl)rl.value=c.remise||"";
     onRoleChange();
@@ -900,6 +914,7 @@ function openModal(idx){
     document.getElementById("f-remise").value     = "0";
     ["f-email","f-tel","f-ville","f-cp","f-numclient","f-notes","f-groupement"].forEach(function(id){var el=document.getElementById(id);if(el)el.value="";});
     var fco=document.getElementById("f-commercial");if(fco)fco.value="";
+    initThemeSection({role:"client"});
     document.getElementById("f-region").value=""; document.getElementById("f-login").disabled=false;
     updateRemiseChips(0); var rl=document.getElementById("f-remise-libre");if(rl)rl.value="";
     var iF=document.getElementById("import-form");if(iF)iF.style.display="none";
@@ -955,7 +970,7 @@ function saveCompte(){
       return;
     }
     var fe=document.getElementById("f-email").value.trim(),ft=document.getElementById("f-tel").value.trim(),fv=document.getElementById("f-ville").value.trim(),fc=document.getElementById("f-cp").value.trim(),fr=document.getElementById("f-region").value,fn=document.getElementById("f-numclient").value.trim(),fno=document.getElementById("f-notes").value.trim(),fg=document.getElementById("f-groupement").value.trim();
-    comptes.push({login:login,password:password,nom:nom,role:role,remise:remise,email:fe,tel:ft,ville:fv,cp:fc,region:fr,numclient:fn,notes:fno,groupement:fg});
+    var _th=getThemeFromForm();comptes.push({login:login,password:password,nom:nom,role:role,remise:remise,email:fe,tel:ft,ville:fv,cp:fc,region:fr,numclient:fn,notes:fno,groupement:fg,commercial:(document.getElementById("f-commercial")?document.getElementById("f-commercial").value:""),theme_brown:_th.theme_brown,theme_terra:_th.theme_terra,theme_cream:_th.theme_cream,theme_gold:_th.theme_gold});
     showToast("\u2705 Compte cr\u00e9\u00e9 : "+login);
   } else {
     comptes[editIndex].password=password;comptes[editIndex].nom=nom;comptes[editIndex].role=role;comptes[editIndex].remise=remise;
@@ -963,6 +978,8 @@ function saveCompte(){
     comptes[editIndex].ville=document.getElementById("f-ville").value.trim();comptes[editIndex].cp=document.getElementById("f-cp").value.trim();
     comptes[editIndex].region=document.getElementById("f-region").value;comptes[editIndex].numclient=document.getElementById("f-numclient").value.trim();
     comptes[editIndex].notes=document.getElementById("f-notes").value.trim();comptes[editIndex].groupement=document.getElementById("f-groupement").value.trim();
+    comptes[editIndex].commercial=document.getElementById("f-commercial")?document.getElementById("f-commercial").value:"";
+    var _th=getThemeFromForm();comptes[editIndex].theme_brown=_th.theme_brown;comptes[editIndex].theme_terra=_th.theme_terra;comptes[editIndex].theme_cream=_th.theme_cream;comptes[editIndex].theme_gold=_th.theme_gold;
     showToast("\u2705 Compte modifi\u00e9 : "+comptes[editIndex].login);
   }
 
@@ -1625,6 +1642,48 @@ function cancelPromo(){
   document.getElementById('promo-log').textContent='';
   document.getElementById('promo-status').innerHTML='';
 }
+
+
+// ============================================================
+// THÈME COULEUR PAR COMPTE
+// ============================================================
+var PALETTES_THEME=[
+  {name:'Brun MDM',     brown:'#78503C',terra:'#C87864',cream:'#FDF5EE',gold:'#D2B469'},
+  {name:'Bleu ardoise', brown:'#2C4A6E',terra:'#4A7FA5',cream:'#F0F4F8',gold:'#C8A84B'},
+  {name:'Vert for\u00eat',brown:'#1A4731',terra:'#2D8A57',cream:'#F0FBF4',gold:'#C8A84B'},
+  {name:'Bordeaux',     brown:'#6B1F3A',terra:'#A03060',cream:'#FDF0F4',gold:'#D4A046'},
+  {name:'Ardoise',      brown:'#2D3748',terra:'#5A67D8',cream:'#F7FAFC',gold:'#ECC94B'},
+  {name:'Terracotta',   brown:'#7B3F2E',terra:'#C0622B',cream:'#FDF5F0',gold:'#D4A84B'},
+  {name:'Violet',       brown:'#4A235A',terra:'#8B5CF6',cream:'#FAF5FF',gold:'#D4A84B'},
+  {name:'Anthracite',   brown:'#374151',terra:'#6B7280',cream:'#F9FAFB',gold:'#D4A84B'}
+];
+var ROLE_THEMES_DEF={
+  client:{brown:'#78503C',terra:'#C87864',cream:'#FDF5EE',gold:'#D2B469'},
+  user:  {brown:'#2C4A6E',terra:'#4A7FA5',cream:'#F0F4F8',gold:'#C8A84B'},
+  admin: {brown:'#2D3748',terra:'#5A67D8',cream:'#F7FAFC',gold:'#ECC94B'}
+};
+var _activePalIdx=-1;
+function buildPaletteGrid(){
+  var g=document.getElementById('palette-grid');if(!g)return;g.innerHTML='';
+  PALETTES_THEME.forEach(function(p,i){
+    var d=document.createElement('div');d.className='palette-swatch'+(_activePalIdx===i?' active':'');
+    d.onclick=function(){selectPalette(i);};
+    d.innerHTML='<div class="swatch-colors"><div class="swatch-dot" style="background:'+p.brown+'"></div><div class="swatch-dot" style="background:'+p.terra+'"></div><div class="swatch-dot" style="background:'+p.cream+';border:1px solid #ccc"></div><div class="swatch-dot" style="background:'+p.gold+'"></div></div><div class="swatch-name">'+p.name+'</div>';
+    g.appendChild(d);
+  });
+}
+function selectPalette(i){_activePalIdx=i;var p=PALETTES_THEME[i];document.getElementById('f-theme-brown').value=p.brown;document.getElementById('f-theme-terra').value=p.terra;document.getElementById('f-theme-cream').value=p.cream;document.getElementById('f-theme-gold').value=p.gold;buildPaletteGrid();}
+function onCustomColor(){_activePalIdx=-1;buildPaletteGrid();}
+function initThemeSection(compte){
+  buildPaletteGrid();
+  var role=(compte&&compte.role)||'client';var def=ROLE_THEMES_DEF[role]||ROLE_THEMES_DEF.client;
+  var brown=compte&&compte.theme_brown?compte.theme_brown:def.brown;var terra=compte&&compte.theme_terra?compte.theme_terra:def.terra;
+  var cream=compte&&compte.theme_cream?compte.theme_cream:def.cream;var gold=compte&&compte.theme_gold?compte.theme_gold:def.gold;
+  document.getElementById('f-theme-brown').value=brown;document.getElementById('f-theme-terra').value=terra;
+  document.getElementById('f-theme-cream').value=cream;document.getElementById('f-theme-gold').value=gold;
+  _activePalIdx=-1;PALETTES_THEME.forEach(function(p,i){if(p.brown===brown&&p.terra===terra)_activePalIdx=i;});buildPaletteGrid();
+}
+function getThemeFromForm(){return{theme_brown:document.getElementById('f-theme-brown').value,theme_terra:document.getElementById('f-theme-terra').value,theme_cream:document.getElementById('f-theme-cream').value,theme_gold:document.getElementById('f-theme-gold').value};}
 
 </script>
 </body>

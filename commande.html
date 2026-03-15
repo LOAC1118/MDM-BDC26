@@ -142,7 +142,10 @@ tbody tr.has-qty td.td-qty input{background:#ffe0b2;border-color:var(--terra)}
     <div class="header-subtitle">Bon de Commande 2026 &nbsp;&middot;&nbsp; Tarif HT France</div>
   </div>
   <div class="header-actions">
-    <span style="font-size:11px;opacity:.7;margin-right:4px">&#128100; <span id="user-info"></span></span>
+    <span style="font-size:11px;opacity:.7;margin-right:4px;display:flex;flex-direction:column;align-items:flex-end;gap:2px">
+      <span>&#128100; <span id="user-info"></span></span>
+      <span id="commercial-info" style="display:none;font-size:10px;opacity:.8;color:var(--gold)">&#128188; <span id="commercial-name"></span></span>
+    </span>
     <button class="btn btn-outline no-print" id="btn-admin" onclick="window.location.href='admin.html'" style="display:none;border-color:rgba(210,180,105,.6);color:#ffd580">&#9881; Admin</button>
     <button class="btn btn-outline no-print" onclick="openHistoryModal()" style="border-color:rgba(210,180,105,.5);color:#ffd580">&#128203; Mes commandes</button>
     <button class="btn btn-outline no-print" onclick="doPrint()">&#128424; PDF / Imprimer</button>
@@ -297,6 +300,22 @@ tbody tr.has-qty td.td-qty input{background:#ffe0b2;border-color:var(--terra)}
       window._userName  = data.nom  || data.login || "";
       window._userLogin      = data.login      || "guest";
       window._userCommercial = data.commercial  || "";
+
+      // Afficher le commercial référent si compte client
+      if(data.role === "client" && data.commercial){
+        try{
+          var allComptes = JSON.parse(localStorage.getItem("mdm_comptes") || "[]");
+          var co = allComptes.find(function(x){ return x.login === data.commercial; });
+          if(co){
+            var coInfo = document.getElementById("commercial-info");
+            var coName = document.getElementById("commercial-name");
+            if(coInfo && coName){
+              coName.textContent = "Votre commercial\u00a0: " + co.nom;
+              coInfo.style.display = "inline";
+            }
+          }
+        }catch(e){}
+      }
       // Pré-remplir automatiquement les champs du formulaire depuis les données du compte
       function prefill(id, val){ var el=document.getElementById(id); if(el && val) el.value = val; }
 

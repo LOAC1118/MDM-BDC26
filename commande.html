@@ -251,7 +251,7 @@ tbody tr.has-qty td.td-qty input{background:#ffe0b2;border-color:var(--terra)}
 <!-- MODAL HISTORIQUE -->
 <div class="modal-bg" id="modal-history" onclick="if(event.target===this)closeHistoryModal()">
   <div class="modal-history">
-    <h2>&#128203; Mes commandes</h2>
+    <h2 id="history-modal-title">&#128203; Mes commandes</h2>
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:16px">
       <span style="font-size:12px;color:#888">Historique des commandes envoy&#233;es depuis ce navigateur</span>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -481,6 +481,7 @@ function fbDeleteInscription(id) {
       window._destEmail = data.email || "cspoto@moulindesmoines.com";
       window._userName  = data.nom  || data.login || "";
       window._userLogin      = data.login      || "guest";
+      window._userRole       = data.role       || "client";
       window._userCommercial = data.commercial  || "";
       window._franco = parseFloat(data.franco) || 0;
       remisesProduitsMap = {};
@@ -956,22 +957,104 @@ function reorderFromHistory(idx){
 }
 function openHistoryModal(){
   document.getElementById("modal-history").classList.add("open");
-  // Afficher localStorage immédiatement
-  renderHistory();
-  // Charger Firebase en arrière-plan et fusionner
-  var login=(window._userLogin||"guest").replace(/[^a-zA-Z0-9_-]/g,"_");
-  fbLoadHistory(login).then(function(fbOrders){
-    if(!fbOrders || !fbOrders.length) return;
-    // Fusionner FB + localStorage (dédoublonner par id)
-    var local=[];
-    try{local=JSON.parse(localStorage.getItem("mdm_history_"+login))||[];}catch(e){}
-    var ids={}; local.forEach(function(o){ids[o.id]=true;});
-    fbOrders.forEach(function(o){if(!ids[o.id]){local.push(o);ids[o.id]=true;}});
-    local.sort(function(a,b){return (b.id||0)-(a.id||0);});
-    if(local.length>50) local=local.slice(0,50);
-    localStorage.setItem("mdm_history_"+login,JSON.stringify(local));
-    renderHistory(); // Re-afficher avec les données complètes
-  }).catch(function(){});
+  var role  = window._userRole  || "client";
+  var login = (window._userLogin||"guest").replace(/[^a-zA-Z0-9_-]/g,"_");
+  if(role==="user"){
+    _openHistoryCommercial(login);
+  } else {
+    var titre=document.getElementById("history-modal-title");
+    if(titre) titre.textContent="&#128203; Mes commandes";
+    renderHistory();
+    fbLoadHistory(login).then(function(fbOrders){
+      if(!fbOrders||!fbOrders.length) return;
+      var local=[];
+      try{local=JSON.parse(localStorage.getItem("mdm_history_"+login))||[];}catch(e){}
+      var ids={}; local.forEach(function(o){ids[o.id]=true;});
+      fbOrders.forEach(function(o){if(!ids[o.id]){local.push(o);ids[o.id]=true;}});
+      local.sort(function(a,b){return (b.id||0)-(a.id||0);});
+      if(local.length>50) local=local.slice(0,50);
+      localStorage.setItem("mdm_history_"+login,JSON.stringify(local));
+      renderHistory();
+    }).catch(function(){});
+  }
+}
+
+function _openHistoryCommercial(commercialLogin){
+  var titre=document.getElementById("history-modal-title");
+  if(titre) titre.textContent="&#128203; Mes commandes & clients";
+  var container=document.getElementById("history-container");
+  if(container) container.innerHTML='<div style="text-align:center;padding:20px;color:#b0988a;font-size:12px">&#8987; Chargement&#8230;</div>';
+  var allComptes=[];
+  try{allComptes=JSON.parse(localStorage.getItem("mdm_comptes")||"[]");}catch(e){}
+  var clients=allComptes.filter(function(co){ return co.role==="client"&&co.commercial===commercialLogin; });
+  var logins=[commercialLogin].concat(clients.map(function(co){ return co.login.replace(/[^a-zA-Z0-9_-]/g,"_"); }));
+  var promises=logins.map(function(lg){
+    return fbLoadHistory(lg).then(function(orders){
+      return (orders||[]).map(function(o){ return Object.assign({},o,{_compte:lg}); });
+    }).catch(function(){
+      var local=[];
+      try{local=JSON.parse(localStorage.getItem("mdm_history_"+lg))||[];}catch(e){}
+      return local.map(function(o){ return Object.assign({},o,{_compte:lg}); });
+    });
+  });
+  Promise.all(promises).then(function(arrays){
+    var all=[].concat.apply([],arrays);
+    var ids={};
+    all=all.filter(function(o){if(ids[o.id])return false;ids[o.id]=true;return true;});
+    all.sort(function(a,b){return (b.id||0)-(a.id||0);});
+    _renderHistoryCommercial(all,clients,commercialLogin);
+  });
+}
+
+function _renderHistoryCommercial(orders,clients,commercialLogin){
+  var container=document.getElementById("history-container");
+  if(!container) return;
+  if(!orders.length){
+    container.innerHTML='<div style="text-align:center;padding:40px;color:#b0988a;font-size:13px">Aucune commande enregistr&#233;e.</div>';
+    return;
+  }
+  var totalNet=orders.reduce(function(s,o){return s+(o.totalNet||0);},0);
+  var html='<div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap">'
+    +'<div style="background:var(--cream);border-radius:8px;padding:8px 14px;font-size:12px"><span style="color:#888">Commandes&#160;:</span> <strong>'+orders.length+'</strong></div>'
+    +'<div style="background:var(--cream);border-radius:8px;padding:8px 14px;font-size:12px"><span style="color:#888">Clients suivis&#160;:</span> <strong>'+clients.length+'</strong></div>'
+    +'<div style="background:var(--cream);border-radius:8px;padding:8px 14px;font-size:12px"><span style="color:#888">Total HT&#160;:</span> <strong style="color:var(--terra)">'+fmt2(totalNet)+'</strong></div>'
+    +'</div>';
+  orders.forEach(function(o){
+    var isClient=o._compte!==commercialLogin;
+    var date=o.date?String(o.date).split(" ")[0]:"?";
+    var tn=typeof o.totalNet==="number"?fmt2(o.totalNet):"&#8212;";
+    html+='<div style="border:1px solid #e8d8cc;border-radius:10px;margin-bottom:10px;overflow:hidden">';
+    html+='<div style="background:var(--brown);color:#fff;padding:9px 14px;display:flex;align-items:center;'
+      +'justify-content:space-between;flex-wrap:wrap;gap:6px;cursor:pointer" onclick="_toggleHistItem(this)">';
+    html+='<div style="display:flex;align-items:center;gap:8px">';
+    if(isClient){
+      html+='<span style="background:var(--gold);color:var(--brown);font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px">&#127978; '+escHtml(o.magasin||o._compte)+'</span>';
+    } else {
+      html+='<span style="font-size:12px;font-weight:600">'+escHtml(o.magasin||"Ma commande")+'</span>';
+    }
+    html+='<span style="font-size:11px;opacity:.7">'+date+'</span></div>';
+    html+='<span style="font-size:13px;font-weight:700;color:var(--gold)">'+tn+'</span>';
+    html+='</div>';
+    html+='<div style="display:none;padding:10px 14px">';
+    if(o.articles&&o.articles.length){
+      html+='<table style="width:100%;border-collapse:collapse;font-size:11px"><thead><tr style="background:var(--cream)">'
+        +'<th style="padding:4px 8px;text-align:left">Code</th><th style="padding:4px 8px;text-align:left">D&#233;signation</th>'
+        +'<th style="padding:4px 8px;text-align:center">Qt&#233;</th><th style="padding:4px 8px;text-align:right">Total HT</th>'
+        +'</tr></thead><tbody>';
+      o.articles.forEach(function(a,ai){
+        html+='<tr style="'+(ai%2?'background:#fdfaf7':'')+'">'
+          +'<td style="padding:3px 8px;font-family:monospace;color:var(--brown)">'+escHtml(a.code||"")+'</td>'
+          +'<td style="padding:3px 8px">'+escHtml(a.libelle||"")+'</td>'
+          +'<td style="padding:3px 8px;text-align:center">'+a.qty+'</td>'
+          +'<td style="padding:3px 8px;text-align:right;font-weight:600;color:var(--terra)">'+(typeof a.totalHT==="number"?fmt2(a.totalHT):"&#8212;")+'</td></tr>';
+      });
+      html+='</tbody></table>';
+    } else {
+      html+='<div style="color:#ccc;font-size:12px;text-align:center;padding:8px">D&#233;tail non disponible</div>';
+    }
+    html+='</div></div>';
+  });
+  container.innerHTML=html;
 }
 function closeHistoryModal(){document.getElementById("modal-history").classList.remove("open");}
 
@@ -1617,6 +1700,8 @@ function updateFranco(){
   }
 }
 
+
+function _toggleHistItem(el){var b=el.nextElementSibling;if(b)b.style.display=b.style.display==='none'?'block':'none';}
 </script>
 </body>
 </html>

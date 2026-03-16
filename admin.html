@@ -2540,8 +2540,26 @@ function parseGrpRpXlsx(buffer){
   var ws=wb.Sheets[wb.SheetNames[0]];
   var data=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
   if(!data||data.length<2){showToast('\u26a0 Fichier vide');return;}
-  var headers=data[0].map(function(h){return String(h||'').trim().toUpperCase();});
-  // Détection stricte : chercher correspondance exacte d'abord, puis partielle
+
+  // Détecter automatiquement la ligne d'en-têtes
+  // (chercher la première ligne contenant CODE ou REF ou LIBELLE)
+  var headerRow = 0;
+  for(var r=0;r<Math.min(data.length,10);r++){
+    var rowUp=data[r].map(function(h){return String(h||'').trim().toUpperCase();});
+    if(rowUp.some(function(h){return h==='CODE'||h==='REF'||h==='LIBELLE'||h==='LIBELLÉ'||h.indexOf('CODE')===0;})){
+      headerRow=r; break;
+    }
+  }
+  var headers=data[headerRow].map(function(h){return String(h||'').trim().toUpperCase();});
+  var dataStart=headerRow+1;
+  // Sauter les lignes de notes (lignes où la première cellule non vide contient "optionnel" ou "obligatoire")
+  while(dataStart<data.length){
+    var firstCell=String(data[dataStart][0]||'').trim().toLowerCase();
+    if(firstCell==='obligatoire'||firstCell==='optionnel'||firstCell==='requis') dataStart++;
+    else break;
+  }
+
+  // Détection stricte des colonnes
   function ci(exacts, partials){
     for(var i=0;i<exacts.length;i++)
       for(var j=0;j<headers.length;j++)
@@ -2551,14 +2569,14 @@ function parseGrpRpXlsx(buffer){
         if(headers[j].indexOf(partials[i])>=0) return j;
     return -1;
   }
-  var iCode = ci(['CODE','REF'],         ['CODE','REF']);
-  var iLib  = ci(['LIBELLE','DESIGNATION','NOM'],['LIB','DESIG','NOM']);
+  var iCode = ci(['CODE','REF'],['CODE','REF']);
+  var iLib  = ci(['LIBELLE','LIBELLÉ','DESIGNATION','DÉSIGNATION','NOM'],['LIB','DESIG','NOM']);
   var iCat  = ci(['CATEGORIE','CATÉGORIE'],['CAT']);
   var iRem  = ci(['REMISE','REMISE %','TAUX REMISE'],['REMISE','TAUX']);
-  var iPrix = ci(['PRIX HT','PU HT','PRIX SPECIAL','TARIF HT'],['PRIX','TARIF']);
+  var iPrix = ci(['PRIX HT','PU HT','PRIX SPECIAL','PRIX SPÉCIAL','TARIF HT'],['PRIX','TARIF']);
   var iEan  = ci(['EAN','GENCOD','BARCODE'],['EAN','GENCOD']);
   var rows=[];
-  for(var r=1;r<data.length;r++){
+  for(var r=dataStart;r<data.length;r++){
     var row=data[r];
     var code=String(iCode>=0?row[iCode]:'').trim();
     if(!code)continue;

@@ -135,6 +135,23 @@ tbody tr.has-qty td.td-qty input{background:#ffe0b2;border-color:var(--terra)}
 
 
 
+
+/* Modal nouveau client commercial */
+#modal-new-client{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:300;align-items:center;justify-content:center}
+#modal-new-client.open{display:flex}
+.modal-nc{background:#fff;border-radius:14px;padding:28px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;font-family:"Outfit",sans-serif;box-shadow:0 8px 40px rgba(0,0,0,.2)}
+.modal-nc h3{font-size:16px;font-weight:700;color:var(--brown);margin-bottom:18px}
+.nc-fg{margin-bottom:13px}
+.nc-fg label{display:block;font-size:10px;font-weight:700;color:var(--brown);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px}
+.nc-fg input,.nc-fg select{width:100%;padding:9px 12px;border:1.5px solid #e0d0c4;border-radius:7px;font-family:"Outfit",sans-serif;font-size:13px;outline:none}
+.nc-fg input:focus,.nc-fg select:focus{border-color:var(--terra)}
+.nc-row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.nc-alert{padding:8px 12px;border-radius:6px;font-size:12px;margin-bottom:12px;display:none}
+.nc-alert.err{background:#fdecea;color:#c62828}
+.nc-alert.ok{background:#e8f5e9;color:#1a5c2e}
+.nc-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:8px}
+.btn-nc-cancel{background:#f0e4da;color:var(--brown);border:none;padding:9px 18px;border-radius:7px;font-family:"Outfit",sans-serif;font-weight:600;cursor:pointer;font-size:13px}
+.btn-nc-save{background:var(--terra);color:#fff;border:none;padding:9px 18px;border-radius:7px;font-family:"Outfit",sans-serif;font-weight:600;cursor:pointer;font-size:13px}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
@@ -160,6 +177,7 @@ tbody tr.has-qty td.td-qty input{background:#ffe0b2;border-color:var(--terra)}
     </span>
     <button class="btn btn-outline no-print" id="btn-admin" onclick="window.location.href='admin.html'" style="display:none;border-color:rgba(210,180,105,.6);color:#ffd580">&#9881; Admin</button>
     <button class="btn btn-outline no-print" id="btn-dashboard" onclick="window.location.href='dashboard.html'" style="display:none;border-color:rgba(255,255,255,.35);color:#fff">&#127968; Tableau de bord</button>
+    <button class="btn btn-outline no-print" id="btn-new-client" onclick="openNewClientModal()" style="display:none;border-color:rgba(160,220,255,.5);color:#c0eaff">&#43; Nouveau client</button>
     <button class="btn btn-outline no-print" onclick="openHistoryModal()" style="border-color:rgba(210,180,105,.5);color:#ffd580">&#128203; Mes commandes</button>
     <button class="btn btn-outline no-print" onclick="doPrint()">&#128424; PDF / Imprimer</button>
     <button class="btn btn-outline no-print" onclick="exportExcel()" style="border-color:rgba(80,200,120,.5);color:#a0f0b0">&#128202; Export Excel</button>
@@ -551,6 +569,8 @@ function fbDeleteInscription(id) {
       var btnDB=document.getElementById("btn-dashboard");
       if(btnDB) btnDB.style.display="inline-flex";
       if(data.role === "user"){
+        var btnNC=document.getElementById("btn-new-client");
+        if(btnNC) btnNC.style.display="inline-flex";
       }
       if(data.role === "client"){
       }
@@ -1723,6 +1743,156 @@ function updateFranco(){
 
 
 
+
+// ── Création compte client par commercial ─────────────────────
+function openNewClientModal(){
+  ['nc-nom','nc-email','nc-login','nc-password','nc-tel','nc-ville','nc-cp'].forEach(function(id){
+    var el=document.getElementById(id);if(el)el.value='';
+  });
+  document.getElementById('nc-remise').value='0';
+  var al=document.getElementById('nc-alert');if(al){al.style.display='none';al.className='nc-alert';}
+
+  // Remplir select groupements
+  var sel=document.getElementById('nc-groupement');
+  if(sel){
+    sel.innerHTML='<option value="">— Aucun —</option>';
+    var gl=[];try{gl=JSON.parse(localStorage.getItem('mdm_groupements')||'[]');}catch(e){}
+    gl.forEach(function(g){
+      var o=document.createElement('option');
+      o.value=g.nom;
+      o.textContent=g.nom+(g.remise>0?' ('+g.remise+'%)':'');
+      sel.appendChild(o);
+    });
+  }
+  document.getElementById('modal-new-client').classList.add('open');
+}
+
+function closeNewClientModal(){
+  document.getElementById('modal-new-client').classList.remove('open');
+}
+
+function ncGenPassword(){
+  var ch='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789@#!';
+  var p='';for(var i=0;i<10;i++)p+=ch[Math.floor(Math.random()*ch.length)];
+  var el=document.getElementById('nc-password');if(el)el.value=p;
+}
+
+function ncOnGroupementChange(){
+  var sel=document.getElementById('nc-groupement');
+  if(!sel||!sel.value)return;
+  var gl=[];try{gl=JSON.parse(localStorage.getItem('mdm_groupements')||'[]');}catch(e){}
+  var g=gl.find(function(x){return x.nom===sel.value;});
+  if(g&&g.remise>0){var r=document.getElementById('nc-remise');if(r)r.value=g.remise;}
+}
+
+function saveNewClient(){
+  var nom   =(document.getElementById('nc-nom').value||'').trim();
+  var email =(document.getElementById('nc-email').value||'').trim();
+  var login =(document.getElementById('nc-login').value||'').trim().toLowerCase().replace(/\s+/g,'_');
+  var pwd   =(document.getElementById('nc-password').value||'').trim();
+  var tel   =(document.getElementById('nc-tel').value||'').trim();
+  var ville =(document.getElementById('nc-ville').value||'').trim();
+  var cp    =(document.getElementById('nc-cp').value||'').trim();
+  var remise=parseFloat(document.getElementById('nc-remise').value)||0;
+  var grpNom=document.getElementById('nc-groupement').value||'';
+  var sendMail=document.getElementById('nc-send-email').checked;
+
+  var al=document.getElementById('nc-alert');
+  function err(msg){al.textContent=msg;al.className='nc-alert err';al.style.display='block';}
+
+  if(!nom||!email||!login||!pwd){err('Champs obligatoires manquants.');return;}
+  if(pwd.length<6){err('Mot de passe trop court (min. 6 caractères).');return;}
+
+  var comptes=[];
+  try{comptes=JSON.parse(localStorage.getItem('mdm_comptes')||'[]');}catch(e){}
+  if(comptes.find(function(c){return c.login===login;})){err('Ce login existe déjà.');return;}
+
+  // Récupérer franco et grp_remises du groupement
+  var grpRemises=[]; var franco=0;
+  if(grpNom){
+    var gl=[];try{gl=JSON.parse(localStorage.getItem('mdm_groupements')||'[]');}catch(e){}
+    var g=gl.find(function(x){return x.nom===grpNom;});
+    if(g){
+      if(g.remises_produits&&g.remises_produits.length)grpRemises=JSON.parse(JSON.stringify(g.remises_produits));
+      if(g.franco>0)franco=g.franco;
+    }
+  }
+
+  var nc={
+    login:login,password:pwd,nom:nom,role:'client',
+    remise:remise,email:email,tel:tel,ville:ville,cp:cp,
+    commercial:window._userLogin||'',
+    groupement:grpNom,grp_remises:grpRemises,franco:franco
+  };
+
+  comptes.push(nc);
+  localStorage.setItem('mdm_comptes',JSON.stringify(comptes));
+  if(typeof fbSaveCompte==='function') fbSaveCompte(nc).catch(function(){});
+
+  if(sendMail&&email){
+    var url='https://loac1118.github.io/MDM-BDC26/index.html';
+    fetch('https://formsubmit.co/ajax/cspoto@moulindesmoines.com',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Accept':'application/json'},
+      body:JSON.stringify({
+        _subject:'Vos accès Bon de Commande MDM 2026 — '+nom,
+        _captcha:'false',_template:'box',_cc:email,
+        message:'Bonjour '+nom+',\n\nVoici vos identifiants de connexion au bon de commande Moulin des Moines 2026.\n\n\u25b6 Login : '+login+'\n\u25b6 Mot de passe : '+pwd+'\n\n\u25b6 Connexion : '+url+'\n\nCordialement,\nMoulin des Moines'
+      })
+    }).catch(function(){});
+  }
+
+  al.textContent='\u2705 Compte créé !'+(sendMail?' Accès envoyés par email.':'');
+  al.className='nc-alert ok';al.style.display='block';
+  setTimeout(closeNewClientModal,2000);
+}
+
 </script>
+
+<div id="modal-new-client" onclick="if(event.target===this)closeNewClientModal()">
+  <div class="modal-nc">
+    <h3>&#43; Nouveau compte client</h3>
+    <div class="nc-alert" id="nc-alert"></div>
+    <div class="nc-row2">
+      <div class="nc-fg"><label>Nom magasin <span style="color:var(--terra)">*</span></label>
+        <input type="text" id="nc-nom" placeholder="Bio Village"></div>
+      <div class="nc-fg"><label>Email <span style="color:var(--terra)">*</span></label>
+        <input type="email" id="nc-email" placeholder="contact@bio.fr"></div>
+    </div>
+    <div class="nc-row2">
+      <div class="nc-fg"><label>Login <span style="color:var(--terra)">*</span></label>
+        <input type="text" id="nc-login" placeholder="biovillage" autocomplete="off"></div>
+      <div class="nc-fg"><label>Mot de passe <span style="color:var(--terra)">*</span></label>
+        <div style="display:flex;gap:6px">
+          <input type="text" id="nc-password" placeholder="Min. 6 car." autocomplete="off" style="flex:1">
+          <button type="button" onclick="ncGenPassword()" style="padding:9px 10px;background:var(--cream);border:1.5px solid #e0d0c4;border-radius:7px;cursor:pointer;font-size:12px">&#9881;</button>
+        </div></div>
+    </div>
+    <div class="nc-row2">
+      <div class="nc-fg"><label>T&#233;l&#233;phone</label>
+        <input type="tel" id="nc-tel" placeholder="06 12 34 56 78"></div>
+      <div class="nc-fg"><label>Groupement</label>
+        <select id="nc-groupement" onchange="ncOnGroupementChange()">
+          <option value="">— Aucun —</option>
+        </select></div>
+    </div>
+    <div class="nc-row2">
+      <div class="nc-fg"><label>Ville</label>
+        <input type="text" id="nc-ville" placeholder="Strasbourg"></div>
+      <div class="nc-fg"><label>Code postal</label>
+        <input type="text" id="nc-cp" placeholder="67000"></div>
+    </div>
+    <div class="nc-fg"><label>Remise (%)</label>
+      <input type="number" id="nc-remise" value="0" min="0" max="99" step="0.5"></div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+      <input type="checkbox" id="nc-send-email" checked style="width:auto;margin:0">
+      <label for="nc-send-email" style="font-size:12px;color:#888;cursor:pointer">Envoyer les acc&#232;s par email</label>
+    </div>
+    <div class="nc-actions">
+      <button class="btn-nc-cancel" onclick="closeNewClientModal()">Annuler</button>
+      <button class="btn-nc-save" onclick="saveNewClient()">&#10003; Cr&#233;er le compte</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>

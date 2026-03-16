@@ -157,6 +157,19 @@ table{font-size:11px}
 .inscr-field{font-size:12px;color:#3a2a20}
 .inscr-field strong{display:block;font-size:10px;font-weight:600;color:var(--brown);text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px}
 .inscr-actions{padding:10px 16px;border-top:1px solid #f0e8e0;display:flex;gap:8px;flex-wrap:wrap;background:#fdfaf7}
+/* Onglet commandes dans modal compte */
+.modal-tabs{display:flex;gap:0;border-bottom:2px solid #e8ddd5;margin-bottom:16px}
+.modal-tab{padding:8px 16px;font-size:12px;font-weight:600;color:#b09080;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;font-family:Outfit,sans-serif;background:none;border-top:none;border-left:none;border-right:none;transition:all .15s}
+.modal-tab.active{color:var(--brown);border-bottom-color:var(--terra)}
+.modal-tab:hover:not(.active){color:var(--brown)}
+.modal-pane{display:none}.modal-pane.active{display:block}
+.order-hist-item{border:1px solid #f0e8e0;border-radius:8px;margin-bottom:8px;overflow:hidden}
+.order-hist-header{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:#fdfaf7;cursor:pointer;gap:8px;flex-wrap:wrap}
+.order-hist-body{display:none;padding:10px 12px;border-top:1px solid #f0e8e0}
+.order-hist-body.open{display:block}
+.order-hist-table{width:100%;border-collapse:collapse;font-size:11px}
+.order-hist-table th{background:var(--brown);color:#fff;padding:4px 8px;text-align:left;font-size:10px}
+.order-hist-table td{padding:4px 8px;border-bottom:1px solid #f5ede5}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -482,6 +495,12 @@ table{font-size:11px}
   <div class="modal">
     <h3 id="modal-title">Nouveau compte</h3>
 
+    <div class="modal-tabs">
+      <button class="modal-tab active" onclick="switchModalTab('infos',this)">&#128101; Infos</button>
+      <button class="modal-tab" id="tab-commandes" onclick="switchModalTab('commandes',this)" style="display:none">&#128230; Commandes</button>
+    </div>
+
+    <div id="modal-pane-infos" class="modal-pane active">
     <div class="modal-section"><div class="modal-section-title">&#128274; Identifiants</div>
       <div class="fg-row"><div class="fg"><label>Login <span style="color:var(--terra)">*</span></label><input type="text" id="f-login" placeholder="ex: magasin_bordeaux" autocomplete="off"><div class="hint">Minuscules, sans espace</div></div>
       <div class="fg"><label>Mot de passe <span style="color:var(--terra)">*</span></label><div class="pwd-wrap"><input type="text" id="f-password" placeholder="ex: Bdx-2026!" autocomplete="off"><button class="pwd-generate" onclick="genPassword()" type="button">&#9881; G&#233;n&#233;rer</button></div><div class="hint">Min. 6 caract&#232;res</div></div></div>
@@ -538,6 +557,14 @@ table{font-size:11px}
     </div>
     <div class="modal-section"><div class="modal-section-title">&#128203; Notes internes</div>
       <div class="fg"><textarea id="f-notes" placeholder="Informations compl&#233;mentaires&#8230;"></textarea></div>
+    </div>
+
+    </div><!-- /modal-pane-infos -->
+
+    <div id="modal-pane-commandes" class="modal-pane">
+      <div id="modal-orders-list" style="max-height:360px;overflow-y:auto">
+        <div style="text-align:center;padding:30px;color:#b09080;font-size:13px">Chargement...</div>
+      </div>
     </div>
 
     <div class="modal-alert" id="modal-alert"></div>
@@ -1060,6 +1087,9 @@ function openModal(idx){
     document.getElementById("f-login").disabled   = true;
     if(c.role==="client"){populateCommercialSelect();var fco=document.getElementById("f-commercial");if(fco)fco.value=c.commercial||"";}
     initThemeSection(c);
+    var tabCmd=document.getElementById("tab-commandes");if(tabCmd)tabCmd.style.display="inline-block";
+    // Reset sur onglet infos
+    switchModalTab("infos",document.querySelector(".modal-tab"));
     updateRemiseChips(c.remise||0);
     var rl=document.getElementById("f-remise-libre");if(rl)rl.value=c.remise||"";
     onRoleChange();
@@ -1073,6 +1103,7 @@ function openModal(idx){
     ["f-email","f-tel","f-ville","f-cp","f-numclient","f-notes","f-groupement"].forEach(function(id){var el=document.getElementById(id);if(el)el.value="";});
     var fco=document.getElementById("f-commercial");if(fco)fco.value="";
     initThemeSection({role:"client"});
+    var tabCmd2=document.getElementById("tab-commandes");if(tabCmd2)tabCmd2.style.display="none";
     document.getElementById("f-region").value=""; document.getElementById("f-login").disabled=false;
     updateRemiseChips(0); var rl=document.getElementById("f-remise-libre");if(rl)rl.value="";
     var iF=document.getElementById("import-form");if(iF)iF.style.display="none";
@@ -2012,6 +2043,100 @@ function initThemeSection(){}
 function buildPaletteGrid(){}
 function selectPalette(){}
 function onCustomColor(){}
+
+
+// ============================================================
+// ONGLET COMMANDES DANS LA MODAL COMPTE
+// ============================================================
+function switchModalTab(tab, btn){
+  document.querySelectorAll('.modal-tab').forEach(function(b){ b.classList.remove('active'); });
+  document.querySelectorAll('.modal-pane').forEach(function(p){ p.classList.remove('active'); });
+  btn.classList.add('active');
+  document.getElementById('modal-pane-'+tab).classList.add('active');
+  if(tab==='commandes') loadClientOrders();
+}
+
+function loadClientOrders(){
+  var container = document.getElementById('modal-orders-list');
+  if(!container) return;
+  if(editIndex < 0){
+    container.innerHTML = '<div style="text-align:center;padding:30px;color:#b09080;font-size:13px">Enregistrez d\'abord le compte pour voir les commandes.</div>';
+    return;
+  }
+  var login = comptes[editIndex] ? comptes[editIndex].login : null;
+  if(!login){ container.innerHTML='<div style="text-align:center;padding:30px;color:#b09080">Aucun compte sélectionné.</div>'; return; }
+
+  container.innerHTML = '<div style="text-align:center;padding:20px;color:#b09080;font-size:12px">&#8987; Chargement...</div>';
+
+  // Charger depuis Firebase
+  fbLoadHistory(login).then(function(orders){
+    renderClientOrders(orders, container, login);
+  }).catch(function(){
+    // Fallback localStorage
+    var key = 'mdm_history_'+login.replace(/[^a-zA-Z0-9_-]/g,'_');
+    var orders = [];
+    try{ orders = JSON.parse(localStorage.getItem(key))||[]; }catch(e){}
+    renderClientOrders(orders, container, login);
+  });
+}
+
+function renderClientOrders(orders, container, login){
+  if(!orders || !orders.length){
+    container.innerHTML = '<div style="text-align:center;padding:30px;color:#b09080;font-size:13px">&#128230; Aucune commande enregistrée pour ce compte.</div>';
+    return;
+  }
+
+  var totalGlobal = orders.reduce(function(s,o){ return s+(o.totalNet||0); }, 0);
+
+  var html = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;padding:8px 12px;background:var(--cream);border-radius:8px">'
+    + '<span style="font-size:12px;font-weight:600;color:var(--brown)">' + orders.length + ' commande(s)</span>'
+    + '<span style="font-size:13px;font-weight:700;color:var(--terra)">Total\u00a0: ' + orders.reduce(function(s,o){return s+(o.totalNet||0);},0).toFixed(2).replace('.',',') + '\u00a0\u20ac</span>'
+    + '</div>';
+
+  orders.forEach(function(o, idx){
+    var date = o.date ? (typeof o.date==='string' ? o.date.split(' ')[0] : o.date) : '?';
+    var tn   = typeof o.totalNet==='number' ? o.totalNet.toFixed(2).replace('.',',') : '—';
+    html += '<div class="order-hist-item">'
+      + '<div class="order-hist-header" onclick="toggleOrderDetail(this)">'
+      + '<div style="display:flex;align-items:center;gap:8px">'
+      + '<span style="font-size:11px;color:#888">' + date + '</span>'
+      + '<span style="font-size:12px;font-weight:600;color:var(--brown)">' + escH(o.magasin||login) + '</span>'
+      + (o.remise>0 ? '<span style="background:#fff3e0;color:var(--terra);font-size:10px;padding:1px 6px;border-radius:8px">-'+o.remise+'%</span>' : '')
+      + '</div>'
+      + '<div style="display:flex;align-items:center;gap:10px">'
+      + '<span style="font-size:11px;color:#888">' + (o.nbRefs||0) + ' r\u00e9f. &bull; ' + (o.nbColis||0) + ' colis</span>'
+      + '<span style="font-size:13px;font-weight:700;color:var(--terra)">' + tn + '\u00a0\u20ac</span>'
+      + '<span style="color:#ccc;font-size:14px">\u25bc</span>'
+      + '</div></div>'
+      + '<div class="order-hist-body">'
+      + '<table class="order-hist-table"><thead><tr>'
+      + '<th>Code</th><th>D\u00e9signation</th><th>Qt\u00e9</th><th>Total HT</th>'
+      + '</tr></thead><tbody>';
+
+    if(o.articles && o.articles.length){
+      o.articles.forEach(function(a, ai){
+        var bg = ai%2===0?'':'background:#fdfaf7';
+        html += '<tr style="'+bg+'">'
+          + '<td style="font-family:monospace;color:var(--brown);font-weight:600">' + escH(a.code||'') + '</td>'
+          + '<td>' + escH(a.libelle||'') + '</td>'
+          + '<td style="text-align:center">' + (a.qty||0) + '</td>'
+          + '<td style="text-align:right;font-weight:600;color:var(--terra)">'
+          + (typeof a.totalHT==='number' ? a.totalHT.toFixed(2).replace('.',',')+'\u00a0\u20ac' : '—')
+          + '</td></tr>';
+      });
+    }
+    html += '</tbody></table></div></div>';
+  });
+  container.innerHTML = html;
+}
+
+function toggleOrderDetail(header){
+  var body = header.nextElementSibling;
+  var arrow = header.querySelector('span:last-child');
+  if(!body) return;
+  var open = body.classList.toggle('open');
+  if(arrow) arrow.style.transform = open ? 'rotate(180deg)' : '';
+}
 
 </script>
 </body>

@@ -117,11 +117,82 @@ body{font-family:"Outfit",sans-serif;min-height:100vh;display:flex;align-items:c
 // Format : { login, password, nom, role }
 // ═══════════════════════════════════════════════════════════
 var COMPTES = [
-  { login: "admin",      password: "mdm2026",      nom: "Administrateur",   role: "admin",   remise: 0,  email: "cspoto@moulindesmoines.com" },
-  { login: "commercial", password: "mdm-ventes",   nom: "Commercial MDM",   role: "user",    remise: 0,  email: "cspoto@moulindesmoines.com" },
-  { login: "magasin1",   password: "mag1-2026",    nom: "Magasin Alsace",   role: "client",  remise: 5,  email: "magasin1@exemple.fr"        },
-  { login: "magasin2",   password: "mag2-2026",    nom: "Magasin Lorraine", role: "client",  remise: 10, email: "magasin2@exemple.fr"        },
-  { login: "magasin3",   password: "mag3-2026",    nom: "Magasin Franche-C",role: "client",  remise: 15, email: "magasin3@exemple.fr"        }
+  {
+    "_id": "admin",
+    "role": "admin",
+    "remise": 0,
+    "password": "mdm2026",
+    "_origIdx": 0,
+    "nom": "Administrateur",
+    "email": "cspoto@moulindesmoines.com",
+    "login": "admin"
+  },
+  {
+    "_id": "bio_mas",
+    "theme_terra": "#2D8A57",
+    "groupement": "ACCORD BIO",
+    "theme_brown": "#1A5C2E",
+    "login": "bio_mas",
+    "_origIdx": 1,
+    "numclient": "",
+    "theme_gold": "#4CAF7D",
+    "remise": 12,
+    "cp": "38600",
+    "role": "client",
+    "ville": "Fontaine",
+    "commercial": "commercial",
+    "nom": "BIO MAS",
+    "region": "Auvergne-Rhône-Alpes",
+    "tel": "0677898987",
+    "password": "n74bkwFHtN",
+    "email": "spoto.christophe@gmail.com",
+    "remises_produits": [],
+    "notes": "",
+    "theme_cream": "#F0FBF4",
+    "franco": 600
+  },
+  {
+    "_id": "commercial",
+    "notes": "",
+    "remises_produits": [],
+    "email": "cspoto@moulindesmoines.com",
+    "tel": "",
+    "password": "mdm-ventes",
+    "region": "",
+    "nom": "Spoto Christophe",
+    "commercial": "",
+    "ville": "",
+    "role": "user",
+    "cp": "",
+    "remise": 0,
+    "numclient": "",
+    "_origIdx": 2,
+    "login": "commercial",
+    "groupement": ""
+  },
+  {
+    "_id": "spotoj",
+    "groupement": "Le grand panier bio",
+    "theme_brown": "#1A5C2E",
+    "theme_terra": "#2D8A57",
+    "cp": "38600",
+    "remise": 12,
+    "role": "client",
+    "_origIdx": 3,
+    "theme_gold": "#4CAF7D",
+    "numclient": "",
+    "login": "spotoj",
+    "region": "Auvergne-Rhône-Alpes",
+    "nom": "Spoto joseph",
+    "tel": "0670200229",
+    "password": "spoto62",
+    "commercial": "commercial",
+    "ville": "fontaine",
+    "theme_cream": "#F0FBF4",
+    "notes": "",
+    "email": "spoto-veranda@wanadoo.fr",
+    "remises_produits": []
+  }
 ];
 // ── Remplacer les emails par les vraies adresses de chaque compte ──
 // ── Pour modifier une remise : changer le chiffre dans remise: XX

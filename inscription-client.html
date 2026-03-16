@@ -81,6 +81,8 @@ body{font-family:"Outfit",sans-serif;min-height:100vh;display:flex;align-items:c
 .back-link a{color:var(--terra);text-decoration:none;font-weight:600}
 .back-link a:hover{text-decoration:underline}
 </style>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
 
@@ -260,6 +262,176 @@ body{font-family:"Outfit",sans-serif;min-height:100vh;display:flex;align-items:c
 </div>
 
 <script>
+// ============================================================
+// MDM — Couche Firebase Firestore
+// Remplace localStorage pour : comptes, historique, actus, inscriptions
+// ============================================================
+
+var FIREBASE_CONFIG = {
+  apiKey:            "AIzaSyB000QDa4c-vMjO1Xuimw58iiRvwgbF1zc",
+  authDomain:        "mdm-bdc26.firebaseapp.com",
+  projectId:         "mdm-bdc26",
+  storageBucket:     "mdm-bdc26.firebasestorage.app",
+  messagingSenderId: "52658530893",
+  appId:             "1:52658530893:web:166626ae4d681465ddca04"
+};
+
+var _db = null;
+var _fbReady = false;
+
+function initFirebase() {
+  if (_fbReady) return Promise.resolve(_db);
+  return new Promise(function(resolve, reject) {
+    if (typeof firebase === 'undefined') {
+      reject(new Error('Firebase SDK non chargé'));
+      return;
+    }
+    if (!firebase.apps || !firebase.apps.length) {
+      firebase.initializeApp(FIREBASE_CONFIG);
+    }
+    _db = firebase.firestore();
+    _fbReady = true;
+    resolve(_db);
+  });
+}
+
+// ── Comptes ──────────────────────────────────────────────────
+
+function fbLoadComptes() {
+  return initFirebase().then(function(db) {
+    return db.collection('comptes').get().then(function(snap) {
+      return snap.docs.map(function(d) { return Object.assign({_id: d.id}, d.data()); });
+    });
+  });
+}
+
+function fbSaveComptes(comptes) {
+  return initFirebase().then(function(db) {
+    var batch = db.batch();
+    // Supprimer tous puis réécrire (simple pour un petit volume)
+    return db.collection('comptes').get().then(function(snap) {
+      snap.docs.forEach(function(d) { batch.delete(d.ref); });
+      comptes.forEach(function(c) {
+        var ref = db.collection('comptes').doc(c.login);
+        batch.set(ref, c);
+      });
+      return batch.commit();
+    });
+  });
+}
+
+function fbSaveCompte(compte) {
+  return initFirebase().then(function(db) {
+    return db.collection('comptes').doc(compte.login).set(compte);
+  });
+}
+
+function fbDeleteCompte(login) {
+  return initFirebase().then(function(db) {
+    return db.collection('comptes').doc(login).delete();
+  });
+}
+
+// ── Historique commandes ─────────────────────────────────────
+
+function fbSaveOrder(login, order) {
+  return initFirebase().then(function(db) {
+    return db.collection('historique')
+      .doc(login)
+      .collection('commandes')
+      .doc(String(order.id || Date.now()))
+      .set(order);
+  });
+}
+
+function fbLoadHistory(login) {
+  return initFirebase().then(function(db) {
+    return db.collection('historique')
+      .doc(login)
+      .collection('commandes')
+      .orderBy('id', 'desc')
+      .limit(50)
+      .get()
+      .then(function(snap) {
+        return snap.docs.map(function(d) { return d.data(); });
+      });
+  });
+}
+
+function fbLoadAllHistory() {
+  return initFirebase().then(function(db) {
+    return db.collection('historique').get().then(function(snap) {
+      var promises = snap.docs.map(function(loginDoc) {
+        return loginDoc.ref.collection('commandes')
+          .orderBy('id', 'desc').limit(50).get()
+          .then(function(cmdSnap) {
+            return cmdSnap.docs.map(function(d) {
+              return Object.assign({_login: loginDoc.id}, d.data());
+            });
+          });
+      });
+      return Promise.all(promises).then(function(arrays) {
+        return [].concat.apply([], arrays).sort(function(a,b) {
+          return (b.id||0) - (a.id||0);
+        });
+      });
+    });
+  });
+}
+
+// ── Actualités ───────────────────────────────────────────────
+
+function fbLoadActus() {
+  return initFirebase().then(function(db) {
+    return db.collection('actus').orderBy('id', 'desc').get().then(function(snap) {
+      return snap.docs.map(function(d) { return d.data(); });
+    });
+  });
+}
+
+function fbSaveActus(actus) {
+  return initFirebase().then(function(db) {
+    var batch = db.batch();
+    return db.collection('actus').get().then(function(snap) {
+      snap.docs.forEach(function(d) { batch.delete(d.ref); });
+      actus.forEach(function(a) {
+        var ref = db.collection('actus').doc(String(a.id));
+        batch.set(ref, a);
+      });
+      return batch.commit();
+    });
+  });
+}
+
+// ── Inscriptions ─────────────────────────────────────────────
+
+function fbLoadInscriptions() {
+  return initFirebase().then(function(db) {
+    return db.collection('inscriptions').orderBy('id', 'desc').get().then(function(snap) {
+      return snap.docs.map(function(d) { return d.data(); });
+    });
+  });
+}
+
+function fbSaveInscription(inscription) {
+  return initFirebase().then(function(db) {
+    return db.collection('inscriptions').doc(String(inscription.id)).set(inscription);
+  });
+}
+
+function fbUpdateInscription(id, data) {
+  return initFirebase().then(function(db) {
+    return db.collection('inscriptions').doc(String(id)).update(data);
+  });
+}
+
+function fbDeleteInscription(id) {
+  return initFirebase().then(function(db) {
+    return db.collection('inscriptions').doc(String(id)).delete();
+  });
+}
+
+
 function validate(){
   var ok=true;
   var fields=[
@@ -375,6 +547,13 @@ async function submitForm(){
         });
         if(inscriptions.length > 100) inscriptions = inscriptions.slice(0, 100);
         localStorage.setItem('mdm_inscriptions', JSON.stringify(inscriptions));
+        // Sauvegarder aussi dans Firebase
+        fbSaveInscription({
+          id: Date.now(), date: today, contact: prenom+' '+nom,
+          email: email, tel: tel, magasin: magasin, ville: ville, cp: cp,
+          region: region, numclient: numClient, commercial: commercial,
+          message: message, statut: 'nouveau'
+        }).catch(function(e){ console.warn("FB inscription:", e); });
       } catch(err) {}
       document.getElementById('form-screen').style.display='none';
       document.getElementById('success-screen').style.display='block';

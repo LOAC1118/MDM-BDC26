@@ -160,6 +160,8 @@ table{font-size:11px}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
 
@@ -547,6 +549,176 @@ table{font-size:11px}
 <div class="toast" id="toast"></div>
 
 <script>
+// ============================================================
+// MDM — Couche Firebase Firestore
+// Remplace localStorage pour : comptes, historique, actus, inscriptions
+// ============================================================
+
+var FIREBASE_CONFIG = {
+  apiKey:            "AIzaSyB000QDa4c-vMjO1Xuimw58iiRvwgbF1zc",
+  authDomain:        "mdm-bdc26.firebaseapp.com",
+  projectId:         "mdm-bdc26",
+  storageBucket:     "mdm-bdc26.firebasestorage.app",
+  messagingSenderId: "52658530893",
+  appId:             "1:52658530893:web:166626ae4d681465ddca04"
+};
+
+var _db = null;
+var _fbReady = false;
+
+function initFirebase() {
+  if (_fbReady) return Promise.resolve(_db);
+  return new Promise(function(resolve, reject) {
+    if (typeof firebase === 'undefined') {
+      reject(new Error('Firebase SDK non chargé'));
+      return;
+    }
+    if (!firebase.apps || !firebase.apps.length) {
+      firebase.initializeApp(FIREBASE_CONFIG);
+    }
+    _db = firebase.firestore();
+    _fbReady = true;
+    resolve(_db);
+  });
+}
+
+// ── Comptes ──────────────────────────────────────────────────
+
+function fbLoadComptes() {
+  return initFirebase().then(function(db) {
+    return db.collection('comptes').get().then(function(snap) {
+      return snap.docs.map(function(d) { return Object.assign({_id: d.id}, d.data()); });
+    });
+  });
+}
+
+function fbSaveComptes(comptes) {
+  return initFirebase().then(function(db) {
+    var batch = db.batch();
+    // Supprimer tous puis réécrire (simple pour un petit volume)
+    return db.collection('comptes').get().then(function(snap) {
+      snap.docs.forEach(function(d) { batch.delete(d.ref); });
+      comptes.forEach(function(c) {
+        var ref = db.collection('comptes').doc(c.login);
+        batch.set(ref, c);
+      });
+      return batch.commit();
+    });
+  });
+}
+
+function fbSaveCompte(compte) {
+  return initFirebase().then(function(db) {
+    return db.collection('comptes').doc(compte.login).set(compte);
+  });
+}
+
+function fbDeleteCompte(login) {
+  return initFirebase().then(function(db) {
+    return db.collection('comptes').doc(login).delete();
+  });
+}
+
+// ── Historique commandes ─────────────────────────────────────
+
+function fbSaveOrder(login, order) {
+  return initFirebase().then(function(db) {
+    return db.collection('historique')
+      .doc(login)
+      .collection('commandes')
+      .doc(String(order.id || Date.now()))
+      .set(order);
+  });
+}
+
+function fbLoadHistory(login) {
+  return initFirebase().then(function(db) {
+    return db.collection('historique')
+      .doc(login)
+      .collection('commandes')
+      .orderBy('id', 'desc')
+      .limit(50)
+      .get()
+      .then(function(snap) {
+        return snap.docs.map(function(d) { return d.data(); });
+      });
+  });
+}
+
+function fbLoadAllHistory() {
+  return initFirebase().then(function(db) {
+    return db.collection('historique').get().then(function(snap) {
+      var promises = snap.docs.map(function(loginDoc) {
+        return loginDoc.ref.collection('commandes')
+          .orderBy('id', 'desc').limit(50).get()
+          .then(function(cmdSnap) {
+            return cmdSnap.docs.map(function(d) {
+              return Object.assign({_login: loginDoc.id}, d.data());
+            });
+          });
+      });
+      return Promise.all(promises).then(function(arrays) {
+        return [].concat.apply([], arrays).sort(function(a,b) {
+          return (b.id||0) - (a.id||0);
+        });
+      });
+    });
+  });
+}
+
+// ── Actualités ───────────────────────────────────────────────
+
+function fbLoadActus() {
+  return initFirebase().then(function(db) {
+    return db.collection('actus').orderBy('id', 'desc').get().then(function(snap) {
+      return snap.docs.map(function(d) { return d.data(); });
+    });
+  });
+}
+
+function fbSaveActus(actus) {
+  return initFirebase().then(function(db) {
+    var batch = db.batch();
+    return db.collection('actus').get().then(function(snap) {
+      snap.docs.forEach(function(d) { batch.delete(d.ref); });
+      actus.forEach(function(a) {
+        var ref = db.collection('actus').doc(String(a.id));
+        batch.set(ref, a);
+      });
+      return batch.commit();
+    });
+  });
+}
+
+// ── Inscriptions ─────────────────────────────────────────────
+
+function fbLoadInscriptions() {
+  return initFirebase().then(function(db) {
+    return db.collection('inscriptions').orderBy('id', 'desc').get().then(function(snap) {
+      return snap.docs.map(function(d) { return d.data(); });
+    });
+  });
+}
+
+function fbSaveInscription(inscription) {
+  return initFirebase().then(function(db) {
+    return db.collection('inscriptions').doc(String(inscription.id)).set(inscription);
+  });
+}
+
+function fbUpdateInscription(id, data) {
+  return initFirebase().then(function(db) {
+    return db.collection('inscriptions').doc(String(id)).update(data);
+  });
+}
+
+function fbDeleteInscription(id) {
+  return initFirebase().then(function(db) {
+    return db.collection('inscriptions').doc(String(id)).delete();
+  });
+}
+
+
 
 // ==============================================
 // EXPORT INDEX.HTML + GITHUB API
@@ -762,16 +934,26 @@ var editIndex = -1;
 var _rpData = [];
 
 function loadComptes(){
-  var saved = localStorage.getItem("mdm_comptes");
-  if(saved){
-    try{ comptes = JSON.parse(saved); } catch(e){ comptes = COMPTES_DEFAULT.slice(); }
-  } else {
-    comptes = COMPTES_DEFAULT.slice();
-  }
+  fbLoadComptes().then(function(data){
+    if(data && data.length){ comptes=data; }
+    else{
+      var saved=localStorage.getItem("mdm_comptes");
+      if(saved){ try{ comptes=JSON.parse(saved); }catch(e){ comptes=COMPTES_DEFAULT.slice(); } }
+      else{ comptes=COMPTES_DEFAULT.slice(); }
+      if(comptes.length) fbSaveComptes(comptes);
+    }
+    renderComptes();
+  }).catch(function(){
+    var saved=localStorage.getItem("mdm_comptes");
+    if(saved){ try{ comptes=JSON.parse(saved); }catch(e){ comptes=COMPTES_DEFAULT.slice(); } }
+    else{ comptes=COMPTES_DEFAULT.slice(); }
+    renderComptes();
+  });
 }
 
 function saveComptes(){
   localStorage.setItem("mdm_comptes", JSON.stringify(comptes));
+  fbSaveComptes(comptes).catch(function(e){ console.warn("FB saveComptes:", e); });
 }
 
 // ============================================
@@ -1039,8 +1221,23 @@ function setRemiseChip(val){document.getElementById('f-remise').value=val;var rl
 function updateRemiseChips(val){document.querySelectorAll('.remise-chip').forEach(function(c){c.classList.toggle('active',parseFloat(c.textContent)===parseFloat(val));});}
 function genPassword(){var ch='ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#';var p='';for(var i=0;i<10;i++)p+=ch.charAt(Math.floor(Math.random()*ch.length));document.getElementById('f-password').value=p;}
 var actus=[];
-function loadActus(){try{var s=localStorage.getItem('mdm_actus');if(s)actus=JSON.parse(s);}catch(e){}}
-function saveActus(){localStorage.setItem('mdm_actus',JSON.stringify(actus));updateActusBadge();setTimeout(function(){autoSync();},500);}
+function loadActus(){
+  fbLoadActus().then(function(data){
+    if(data&&data.length){ actus=data; }
+    else{ try{var s=localStorage.getItem("mdm_actus");if(s)actus=JSON.parse(s);}catch(e){}
+      if(actus.length) fbSaveActus(actus); }
+    updateActusBadge();
+  }).catch(function(){
+    try{var s=localStorage.getItem("mdm_actus");if(s)actus=JSON.parse(s);}catch(e){}
+    updateActusBadge();
+  });
+}
+function saveActus(){
+  localStorage.setItem("mdm_actus",JSON.stringify(actus));
+  fbSaveActus(actus).catch(function(e){ console.warn("FB saveActus:", e); });
+  updateActusBadge();
+  setTimeout(function(){autoSync();},500);
+}
 function updateActusBadge(){var nb=actus.filter(function(a){return a.actif;}).length;var badge=document.getElementById('badge-actus');if(badge){badge.textContent=nb;badge.style.display=nb>0?'inline-flex':'none';}}
 var actuEditIndex=-1;
 function saveActu(){var type=document.getElementById('actu-type').value,titre=document.getElementById('actu-titre').value.trim(),contenu=document.getElementById('actu-contenu').value.trim(),lien=document.getElementById('actu-lien').value.trim(),actif=document.getElementById('actu-actif').checked;if(!titre||!contenu){showToast('\u26a0 Titre et contenu obligatoires.');return;}var obj={id:Date.now(),type:type,titre:titre,contenu:contenu,lien:lien,actif:actif,date:new Date().toLocaleDateString('fr-FR')};if(actuEditIndex>=0){obj.id=actus[actuEditIndex].id;obj.date=actus[actuEditIndex].date;actus[actuEditIndex]=obj;}else{actus.unshift(obj);}saveActus();resetActuForm();renderActus();showToast('\u2705 Message '+(actuEditIndex>=0?'mis \u00e0 jour':'publi\u00e9')+'!');actuEditIndex=-1;}
@@ -1633,15 +1830,27 @@ var _inscriptions = [];
 var _filtreInscr  = 'tous';
 
 function loadInscriptions(){
-  try{
-    var s = localStorage.getItem('mdm_inscriptions');
-    if(s) _inscriptions = JSON.parse(s);
-  }catch(e){}
-  updateInscriptionsBadge();
+  fbLoadInscriptions().then(function(data){
+    if(data&&data.length){ _inscriptions=data; }
+    else{ try{var s=localStorage.getItem("mdm_inscriptions");if(s)_inscriptions=JSON.parse(s);}catch(e){}
+      _inscriptions.forEach(function(ins){ fbSaveInscription(ins); }); }
+    updateInscriptionsBadge();
+  }).catch(function(){
+    try{var s=localStorage.getItem("mdm_inscriptions");if(s)_inscriptions=JSON.parse(s);}catch(e){}
+    updateInscriptionsBadge();
+  });
 }
 
 function saveInscriptions(){
-  localStorage.setItem('mdm_inscriptions', JSON.stringify(_inscriptions));
+  localStorage.setItem("mdm_inscriptions",JSON.stringify(_inscriptions));
+  initFirebase().then(function(db){
+    var batch=db.batch();
+    return db.collection("inscriptions").get().then(function(snap){
+      snap.docs.forEach(function(d){batch.delete(d.ref);});
+      _inscriptions.forEach(function(ins){batch.set(db.collection("inscriptions").doc(String(ins.id)),ins);});
+      return batch.commit();
+    });
+  }).catch(function(e){ console.warn("FB saveInscriptions:",e); });
   updateInscriptionsBadge();
 }
 

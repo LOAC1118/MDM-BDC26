@@ -158,7 +158,7 @@ tbody tr.has-qty td.td-qty input{background:#ffe0b2;border-color:var(--terra)}
       <span id="commercial-info" style="display:none;font-size:10px;opacity:.8;color:var(--gold)">&#128188; <span id="commercial-name"></span></span>
     </span>
     <button class="btn btn-outline no-print" id="btn-admin" onclick="window.location.href='admin.html'" style="display:none;border-color:rgba(210,180,105,.6);color:#ffd580">&#9881; Admin</button>
-    <button class="btn btn-outline no-print" id="btn-dashboard" onclick="scrollToDashboard()" style="display:none;border-color:rgba(255,255,255,.35);color:#fff">&#127968; Tableau de bord</button>
+    <button class="btn btn-outline no-print" id="btn-dashboard" onclick="window.location.href='dashboard.html'" style="display:none;border-color:rgba(255,255,255,.35);color:#fff">&#127968; Tableau de bord</button>
     <button class="btn btn-outline no-print" onclick="openHistoryModal()" style="border-color:rgba(210,180,105,.5);color:#ffd580">&#128203; Mes commandes</button>
     <button class="btn btn-outline no-print" onclick="doPrint()">&#128424; PDF / Imprimer</button>
     <button class="btn btn-outline no-print" onclick="exportExcel()" style="border-color:rgba(80,200,120,.5);color:#a0f0b0">&#128202; Export Excel</button>
@@ -169,42 +169,7 @@ tbody tr.has-qty td.td-qty input{background:#ffe0b2;border-color:var(--terra)}
 
   <div id="franco-bandeau"></div>
 
-  <div id="dash-commercial">
-    <div class="dash-com-grid">
-      <div class="dash-com-kpi"><div class="dash-com-kpi-label">Mes clients</div><div class="dash-com-kpi-val" id="dc-nb-clients">—</div><div class="dash-com-kpi-sub">comptes assignés</div></div>
-      <div class="dash-com-kpi"><div class="dash-com-kpi-label">Commandes</div><div class="dash-com-kpi-val" id="dc-nb-orders">—</div><div class="dash-com-kpi-sub">enregistrées</div></div>
-      <div class="dash-com-kpi"><div class="dash-com-kpi-label">CA total HT</div><div class="dash-com-kpi-val" id="dc-ca">—</div><div class="dash-com-kpi-sub">cumul clients</div></div>
-      <div class="dash-com-kpi"><div class="dash-com-kpi-label">Commande moy.</div><div class="dash-com-kpi-val" id="dc-avg">—</div><div class="dash-com-kpi-sub">par commande</div></div>
-    </div>
-    <div class="dash-com-section-title">&#128230; Dernières commandes clients</div>
-    <div class="dash-com-orders" id="dc-orders-list">
-      <div style="text-align:center;padding:16px;color:#b09080;font-size:12px">Chargement&#8230;</div>
-    </div>
-  </div>
-
-  <div id="dash-admin">
-    <div class="dash-adm-kpi-grid">
-      <div class="dash-adm-kpi"><div class="dash-adm-kpi-label">Clients</div><div class="dash-adm-kpi-val" id="da-nb-clients">&#8212;</div><div class="dash-adm-kpi-sub">comptes actifs</div></div>
-      <div class="dash-adm-kpi"><div class="dash-adm-kpi-label">Commerciaux</div><div class="dash-adm-kpi-val" id="da-nb-com">&#8212;</div><div class="dash-adm-kpi-sub">comptes actifs</div></div>
-      <div class="dash-adm-kpi"><div class="dash-adm-kpi-label">Commandes</div><div class="dash-adm-kpi-val" id="da-nb-orders">&#8212;</div><div class="dash-adm-kpi-sub">enregistr&#233;es</div></div>
-      <div class="dash-adm-kpi"><div class="dash-adm-kpi-label">CA total HT</div><div class="dash-adm-kpi-val" id="da-ca">&#8212;</div><div class="dash-adm-kpi-sub">cumul all comptes</div></div>
-    </div>
-    <div class="dash-adm-section-title">&#128230; Commandes par commercial</div>
-    <div id="da-by-commercial"><div class="dash-adm-no-data">Chargement&#8230;</div></div>
-  </div>
-
-  <div id="dash-client">
-    <div class="dash-cli-grid">
-      <div class="dash-cli-kpi"><div class="dash-cli-kpi-label">Commandes</div><div class="dash-cli-kpi-val" id="dcl-nb-orders">&#8212;</div><div class="dash-cli-kpi-sub">pass&#233;es</div></div>
-      <div class="dash-cli-kpi"><div class="dash-cli-kpi-label">Total HT</div><div class="dash-cli-kpi-val" id="dcl-ca">&#8212;</div><div class="dash-cli-kpi-sub">cumul commandes</div></div>
-      <div class="dash-cli-kpi"><div class="dash-cli-kpi-label">Derni&#232;re commande</div><div class="dash-cli-kpi-val" id="dcl-last-date" style="font-size:14px;margin-top:6px">&#8212;</div><div class="dash-cli-kpi-sub" id="dcl-last-total"></div></div>
-      <div class="dash-cli-kpi" id="dcl-franco-kpi" style="display:none"><div class="dash-cli-kpi-label">Franco de port</div><div class="dash-cli-kpi-val" id="dcl-franco-val">&#8212;</div><div class="dash-cli-kpi-sub" id="dcl-franco-sub"></div></div>
-    </div>
-    <div class="dash-cli-section-title">&#128230; Historique de mes commandes</div>
-    <div class="dash-cli-orders" id="dcl-orders-list">
-      <div style="text-align:center;padding:16px;color:#b09080;font-size:12px">Chargement&#8230;</div>
-    </div>
-  </div>
+  
 
 <div class="container">
 
@@ -526,6 +491,7 @@ function fbDeleteInscription(id) {
       window._userCommercial = data.commercial  || "";
       window._franco = parseFloat(data.franco) || 0;
       remisesProduitsMap = {};
+      loadGrpRemises();
       if(data.remises_produits && Array.isArray(data.remises_produits)){
         data.remises_produits.forEach(function(r){
           var rval = parseFloat(r.remise)||0; if(!rval) return;
@@ -616,7 +582,22 @@ var PRODUCTS = [{"code":"ABRCOU200","libelle":"Abricots secs coupés bio - 200g"
 var remise = 0;
 var searchMode = "all";
 var qtys = {};
-var remisesProduitsMap = {};
+var remisesProduitsMap  = {};
+var grpRemisesProduitsMap = {};
+
+function loadGrpRemises(){
+  grpRemisesProduitsMap={};
+  var grpNom=window._userGroupement||"";
+  if(!grpNom)return;
+  var grpList=[];
+  try{grpList=JSON.parse(localStorage.getItem("mdm_groupements")||"[]");}catch(e){}
+  var grp=grpList.find(function(g){return g.nom===grpNom;});
+  if(!grp||!grp.remises_produits||!grp.remises_produits.length)return;
+  grp.remises_produits.forEach(function(r){
+    var key=(r.code||"").toUpperCase();
+    if(key)grpRemisesProduitsMap[key]={remise:r.remise||0,prixHT:r.prixHT||0};
+  });
+}
 
 function getRemiseProduit(p){
   if(!remisesProduitsMap) return 0;
@@ -634,6 +615,13 @@ function getRemiseProduit(p){
 }
 
 function getPrixNet(p){
+  var codeUp=(p.code||"").toUpperCase();
+  var grpR=grpRemisesProduitsMap[codeUp];
+  if(grpR){
+    var baseHT=grpR.prixHT>0?grpR.prixHT:p.pu_ht;
+    var rGrp=grpR.remise>0?grpR.remise:0;
+    return baseHT*(1-rGrp/100);
+  }
   var rp=getRemiseProduit(p);
   return p.pu_ht*(1-remise/100)*(1-rp/100);
 }
@@ -1703,12 +1691,7 @@ function updateFranco(){
 
 
 
-function scrollToDashboard(){
-  var role = window._userRole || 'client';
-  var id   = role==='user' ? 'dash-commercial' : (role==='admin' ? 'dash-admin' : 'dash-client');
-  var el   = document.getElementById(id);
-  if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
-}
+
 
 </script>
 </body>

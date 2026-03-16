@@ -536,7 +536,16 @@ table{font-size:11px}
           </div>
         </div>
         <div style="padding:16px 18px">
-          <div style="font-size:11px;color:#b09080;margin-bottom:10px">Upload un fichier Excel avec les colonnes&#160;: <strong>Code</strong>, <strong>Lib&#233;ll&#233;</strong>, <strong>Cat&#233;gorie</strong>, <strong>Remise&#160;%</strong>, <strong>Prix&#160;HT</strong>, <strong>EAN</strong>. Les remises s&#8217;appliquent uniquement sur ces produits pour ce groupement.</div>
+          <div style="font-size:11px;color:#b09080;margin-bottom:10px">
+            Upload un fichier Excel. Colonnes reconnues&#160;:
+            <code style="background:var(--cream);padding:1px 5px;border-radius:4px">Code</code> (obligatoire),
+            <code style="background:var(--cream);padding:1px 5px;border-radius:4px">Libelle</code>,
+            <code style="background:var(--cream);padding:1px 5px;border-radius:4px">Categorie</code>,
+            <code style="background:var(--cream);padding:1px 5px;border-radius:4px">Remise</code> (en %),
+            <code style="background:var(--cream);padding:1px 5px;border-radius:4px">Prix HT</code> (prix sp&#233;cial),
+            <code style="background:var(--cream);padding:1px 5px;border-radius:4px">EAN</code>.
+            Au moins Remise ou Prix HT requis par ligne.
+          </div>
           <div class="grp-rp-drop" id="grp-rp-drop" onclick="document.getElementById('grp-rp-file').click()">&#128196; Glissez un fichier Excel ou cliquez pour charger<input type="file" id="grp-rp-file" accept=".xlsx,.xls" style="display:none" onchange="handleGrpRpFile(this.files[0])"></div>
           <div id="grp-rp-table-wrap" style="margin-top:12px;max-height:320px;overflow-y:auto;display:none">
             <table class="grp-rp-table"><thead><tr><th>Code</th><th>Lib&#233;ll&#233;</th><th>Cat&#233;gorie</th><th style="text-align:center">Remise %</th><th style="text-align:center">Prix HT sp&#233;cial</th><th>EAN</th><th></th></tr></thead>
@@ -2472,13 +2481,22 @@ function parseGrpRpXlsx(buffer){
   var data=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
   if(!data||data.length<2){showToast('\u26a0 Fichier vide');return;}
   var headers=data[0].map(function(h){return String(h||'').trim().toUpperCase();});
-  function ci(names){for(var i=0;i<names.length;i++)for(var j=0;j<headers.length;j++)if(headers[j].indexOf(names[i])>=0)return j;return -1;}
-  var iCode=ci(['CODE','REF','R\u00c9F\u00c9R']);
-  var iLib =ci(['LIB','D\u00c9SIG','DESIG','NOM','ARTICLE']);
-  var iCat =ci(['CAT']);
-  var iRem =ci(['REMISE','%','TAUX']);
-  var iPrix=ci(['PRIX','PU','HT','TARIF']);
-  var iEan =ci(['EAN','GENCOD','BARCODE']);
+  // Détection stricte : chercher correspondance exacte d'abord, puis partielle
+  function ci(exacts, partials){
+    for(var i=0;i<exacts.length;i++)
+      for(var j=0;j<headers.length;j++)
+        if(headers[j]===exacts[i]) return j;
+    if(partials) for(var i=0;i<partials.length;i++)
+      for(var j=0;j<headers.length;j++)
+        if(headers[j].indexOf(partials[i])>=0) return j;
+    return -1;
+  }
+  var iCode = ci(['CODE','REF'],         ['CODE','REF']);
+  var iLib  = ci(['LIBELLE','DESIGNATION','NOM'],['LIB','DESIG','NOM']);
+  var iCat  = ci(['CATEGORIE','CATÉGORIE'],['CAT']);
+  var iRem  = ci(['REMISE','REMISE %','TAUX REMISE'],['REMISE','TAUX']);
+  var iPrix = ci(['PRIX HT','PU HT','PRIX SPECIAL','TARIF HT'],['PRIX','TARIF']);
+  var iEan  = ci(['EAN','GENCOD','BARCODE'],['EAN','GENCOD']);
   var rows=[];
   for(var r=1;r<data.length;r++){
     var row=data[r];

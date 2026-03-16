@@ -2675,43 +2675,47 @@ function sendAccessEmail(){
   if(!co.email){ showToast('\u26a0 Aucun email pour ce compte'); return; }
 
   var btn = document.getElementById('btn-send-access');
-  var originalText = btn ? btn.innerHTML : '';
+  var origHTML = btn ? btn.innerHTML : '';
   if(btn){ btn.disabled=true; btn.innerHTML='&#8987; Envoi\u2026'; }
 
   var siteUrl = 'https://loac1118.github.io/MDM-BDC26/index.html';
+  var sujet   = 'Vos acc\u00e8s Bon de Commande MDM 2026';
+  var corps   =
+    'Bonjour ' + (co.nom||co.login) + ',\n\n' +
+    'Voici vos identifiants de connexion au bon de commande Moulin des Moines 2026.\n\n' +
+    'Login : ' + co.login + '\n' +
+    'Mot de passe : ' + co.password + '\n\n' +
+    'Lien de connexion : ' + siteUrl + '\n\n' +
+    'Cordialement,\nL\u2019\u00e9quipe Moulin des Moines';
 
-  // Envoi via l'adresse MDM déjà activée sur FormSubmit
-  // Le client reçoit une copie via _cc
-  var payload = {
-    _subject:  'Vos acc\u00e8s Bon de Commande MDM 2026 \u2014 ' + (co.nom||co.login),
-    _captcha:  'false',
-    _template: 'box',
-    _cc:       co.email,
-    message:
-      'Bonjour ' + (co.nom||co.login) + ',\n\n' +
-      'Voici vos identifi\u00e4nts de connexion au bon de commande Moulin des Moines 2026.\n\n' +
-      '\u25b6 Login\u00a0: ' + co.login + '\n' +
-      '\u25b6 Mot de passe\u00a0: ' + co.password + '\n\n' +
-      '\u25b6 Lien de connexion\u00a0:\n' + siteUrl + '\n\n' +
-      'Cordialement,\nL\u2019\u00e9quipe Moulin des Moines'
-  };
+  // Utiliser FormData (plus fiable que JSON avec FormSubmit)
+  var fd = new FormData();
+  fd.append('_subject',  sujet);
+  fd.append('_captcha',  'false');
+  fd.append('_template', 'box');
+  fd.append('_replyto',  'cspoto@moulindesmoines.com');
+  fd.append('Destinataire', co.nom || co.login);
+  fd.append('Login',     co.login);
+  fd.append('Mot de passe', co.password);
+  fd.append('Lien',      siteUrl);
+  fd.append('message',   corps);
 
-  fetch('https://formsubmit.co/ajax/cspoto@moulindesmoines.com', {
+  // Envoi vers l'email du client (destination directe)
+  fetch('https://formsubmit.co/' + encodeURIComponent(co.email), {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-    body: JSON.stringify(payload)
-  }).then(function(res){ return res.json(); })
-  .then(function(data){
-    if(data.success==='true'||data.success===true){
+    body: fd
+  }).then(function(res){
+    // FormSubmit redirige vers une page de succès — statut 200 = OK
+    if(res.ok || res.status===200 || res.redirected){
       showToast('\u2705 Acc\u00e8s envoy\u00e9s \u00e0 ' + co.email);
       if(btn){ btn.disabled=false; btn.innerHTML='\u2705 Envoy\u00e9'; }
-      setTimeout(function(){ if(btn){ btn.disabled=false; btn.innerHTML=originalText; } }, 3000);
+      setTimeout(function(){ if(btn){ btn.disabled=false; btn.innerHTML=origHTML; } }, 3000);
     } else {
-      throw new Error(JSON.stringify(data));
+      return res.text().then(function(t){ throw new Error('HTTP '+res.status+': '+t.slice(0,100)); });
     }
   }).catch(function(e){
-    showToast('\u26a0 Erreur\u00a0: ' + (e.message||e));
-    if(btn){ btn.disabled=false; btn.innerHTML=originalText; }
+    showToast('\u26a0 ' + (e.message||'Erreur r\u00e9seau'));
+    if(btn){ btn.disabled=false; btn.innerHTML=origHTML; }
   });
 }
 

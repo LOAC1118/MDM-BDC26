@@ -1831,15 +1831,17 @@ function saveNewClient(){
 
   if(sendMail&&email){
     var url='https://loac1118.github.io/MDM-BDC26/index.html';
-    fetch('https://formsubmit.co/ajax/cspoto@moulindesmoines.com',{
-      method:'POST',
-      headers:{'Content-Type':'application/json','Accept':'application/json'},
-      body:JSON.stringify({
-        _subject:'Vos accès Bon de Commande MDM 2026 — '+nom,
-        _captcha:'false',_template:'box',_cc:email,
-        message:'Bonjour '+nom+',\n\nVoici vos identifiants de connexion au bon de commande Moulin des Moines 2026.\n\n\u25b6 Login : '+login+'\n\u25b6 Mot de passe : '+pwd+'\n\n\u25b6 Connexion : '+url+'\n\nCordialement,\nMoulin des Moines'
-      })
-    }).catch(function(){});
+    var fd2=new FormData();
+    fd2.append('_subject','Vos acc\u00e8s MDM 2026 \u2014 '+nom);
+    fd2.append('_captcha','false');
+    fd2.append('_template','box');
+    fd2.append('_cc',email);
+    fd2.append('_replyto',email);
+    fd2.append('Login',login);
+    fd2.append('Mot de passe',pwd);
+    fd2.append('Lien',url);
+    fd2.append('message','Bonjour '+nom+',\n\nVoici vos identifiants MDM 2026.\n\nLogin : '+login+'\nMot de passe : '+pwd+'\n\nConnexion : '+url+'\n\nCordialement,\nMoulin des Moines');
+    fetch('https://formsubmit.co/ajax/cspoto@moulindesmoines.com',{method:'POST',body:fd2}).catch(function(){});
   }
 
   al.textContent='\u2705 Compte créé !'+(sendMail?' Accès envoyés par email.':'');

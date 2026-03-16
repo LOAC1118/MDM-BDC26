@@ -644,7 +644,7 @@ table{font-size:11px}
     </div>
 
     <div class="modal-alert" id="modal-alert"></div>
-    <div class="modal-actions"><button class="btn-cancel" onclick="closeModal()">Annuler</button><button class="btn-save" onclick="saveCompte()">&#10003; Enregistrer</button></div>
+    <div class="modal-actions" style="display:flex;gap:8px;justify-content:space-between;align-items:center"><button class="btn-cancel" onclick="closeModal()">Annuler</button><div style="display:flex;gap:8px"><button class="btn-cancel" id="btn-send-access" onclick="sendAccessEmail()" style="background:#e3f2fd;color:#1565c0;border:none;display:none" title="Envoyer login et mot de passe par email">&#128231; Envoyer les acc&#232;s</button><button class="btn-save" onclick="saveCompte()">&#10003; Enregistrer</button></div></div>
   </div>
 </div>
 
@@ -1165,6 +1165,9 @@ function openModal(idx){
     var tabCmd=document.getElementById("tab-commandes");if(tabCmd)tabCmd.style.display="inline-block";
     // Reset sur onglet infos
     switchModalTab("infos",document.querySelector(".modal-tab"));
+    // Afficher bouton envoi accès si le compte a un email
+    var btnSA=document.getElementById("btn-send-access");
+    if(btnSA) btnSA.style.display=c.email?"inline-flex":"none";
     refreshGroupementSelect();
     var fgrp=document.getElementById("f-groupement");if(fgrp)fgrp.value=c.groupement||"";
     var ffr=document.getElementById("f-franco");if(ffr)ffr.value=c.franco>0?c.franco:"";
@@ -1184,6 +1187,7 @@ function openModal(idx){
     var tabCmd2=document.getElementById("tab-commandes");if(tabCmd2)tabCmd2.style.display="none";
     refreshGroupementSelect();
     var ffr2=document.getElementById("f-franco");if(ffr2)ffr2.value="";
+    var btnSA2=document.getElementById("btn-send-access");if(btnSA2)btnSA2.style.display="none";
     document.getElementById("f-region").value=""; document.getElementById("f-login").disabled=false;
     updateRemiseChips(0); var rl=document.getElementById("f-remise-libre");if(rl)rl.value="";
     var iF=document.getElementById("import-form");if(iF)iF.style.display="none";
@@ -2633,6 +2637,52 @@ function clearGrpRp(){
   renderGrpRpTable();
   var drop=document.getElementById('grp-rp-drop');
   if(drop)drop.innerHTML='&#128196; Glissez un fichier Excel ou cliquez pour charger<input type="file" id="grp-rp-file" accept=".xlsx,.xls" style="display:none" onchange="handleGrpRpFile(this.files[0])">';
+}
+
+
+// ── Envoi des accès par email ─────────────────────────────────
+function sendAccessEmail(){
+  if(editIndex < 0){ showToast('\u26a0 Enregistrez d\u0027abord le compte'); return; }
+  var c = comptes[editIndex];
+  if(!c.email){ showToast('\u26a0 Aucun email pour ce compte'); return; }
+
+  var btn = document.getElementById('btn-send-access');
+  var originalText = btn ? btn.innerHTML : '';
+  if(btn){ btn.disabled=true; btn.innerHTML='&#8987; Envoi\u2026'; }
+
+  var siteName = 'Moulin des Moines';
+  var siteUrl  = 'https://loac1118.github.io/MDM-BDC26/index.html';
+
+  var payload = {
+    _subject:  'Vos acc\u00e8s \u2014 ' + siteName,
+    _captcha:  'false',
+    _template: 'table',
+    _replyto:  'cspoto@moulindesmoines.com',
+    destinataire: c.nom || c.login,
+    email:     c.email,
+    login:     c.login,
+    'mot_de_passe': c.password,
+    'lien_connexion': siteUrl,
+    message:   'Bonjour ' + (c.nom||c.login) + ',\n\nVoici vos identifiants de connexion au bon de commande Moulin des Moines 2026.\n\nLogin\u00a0: ' + c.login + '\nMot de passe\u00a0: ' + c.password + '\n\nConnectez-vous ici\u00a0: ' + siteUrl + '\n\nCordialement,\nMoulin des Moines'
+  };
+
+  fetch('https://formsubmit.co/ajax/' + encodeURIComponent(c.email), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+    body: JSON.stringify(payload)
+  }).then(function(res){ return res.json(); })
+  .then(function(data){
+    if(data.success==='true'||data.success===true){
+      showToast('\u2705 Acc\u00e8s envoy\u00e9s \u00e0 ' + c.email);
+      if(btn){ btn.disabled=false; btn.innerHTML='\u2705 Envoy\u00e9'; }
+      setTimeout(function(){ if(btn){ btn.disabled=false; btn.innerHTML=originalText; } }, 3000);
+    } else {
+      throw new Error('Erreur FormSubmit');
+    }
+  }).catch(function(e){
+    showToast('\u26a0 Erreur d\u0027envoi\u00a0: ' + e.message);
+    if(btn){ btn.disabled=false; btn.innerHTML=originalText; }
+  });
 }
 
 </script>

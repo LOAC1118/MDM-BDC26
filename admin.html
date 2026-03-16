@@ -1171,6 +1171,8 @@ function openModal(idx){
     refreshGroupementSelect();
     var fgrp=document.getElementById("f-groupement");if(fgrp)fgrp.value=c.groupement||"";
     var ffr=document.getElementById("f-franco");if(ffr)ffr.value=c.franco>0?c.franco:"";
+    // Charger les grp_remises existants du compte
+    window._currentGrpRemises = c.grp_remises ? JSON.parse(JSON.stringify(c.grp_remises)) : [];
     updateRemiseChips(c.remise||0);
     var rl=document.getElementById("f-remise-libre");if(rl)rl.value=c.remise||"";
     onRoleChange();
@@ -1188,6 +1190,7 @@ function openModal(idx){
     refreshGroupementSelect();
     var ffr2=document.getElementById("f-franco");if(ffr2)ffr2.value="";
     var btnSA2=document.getElementById("btn-send-access");if(btnSA2)btnSA2.style.display="none";
+    window._currentGrpRemises = [];
     document.getElementById("f-region").value=""; document.getElementById("f-login").disabled=false;
     updateRemiseChips(0); var rl=document.getElementById("f-remise-libre");if(rl)rl.value="";
     var iF=document.getElementById("import-form");if(iF)iF.style.display="none";
@@ -1243,7 +1246,7 @@ function saveCompte(){
       return;
     }
     var fe=document.getElementById("f-email").value.trim(),ft=document.getElementById("f-tel").value.trim(),fv=document.getElementById("f-ville").value.trim(),fc=document.getElementById("f-cp").value.trim(),fr=document.getElementById("f-region").value,fn=document.getElementById("f-numclient").value.trim(),fno=document.getElementById("f-notes").value.trim(),fg=document.getElementById("f-groupement").value.trim();
-    comptes.push({login:login,password:password,nom:nom,role:role,remise:remise,email:fe,tel:ft,ville:fv,cp:fc,region:fr,numclient:fn,notes:fno,groupement:fg,commercial:(document.getElementById("f-commercial")?document.getElementById("f-commercial").value:""),remises_produits:JSON.parse(JSON.stringify(_rpData||[])),franco:ff});
+    comptes.push({login:login,password:password,nom:nom,role:role,remise:remise,email:fe,tel:ft,ville:fv,cp:fc,region:fr,numclient:fn,notes:fno,groupement:fg,commercial:(document.getElementById("f-commercial")?document.getElementById("f-commercial").value:""),remises_produits:JSON.parse(JSON.stringify(_rpData||[])),franco:ff,grp_remises:JSON.parse(JSON.stringify(window._currentGrpRemises||[]))});
     showToast("\u2705 Compte cr\u00e9\u00e9 : "+login);
   } else {
     comptes[editIndex].password=password;comptes[editIndex].nom=nom;comptes[editIndex].role=role;comptes[editIndex].remise=remise;
@@ -1255,6 +1258,15 @@ function saveCompte(){
 
     comptes[editIndex].remises_produits=JSON.parse(JSON.stringify(_rpData||[]));
     comptes[editIndex].franco=parseFloat(document.getElementById("f-franco")?document.getElementById("f-franco").value||0:0)||0;
+    // Si le groupement a changé, mettre à jour grp_remises depuis le groupement sélectionné
+    var selGrp=document.getElementById("f-groupement");
+    var nomGrp=selGrp?selGrp.value:"";
+    if(nomGrp){
+      var gFound=_groupements.find(function(g){return g.nom===nomGrp;});
+      comptes[editIndex].grp_remises=(gFound&&gFound.remises_produits)?JSON.parse(JSON.stringify(gFound.remises_produits)):[];
+    } else {
+      comptes[editIndex].grp_remises=[];
+    }
     showToast("\u2705 Compte modifi\u00e9 : "+comptes[editIndex].login);
   }
 
@@ -2426,7 +2438,12 @@ function onGroupementChange(){
     updateRemiseChips(g.remise);
     var ffr=document.getElementById('f-franco');
     if(ffr && g.franco>0) ffr.value=g.franco;
+    // Stocker les remises produits du groupement pour les sauver dans le compte
+    window._currentGrpRemises = (g.remises_produits && g.remises_produits.length)
+      ? JSON.parse(JSON.stringify(g.remises_produits)) : [];
     showToast('Remise '+g.remise+'%'+(g.franco>0?' · Franco '+g.franco+'€':'')+ ' appliqués ('+nom+')');
+  } else {
+    window._currentGrpRemises = [];
   }
 }
 
@@ -2625,6 +2642,17 @@ function renderGrpRpTable(){
 function saveGrpRp(){
   if(_grpRpIdx<0){showToast('\u26a0 Aucun groupement s\u00e9lectionn\u00e9');return;}
   _groupements[_grpRpIdx].remises_produits=JSON.parse(JSON.stringify(_grpRpData));
+  // Propager les remises à tous les comptes clients de ce groupement
+  var nomGrp=_groupements[_grpRpIdx].nom;
+  var newRp=JSON.parse(JSON.stringify(_grpRpData));
+  var updated=0;
+  comptes.forEach(function(c){
+    if(c.groupement===nomGrp){c.grp_remises=newRp;updated++;}
+  });
+  if(updated>0){
+    saveComptes();
+    showToast('\u2705 Remises mises \u00e0 jour pour '+updated+' compte(s)');
+  }
   saveGroupements();
   var msg=document.getElementById('grp-rp-saved-msg');
   if(msg){msg.style.display='inline';setTimeout(function(){msg.style.display='none';},2000);}
@@ -2643,44 +2671,46 @@ function clearGrpRp(){
 // ── Envoi des accès par email ─────────────────────────────────
 function sendAccessEmail(){
   if(editIndex < 0){ showToast('\u26a0 Enregistrez d\u0027abord le compte'); return; }
-  var c = comptes[editIndex];
-  if(!c.email){ showToast('\u26a0 Aucun email pour ce compte'); return; }
+  var co = comptes[editIndex];
+  if(!co.email){ showToast('\u26a0 Aucun email pour ce compte'); return; }
 
   var btn = document.getElementById('btn-send-access');
   var originalText = btn ? btn.innerHTML : '';
   if(btn){ btn.disabled=true; btn.innerHTML='&#8987; Envoi\u2026'; }
 
-  var siteName = 'Moulin des Moines';
-  var siteUrl  = 'https://loac1118.github.io/MDM-BDC26/index.html';
+  var siteUrl = 'https://loac1118.github.io/MDM-BDC26/index.html';
 
+  // Envoi via l'adresse MDM déjà activée sur FormSubmit
+  // Le client reçoit une copie via _cc
   var payload = {
-    _subject:  'Vos acc\u00e8s \u2014 ' + siteName,
+    _subject:  'Vos acc\u00e8s Bon de Commande MDM 2026 \u2014 ' + (co.nom||co.login),
     _captcha:  'false',
-    _template: 'table',
-    _replyto:  'cspoto@moulindesmoines.com',
-    destinataire: c.nom || c.login,
-    email:     c.email,
-    login:     c.login,
-    'mot_de_passe': c.password,
-    'lien_connexion': siteUrl,
-    message:   'Bonjour ' + (c.nom||c.login) + ',\n\nVoici vos identifiants de connexion au bon de commande Moulin des Moines 2026.\n\nLogin\u00a0: ' + c.login + '\nMot de passe\u00a0: ' + c.password + '\n\nConnectez-vous ici\u00a0: ' + siteUrl + '\n\nCordialement,\nMoulin des Moines'
+    _template: 'box',
+    _cc:       co.email,
+    message:
+      'Bonjour ' + (co.nom||co.login) + ',\n\n' +
+      'Voici vos identifi\u00e4nts de connexion au bon de commande Moulin des Moines 2026.\n\n' +
+      '\u25b6 Login\u00a0: ' + co.login + '\n' +
+      '\u25b6 Mot de passe\u00a0: ' + co.password + '\n\n' +
+      '\u25b6 Lien de connexion\u00a0:\n' + siteUrl + '\n\n' +
+      'Cordialement,\nL\u2019\u00e9quipe Moulin des Moines'
   };
 
-  fetch('https://formsubmit.co/ajax/' + encodeURIComponent(c.email), {
+  fetch('https://formsubmit.co/ajax/cspoto@moulindesmoines.com', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
     body: JSON.stringify(payload)
   }).then(function(res){ return res.json(); })
   .then(function(data){
     if(data.success==='true'||data.success===true){
-      showToast('\u2705 Acc\u00e8s envoy\u00e9s \u00e0 ' + c.email);
+      showToast('\u2705 Acc\u00e8s envoy\u00e9s \u00e0 ' + co.email);
       if(btn){ btn.disabled=false; btn.innerHTML='\u2705 Envoy\u00e9'; }
       setTimeout(function(){ if(btn){ btn.disabled=false; btn.innerHTML=originalText; } }, 3000);
     } else {
-      throw new Error('Erreur FormSubmit');
+      throw new Error(JSON.stringify(data));
     }
   }).catch(function(e){
-    showToast('\u26a0 Erreur d\u0027envoi\u00a0: ' + e.message);
+    showToast('\u26a0 Erreur\u00a0: ' + (e.message||e));
     if(btn){ btn.disabled=false; btn.innerHTML=originalText; }
   });
 }

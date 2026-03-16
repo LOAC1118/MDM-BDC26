@@ -385,15 +385,8 @@ async function doLogin(){
         franco:      compte.franco      || 0,
 
         remises_produits: compte.remises_produits || [],
-        grp_remises: (function(){
-          // Inclure les remises produits du groupement dans le token
-          if(!compte.groupement) return [];
-          try{
-            var grpList = JSON.parse(localStorage.getItem("mdm_groupements")||"[]");
-            var grp = grpList.find(function(g){ return g.nom === compte.groupement; });
-            return (grp && grp.remises_produits) ? grp.remises_produits : [];
-          }catch(e){ return []; }
-        })(),
+        // grp_remises stockées directement dans le compte par l'admin
+        grp_remises: compte.grp_remises || [],
         exp:         Date.now() + 8 * 60 * 60 * 1000
       };
       var token = btoa(JSON.stringify(tokenData));

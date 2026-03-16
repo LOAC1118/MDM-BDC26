@@ -687,10 +687,16 @@ function buildTable(){
     var grpRB=grpRemisesProduitsMap[codeUpB];
     var prixBadge='';
     if(grpRB){
-      if(grpRB.prixHT>0) prixBadge=' <span style="background:#e3f2fd;color:#1565c0;font-size:9px;font-weight:700;padding:1px 5px;border-radius:8px">Prix sp\u00e9cial</span>';
-      else if(grpRB.remise>0) prixBadge=' <span style="background:#fce4ec;color:#c62828;font-size:9px;font-weight:700;padding:1px 5px;border-radius:8px">-'+grpRB.remise+'%</span>';
+      if(grpRB.prixHT>0){
+        // Prix spécial : afficher le prix spécial + badge
+        prixBadge=' <span style="background:#e3f2fd;color:#1565c0;font-size:9px;font-weight:700;padding:2px 6px;border-radius:8px">\u2192 '+fmt4(grpRB.prixHT)+'</span>';
+      } else if(grpRB.remise>0){
+        // Remise groupement : afficher le badge remise
+        prixBadge=' <span style="background:#fce4ec;color:#c62828;font-size:9px;font-weight:700;padding:2px 6px;border-radius:8px">-'+grpRB.remise+'%</span>';
+      }
     }
-    rows += '<td class="td-prix">' + fmt4(p.pu_ht) + prixBadge + "</td>";
+    var prixAffiche = (grpRB && grpRB.prixHT>0) ? fmt4(grpRB.prixHT) : fmt4(p.pu_ht);
+    rows += '<td class="td-prix">' + prixAffiche + prixBadge + "</td>";
     // Colonne stock
     var stk = (p.stock !== undefined && p.stock !== null) ? p.stock : null;
     var stkHtml;

@@ -671,7 +671,14 @@ function buildTable(){
     rows += "<td>" + (p.pcb||"") + "</td>";
     rows += '<td style="font-size:11px">' + (p.poids ? p.poids+" kg" : "") + "</td>";
     rows += '<td style="font-size:11px">' + (p.tva ? p.tva+"%" : "") + "</td>";
-    rows += '<td class="td-prix">' + fmt4(p.pu_ht) + "</td>";
+    var codeUpB=(p.code||'').toUpperCase();
+    var grpRB=grpRemisesProduitsMap[codeUpB];
+    var prixBadge='';
+    if(grpRB){
+      if(grpRB.prixHT>0) prixBadge=' <span style="background:#e3f2fd;color:#1565c0;font-size:9px;font-weight:700;padding:1px 5px;border-radius:8px">Prix sp\u00e9cial</span>';
+      else if(grpRB.remise>0) prixBadge=' <span style="background:#fce4ec;color:#c62828;font-size:9px;font-weight:700;padding:1px 5px;border-radius:8px">-'+grpRB.remise+'%</span>';
+    }
+    rows += '<td class="td-prix">' + fmt4(p.pu_ht) + prixBadge + "</td>";
     // Colonne stock
     var stk = (p.stock !== undefined && p.stock !== null) ? p.stock : null;
     var stkHtml;

@@ -525,6 +525,30 @@ table{font-size:11px}
         </tr></thead><tbody id="grp-tbody"></tbody></table>
         <div id="grp-empty" style="display:none;text-align:center;padding:40px;color:#b09080;font-size:13px">Aucun groupement. Ajoutez-en un ci-dessus.</div>
       </div>
+
+      <!-- Remises produits par groupement -->
+      <div class="grp-rp-panel" id="grp-rp-panel" style="display:none">
+        <div class="grp-rp-panel-header">
+          <span class="grp-rp-panel-title">&#127991; Remises produits &#8212; <span id="grp-rp-panel-nom"></span></span>
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="font-size:11px;opacity:.7" id="grp-rp-count">0 produit(s)</span>
+            <button onclick="closeGrpRpPanel()" style="background:rgba(255,255,255,.2);border:none;color:#fff;cursor:pointer;padding:4px 10px;border-radius:6px;font-family:Outfit,sans-serif;font-size:11px">&#10005; Fermer</button>
+          </div>
+        </div>
+        <div style="padding:16px 18px">
+          <div style="font-size:11px;color:#b09080;margin-bottom:10px">Upload un fichier Excel avec les colonnes&#160;: <strong>Code</strong>, <strong>Lib&#233;ll&#233;</strong>, <strong>Cat&#233;gorie</strong>, <strong>Remise&#160;%</strong>, <strong>Prix&#160;HT</strong>, <strong>EAN</strong>. Les remises s&#8217;appliquent uniquement sur ces produits pour ce groupement.</div>
+          <div class="grp-rp-drop" id="grp-rp-drop" onclick="document.getElementById('grp-rp-file').click()">&#128196; Glissez un fichier Excel ou cliquez pour charger<input type="file" id="grp-rp-file" accept=".xlsx,.xls" style="display:none" onchange="handleGrpRpFile(this.files[0])"></div>
+          <div id="grp-rp-table-wrap" style="margin-top:12px;max-height:320px;overflow-y:auto;display:none">
+            <table class="grp-rp-table"><thead><tr><th>Code</th><th>Lib&#233;ll&#233;</th><th>Cat&#233;gorie</th><th style="text-align:center">Remise %</th><th style="text-align:center">Prix HT sp&#233;cial</th><th>EAN</th><th></th></tr></thead>
+            <tbody id="grp-rp-tbody"></tbody></table>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:12px;align-items:center">
+            <button onclick="saveGrpRp()" style="padding:8px 18px;background:var(--terra);color:#fff;border:none;border-radius:7px;font-family:Outfit,sans-serif;font-size:13px;font-weight:600;cursor:pointer">&#10003; Enregistrer les remises</button>
+            <button onclick="clearGrpRp()" style="padding:8px 14px;background:#f0e4da;color:var(--brown);border:none;border-radius:7px;font-family:Outfit,sans-serif;font-size:12px;cursor:pointer">&#128465; Tout effacer</button>
+            <span id="grp-rp-saved-msg" style="font-size:11px;color:var(--green);display:none">&#10003; Sauvegard&#233;</span>
+          </div>
+        </div>
+      </div>
     </div>
 
 
@@ -2301,8 +2325,9 @@ function renderGroupements(){
       +'<td style="text-align:center">'+francoStr+'</td>'
       +'<td style="text-align:center;color:#888;font-size:12px">'+nb+' client'+(nb>1?'s':'')+'</td>'
       +'<td style="text-align:right">'
-      +'<button class="btn-actu-edit" onclick="editGrp('+idx+')">✏ Modifier</button> '
-      +'<button class="btn-actu-del" onclick="deleteGrp('+idx+')">🗑 Supprimer</button>'
+      +'<button class="btn-actu-edit" onclick="openGrpRpPanel('+idx+')" style="background:#e3f2fd;color:#1565c0">&#127991; Remises</button> '
+      +'<button class="btn-actu-edit" onclick="editGrp('+idx+')">&#9998; Modifier</button> '
+      +'<button class="btn-actu-del" onclick="deleteGrp('+idx+')">&#128465; Supprimer</button>'
       +'</td></tr>';
   });
   tbody.innerHTML=html;
@@ -2405,6 +2430,113 @@ function _renderDashActus(){
       +'</div></div>';
   });
   el.innerHTML=html;
+}
+
+
+// ============================================================
+// REMISES PRODUITS PAR GROUPEMENT
+// ============================================================
+var _grpRpIdx  = -1;
+var _grpRpData = [];
+
+function openGrpRpPanel(idx){
+  _grpRpIdx = idx;
+  var g = _groupements[idx];
+  var panel = document.getElementById('grp-rp-panel');
+  var nomEl = document.getElementById('grp-rp-panel-nom');
+  if(panel) panel.style.display='block';
+  if(nomEl) nomEl.textContent=g.nom;
+  _grpRpData=(g.remises_produits&&Array.isArray(g.remises_produits))?JSON.parse(JSON.stringify(g.remises_produits)):[];
+  renderGrpRpTable();
+  if(panel) panel.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function closeGrpRpPanel(){
+  var panel=document.getElementById('grp-rp-panel');
+  if(panel) panel.style.display='none';
+  _grpRpIdx=-1; _grpRpData=[];
+}
+
+function handleGrpRpFile(file){
+  if(!file)return;
+  if(!file.name.match(/\.xlsx?$/i)){showToast('\u26a0 Format non support\u00e9');return;}
+  var reader=new FileReader();
+  reader.onload=function(e){try{parseGrpRpXlsx(e.target.result);}catch(err){showToast('\u26a0 Erreur: '+err.message);}};
+  reader.readAsArrayBuffer(file);
+}
+
+function parseGrpRpXlsx(buffer){
+  if(typeof XLSX==='undefined'){showToast('\u26a0 SheetJS non charg\u00e9');return;}
+  var wb=XLSX.read(new Uint8Array(buffer),{type:'array'});
+  var ws=wb.Sheets[wb.SheetNames[0]];
+  var data=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+  if(!data||data.length<2){showToast('\u26a0 Fichier vide');return;}
+  var headers=data[0].map(function(h){return String(h||'').trim().toUpperCase();});
+  function ci(names){for(var i=0;i<names.length;i++)for(var j=0;j<headers.length;j++)if(headers[j].indexOf(names[i])>=0)return j;return -1;}
+  var iCode=ci(['CODE','REF','R\u00c9F\u00c9R']);
+  var iLib =ci(['LIB','D\u00c9SIG','DESIG','NOM','ARTICLE']);
+  var iCat =ci(['CAT']);
+  var iRem =ci(['REMISE','%','TAUX']);
+  var iPrix=ci(['PRIX','PU','HT','TARIF']);
+  var iEan =ci(['EAN','GENCOD','BARCODE']);
+  var rows=[];
+  for(var r=1;r<data.length;r++){
+    var row=data[r];
+    var code=String(iCode>=0?row[iCode]:'').trim();
+    if(!code)continue;
+    var remise=parseFloat(String(iRem>=0?row[iRem]:'0').replace(',','.'))||0;
+    var prix  =parseFloat(String(iPrix>=0?row[iPrix]:'').replace(',','.'))||0;
+    if(!remise&&!prix)continue;
+    rows.push({code:code,libelle:String(iLib>=0?row[iLib]:'').trim(),
+      categorie:String(iCat>=0?row[iCat]:'').trim(),
+      remise:remise,prixHT:prix,ean:String(iEan>=0?row[iEan]:'').trim()});
+  }
+  if(!rows.length){showToast('\u26a0 Aucune ligne valide');return;}
+  _grpRpData=rows;
+  renderGrpRpTable();
+  showToast('\u2705 '+rows.length+' produit(s) charg\u00e9(s)');
+  var drop=document.getElementById('grp-rp-drop');
+  if(drop)drop.innerHTML='\u2705 '+rows.length+' produit(s) \u2014 Cliquez pour changer<input type="file" id="grp-rp-file" accept=".xlsx,.xls" style="display:none" onchange="handleGrpRpFile(this.files[0])">';
+}
+
+function renderGrpRpTable(){
+  var wrap=document.getElementById('grp-rp-table-wrap');
+  var tbody=document.getElementById('grp-rp-tbody');
+  var count=document.getElementById('grp-rp-count');
+  if(!tbody)return;
+  if(count)count.textContent=_grpRpData.length+' produit(s)';
+  if(!_grpRpData.length){if(wrap)wrap.style.display='none';return;}
+  if(wrap)wrap.style.display='block';
+  var html='';
+  _grpRpData.forEach(function(r,i){
+    html+='<tr>'
+      +'<td style="font-family:monospace;font-weight:700;color:var(--brown)">'+escH(r.code)+'</td>'
+      +'<td>'+escH(r.libelle||'\u2014')+'</td>'
+      +'<td style="color:#888;font-size:11px">'+escH(r.categorie||'\u2014')+'</td>'
+      +'<td style="text-align:center">'+(r.remise>0?'<span class="grp-rp-badge-remise">-'+r.remise+'%</span>':'<span style="color:#ccc">\u2014</span>')+'</td>'
+      +'<td style="text-align:center">'+(r.prixHT>0?'<span class="grp-rp-badge-prix">'+r.prixHT.toFixed(2).replace('.',',')+' \u20ac</span>':'<span style="color:#ccc">\u2014</span>')+'</td>'
+      +'<td style="font-size:10px;color:#aaa;font-family:monospace">'+escH(r.ean||'\u2014')+'</td>'
+      +'<td><button style="background:none;border:none;color:#c62828;cursor:pointer;font-size:13px" onclick="_grpRpData.splice('+i+',1);renderGrpRpTable()">\u2715</button></td>'
+      +'</tr>';
+  });
+  tbody.innerHTML=html;
+}
+
+function saveGrpRp(){
+  if(_grpRpIdx<0){showToast('\u26a0 Aucun groupement s\u00e9lectionn\u00e9');return;}
+  _groupements[_grpRpIdx].remises_produits=JSON.parse(JSON.stringify(_grpRpData));
+  saveGroupements();
+  var msg=document.getElementById('grp-rp-saved-msg');
+  if(msg){msg.style.display='inline';setTimeout(function(){msg.style.display='none';},2000);}
+  showToast('\u2705 Remises enregistr\u00e9es pour '+_groupements[_grpRpIdx].nom);
+}
+
+function clearGrpRp(){
+  if(!confirm('Effacer toutes les remises produits de ce groupement ?'))return;
+  _grpRpData=[];
+  renderGrpRpTable();
+  var drop=document.getElementById('grp-rp-drop');
+  if(drop)drop.innerHTML='&#128196; Glissez un fichier Excel ou cliquez pour charger<input type="file" id="grp-rp-file" accept=".xlsx,.xls" style="display:none" onchange="handleGrpRpFile(this.files[0])">';
 }
 
 </script>

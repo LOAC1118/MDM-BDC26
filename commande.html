@@ -133,49 +133,8 @@ tbody tr.has-qty td.td-qty input{background:#ffe0b2;border-color:var(--terra)}
 #franco-bandeau.warn{background:#fff8e1;color:#e65100;border-bottom:2px solid #ffe082}
 #franco-bandeau.danger{background:#fdecea;color:#c62828;border-bottom:2px solid #ef9a9a}
 
-/* Dashboard commercial */
-#dash-commercial{display:none;background:var(--cream);border-bottom:2px solid rgba(0,0,0,0.08);padding:14px 28px;font-family:"Outfit",sans-serif}
-.dash-com-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
-.dash-com-kpi{background:#fff;border-radius:8px;padding:10px 14px;border:1px solid rgba(0,0,0,0.07)}
-.dash-com-kpi-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--terra);opacity:.8}
-.dash-com-kpi-val{font-size:22px;font-weight:700;color:var(--brown);margin:2px 0}
-.dash-com-kpi-sub{font-size:10px;color:#aaa}
-.dash-com-orders{background:#fff;border-radius:8px;border:1px solid rgba(0,0,0,0.07);overflow:hidden}
-.dash-com-order-row{display:flex;align-items:center;justify-content:space-between;padding:7px 12px;border-bottom:1px solid #f5ede5;font-size:12px;gap:8px}
-.dash-com-order-row:last-child{border-bottom:none}
-.dash-com-section-title{font-size:11px;font-weight:700;color:var(--brown);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;opacity:.8}
 
-/* Dashboard client */
-#dash-client{display:none;background:var(--cream);border-bottom:2px solid rgba(0,0,0,0.08);padding:14px 28px;font-family:"Outfit",sans-serif}
-.dash-cli-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
-.dash-cli-kpi{background:#fff;border-radius:8px;padding:10px 14px;border:1px solid rgba(0,0,0,0.07)}
-.dash-cli-kpi-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--terra);opacity:.8}
-.dash-cli-kpi-val{font-size:22px;font-weight:700;color:var(--brown);margin:2px 0}
-.dash-cli-kpi-sub{font-size:10px;color:#aaa}
-.dash-cli-orders{background:#fff;border-radius:8px;border:1px solid rgba(0,0,0,0.07);overflow:hidden}
-.dash-cli-order-row{display:flex;align-items:center;justify-content:space-between;padding:7px 12px;border-bottom:1px solid #f5ede5;font-size:12px;gap:8px}
-.dash-cli-order-row:last-child{border-bottom:none}
-.dash-cli-section-title{font-size:11px;font-weight:700;color:var(--brown);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;opacity:.8}
 
-/* Dashboard admin */
-#dash-admin{display:none;background:var(--cream);border-bottom:2px solid rgba(0,0,0,0.08);padding:14px 28px;font-family:"Outfit",sans-serif}
-.dash-adm-kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
-.dash-adm-kpi{background:#fff;border-radius:8px;padding:10px 14px;border:1px solid rgba(0,0,0,0.07)}
-.dash-adm-kpi-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--terra);opacity:.8}
-.dash-adm-kpi-val{font-size:22px;font-weight:700;color:var(--brown);margin:2px 0}
-.dash-adm-kpi-sub{font-size:10px;color:#aaa}
-.dash-adm-section-title{font-size:11px;font-weight:700;color:var(--brown);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;opacity:.8}
-.dash-adm-com-block{background:#fff;border-radius:8px;border:1px solid rgba(0,0,0,0.07);margin-bottom:12px;overflow:hidden}
-.dash-adm-com-header{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--brown);color:#fff;cursor:pointer}
-.dash-adm-com-header-left{display:flex;align-items:center;gap:10px}
-.dash-adm-com-name{font-size:13px;font-weight:700}
-.dash-adm-com-stats{font-size:11px;opacity:.75;display:flex;gap:12px}
-.dash-adm-com-ca{font-size:13px;font-weight:700;color:var(--gold)}
-.dash-adm-com-body{display:none}
-.dash-adm-com-body.open{display:block}
-.dash-adm-order-row{display:flex;align-items:center;justify-content:space-between;padding:7px 14px;border-bottom:1px solid #f5ede5;font-size:12px;gap:8px}
-.dash-adm-order-row:last-child{border-bottom:none}
-.dash-adm-no-data{text-align:center;padding:16px;color:#b09080;font-size:12px}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
@@ -611,20 +570,13 @@ function fbDeleteInscription(id) {
         var adminBtn = document.getElementById("btn-admin");
         if(adminBtn) adminBtn.style.display = "inline-flex";
       }
+      var btnDB=document.getElementById("btn-dashboard");
+      if(btnDB) btnDB.style.display="inline-flex";
       if(data.role === "user"){
-        setTimeout(renderDashCommercial, 300);
-        var btnDash2=document.getElementById("btn-dashboard");
-        if(btnDash2) btnDash2.style.display="inline-flex";
       }
       if(data.role === "client"){
-        setTimeout(renderDashClient, 300);
-        var btnDash=document.getElementById("btn-dashboard");
-        if(btnDash) btnDash.style.display="inline-flex";
       }
       if(data.role === "admin"){
-        setTimeout(renderDashAdmin, 300);
-        var btnDash3=document.getElementById("btn-dashboard");
-        if(btnDash3) btnDash3.style.display="inline-flex";
       }
       // // ── Gestion de la remise selon le rôle ──
       if(data.role === 'client'){
@@ -1076,83 +1028,9 @@ function openHistoryModal(){
   }
 }
 
-function _openHistoryCommercial(commercialLogin){
-  var titre=document.getElementById("history-modal-title");
-  if(titre) titre.textContent="&#128203; Mes commandes & clients";
-  var container=document.getElementById("history-container");
-  if(container) container.innerHTML='<div style="text-align:center;padding:20px;color:#b0988a;font-size:12px">&#8987; Chargement&#8230;</div>';
-  var allComptes=[];
-  try{allComptes=JSON.parse(localStorage.getItem("mdm_comptes")||"[]");}catch(e){}
-  var clients=allComptes.filter(function(co){ return co.role==="client"&&co.commercial===commercialLogin; });
-  var logins=[commercialLogin].concat(clients.map(function(co){ return co.login.replace(/[^a-zA-Z0-9_-]/g,"_"); }));
-  var promises=logins.map(function(lg){
-    return fbLoadHistory(lg).then(function(orders){
-      return (orders||[]).map(function(o){ return Object.assign({},o,{_compte:lg}); });
-    }).catch(function(){
-      var local=[];
-      try{local=JSON.parse(localStorage.getItem("mdm_history_"+lg))||[];}catch(e){}
-      return local.map(function(o){ return Object.assign({},o,{_compte:lg}); });
-    });
-  });
-  Promise.all(promises).then(function(arrays){
-    var all=[].concat.apply([],arrays);
-    var ids={};
-    all=all.filter(function(o){if(ids[o.id])return false;ids[o.id]=true;return true;});
-    all.sort(function(a,b){return (b.id||0)-(a.id||0);});
-    _renderHistoryCommercial(all,clients,commercialLogin);
-  });
-}
 
-function _renderHistoryCommercial(orders,clients,commercialLogin){
-  var container=document.getElementById("history-container");
-  if(!container) return;
-  if(!orders.length){
-    container.innerHTML='<div style="text-align:center;padding:40px;color:#b0988a;font-size:13px">Aucune commande enregistr&#233;e.</div>';
-    return;
-  }
-  var totalNet=orders.reduce(function(s,o){return s+(o.totalNet||0);},0);
-  var html='<div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap">'
-    +'<div style="background:var(--cream);border-radius:8px;padding:8px 14px;font-size:12px"><span style="color:#888">Commandes&#160;:</span> <strong>'+orders.length+'</strong></div>'
-    +'<div style="background:var(--cream);border-radius:8px;padding:8px 14px;font-size:12px"><span style="color:#888">Clients suivis&#160;:</span> <strong>'+clients.length+'</strong></div>'
-    +'<div style="background:var(--cream);border-radius:8px;padding:8px 14px;font-size:12px"><span style="color:#888">Total HT&#160;:</span> <strong style="color:var(--terra)">'+fmt2(totalNet)+'</strong></div>'
-    +'</div>';
-  orders.forEach(function(o){
-    var isClient=o._compte!==commercialLogin;
-    var date=o.date?String(o.date).split(" ")[0]:"?";
-    var tn=typeof o.totalNet==="number"?fmt2(o.totalNet):"&#8212;";
-    html+='<div style="border:1px solid #e8d8cc;border-radius:10px;margin-bottom:10px;overflow:hidden">';
-    html+='<div style="background:var(--brown);color:#fff;padding:9px 14px;display:flex;align-items:center;'
-      +'justify-content:space-between;flex-wrap:wrap;gap:6px;cursor:pointer" onclick="_toggleHistItem(this)">';
-    html+='<div style="display:flex;align-items:center;gap:8px">';
-    if(isClient){
-      html+='<span style="background:var(--gold);color:var(--brown);font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px">&#127978; '+escHtml(o.magasin||o._compte)+'</span>';
-    } else {
-      html+='<span style="font-size:12px;font-weight:600">'+escHtml(o.magasin||"Ma commande")+'</span>';
-    }
-    html+='<span style="font-size:11px;opacity:.7">'+date+'</span></div>';
-    html+='<span style="font-size:13px;font-weight:700;color:var(--gold)">'+tn+'</span>';
-    html+='</div>';
-    html+='<div style="display:none;padding:10px 14px">';
-    if(o.articles&&o.articles.length){
-      html+='<table style="width:100%;border-collapse:collapse;font-size:11px"><thead><tr style="background:var(--cream)">'
-        +'<th style="padding:4px 8px;text-align:left">Code</th><th style="padding:4px 8px;text-align:left">D&#233;signation</th>'
-        +'<th style="padding:4px 8px;text-align:center">Qt&#233;</th><th style="padding:4px 8px;text-align:right">Total HT</th>'
-        +'</tr></thead><tbody>';
-      o.articles.forEach(function(a,ai){
-        html+='<tr style="'+(ai%2?'background:#fdfaf7':'')+'">'
-          +'<td style="padding:3px 8px;font-family:monospace;color:var(--brown)">'+escHtml(a.code||"")+'</td>'
-          +'<td style="padding:3px 8px">'+escHtml(a.libelle||"")+'</td>'
-          +'<td style="padding:3px 8px;text-align:center">'+a.qty+'</td>'
-          +'<td style="padding:3px 8px;text-align:right;font-weight:600;color:var(--terra)">'+(typeof a.totalHT==="number"?fmt2(a.totalHT):"&#8212;")+'</td></tr>';
-      });
-      html+='</tbody></table>';
-    } else {
-      html+='<div style="color:#ccc;font-size:12px;text-align:center;padding:8px">D&#233;tail non disponible</div>';
-    }
-    html+='</div></div>';
-  });
-  container.innerHTML=html;
-}
+
+
 function closeHistoryModal(){document.getElementById("modal-history").classList.remove("open");}
 
 function exportHistoriqueClient(){
@@ -1798,302 +1676,24 @@ function updateFranco(){
 }
 
 
-function _toggleHistItem(el){var b=el.nextElementSibling;if(b)b.style.display=b.style.display==='none'?'block':'none';}
+
 
 // ── Dashboard commercial ─────────────────────────────────────
-function renderDashCommercial(){
-  var login = window._userLogin || '';
-  var dash  = document.getElementById('dash-commercial');
-  if(!dash) return;
-  dash.style.display = 'block';
 
-  // Clients assignés
-  var allComptes = [];
-  try{ allComptes = JSON.parse(localStorage.getItem('mdm_comptes')||'[]'); }catch(e){}
-  var clients = allComptes.filter(function(co){ return co.role==='client' && co.commercial===login; });
-  var el = function(id){ return document.getElementById(id); };
-  if(el('dc-nb-clients')) el('dc-nb-clients').textContent = clients.length;
 
-  // Charger les commandes de tous les clients depuis Firebase + localStorage
-  var logins = clients.map(function(co){ return co.login.replace(/[^a-zA-Z0-9_-]/g,'_'); });
-  if(!logins.length){
-    if(el('dc-nb-orders')) el('dc-nb-orders').textContent = '0';
-    if(el('dc-ca'))        el('dc-ca').textContent        = '0\u00a0\u20ac';
-    if(el('dc-avg'))       el('dc-avg').textContent       = '\u2014';
-    var ol=el('dc-orders-list');
-    if(ol) ol.innerHTML='<div style="text-align:center;padding:16px;color:#b09080;font-size:12px">Aucun client assign\u00e9.</div>';
-    return;
-  }
 
-  var promises = logins.map(function(lg){
-    return fbLoadHistory(lg).then(function(orders){
-      return (orders||[]).map(function(o){ return Object.assign({},o,{_compte:lg}); });
-    }).catch(function(){
-      var local=[];
-      try{local=JSON.parse(localStorage.getItem('mdm_history_'+lg))||[];}catch(e){}
-      return local.map(function(o){ return Object.assign({},o,{_compte:lg}); });
-    });
-  });
-
-  Promise.all(promises).then(function(arrays){
-    var all=[].concat.apply([],arrays);
-    var ids={};
-    all=all.filter(function(o){if(ids[o.id])return false;ids[o.id]=true;return true;});
-    all.sort(function(a,b){return (b.id||0)-(a.id||0);});
-
-    var nb  = all.length;
-    var ca  = all.reduce(function(s,o){return s+(o.totalNet||0);},0);
-    var avg = nb>0 ? ca/nb : 0;
-
-    if(el('dc-nb-orders')) el('dc-nb-orders').textContent = nb;
-    if(el('dc-ca'))        el('dc-ca').textContent        = _dcFmt(ca);
-    if(el('dc-avg'))       el('dc-avg').textContent       = nb>0 ? _dcFmt(avg) : '\u2014';
-
-    // Afficher les 6 dernières commandes
-    var ol=el('dc-orders-list');
-    if(!ol) return;
-    if(!all.length){
-      ol.innerHTML='<div style="text-align:center;padding:16px;color:#b09080;font-size:12px">Aucune commande enregistr\u00e9e.</div>';
-      return;
-    }
-    var html='';
-    all.slice(0,6).forEach(function(o){
-      var date=o.date?String(o.date).split(' ')[0]:'?';
-      var tn=typeof o.totalNet==='number'?o.totalNet.toFixed(2).replace('.',',')+'\u00a0\u20ac':'\u2014';
-      var client=allComptes.find(function(co){return co.login.replace(/[^a-zA-Z0-9_-]/g,'_')===o._compte;});
-      var nomClient=client?client.nom:o._compte;
-      html+='<div class="dash-com-order-row">'
-        +'<span style="font-weight:600;color:var(--brown);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+escHtml(o.magasin||nomClient)+'</span>'
-        +'<span style="font-size:10px;color:#aaa;background:var(--cream);padding:2px 7px;border-radius:8px">'+escHtml(nomClient)+'</span>'
-        +'<span style="font-size:11px;color:#aaa">'+date+'</span>'
-        +'<span style="font-weight:700;color:var(--terra)">'+tn+'</span>'
-        +'</div>';
-    });
-    ol.innerHTML=html;
-  });
-}
-
-function _dcFmt(n){
-  if(n>=1000) return (n/1000).toFixed(1).replace('.',',')+'\u00a0k\u00a0\u20ac';
-  return n.toFixed(0)+'\u00a0\u20ac';
-}
 
 
 // ── Dashboard client ──────────────────────────────────────────
-function renderDashClient(){
-  var login = (window._userLogin||'guest').replace(/[^a-zA-Z0-9_-]/g,'_');
-  var dash  = document.getElementById('dash-client');
-  if(!dash) return;
-  dash.style.display = 'block';
 
-  var el = function(id){ return document.getElementById(id); };
 
-  // Franco KPI
-  var franco = window._franco || 0;
-  if(franco > 0){
-    var kpi = el('dcl-franco-kpi');
-    if(kpi) kpi.style.display = 'block';
-    if(el('dcl-franco-val')) el('dcl-franco-val').textContent = franco.toFixed(0)+'\u00a0\u20ac';
-    if(el('dcl-franco-sub')) el('dcl-franco-sub').textContent = 'minimum HT';
-  }
 
-  // Affichage immédiat depuis localStorage
-  var local = [];
-  try{ local = JSON.parse(localStorage.getItem('mdm_history_'+login)||'[]'); }catch(e){}
-  _renderDashClientOrders(local, el);
-
-  // Fusion Firebase en arrière-plan
-  fbLoadHistory(login).then(function(fbOrders){
-    if(!fbOrders || !fbOrders.length) return;
-    var ids = {}; local.forEach(function(o){ids[o.id]=true;});
-    fbOrders.forEach(function(o){if(!ids[o.id]){local.push(o);ids[o.id]=true;}});
-    local.sort(function(a,b){return (b.id||0)-(a.id||0);});
-    if(local.length>50) local=local.slice(0,50);
-    localStorage.setItem('mdm_history_'+login, JSON.stringify(local));
-    _renderDashClientOrders(local, el);
-  }).catch(function(){});
-}
-
-function _renderDashClientOrders(orders, el){
-  var nb  = orders.length;
-  var ca  = orders.reduce(function(s,o){return s+(o.totalNet||0);},0);
-  var last = orders.length ? orders[0] : null;
-
-  if(el('dcl-nb-orders')) el('dcl-nb-orders').textContent = nb;
-  if(el('dcl-ca'))        el('dcl-ca').textContent        = _dcFmt(ca);
-
-  if(last){
-    var date = last.date ? String(last.date).split(' ')[0] : '?';
-    if(el('dcl-last-date'))  el('dcl-last-date').textContent  = date;
-    if(el('dcl-last-total')) el('dcl-last-total').textContent =
-      typeof last.totalNet==='number' ? last.totalNet.toFixed(2).replace('.',',')+'\u00a0\u20ac HT' : '';
-  } else {
-    if(el('dcl-last-date')) el('dcl-last-date').textContent = '\u2014';
-  }
-
-  var ol = el('dcl-orders-list');
-  if(!ol) return;
-  if(!orders.length){
-    ol.innerHTML='<div style="text-align:center;padding:16px;color:#b09080;font-size:12px">Aucune commande enregistr\u00e9e. Passez votre premi\u00e8re commande !</div>';
-    return;
-  }
-  var html='';
-  orders.slice(0,6).forEach(function(o){
-    var date = o.date ? String(o.date).split(' ')[0] : '?';
-    var tn   = typeof o.totalNet==='number' ? o.totalNet.toFixed(2).replace('.',',')+'\u00a0\u20ac' : '\u2014';
-    var refs = o.nbRefs  || (o.articles ? o.articles.length : '?');
-    var cols = o.nbColis || '?';
-    html += '<div class="dash-cli-order-row">'
-      +'<span style="font-weight:600;color:var(--brown);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+escHtml(o.magasin||'Commande')+'</span>'
-      +'<span style="font-size:10px;color:#aaa;background:var(--cream);padding:2px 7px;border-radius:8px">'+refs+' r\u00e9f. &bull; '+cols+' colis</span>'
-      +'<span style="font-size:11px;color:#aaa">'+date+'</span>'
-      +'<span style="font-weight:700;color:var(--terra)">'+tn+'</span>'
-      +'</div>';
-  });
-  ol.innerHTML = html;
-}
 
 
 // ── Dashboard admin ───────────────────────────────────────────
-function renderDashAdmin(){
-  var dash = document.getElementById('dash-admin');
-  if(!dash) return;
-  dash.style.display = 'block';
 
-  var el = function(id){ return document.getElementById(id); };
 
-  // Lire tous les comptes
-  var allComptes = [];
-  try{ allComptes = JSON.parse(localStorage.getItem('mdm_comptes')||'[]'); }catch(e){}
-  var clients     = allComptes.filter(function(c){ return c.role==='client'; });
-  var commerciaux = allComptes.filter(function(c){ return c.role==='user'; });
 
-  if(el('da-nb-clients')) el('da-nb-clients').textContent = clients.length;
-  if(el('da-nb-com'))     el('da-nb-com').textContent     = commerciaux.length;
-
-  // Charger toutes les commandes de tous les clients depuis Firebase
-  var clientLogins = clients.map(function(co){
-    return co.login.replace(/[^a-zA-Z0-9_-]/g,'_');
-  });
-
-  if(!clientLogins.length){
-    if(el('da-nb-orders')) el('da-nb-orders').textContent = '0';
-    if(el('da-ca'))        el('da-ca').textContent        = '0\u00a0\u20ac';
-    var cont = el('da-by-commercial');
-    if(cont) cont.innerHTML = '<div class="dash-adm-no-data">Aucun client enregistr\u00e9.</div>';
-    return;
-  }
-
-  var promises = clientLogins.map(function(lg){
-    return fbLoadHistory(lg).then(function(orders){
-      return (orders||[]).map(function(o){ return Object.assign({},o,{_login:lg}); });
-    }).catch(function(){
-      var local=[];
-      try{local=JSON.parse(localStorage.getItem('mdm_history_'+lg)||'[]');}catch(e){}
-      return local.map(function(o){ return Object.assign({},o,{_login:lg}); });
-    });
-  });
-
-  Promise.all(promises).then(function(arrays){
-    var all = [].concat.apply([],arrays);
-    // Dédoublonner
-    var ids={};
-    all = all.filter(function(o){if(ids[o.id])return false;ids[o.id]=true;return true;});
-    all.sort(function(a,b){return (b.id||0)-(a.id||0);});
-
-    var nb = all.length;
-    var ca = all.reduce(function(s,o){return s+(o.totalNet||0);},0);
-    if(el('da-nb-orders')) el('da-nb-orders').textContent = nb;
-    if(el('da-ca'))        el('da-ca').textContent        = _dcFmt(ca);
-
-    // Grouper par commercial
-    // Construire map login_client → commercial
-    var clientComMap = {};
-    clients.forEach(function(co){
-      clientComMap[co.login.replace(/[^a-zA-Z0-9_-]/g,'_')] = co.commercial || '__aucun__';
-    });
-
-    // Grouper les commandes par commercial
-    var byCommercial = {}; // {commercial_login: [orders]}
-    all.forEach(function(o){
-      var com = clientComMap[o._login] || '__aucun__';
-      if(!byCommercial[com]) byCommercial[com] = [];
-      byCommercial[com].push(o);
-    });
-
-    // Construire la map login → nom pour les commerciaux
-    var comNameMap = {};
-    commerciaux.forEach(function(co){ comNameMap[co.login] = co.nom; });
-
-    // Afficher — d'abord les commerciaux assignés, puis "Sans commercial"
-    var comKeys = Object.keys(byCommercial).sort(function(a,b){
-      if(a==='__aucun__') return 1;
-      if(b==='__aucun__') return -1;
-      return (comNameMap[a]||a).localeCompare(comNameMap[b]||b);
-    });
-
-    var container = el('da-by-commercial');
-    if(!container) return;
-    if(!comKeys.length){
-      container.innerHTML = '<div class="dash-adm-no-data">Aucune commande enregistr\u00e9e.</div>';
-      return;
-    }
-
-    var html = '';
-    comKeys.forEach(function(comLogin, idx){
-      var orders  = byCommercial[comLogin];
-      var comNom  = comLogin==='__aucun__' ? 'Sans commercial assign\u00e9' : (comNameMap[comLogin]||comLogin);
-      var comCA   = orders.reduce(function(s,o){return s+(o.totalNet||0);},0);
-      var nbCom   = orders.length;
-
-      // Compter clients de ce commercial
-      var nbCliCom = clients.filter(function(co){
-        return (co.commercial||'__aucun__') === comLogin ||
-               (comLogin==='__aucun__' && !co.commercial);
-      }).length;
-
-      html += '<div class="dash-adm-com-block">';
-      html += '<div class="dash-adm-com-header" onclick="_toggleAdmCom(this)">';
-      html += '<div class="dash-adm-com-header-left">';
-      html += '<span class="dash-adm-com-name">&#128188; '+escHtml(comNom)+'</span>';
-      html += '<span class="dash-adm-com-stats">'
-        + nbCliCom+' client'+(nbCliCom>1?'s':'')
-        + ' &bull; '+nbCom+' commande'+(nbCom>1?'s':'')
-        +'</span>';
-      html += '</div>';
-      html += '<span class="dash-adm-com-ca">'+_dcFmt(comCA)+'</span>';
-      html += '</div>';
-
-      // Corps — liste des commandes (ouvert par défaut pour le 1er)
-      html += '<div class="dash-adm-com-body'+(idx===0?' open':'')+'">';
-      orders.slice(0,10).forEach(function(o){
-        var date   = o.date ? String(o.date).split(' ')[0] : '?';
-        var tn     = typeof o.totalNet==='number' ? o.totalNet.toFixed(2).replace('.',',')+'\u00a0\u20ac' : '\u2014';
-        var client = clients.find(function(co){
-          return co.login.replace(/[^a-zA-Z0-9_-]/g,'_')===o._login;
-        });
-        var clientNom = client ? client.nom : o._login;
-        html += '<div class="dash-adm-order-row">'
-          +'<span style="font-weight:600;color:var(--brown);max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+escHtml(o.magasin||clientNom)+'</span>'
-          +'<span style="font-size:10px;color:#888;background:var(--cream);padding:2px 7px;border-radius:8px">'+escHtml(clientNom)+'</span>'
-          +'<span style="font-size:11px;color:#aaa">'+date+'</span>'
-          +'<span style="font-weight:700;color:var(--terra)">'+tn+'</span>'
-          +'</div>';
-      });
-      if(orders.length>10){
-        html += '<div style="text-align:center;padding:8px;font-size:11px;color:#aaa">+'+(orders.length-10)+' autre'+(orders.length-10>1?'s':'')+'</div>';
-      }
-      html += '</div></div>';
-    });
-
-    container.innerHTML = html;
-  });
-}
-
-function _toggleAdmCom(header){
-  var body = header.nextElementSibling;
-  if(body) body.classList.toggle('open');
-}
 
 
 function scrollToDashboard(){

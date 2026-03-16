@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tableau de bord — Moulin des Moines</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Outfit",sans-serif;background:var(--cream);color:var(--brown);min-height:100vh}
+
+:root{
+  --brown: #78503C; --terra: #C87864; --cream: #FDF5EE;
+  --gold: #D2B469;  --green: #1A5C2E; --white: #fff;
+  --shadow: rgba(120,80,60,0.10);
+}
+
+/* Header */
+.dash-header{background:var(--brown);color:#fff;padding:14px 28px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 12px var(--shadow)}
+.dash-logo{font-size:18px;font-weight:700;letter-spacing:.5px}
+.dash-logo span{color:var(--gold)}
+.dash-user{font-size:12px;opacity:.8;text-align:right;line-height:1.6}
+.dash-header-actions{display:flex;align-items:center;gap:10px}
+.btn-header{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border:1.5px solid rgba(255,255,255,.35);border-radius:6px;background:transparent;color:#fff;font-family:"Outfit",sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .18s}
+.btn-header:hover{background:rgba(255,255,255,.12)}
+.btn-header.primary{background:var(--gold);color:var(--brown);border-color:var(--gold)}
+.btn-header.primary:hover{opacity:.9}
+.btn-header.danger{border-color:rgba(255,100,80,.5);color:#ffb0a0}
+
+/* Layout */
+.dash-body{max-width:1100px;margin:0 auto;padding:28px 20px}
+.dash-title{font-size:22px;font-weight:700;color:var(--brown);margin-bottom:4px}
+.dash-sub{font-size:13px;color:#b09080;margin-bottom:24px}
+
+/* KPI grid */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px}
+.kpi-card{background:#fff;border-radius:12px;padding:16px 18px;box-shadow:0 2px 10px var(--shadow);border:1px solid rgba(0,0,0,0.05)}
+.kpi-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--terra);opacity:.8;margin-bottom:6px}
+.kpi-val{font-size:26px;font-weight:700;color:var(--brown);line-height:1}
+.kpi-sub{font-size:11px;color:#aaa;margin-top:4px}
+
+/* Section */
+.dash-section{background:#fff;border-radius:12px;box-shadow:0 2px 10px var(--shadow);overflow:hidden;margin-bottom:20px;border:1px solid rgba(0,0,0,0.05)}
+.dash-section-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #f5ede5}
+.dash-section-title{font-size:13px;font-weight:700;color:var(--brown)}
+.dash-section-badge{background:var(--cream);color:var(--terra);font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px}
+
+/* Order rows */
+.order-row{display:flex;align-items:center;justify-content:space-between;padding:10px 18px;border-bottom:1px solid #faf4ef;gap:10px;transition:background .15s}
+.order-row:last-child{border-bottom:none}
+.order-row:hover{background:#fdf8f5}
+.order-mag{font-weight:600;color:var(--brown);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.order-client-badge{font-size:10px;color:#888;background:var(--cream);padding:2px 8px;border-radius:10px;white-space:nowrap}
+.order-date{font-size:11px;color:#bbb;white-space:nowrap}
+.order-total{font-weight:700;color:var(--terra);white-space:nowrap}
+.order-detail{display:none;padding:10px 18px 14px;background:#fdfaf7;border-bottom:1px solid #f5ede5}
+.order-detail table{width:100%;border-collapse:collapse;font-size:11px}
+.order-detail th{background:var(--cream);padding:5px 8px;text-align:left;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.3px;color:var(--terra)}
+.order-detail td{padding:5px 8px;border-bottom:1px solid #f5ede5}
+.order-row.expandable{cursor:pointer}
+
+/* Commercial blocks */
+.com-block{border-bottom:1px solid #f5ede5}
+.com-block:last-child{border-bottom:none}
+.com-block-header{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;cursor:pointer;transition:background .15s}
+.com-block-header:hover{background:#fdf8f5}
+.com-block-name{font-size:13px;font-weight:700;color:var(--brown);display:flex;align-items:center;gap:8px}
+.com-block-stats{font-size:11px;color:#aaa;display:flex;gap:12px}
+.com-block-ca{font-size:13px;font-weight:700;color:var(--terra)}
+.com-block-body{display:none}
+.com-block-body.open{display:block}
+.chevron{font-size:11px;color:#ccc;transition:transform .2s}
+.chevron.open{transform:rotate(180deg)}
+
+/* Aucune donnée */
+.empty-state{text-align:center;padding:36px 20px;color:#c0a898;font-size:13px}
+
+/* Responsive */
+@media(max-width:640px){
+  .kpi-grid{grid-template-columns:repeat(2,1fr)}
+  .dash-header{flex-direction:column;gap:10px;align-items:flex-start}
+}
+</style>
+</head>
+<body>
+
+<div class="dash-header">
+  <div>
+    <div class="dash-logo">Moulin <span>des</span> Moines</div>
+    <div class="dash-user" id="dash-user-info">Chargement…</div>
+  </div>
+  <div class="dash-header-actions">
+    <button class="btn-header primary" onclick="window.location.href='commande.html'">&#128221; Bon de commande</button>
+    <button class="btn-header danger" onclick="logout()">&#x23FB; Déconnexion</button>
+  </div>
+</div>
+
+<div class="dash-body">
+  <div class="dash-title" id="dash-page-title">Tableau de bord</div>
+  <div class="dash-sub" id="dash-page-sub">Vue d&#8217;ensemble de votre activité</div>
+
+  <!-- KPI -->
+  <div class="kpi-grid" id="kpi-grid"></div>
+
+  <!-- Contenu dynamique selon rôle -->
+  <div id="dash-content"><div class="empty-state">Chargement…</div></div>
+</div>
+
+<script>
+var FIREBASE_CONFIG = {
+  apiKey:            "AIzaSyB000QDa4c-vMjO1Xuimw58iiRvwgbF1zc",
+  authDomain:        "mdm-bdc26.firebaseapp.com",
+  projectId:         "mdm-bdc26",
+  storageBucket:     "mdm-bdc26.firebasestorage.app",
+  messagingSenderId: "52658530893",
+  appId:             "1:52658530893:web:166626ae4d681465ddca04"
+};
+
+var _db = null;
+var _fbReady = false;
+
+function initFirebase() {
+  if (_fbReady) return Promise.resolve(_db);
+  return new Promise(function(resolve, reject) {
+    if (typeof firebase === 'undefined') {
+      reject(new Error('Firebase SDK non chargé'));
+      return;
+    }
+    if (!firebase.apps || !firebase.apps.length) {
+      firebase.initializeApp(FIREBASE_CONFIG);
+    }
+    _db = firebase.firestore();
+    _fbReady = true;
+    resolve(_db);
+  });
+}
+
+// ── Comptes ──────────────────────────────────────────────────
+
+function fbLoadComptes() {
+  return initFirebase().then(function(db) {
+    return db.collection('comptes').get().then(function(snap) {
+      return snap.docs.map(function(d) { return Object.assign({_id: d.id}, d.data()); });
+    });
+  });
+}
+
+function fbSaveComptes(comptes) {
+  return initFirebase().then(function(db) {
+    var batch = db.batch();
+    // Supprimer tous puis réécrire (simple pour un petit volume)
+    return db.collection('comptes').get().then(function(snap) {
+      snap.docs.forEach(function(d) { batch.delete(d.ref); });
+      comptes.forEach(function(c) {
+        var ref = db.collection('comptes').doc(c.login);
+        batch.set(ref, c);
+      });
+      return batch.commit();
+    });
+  });
+}
+
+function fbSaveCompte(compte) {
+  return initFirebase().then(function(db) {
+    return db.collection('comptes').doc(compte.login).set(compte);
+  });
+}
+
+function fbDeleteCompte(login) {
+  return initFirebase().then(function(db) {
+    return db.collection('comptes').doc(login).delete();
+  });
+}
+
+// ── Historique commandes ─────────────────────────────────────
+
+function fbSaveOrder(login, order) {
+  return initFirebase().then(function(db) {
+    return db.collection('historique')
+      .doc(login)
+      .collection('commandes')
+      .doc(String(order.id || Date.now()))
+      .set(order);
+  });
+}
+
+function fbLoadHistory(login) {
+  return initFirebase().then(function(db) {
+    return db.collection('historique')
+      .doc(login)
+      .collection('commandes')
+      .orderBy('id', 'desc')
+      .limit(50)
+      .get()
+      .then(function(snap) {
+        return snap.docs.map(function(d) { return d.data(); });
+      });
+  });
+}
+
+function fbLoadAllHistory() {
+  return initFirebase().then(function(db) {
+    return db.collection('historique').get().then(function(snap) {
+      var promises = snap.docs.map(function(loginDoc) {
+        return loginDoc.ref.collection('commandes')
+          .orderBy('id', 'desc').limit(50).get()
+          .then(function(cmdSnap) {
+            return cmdSnap.docs.map(function(d) {
+              return Object.assign({_login: loginDoc.id}, d.data());
+            });
+          });
+      });
+      return Promise.all(promises).then(function(arrays) {
+        return [].concat.apply([], arrays).sort(function(a,b) {
+          return (b.id||0) - (a.id||0);
+        });
+      });
+    });
+  });
+}
+
+var ROLE_THEMES = {
+  client: {brown:'#78503C',terra:'#C87864',cream:'#FDF5EE',gold:'#D2B469',green:'#1A5C2E',shadow:'rgba(120,80,60,0.12)'},
+  user:   {brown:'#4A6898',terra:'#7094C8',cream:'#F2F5FB',gold:'#90B0E0',green:'#4A7C6E',shadow:'rgba(74,104,152,0.10)'},
+  admin:  {brown:'#1B2A4A',terra:'#2E4878',cream:'#F0F4FA',gold:'#A8C0E8',green:'#5B9B7A',shadow:'rgba(27,42,74,0.12)'}
+};
+
+// ── Utilitaires ───────────────────────────────────────────────
+function fmt2(n){ return typeof n==='number' ? n.toFixed(2).replace('.',',')+'\u00a0\u20ac' : '\u2014'; }
+function fmtCA(n){
+  if(!n) return '0\u00a0\u20ac';
+  if(n>=1000) return (n/1000).toFixed(1).replace('.',',')+'\u00a0k\u00a0\u20ac';
+  return n.toFixed(0)+'\u00a0\u20ac';
+}
+function escH(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function logout(){
+  sessionStorage.removeItem('mdm_token');
+  window.location.href='index.html';
+}
+
+// ── Appliquer le thème selon le rôle ─────────────────────────
+function applyTheme(role){
+  var t = ROLE_THEMES[role] || ROLE_THEMES.client;
+  var r = document.documentElement;
+  r.style.setProperty('--brown', t.brown);
+  r.style.setProperty('--terra', t.terra);
+  r.style.setProperty('--cream', t.cream);
+  r.style.setProperty('--gold',  t.gold);
+  r.style.setProperty('--green', t.green||'#1A5C2E');
+  r.style.setProperty('--shadow', t.shadow||'rgba(120,80,60,0.10)');
+}
+
+// ── KPI helper ────────────────────────────────────────────────
+function setKPI(id, val, sub){
+  var el=document.getElementById(id);
+  if(el){
+    el.querySelector('.kpi-val').textContent=val;
+    if(sub) el.querySelector('.kpi-sub').textContent=sub;
+  }
+}
+function makeKPI(id,label,val,sub){
+  return '<div class="kpi-card" id="'+id+'">'
+    +'<div class="kpi-label">'+label+'</div>'
+    +'<div class="kpi-val">'+val+'</div>'
+    +'<div class="kpi-sub">'+sub+'</div>'
+    +'</div>';
+}
+
+// ── Toggle détail commande ────────────────────────────────────
+function toggleOrder(row){
+  var detail = row.nextElementSibling;
+  if(!detail) return;
+  var open = detail.style.display==='block';
+  detail.style.display = open ? 'none' : 'block';
+}
+function toggleComBlock(header){
+  var body   = header.nextElementSibling;
+  var chev   = header.querySelector('.chevron');
+  if(!body) return;
+  var open   = body.classList.toggle('open');
+  if(chev) chev.classList.toggle('open', open);
+}
+
+// ── Construire une ligne commande ─────────────────────────────
+function orderRow(o, clientNom, showClient){
+  var date = o.date ? String(o.date).split(' ')[0] : '?';
+  var tn   = fmt2(o.totalNet);
+  var refs = o.nbRefs||(o.articles?o.articles.length:'?');
+  var cols = o.nbColis||'?';
+  var html = '<div class="order-row expandable" onclick="toggleOrder(this)">'
+    +'<span class="order-mag">'+escH(o.magasin||clientNom||'?')+'</span>'
+    +(showClient?'<span class="order-client-badge">'+escH(clientNom||'')+'</span>':'<span class="order-client-badge">'+refs+' réf. · '+cols+' colis</span>')
+    +'<span class="order-date">'+date+'</span>'
+    +'<span class="order-total">'+tn+'</span>'
+    +'</div>';
+  // Détail articles
+  html += '<div class="order-detail">';
+  if(o.articles && o.articles.length){
+    html += '<table><thead><tr><th>Code</th><th>Désignation</th><th>Qté</th><th>Total HT</th></tr></thead><tbody>';
+    o.articles.forEach(function(a){
+      html += '<tr>'
+        +'<td style="font-family:monospace;color:var(--brown)">'+escH(a.code||'')+'</td>'
+        +'<td>'+escH(a.libelle||'')+'</td>'
+        +'<td style="text-align:center">'+a.qty+'</td>'
+        +'<td style="text-align:right;font-weight:600;color:var(--terra)">'+fmt2(a.totalHT)+'</td>'
+        +'</tr>';
+    });
+    html += '</tbody></table>';
+  } else {
+    html += '<div style="color:#ccc;font-size:11px;text-align:center;padding:6px">Détail non disponible</div>';
+  }
+  html += '</div>';
+  return html;
+}
+
+// ── DASHBOARD CLIENT ──────────────────────────────────────────
+function renderClient(data){
+  document.getElementById('dash-page-title').textContent = 'Bonjour, '+escH(data.nom||data.login)+' \u2728';
+  document.getElementById('dash-page-sub').textContent   = 'Retrouvez ici l\u2019historique de vos commandes.';
+
+  var login = (data.login||'guest').replace(/[^a-zA-Z0-9_-]/g,'_');
+  var franco= parseFloat(data.franco)||0;
+
+  // KPI placeholders
+  var kpis = makeKPI('kpi-orders','Commandes','\u2014','passées')
+    + makeKPI('kpi-ca','Total HT','\u2014','cumul commandes')
+    + makeKPI('kpi-last','Dernière commande','\u2014','date')
+    + (franco>0 ? makeKPI('kpi-franco','Franco de port',franco.toFixed(0)+'\u00a0\u20ac','minimum HT') : '');
+  document.getElementById('kpi-grid').innerHTML = kpis;
+
+  // Charger historique
+  var local=[];
+  try{local=JSON.parse(localStorage.getItem('mdm_history_'+login)||'[]');}catch(e){}
+  renderClientOrders(local, franco);
+
+  fbLoadHistory(login).then(function(fbOrders){
+    if(!fbOrders||!fbOrders.length) return;
+    var ids={}; local.forEach(function(o){ids[o.id]=true;});
+    fbOrders.forEach(function(o){if(!ids[o.id]){local.push(o);ids[o.id]=true;}});
+    local.sort(function(a,b){return (b.id||0)-(a.id||0);});
+    if(local.length>50) local=local.slice(0,50);
+    localStorage.setItem('mdm_history_'+login,JSON.stringify(local));
+    renderClientOrders(local, franco);
+  }).catch(function(){});
+}
+
+function renderClientOrders(orders, franco){
+  var nb  = orders.length;
+  var ca  = orders.reduce(function(s,o){return s+(o.totalNet||0);},0);
+  var last= orders[0];
+  setKPI('kpi-orders', nb, nb===0?'aucune':nb>1?'commandes':'commande');
+  setKPI('kpi-ca', fmtCA(ca), 'cumul commandes');
+  if(last){
+    var d = last.date?String(last.date).split(' ')[0]:'?';
+    setKPI('kpi-last', d, fmt2(last.totalNet));
+  }
+  var content = document.getElementById('dash-content');
+  if(!content) return;
+  if(!orders.length){
+    content.innerHTML = '<div class="dash-section"><div class="empty-state">Aucune commande enregistrée.\nPassez votre première commande !</div></div>';
+    return;
+  }
+  var html = '<div class="dash-section">'
+    +'<div class="dash-section-header">'
+    +'<span class="dash-section-title">\u23f3 Historique de mes commandes</span>'
+    +'<span class="dash-section-badge">'+nb+' commande'+(nb>1?'s':'')+'</span>'
+    +'</div>';
+  orders.forEach(function(o){ html += orderRow(o, null, false); });
+  html += '</div>';
+  content.innerHTML = html;
+}
+
+// ── DASHBOARD COMMERCIAL ──────────────────────────────────────
+function renderCommercial(data){
+  document.getElementById('dash-page-title').textContent = 'Bonjour, '+escH(data.nom||data.login)+' \u2728';
+  document.getElementById('dash-page-sub').textContent   = 'Activité de vos clients assignés.';
+
+  var login = data.login||'';
+  var allComptes=[];
+  try{allComptes=JSON.parse(localStorage.getItem('mdm_comptes')||'[]');}catch(e){}
+  var clients = allComptes.filter(function(co){return co.role==='client'&&co.commercial===login;});
+
+  var kpis = makeKPI('kpi-clients','Mes clients',clients.length,'assignés')
+    + makeKPI('kpi-orders','Commandes','\u2014','enregistrées')
+    + makeKPI('kpi-ca','CA total HT','\u2014','cumul clients')
+    + makeKPI('kpi-avg','Commande moy.','\u2014','par commande');
+  document.getElementById('kpi-grid').innerHTML = kpis;
+
+  if(!clients.length){
+    document.getElementById('dash-content').innerHTML = '<div class="dash-section"><div class="empty-state">Aucun client assigné.</div></div>';
+    return;
+  }
+
+  var logins = clients.map(function(co){return co.login.replace(/[^a-zA-Z0-9_-]/g,'_');});
+  var promises = logins.map(function(lg){
+    return fbLoadHistory(lg).then(function(orders){
+      return (orders||[]).map(function(o){return Object.assign({},o,{_login:lg});});
+    }).catch(function(){
+      var local=[];
+      try{local=JSON.parse(localStorage.getItem('mdm_history_'+lg)||'[]');}catch(e){}
+      return local.map(function(o){return Object.assign({},o,{_login:lg});});
+    });
+  });
+
+  Promise.all(promises).then(function(arrays){
+    var all=[].concat.apply([],arrays);
+    var ids={}; all=all.filter(function(o){if(ids[o.id])return false;ids[o.id]=true;return true;});
+    all.sort(function(a,b){return (b.id||0)-(a.id||0);});
+
+    var nb  = all.length;
+    var ca  = all.reduce(function(s,o){return s+(o.totalNet||0);},0);
+    var avg = nb>0?ca/nb:0;
+    setKPI('kpi-orders', nb, 'enregistrées');
+    setKPI('kpi-ca',  fmtCA(ca),  'cumul clients');
+    setKPI('kpi-avg', fmtCA(avg), 'par commande');
+
+    var content = document.getElementById('dash-content');
+    if(!content) return;
+    if(!all.length){
+      content.innerHTML = '<div class="dash-section"><div class="empty-state">Aucune commande enregistrée.</div></div>';
+      return;
+    }
+    var html = '<div class="dash-section">'
+      +'<div class="dash-section-header">'
+      +'<span class="dash-section-title">\u23f3 Dernières commandes de mes clients</span>'
+      +'<span class="dash-section-badge">'+nb+' commande'+(nb>1?'s':'')+'</span>'
+      +'</div>';
+    all.forEach(function(o){
+      var client = clients.find(function(co){return co.login.replace(/[^a-zA-Z0-9_-]/g,'_')===o._login;});
+      html += orderRow(o, client?client.nom:o._login, true);
+    });
+    html += '</div>';
+    content.innerHTML = html;
+  });
+}
+
+// ── DASHBOARD ADMIN ───────────────────────────────────────────
+function renderAdmin(data){
+  document.getElementById('dash-page-title').textContent = 'Tableau de bord admin';
+  document.getElementById('dash-page-sub').textContent   = 'Toutes les commandes classées par commercial.';
+
+  var allComptes=[];
+  try{allComptes=JSON.parse(localStorage.getItem('mdm_comptes')||'[]');}catch(e){}
+  var clients     = allComptes.filter(function(c){return c.role==='client';});
+  var commerciaux = allComptes.filter(function(c){return c.role==='user';});
+
+  var kpis = makeKPI('kpi-clients','Clients',clients.length,'actifs')
+    + makeKPI('kpi-com','Commerciaux',commerciaux.length,'actifs')
+    + makeKPI('kpi-orders','Commandes','\u2014','enregistrées')
+    + makeKPI('kpi-ca','CA total HT','\u2014','cumul all');
+  document.getElementById('kpi-grid').innerHTML = kpis;
+
+  var logins = clients.map(function(co){return co.login.replace(/[^a-zA-Z0-9_-]/g,'_');});
+  if(!logins.length){
+    document.getElementById('dash-content').innerHTML='<div class="dash-section"><div class="empty-state">Aucun client.</div></div>';
+    return;
+  }
+
+  var promises = logins.map(function(lg){
+    return fbLoadHistory(lg).then(function(orders){
+      return (orders||[]).map(function(o){return Object.assign({},o,{_login:lg});});
+    }).catch(function(){
+      var local=[];
+      try{local=JSON.parse(localStorage.getItem('mdm_history_'+lg)||'[]');}catch(e){}
+      return local.map(function(o){return Object.assign({},o,{_login:lg});});
+    });
+  });
+
+  Promise.all(promises).then(function(arrays){
+    var all=[].concat.apply([],arrays);
+    var ids={}; all=all.filter(function(o){if(ids[o.id])return false;ids[o.id]=true;return true;});
+    all.sort(function(a,b){return (b.id||0)-(a.id||0);});
+
+    setKPI('kpi-orders', all.length, 'enregistrées');
+    setKPI('kpi-ca', fmtCA(all.reduce(function(s,o){return s+(o.totalNet||0);},0)), 'cumul all');
+
+    // Grouper par commercial
+    var clientComMap={};
+    clients.forEach(function(co){
+      clientComMap[co.login.replace(/[^a-zA-Z0-9_-]/g,'_')]=co.commercial||'__aucun__';
+    });
+    var comNameMap={};
+    commerciaux.forEach(function(co){comNameMap[co.login]=co.nom;});
+
+    var byCommercial={};
+    all.forEach(function(o){
+      var com=clientComMap[o._login]||'__aucun__';
+      if(!byCommercial[com])byCommercial[com]=[];
+      byCommercial[com].push(o);
+    });
+
+    var keys=Object.keys(byCommercial).sort(function(a,b){
+      if(a==='__aucun__')return 1; if(b==='__aucun__')return -1;
+      return (comNameMap[a]||a).localeCompare(comNameMap[b]||b);
+    });
+
+    var content=document.getElementById('dash-content');
+    if(!content)return;
+    var html='<div class="dash-section">'
+      +'<div class="dash-section-header"><span class="dash-section-title">\u23f3 Commandes par commercial</span></div>';
+
+    keys.forEach(function(comLogin,i){
+      var orders=byCommercial[comLogin];
+      var nom=comLogin==='__aucun__'?'Sans commercial':comNameMap[comLogin]||comLogin;
+      var ca=orders.reduce(function(s,o){return s+(o.totalNet||0);},0);
+      var nbCli=clients.filter(function(co){
+        return (co.commercial||'__aucun__')===(comLogin==='__aucun__'?'__aucun__':comLogin)||
+               (comLogin==='__aucun__'&&!co.commercial);
+      }).length;
+
+      html+='<div class="com-block">'
+        +'<div class="com-block-header" onclick="toggleComBlock(this)">'
+        +'<div class="com-block-name">\u{1F4BC} '+escH(nom)
+        +'<span class="com-block-stats">'
+        +nbCli+' client'+(nbCli>1?'s':'')+' · '+orders.length+' commande'+(orders.length>1?'s':'')+''
+        +'</span></div>'
+        +'<div style="display:flex;align-items:center;gap:10px">'
+        +'<span class="com-block-ca">'+fmtCA(ca)+'</span>'
+        +'<span class="chevron'+(i===0?' open':'')+'">▼</span>'
+        +'</div></div>'
+        +'<div class="com-block-body'+(i===0?' open':'')+'">';
+
+      orders.forEach(function(o){
+        var client=clients.find(function(co){return co.login.replace(/[^a-zA-Z0-9_-]/g,'_')===o._login;});
+        html+=orderRow(o, client?client.nom:o._login, true);
+      });
+      html+='</div></div>';
+    });
+    html+='</div>';
+    content.innerHTML=html;
+  });
+}
+
+// ── Init ──────────────────────────────────────────────────────
+(function(){
+  var token=sessionStorage.getItem('mdm_token');
+  if(!token){ window.location.href='index.html'; return; }
+  var data;
+  try{ data=JSON.parse(atob(token)); }catch(e){ window.location.href='index.html'; return; }
+  if(!data.exp||Date.now()>data.exp){ window.location.href='index.html'; return; }
+
+  applyTheme(data.role);
+
+  var userInfo=document.getElementById('dash-user-info');
+  if(userInfo) userInfo.innerHTML='&#128100; '+escH(data.nom||data.login)
+    +'<br><span style="opacity:.6;font-size:10px">'+escH(data.role==='user'?'Commercial':(data.role==='admin'?'Administrateur':'Client'))+'</span>';
+
+  if(data.role==='client')     renderClient(data);
+  else if(data.role==='user')  renderCommercial(data);
+  else if(data.role==='admin') renderAdmin(data);
+  else window.location.href='commande.html';
+})();
+</script>
+</body>
+</html>

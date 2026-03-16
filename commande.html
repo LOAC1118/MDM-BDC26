@@ -132,6 +132,30 @@ tbody tr.has-qty td.td-qty input{background:#ffe0b2;border-color:var(--terra)}
 #franco-bandeau.ok{background:#e8f5e9;color:#1a5c2e;border-bottom:2px solid #a5d6a7}
 #franco-bandeau.warn{background:#fff8e1;color:#e65100;border-bottom:2px solid #ffe082}
 #franco-bandeau.danger{background:#fdecea;color:#c62828;border-bottom:2px solid #ef9a9a}
+
+/* Dashboard commercial */
+#dash-commercial{display:none;background:var(--cream);border-bottom:2px solid rgba(0,0,0,0.08);padding:14px 28px;font-family:"Outfit",sans-serif}
+.dash-com-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
+.dash-com-kpi{background:#fff;border-radius:8px;padding:10px 14px;border:1px solid rgba(0,0,0,0.07)}
+.dash-com-kpi-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--terra);opacity:.8}
+.dash-com-kpi-val{font-size:22px;font-weight:700;color:var(--brown);margin:2px 0}
+.dash-com-kpi-sub{font-size:10px;color:#aaa}
+.dash-com-orders{background:#fff;border-radius:8px;border:1px solid rgba(0,0,0,0.07);overflow:hidden}
+.dash-com-order-row{display:flex;align-items:center;justify-content:space-between;padding:7px 12px;border-bottom:1px solid #f5ede5;font-size:12px;gap:8px}
+.dash-com-order-row:last-child{border-bottom:none}
+.dash-com-section-title{font-size:11px;font-weight:700;color:var(--brown);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;opacity:.8}
+
+/* Dashboard client */
+#dash-client{display:none;background:var(--cream);border-bottom:2px solid rgba(0,0,0,0.08);padding:14px 28px;font-family:"Outfit",sans-serif}
+.dash-cli-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
+.dash-cli-kpi{background:#fff;border-radius:8px;padding:10px 14px;border:1px solid rgba(0,0,0,0.07)}
+.dash-cli-kpi-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--terra);opacity:.8}
+.dash-cli-kpi-val{font-size:22px;font-weight:700;color:var(--brown);margin:2px 0}
+.dash-cli-kpi-sub{font-size:10px;color:#aaa}
+.dash-cli-orders{background:#fff;border-radius:8px;border:1px solid rgba(0,0,0,0.07);overflow:hidden}
+.dash-cli-order-row{display:flex;align-items:center;justify-content:space-between;padding:7px 12px;border-bottom:1px solid #f5ede5;font-size:12px;gap:8px}
+.dash-cli-order-row:last-child{border-bottom:none}
+.dash-cli-section-title{font-size:11px;font-weight:700;color:var(--brown);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;opacity:.8}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
@@ -164,6 +188,32 @@ tbody tr.has-qty td.td-qty input{background:#ffe0b2;border-color:var(--terra)}
 </header>
 
   <div id="franco-bandeau"></div>
+
+  <div id="dash-commercial">
+    <div class="dash-com-grid">
+      <div class="dash-com-kpi"><div class="dash-com-kpi-label">Mes clients</div><div class="dash-com-kpi-val" id="dc-nb-clients">—</div><div class="dash-com-kpi-sub">comptes assignés</div></div>
+      <div class="dash-com-kpi"><div class="dash-com-kpi-label">Commandes</div><div class="dash-com-kpi-val" id="dc-nb-orders">—</div><div class="dash-com-kpi-sub">enregistrées</div></div>
+      <div class="dash-com-kpi"><div class="dash-com-kpi-label">CA total HT</div><div class="dash-com-kpi-val" id="dc-ca">—</div><div class="dash-com-kpi-sub">cumul clients</div></div>
+      <div class="dash-com-kpi"><div class="dash-com-kpi-label">Commande moy.</div><div class="dash-com-kpi-val" id="dc-avg">—</div><div class="dash-com-kpi-sub">par commande</div></div>
+    </div>
+    <div class="dash-com-section-title">&#128230; Dernières commandes clients</div>
+    <div class="dash-com-orders" id="dc-orders-list">
+      <div style="text-align:center;padding:16px;color:#b09080;font-size:12px">Chargement&#8230;</div>
+    </div>
+  </div>
+
+  <div id="dash-client">
+    <div class="dash-cli-grid">
+      <div class="dash-cli-kpi"><div class="dash-cli-kpi-label">Commandes</div><div class="dash-cli-kpi-val" id="dcl-nb-orders">&#8212;</div><div class="dash-cli-kpi-sub">pass&#233;es</div></div>
+      <div class="dash-cli-kpi"><div class="dash-cli-kpi-label">Total HT</div><div class="dash-cli-kpi-val" id="dcl-ca">&#8212;</div><div class="dash-cli-kpi-sub">cumul commandes</div></div>
+      <div class="dash-cli-kpi"><div class="dash-cli-kpi-label">Derni&#232;re commande</div><div class="dash-cli-kpi-val" id="dcl-last-date" style="font-size:14px;margin-top:6px">&#8212;</div><div class="dash-cli-kpi-sub" id="dcl-last-total"></div></div>
+      <div class="dash-cli-kpi" id="dcl-franco-kpi" style="display:none"><div class="dash-cli-kpi-label">Franco de port</div><div class="dash-cli-kpi-val" id="dcl-franco-val">&#8212;</div><div class="dash-cli-kpi-sub" id="dcl-franco-sub"></div></div>
+    </div>
+    <div class="dash-cli-section-title">&#128230; Historique de mes commandes</div>
+    <div class="dash-cli-orders" id="dcl-orders-list">
+      <div style="text-align:center;padding:16px;color:#b09080;font-size:12px">Chargement&#8230;</div>
+    </div>
+  </div>
 
 <div class="container">
 
@@ -528,6 +578,12 @@ function fbDeleteInscription(id) {
       if(data.role === "admin"){
         var adminBtn = document.getElementById("btn-admin");
         if(adminBtn) adminBtn.style.display = "inline-flex";
+      }
+      if(data.role === "user"){
+        setTimeout(renderDashCommercial, 300);
+      }
+      if(data.role === "client"){
+        setTimeout(renderDashClient, 300);
       }
       // // ── Gestion de la remise selon le rôle ──
       if(data.role === 'client'){
@@ -1702,6 +1758,160 @@ function updateFranco(){
 
 
 function _toggleHistItem(el){var b=el.nextElementSibling;if(b)b.style.display=b.style.display==='none'?'block':'none';}
+
+// ── Dashboard commercial ─────────────────────────────────────
+function renderDashCommercial(){
+  var login = window._userLogin || '';
+  var dash  = document.getElementById('dash-commercial');
+  if(!dash) return;
+  dash.style.display = 'block';
+
+  // Clients assignés
+  var allComptes = [];
+  try{ allComptes = JSON.parse(localStorage.getItem('mdm_comptes')||'[]'); }catch(e){}
+  var clients = allComptes.filter(function(co){ return co.role==='client' && co.commercial===login; });
+  var el = function(id){ return document.getElementById(id); };
+  if(el('dc-nb-clients')) el('dc-nb-clients').textContent = clients.length;
+
+  // Charger les commandes de tous les clients depuis Firebase + localStorage
+  var logins = clients.map(function(co){ return co.login.replace(/[^a-zA-Z0-9_-]/g,'_'); });
+  if(!logins.length){
+    if(el('dc-nb-orders')) el('dc-nb-orders').textContent = '0';
+    if(el('dc-ca'))        el('dc-ca').textContent        = '0\u00a0\u20ac';
+    if(el('dc-avg'))       el('dc-avg').textContent       = '\u2014';
+    var ol=el('dc-orders-list');
+    if(ol) ol.innerHTML='<div style="text-align:center;padding:16px;color:#b09080;font-size:12px">Aucun client assign\u00e9.</div>';
+    return;
+  }
+
+  var promises = logins.map(function(lg){
+    return fbLoadHistory(lg).then(function(orders){
+      return (orders||[]).map(function(o){ return Object.assign({},o,{_compte:lg}); });
+    }).catch(function(){
+      var local=[];
+      try{local=JSON.parse(localStorage.getItem('mdm_history_'+lg))||[];}catch(e){}
+      return local.map(function(o){ return Object.assign({},o,{_compte:lg}); });
+    });
+  });
+
+  Promise.all(promises).then(function(arrays){
+    var all=[].concat.apply([],arrays);
+    var ids={};
+    all=all.filter(function(o){if(ids[o.id])return false;ids[o.id]=true;return true;});
+    all.sort(function(a,b){return (b.id||0)-(a.id||0);});
+
+    var nb  = all.length;
+    var ca  = all.reduce(function(s,o){return s+(o.totalNet||0);},0);
+    var avg = nb>0 ? ca/nb : 0;
+
+    if(el('dc-nb-orders')) el('dc-nb-orders').textContent = nb;
+    if(el('dc-ca'))        el('dc-ca').textContent        = _dcFmt(ca);
+    if(el('dc-avg'))       el('dc-avg').textContent       = nb>0 ? _dcFmt(avg) : '\u2014';
+
+    // Afficher les 6 dernières commandes
+    var ol=el('dc-orders-list');
+    if(!ol) return;
+    if(!all.length){
+      ol.innerHTML='<div style="text-align:center;padding:16px;color:#b09080;font-size:12px">Aucune commande enregistr\u00e9e.</div>';
+      return;
+    }
+    var html='';
+    all.slice(0,6).forEach(function(o){
+      var date=o.date?String(o.date).split(' ')[0]:'?';
+      var tn=typeof o.totalNet==='number'?o.totalNet.toFixed(2).replace('.',',')+'\u00a0\u20ac':'\u2014';
+      var client=allComptes.find(function(co){return co.login.replace(/[^a-zA-Z0-9_-]/g,'_')===o._compte;});
+      var nomClient=client?client.nom:o._compte;
+      html+='<div class="dash-com-order-row">'
+        +'<span style="font-weight:600;color:var(--brown);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+escHtml(o.magasin||nomClient)+'</span>'
+        +'<span style="font-size:10px;color:#aaa;background:var(--cream);padding:2px 7px;border-radius:8px">'+escHtml(nomClient)+'</span>'
+        +'<span style="font-size:11px;color:#aaa">'+date+'</span>'
+        +'<span style="font-weight:700;color:var(--terra)">'+tn+'</span>'
+        +'</div>';
+    });
+    ol.innerHTML=html;
+  });
+}
+
+function _dcFmt(n){
+  if(n>=1000) return (n/1000).toFixed(1).replace('.',',')+'\u00a0k\u00a0\u20ac';
+  return n.toFixed(0)+'\u00a0\u20ac';
+}
+
+
+// ── Dashboard client ──────────────────────────────────────────
+function renderDashClient(){
+  var login = (window._userLogin||'guest').replace(/[^a-zA-Z0-9_-]/g,'_');
+  var dash  = document.getElementById('dash-client');
+  if(!dash) return;
+  dash.style.display = 'block';
+
+  var el = function(id){ return document.getElementById(id); };
+
+  // Franco KPI
+  var franco = window._franco || 0;
+  if(franco > 0){
+    var kpi = el('dcl-franco-kpi');
+    if(kpi) kpi.style.display = 'block';
+    if(el('dcl-franco-val')) el('dcl-franco-val').textContent = franco.toFixed(0)+'\u00a0\u20ac';
+    if(el('dcl-franco-sub')) el('dcl-franco-sub').textContent = 'minimum HT';
+  }
+
+  // Affichage immédiat depuis localStorage
+  var local = [];
+  try{ local = JSON.parse(localStorage.getItem('mdm_history_'+login)||'[]'); }catch(e){}
+  _renderDashClientOrders(local, el);
+
+  // Fusion Firebase en arrière-plan
+  fbLoadHistory(login).then(function(fbOrders){
+    if(!fbOrders || !fbOrders.length) return;
+    var ids = {}; local.forEach(function(o){ids[o.id]=true;});
+    fbOrders.forEach(function(o){if(!ids[o.id]){local.push(o);ids[o.id]=true;}});
+    local.sort(function(a,b){return (b.id||0)-(a.id||0);});
+    if(local.length>50) local=local.slice(0,50);
+    localStorage.setItem('mdm_history_'+login, JSON.stringify(local));
+    _renderDashClientOrders(local, el);
+  }).catch(function(){});
+}
+
+function _renderDashClientOrders(orders, el){
+  var nb  = orders.length;
+  var ca  = orders.reduce(function(s,o){return s+(o.totalNet||0);},0);
+  var last = orders.length ? orders[0] : null;
+
+  if(el('dcl-nb-orders')) el('dcl-nb-orders').textContent = nb;
+  if(el('dcl-ca'))        el('dcl-ca').textContent        = _dcFmt(ca);
+
+  if(last){
+    var date = last.date ? String(last.date).split(' ')[0] : '?';
+    if(el('dcl-last-date'))  el('dcl-last-date').textContent  = date;
+    if(el('dcl-last-total')) el('dcl-last-total').textContent =
+      typeof last.totalNet==='number' ? last.totalNet.toFixed(2).replace('.',',')+'\u00a0\u20ac HT' : '';
+  } else {
+    if(el('dcl-last-date')) el('dcl-last-date').textContent = '\u2014';
+  }
+
+  var ol = el('dcl-orders-list');
+  if(!ol) return;
+  if(!orders.length){
+    ol.innerHTML='<div style="text-align:center;padding:16px;color:#b09080;font-size:12px">Aucune commande enregistr\u00e9e. Passez votre premi\u00e8re commande !</div>';
+    return;
+  }
+  var html='';
+  orders.slice(0,6).forEach(function(o){
+    var date = o.date ? String(o.date).split(' ')[0] : '?';
+    var tn   = typeof o.totalNet==='number' ? o.totalNet.toFixed(2).replace('.',',')+'\u00a0\u20ac' : '\u2014';
+    var refs = o.nbRefs  || (o.articles ? o.articles.length : '?');
+    var cols = o.nbColis || '?';
+    html += '<div class="dash-cli-order-row">'
+      +'<span style="font-weight:600;color:var(--brown);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+escHtml(o.magasin||'Commande')+'</span>'
+      +'<span style="font-size:10px;color:#aaa;background:var(--cream);padding:2px 7px;border-radius:8px">'+refs+' r\u00e9f. &bull; '+cols+' colis</span>'
+      +'<span style="font-size:11px;color:#aaa">'+date+'</span>'
+      +'<span style="font-weight:700;color:var(--terra)">'+tn+'</span>'
+      +'</div>';
+  });
+  ol.innerHTML = html;
+}
+
 </script>
 </body>
 </html>

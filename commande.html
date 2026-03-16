@@ -942,7 +942,25 @@ function reorderFromHistory(idx){
   closeHistoryModal();buildTable();updateTotals();
   showToast("\u2705 "+cmd.articles.length+" articles recharg\u00e9s depuis le "+cmd.date.split(" ")[0]);
 }
-function openHistoryModal(){renderHistory();document.getElementById("modal-history").classList.add("open");}
+function openHistoryModal(){
+  document.getElementById("modal-history").classList.add("open");
+  // Afficher localStorage immédiatement
+  renderHistory();
+  // Charger Firebase en arrière-plan et fusionner
+  var login=(window._userLogin||"guest").replace(/[^a-zA-Z0-9_-]/g,"_");
+  fbLoadHistory(login).then(function(fbOrders){
+    if(!fbOrders || !fbOrders.length) return;
+    // Fusionner FB + localStorage (dédoublonner par id)
+    var local=[];
+    try{local=JSON.parse(localStorage.getItem("mdm_history_"+login))||[];}catch(e){}
+    var ids={}; local.forEach(function(o){ids[o.id]=true;});
+    fbOrders.forEach(function(o){if(!ids[o.id]){local.push(o);ids[o.id]=true;}});
+    local.sort(function(a,b){return (b.id||0)-(a.id||0);});
+    if(local.length>50) local=local.slice(0,50);
+    localStorage.setItem("mdm_history_"+login,JSON.stringify(local));
+    renderHistory(); // Re-afficher avec les données complètes
+  }).catch(function(){});
+}
 function closeHistoryModal(){document.getElementById("modal-history").classList.remove("open");}
 
 function exportHistoriqueClient(){

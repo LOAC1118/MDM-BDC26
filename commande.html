@@ -244,7 +244,7 @@ tbody tr.has-qty td.td-qty input{background:#ffe0b2;border-color:var(--terra)}
           <th>PCB</th>
           <th>Poids</th>
           <th>TVA</th>
-          <th>PU HT 2026</th>
+          <th>Votre prix HT</th>
           <th class="no-print th-stock">Stock</th>
           <th class="no-print">Qt&#233; (colis)</th>
           <th>Total HT</th>
@@ -705,18 +705,21 @@ function buildTable(){
     rows += '<td style="font-size:11px">' + (p.tva ? p.tva+"%" : "") + "</td>";
     var codeUpB=(p.code||'').toUpperCase();
     var grpRB=grpRemisesProduitsMap[codeUpB];
-    var prixBadge='';
-    if(grpRB){
-      if(grpRB.prixHT>0){
-        // Prix spécial : afficher le prix spécial + badge
-        prixBadge=' <span style="background:#e3f2fd;color:#1565c0;font-size:9px;font-weight:700;padding:2px 6px;border-radius:8px">\u2192 '+fmt4(grpRB.prixHT)+'</span>';
-      } else if(grpRB.remise>0){
-        // Remise groupement : afficher le badge remise
-        prixBadge=' <span style="background:#fce4ec;color:#c62828;font-size:9px;font-weight:700;padding:2px 6px;border-radius:8px">-'+grpRB.remise+'%</span>';
-      }
+    var prixNet=getPrixNet(p);
+    var prixCell='';
+    if(grpRB&&(grpRB.prixHT>0||grpRB.remise>0)){
+      // Produit avec remise groupement : prix net en gros + PU barré
+      prixCell='<strong style="color:var(--terra)">'+fmt4(prixNet)+'</strong>'
+        +' <span style="text-decoration:line-through;color:#bbb;font-size:10px">'+fmt4(p.pu_ht)+'</span>';
+      if(grpRB.prixHT>0) prixCell+=' <span style="background:#e3f2fd;color:#1565c0;font-size:9px;font-weight:700;padding:1px 5px;border-radius:6px">Prix sp&#233;cial</span>';
+      else prixCell+=' <span style="background:#fce4ec;color:#c62828;font-size:9px;font-weight:700;padding:1px 5px;border-radius:6px">-'+grpRB.remise+'%</span>';
+    } else {
+      // Prix normal avec remise compte éventuelle
+      prixCell=fmt4(prixNet);
+      if(prixNet<p.pu_ht) prixCell='<strong style="color:var(--terra)">'+fmt4(prixNet)+'</strong>'
+        +' <span style="text-decoration:line-through;color:#bbb;font-size:10px">'+fmt4(p.pu_ht)+'</span>';
     }
-    var prixAffiche = (grpRB && grpRB.prixHT>0) ? fmt4(grpRB.prixHT) : fmt4(p.pu_ht);
-    rows += '<td class="td-prix">' + prixAffiche + prixBadge + "</td>";
+    rows += '<td class="td-prix">' + prixCell + "</td>";
     // Colonne stock
     var stk = (p.stock !== undefined && p.stock !== null) ? p.stock : null;
     var stkHtml;

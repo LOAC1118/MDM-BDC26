@@ -587,7 +587,8 @@ table{font-size:11px}
 
     <div class="modal-section"><div class="modal-section-title">&#128181; Conditions commerciales</div>
       <div class="fg-row"><div class="fg"><label>Remise (%)</label><input type="number" id="f-remise" placeholder="0" min="0" max="99" step="0.5" value="0" oninput="updateRemiseChips(this.value)"><div class="remise-chips"><span class="remise-chip" onclick="setRemiseChip(0)">0%</span><span class="remise-chip" onclick="setRemiseChip(5)">5%</span><span class="remise-chip" onclick="setRemiseChip(10)">10%</span><span class="remise-chip" onclick="setRemiseChip(15)">15%</span><span class="remise-chip" onclick="setRemiseChip(20)">20%</span></div><div style="display:flex;align-items:center;gap:8px;margin-top:8px"><span style="font-size:10px;color:#b09080;white-space:nowrap">Libre :</span><input type="number" id="f-remise-libre" placeholder="ex: 7.5" min="0" max="99" step="0.1" style="width:80px;padding:5px 8px;border:1.5px solid #e0d0c4;border-radius:6px;font-family:Outfit,sans-serif;font-size:12px;background:var(--cream);outline:none" oninput="setRemiseChip(parseFloat(this.value)||0)"><span style="font-size:11px;color:#b09080">%</span></div></div>
-      <div class="fg"><label>N&#176; client MDM</label><input type="text" id="f-numclient" placeholder="ex: MDM-0123"><div class="hint">R&#233;f&#233;rence interne MDM</div></div></div>
+      <div class="fg"><label>N&#176; client MDM</label><input type="text" id="f-numclient" placeholder="ex: MDM-0123"><div class="hint">R&#233;f&#233;rence interne MDM</div></div>
+          <div class="fg"><label>Franco de port (&#8364; HT) <span style="font-size:10px;color:#b09080;font-weight:400;text-transform:none">— laisser vide si aucun</span></label><input type="number" id="f-franco" placeholder="ex&#160;: 500" min="0" step="10" style="width:100%;padding:9px 12px;border:1.5px solid #e0d0c4;border-radius:7px;font-family:Outfit,sans-serif;font-size:13px;background:#fff;outline:none"><div class="hint">Laisser vide = pas de franco</div></div></div>
     </div>
 
     <div class="modal-section" id="section-commercial"><div class="modal-section-title">&#128188; Commercial r&#233;f&#233;rent</div>
@@ -1135,6 +1136,7 @@ function openModal(idx){
     switchModalTab("infos",document.querySelector(".modal-tab"));
     refreshGroupementSelect();
     var fgrp=document.getElementById("f-groupement");if(fgrp)fgrp.value=c.groupement||"";
+    var ffr=document.getElementById("f-franco");if(ffr)ffr.value=c.franco>0?c.franco:"";
     updateRemiseChips(c.remise||0);
     var rl=document.getElementById("f-remise-libre");if(rl)rl.value=c.remise||"";
     onRoleChange();
@@ -1150,6 +1152,7 @@ function openModal(idx){
     initThemeSection({role:"client"});
     var tabCmd2=document.getElementById("tab-commandes");if(tabCmd2)tabCmd2.style.display="none";
     refreshGroupementSelect();
+    var ffr2=document.getElementById("f-franco");if(ffr2)ffr2.value="";
     document.getElementById("f-region").value=""; document.getElementById("f-login").disabled=false;
     updateRemiseChips(0); var rl=document.getElementById("f-remise-libre");if(rl)rl.value="";
     var iF=document.getElementById("import-form");if(iF)iF.style.display="none";
@@ -1205,7 +1208,7 @@ function saveCompte(){
       return;
     }
     var fe=document.getElementById("f-email").value.trim(),ft=document.getElementById("f-tel").value.trim(),fv=document.getElementById("f-ville").value.trim(),fc=document.getElementById("f-cp").value.trim(),fr=document.getElementById("f-region").value,fn=document.getElementById("f-numclient").value.trim(),fno=document.getElementById("f-notes").value.trim(),fg=document.getElementById("f-groupement").value.trim();
-    comptes.push({login:login,password:password,nom:nom,role:role,remise:remise,email:fe,tel:ft,ville:fv,cp:fc,region:fr,numclient:fn,notes:fno,groupement:fg,commercial:(document.getElementById("f-commercial")?document.getElementById("f-commercial").value:"")});
+    comptes.push({login:login,password:password,nom:nom,role:role,remise:remise,email:fe,tel:ft,ville:fv,cp:fc,region:fr,numclient:fn,notes:fno,groupement:fg,commercial:(document.getElementById("f-commercial")?document.getElementById("f-commercial").value:""),remises_produits:JSON.parse(JSON.stringify(_rpData||[])),franco:ff});
     showToast("\u2705 Compte cr\u00e9\u00e9 : "+login);
   } else {
     comptes[editIndex].password=password;comptes[editIndex].nom=nom;comptes[editIndex].role=role;comptes[editIndex].remise=remise;
@@ -1216,6 +1219,7 @@ function saveCompte(){
     comptes[editIndex].commercial=document.getElementById("f-commercial")?document.getElementById("f-commercial").value:"";
 
     comptes[editIndex].remises_produits=JSON.parse(JSON.stringify(_rpData||[]));
+    comptes[editIndex].franco=parseFloat(document.getElementById("f-franco")?document.getElementById("f-franco").value||0:0)||0;
     showToast("\u2705 Compte modifi\u00e9 : "+comptes[editIndex].login);
   }
 

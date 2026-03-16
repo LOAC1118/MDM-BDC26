@@ -382,6 +382,7 @@ async function doLogin(){
         ville:      compte.ville     || "",
         cp:         compte.cp        || "",
         commercial:  compte.commercial || "",
+        franco:      compte.franco      || 0,
 
         remises_produits: compte.remises_produits || [],
         exp:         Date.now() + 8 * 60 * 60 * 1000

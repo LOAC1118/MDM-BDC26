@@ -83,6 +83,7 @@ body{font-family:"Outfit",sans-serif;background:var(--cream);color:var(--brown);
   .dash-header{flex-direction:column;gap:10px;align-items:flex-start}
 }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -93,6 +94,7 @@ body{font-family:"Outfit",sans-serif;background:var(--cream);color:var(--brown);
   </div>
   <div class="dash-header-actions">
     <button class="btn-header primary" onclick="window.location.href='commande.html'">&#128221; Bon de commande</button>
+    <button class="btn-header" onclick="exportDashExcel()" style="border-color:rgba(80,200,120,.5);color:#a0f0b0">&#128202; Export Excel</button>
     <button class="btn-header danger" onclick="logout()">&#x23FB; Déconnexion</button>
   </div>
 </div>
@@ -318,6 +320,7 @@ function orderRow(o, clientNom, showClient){
 
 // ── DASHBOARD CLIENT ──────────────────────────────────────────
 function renderClient(data){
+  window._currentData = data;
   document.getElementById('dash-page-title').textContent = 'Bonjour, '+escH(data.nom||data.login)+' \u2728';
   document.getElementById('dash-page-sub').textContent   = 'Retrouvez ici l\u2019historique de vos commandes.';
 
@@ -375,6 +378,7 @@ function renderClientOrders(orders, franco){
 
 // ── DASHBOARD COMMERCIAL ──────────────────────────────────────
 function renderCommercial(data){
+  window._currentData = data;
   document.getElementById('dash-page-title').textContent = 'Bonjour, '+escH(data.nom||data.login)+' \u2728';
   document.getElementById('dash-page-sub').textContent   = 'Activité de vos clients assignés.';
 
@@ -439,6 +443,7 @@ function renderCommercial(data){
 
 // ── DASHBOARD ADMIN ───────────────────────────────────────────
 function renderAdmin(data){
+  window._currentData = data;
   document.getElementById('dash-page-title').textContent = 'Tableau de bord admin';
   document.getElementById('dash-page-sub').textContent   = 'Toutes les commandes classées par commercial.';
 
@@ -553,6 +558,144 @@ function renderAdmin(data){
   else if(data.role==='admin') renderAdmin(data);
   else window.location.href='commande.html';
 })();
+
+// ── Export Excel dashboard ────────────────────────────────────
+function exportDashExcel(){
+  if(typeof XLSX==='undefined'){ alert('SheetJS non chargé'); return; }
+
+  var role = _currentData ? _currentData.role : 'client';
+  var wb   = XLSX.utils.book_new();
+
+  if(role === 'client'){
+    _exportClientExcel(wb);
+  } else if(role === 'user'){
+    _exportCommercialExcel(wb);
+  } else if(role === 'admin'){
+    _exportAdminExcel(wb);
+  }
+}
+
+function _fmtDate(d){ return d ? String(d).split(' ')[0] : ''; }
+
+function _exportClientExcel(wb){
+  // Feuille : toutes mes commandes
+  var login=(window._currentData.login||'guest').replace(/[^a-zA-Z0-9_-]/g,'_');
+  var orders=[];
+  try{orders=JSON.parse(localStorage.getItem('mdm_history_'+login)||'[]');}catch(e){}
+
+  var rows=[['Date','Magasin','Nb références','Nb colis','Total Brut HT','Remise %','Total Net HT']];
+  orders.forEach(function(o){
+    rows.push([_fmtDate(o.date), o.magasin||'', o.nbRefs||0, o.nbColis||0,
+      o.totalBrut||0, o.remise||0, o.totalNet||0]);
+  });
+  var ws = XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols']=[{wch:14},{wch:25},{wch:14},{wch:10},{wch:15},{wch:10},{wch:15}];
+  XLSX.utils.book_append_sheet(wb, ws, 'Mes commandes');
+
+  // Feuille détail articles (dernière commande)
+  if(orders.length && orders[0].articles && orders[0].articles.length){
+    var rows2=[['Code','Désignation','Qté','PCB','PU HT','Total HT']];
+    orders[0].articles.forEach(function(a){
+      rows2.push([a.code||'',a.libelle||'',a.qty||0,a.pcb||1,a.puHT||0,a.totalHT||0]);
+    });
+    var ws2=XLSX.utils.aoa_to_sheet(rows2);
+    ws2['!cols']=[{wch:14},{wch:35},{wch:6},{wch:6},{wch:10},{wch:12}];
+    XLSX.utils.book_append_sheet(wb, ws2, 'Dernière commande');
+  }
+
+  var nom = (window._currentData.nom||'client').replace(/[^a-zA-Z0-9]/g,'_');
+  XLSX.writeFile(wb, 'commandes_'+nom+'_'+new Date().toISOString().slice(0,10)+'.xlsx');
+}
+
+function _exportCommercialExcel(wb){
+  var login = window._currentData.login||'';
+  var allComptes=[];
+  try{allComptes=JSON.parse(localStorage.getItem('mdm_comptes')||'[]');}catch(e){}
+  var clients=allComptes.filter(function(c){return c.role==='client'&&c.commercial===login;});
+
+  // Feuille résumé clients
+  var rows=[['Client','Login','Email','Groupement','Remise %','Nb commandes','Total HT']];
+  clients.forEach(function(co){
+    var lg=co.login.replace(/[^a-zA-Z0-9_-]/g,'_');
+    var hist=[];
+    try{hist=JSON.parse(localStorage.getItem('mdm_history_'+lg)||'[]');}catch(e){}
+    var ca=hist.reduce(function(s,o){return s+(o.totalNet||0);},0);
+    rows.push([co.nom||'',co.login||'',co.email||'',co.groupement||'',co.remise||0,hist.length,Math.round(ca*100)/100]);
+  });
+  var ws=XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols']=[{wch:25},{wch:15},{wch:28},{wch:15},{wch:10},{wch:14},{wch:12}];
+  XLSX.utils.book_append_sheet(wb, ws, 'Mes clients');
+
+  // Feuille toutes les commandes
+  var rows2=[['Date','Client','Magasin','Nb références','Nb colis','Total Net HT']];
+  clients.forEach(function(co){
+    var lg=co.login.replace(/[^a-zA-Z0-9_-]/g,'_');
+    var hist=[];
+    try{hist=JSON.parse(localStorage.getItem('mdm_history_'+lg)||'[]');}catch(e){}
+    hist.forEach(function(o){
+      rows2.push([_fmtDate(o.date),co.nom||co.login,o.magasin||'',o.nbRefs||0,o.nbColis||0,o.totalNet||0]);
+    });
+  });
+  rows2.sort(function(a,b){return String(b[0]).localeCompare(String(a[0]));});
+  var ws2=XLSX.utils.aoa_to_sheet(rows2);
+  ws2['!cols']=[{wch:14},{wch:25},{wch:25},{wch:12},{wch:10},{wch:14}];
+  XLSX.utils.book_append_sheet(wb, ws2, 'Toutes les commandes');
+
+  var nom=(window._currentData.nom||'commercial').replace(/[^a-zA-Z0-9]/g,'_');
+  XLSX.writeFile(wb, 'dashboard_'+nom+'_'+new Date().toISOString().slice(0,10)+'.xlsx');
+}
+
+function _exportAdminExcel(wb){
+  var allComptes=[];
+  try{allComptes=JSON.parse(localStorage.getItem('mdm_comptes')||'[]');}catch(e){}
+  var clients=allComptes.filter(function(c){return c.role==='client';});
+  var coms   =allComptes.filter(function(c){return c.role==='user';});
+  var comMap ={};
+  coms.forEach(function(c){comMap[c.login]=c.nom;});
+
+  // Feuille toutes les commandes
+  var rows=[['Date','Client','Magasin','Commercial','Groupement','Nb références','Nb colis','Total Net HT']];
+  var all=[];
+  clients.forEach(function(co){
+    var lg=co.login.replace(/[^a-zA-Z0-9_-]/g,'_');
+    var hist=[];
+    try{hist=JSON.parse(localStorage.getItem('mdm_history_'+lg)||'[]');}catch(e){}
+    hist.forEach(function(o){
+      all.push([_fmtDate(o.date),co.nom||co.login,o.magasin||'',
+        comMap[co.commercial||'']||co.commercial||'',
+        co.groupement||'',o.nbRefs||0,o.nbColis||0,o.totalNet||0]);
+    });
+  });
+  all.sort(function(a,b){return String(b[0]).localeCompare(String(a[0]));});
+  rows=rows.concat(all);
+  var ws=XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols']=[{wch:14},{wch:25},{wch:25},{wch:20},{wch:15},{wch:12},{wch:10},{wch:14}];
+  XLSX.utils.book_append_sheet(wb, ws, 'Toutes les commandes');
+
+  // Feuille CA par commercial
+  var rows2=[['Commercial','Nb clients','Nb commandes','CA total HT']];
+  var bycom={};
+  clients.forEach(function(co){
+    var com=co.commercial||'__aucun__';
+    if(!bycom[com]) bycom[com]={clients:0,orders:0,ca:0,nom:comMap[com]||com};
+    bycom[com].clients++;
+    var lg=co.login.replace(/[^a-zA-Z0-9_-]/g,'_');
+    var hist=[];
+    try{hist=JSON.parse(localStorage.getItem('mdm_history_'+lg)||'[]');}catch(e){}
+    bycom[com].orders+=hist.length;
+    bycom[com].ca+=hist.reduce(function(s,o){return s+(o.totalNet||0);},0);
+  });
+  Object.keys(bycom).sort().forEach(function(k){
+    var v=bycom[k];
+    rows2.push([v.nom==='__aucun__'?'Sans commercial':v.nom,v.clients,v.orders,Math.round(v.ca*100)/100]);
+  });
+  var ws2=XLSX.utils.aoa_to_sheet(rows2);
+  ws2['!cols']=[{wch:25},{wch:12},{wch:14},{wch:14}];
+  XLSX.utils.book_append_sheet(wb, ws2, 'CA par commercial');
+
+  XLSX.writeFile(wb, 'dashboard_admin_'+new Date().toISOString().slice(0,10)+'.xlsx');
+}
+
 </script>
 </body>
 </html>

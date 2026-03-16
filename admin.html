@@ -2203,12 +2203,43 @@ var _groupements = [];
 var _grpEditIdx  = -1;
 
 function loadGroupements(){
-  try{ var s=localStorage.getItem('mdm_groupements'); if(s)_groupements=JSON.parse(s); }catch(e){}
-  updateGroupementsBadge();
+  initFirebase().then(function(db){
+    return db.collection('groupements').get();
+  }).then(function(snap){
+    if(snap&&snap.docs&&snap.docs.length){
+      var list=snap.docs.map(function(d){return d.data();});
+      list.sort(function(a,b){return (a.ordre||0)-(b.ordre||0);});
+      _groupements=list;
+    } else {
+      try{var s=localStorage.getItem('mdm_groupements');if(s)_groupements=JSON.parse(s);}catch(e){}
+      if(_groupements.length) _saveGroupementsFirebase();
+    }
+    updateGroupementsBadge();
+    if(document.getElementById('page-groupements')&&
+       document.getElementById('page-groupements').classList.contains('active'))renderGroupements();
+  }).catch(function(){
+    try{var s=localStorage.getItem('mdm_groupements');if(s)_groupements=JSON.parse(s);}catch(e){}
+    updateGroupementsBadge();
+  });
 }
 function saveGroupements(){
   localStorage.setItem('mdm_groupements',JSON.stringify(_groupements));
+  _saveGroupementsFirebase();
   updateGroupementsBadge();
+}
+
+function _saveGroupementsFirebase(){
+  initFirebase().then(function(db){
+    var batch=db.batch();
+    return db.collection('groupements').get().then(function(snap){
+      snap.docs.forEach(function(d){batch.delete(d.ref);});
+      _groupements.forEach(function(g,i){
+        var id=(g.nom||'grp').replace(/[^a-zA-Z0-9_-]/g,'_');
+        batch.set(db.collection('groupements').doc(id),Object.assign({},g,{ordre:i}));
+      });
+      return batch.commit();
+    });
+  }).catch(function(e){console.warn('FB groupements:',e);});
 }
 function updateGroupementsBadge(){
   if(typeof _groupements==='undefined'||!_groupements)return;

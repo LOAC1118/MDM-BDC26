@@ -117,82 +117,11 @@ body{font-family:"Outfit",sans-serif;min-height:100vh;display:flex;align-items:c
 // Format : { login, password, nom, role }
 // ═══════════════════════════════════════════════════════════
 var COMPTES = [
-  {
-    "_id": "admin",
-    "login": "admin",
-    "password": "mdm2026",
-    "email": "cspoto@moulindesmoines.com",
-    "remise": 0,
-    "_origIdx": 0,
-    "role": "admin",
-    "nom": "Administrateur"
-  },
-  {
-    "_id": "bio_mas",
-    "numclient": "",
-    "cp": "38600",
-    "login": "bio_mas",
-    "ville": "Fontaine",
-    "commercial": "commercial",
-    "theme_cream": "#F0FBF4",
-    "_origIdx": 1,
-    "password": "n74bkwFHtN",
-    "remise": 12,
-    "remises_produits": [],
-    "theme_terra": "#2D8A57",
-    "tel": "0677898987",
-    "region": "Auvergne-Rhône-Alpes",
-    "nom": "BIO MAS",
-    "role": "client",
-    "franco": 600,
-    "groupement": "LGPB",
-    "theme_brown": "#1A5C2E",
-    "theme_gold": "#4CAF7D",
-    "notes": "",
-    "email": "spoto.christophe@gmail.com"
-  },
-  {
-    "_id": "commercial",
-    "numclient": "",
-    "cp": "",
-    "ville": "",
-    "commercial": "",
-    "login": "commercial",
-    "_origIdx": 2,
-    "remise": 0,
-    "password": "mdm-ventes",
-    "tel": "",
-    "remises_produits": [],
-    "groupement": "",
-    "nom": "Spoto Christophe",
-    "region": "",
-    "role": "user",
-    "notes": "",
-    "email": "cspoto@moulindesmoines.com"
-  },
-  {
-    "_id": "spotoj",
-    "theme_gold": "#4CAF7D",
-    "email": "spoto-veranda@wanadoo.fr",
-    "notes": "",
-    "tel": "0670200229",
-    "theme_terra": "#2D8A57",
-    "remises_produits": [],
-    "groupement": "Le grand panier bio",
-    "theme_brown": "#1A5C2E",
-    "role": "client",
-    "region": "Auvergne-Rhône-Alpes",
-    "nom": "Spoto joseph",
-    "commercial": "commercial",
-    "ville": "fontaine",
-    "login": "spotoj",
-    "remise": 12,
-    "password": "spoto62",
-    "_origIdx": 3,
-    "theme_cream": "#F0FBF4",
-    "numclient": "",
-    "cp": "38600"
-  }
+  { login: "admin",      password: "mdm2026",      nom: "Administrateur",   role: "admin",   remise: 0,  email: "cspoto@moulindesmoines.com" },
+  { login: "commercial", password: "mdm-ventes",   nom: "Commercial MDM",   role: "user",    remise: 0,  email: "cspoto@moulindesmoines.com" },
+  { login: "magasin1",   password: "mag1-2026",    nom: "Magasin Alsace",   role: "client",  remise: 5,  email: "magasin1@exemple.fr"        },
+  { login: "magasin2",   password: "mag2-2026",    nom: "Magasin Lorraine", role: "client",  remise: 10, email: "magasin2@exemple.fr"        },
+  { login: "magasin3",   password: "mag3-2026",    nom: "Magasin Franche-C",role: "client",  remise: 15, email: "magasin3@exemple.fr"        }
 ];
 // ── Remplacer les emails par les vraies adresses de chaque compte ──
 // ── Pour modifier une remise : changer le chiffre dans remise: XX
@@ -456,6 +385,15 @@ async function doLogin(){
         franco:      compte.franco      || 0,
 
         remises_produits: compte.remises_produits || [],
+        grp_remises: (function(){
+          // Inclure les remises produits du groupement dans le token
+          if(!compte.groupement) return [];
+          try{
+            var grpList = JSON.parse(localStorage.getItem("mdm_groupements")||"[]");
+            var grp = grpList.find(function(g){ return g.nom === compte.groupement; });
+            return (grp && grp.remises_produits) ? grp.remises_produits : [];
+          }catch(e){ return []; }
+        })(),
         exp:         Date.now() + 8 * 60 * 60 * 1000
       };
       var token = btoa(JSON.stringify(tokenData));

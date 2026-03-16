@@ -492,6 +492,7 @@ function fbDeleteInscription(id) {
       window._userCommercial = data.commercial  || "";
       window._franco         = parseFloat(data.franco) || 0;
       window._userGroupement = data.groupement || "";
+      window._grpRemises     = data.grp_remises || [];
       remisesProduitsMap = {};
       loadGrpRemises();
       if(data.remises_produits && Array.isArray(data.remises_produits)){
@@ -598,6 +599,18 @@ var grpRemisesProduitsMap = {};
 
 function loadGrpRemises(){
   grpRemisesProduitsMap={};
+
+  // Priorité 1 : remises incluses dans le token (disponibles partout)
+  var tokenRemises = window._grpRemises || [];
+  if(tokenRemises.length){
+    tokenRemises.forEach(function(r){
+      var key=(r.code||"").toUpperCase();
+      if(key)grpRemisesProduitsMap[key]={remise:r.remise||0,prixHT:r.prixHT||0};
+    });
+    return;
+  }
+
+  // Priorité 2 : fallback localStorage (si token ancien sans grp_remises)
   var grpNom=window._userGroupement||"";
   if(!grpNom)return;
   var grpList=[];

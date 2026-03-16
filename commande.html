@@ -156,6 +156,26 @@ tbody tr.has-qty td.td-qty input{background:#ffe0b2;border-color:var(--terra)}
 .dash-cli-order-row{display:flex;align-items:center;justify-content:space-between;padding:7px 12px;border-bottom:1px solid #f5ede5;font-size:12px;gap:8px}
 .dash-cli-order-row:last-child{border-bottom:none}
 .dash-cli-section-title{font-size:11px;font-weight:700;color:var(--brown);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;opacity:.8}
+
+/* Dashboard admin */
+#dash-admin{display:none;background:var(--cream);border-bottom:2px solid rgba(0,0,0,0.08);padding:14px 28px;font-family:"Outfit",sans-serif}
+.dash-adm-kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.dash-adm-kpi{background:#fff;border-radius:8px;padding:10px 14px;border:1px solid rgba(0,0,0,0.07)}
+.dash-adm-kpi-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--terra);opacity:.8}
+.dash-adm-kpi-val{font-size:22px;font-weight:700;color:var(--brown);margin:2px 0}
+.dash-adm-kpi-sub{font-size:10px;color:#aaa}
+.dash-adm-section-title{font-size:11px;font-weight:700;color:var(--brown);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;opacity:.8}
+.dash-adm-com-block{background:#fff;border-radius:8px;border:1px solid rgba(0,0,0,0.07);margin-bottom:12px;overflow:hidden}
+.dash-adm-com-header{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--brown);color:#fff;cursor:pointer}
+.dash-adm-com-header-left{display:flex;align-items:center;gap:10px}
+.dash-adm-com-name{font-size:13px;font-weight:700}
+.dash-adm-com-stats{font-size:11px;opacity:.75;display:flex;gap:12px}
+.dash-adm-com-ca{font-size:13px;font-weight:700;color:var(--gold)}
+.dash-adm-com-body{display:none}
+.dash-adm-com-body.open{display:block}
+.dash-adm-order-row{display:flex;align-items:center;justify-content:space-between;padding:7px 14px;border-bottom:1px solid #f5ede5;font-size:12px;gap:8px}
+.dash-adm-order-row:last-child{border-bottom:none}
+.dash-adm-no-data{text-align:center;padding:16px;color:#b09080;font-size:12px}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
@@ -179,6 +199,7 @@ tbody tr.has-qty td.td-qty input{background:#ffe0b2;border-color:var(--terra)}
       <span id="commercial-info" style="display:none;font-size:10px;opacity:.8;color:var(--gold)">&#128188; <span id="commercial-name"></span></span>
     </span>
     <button class="btn btn-outline no-print" id="btn-admin" onclick="window.location.href='admin.html'" style="display:none;border-color:rgba(210,180,105,.6);color:#ffd580">&#9881; Admin</button>
+    <button class="btn btn-outline no-print" id="btn-dashboard" onclick="scrollToDashboard()" style="display:none;border-color:rgba(255,255,255,.35);color:#fff">&#127968; Tableau de bord</button>
     <button class="btn btn-outline no-print" onclick="openHistoryModal()" style="border-color:rgba(210,180,105,.5);color:#ffd580">&#128203; Mes commandes</button>
     <button class="btn btn-outline no-print" onclick="doPrint()">&#128424; PDF / Imprimer</button>
     <button class="btn btn-outline no-print" onclick="exportExcel()" style="border-color:rgba(80,200,120,.5);color:#a0f0b0">&#128202; Export Excel</button>
@@ -200,6 +221,17 @@ tbody tr.has-qty td.td-qty input{background:#ffe0b2;border-color:var(--terra)}
     <div class="dash-com-orders" id="dc-orders-list">
       <div style="text-align:center;padding:16px;color:#b09080;font-size:12px">Chargement&#8230;</div>
     </div>
+  </div>
+
+  <div id="dash-admin">
+    <div class="dash-adm-kpi-grid">
+      <div class="dash-adm-kpi"><div class="dash-adm-kpi-label">Clients</div><div class="dash-adm-kpi-val" id="da-nb-clients">&#8212;</div><div class="dash-adm-kpi-sub">comptes actifs</div></div>
+      <div class="dash-adm-kpi"><div class="dash-adm-kpi-label">Commerciaux</div><div class="dash-adm-kpi-val" id="da-nb-com">&#8212;</div><div class="dash-adm-kpi-sub">comptes actifs</div></div>
+      <div class="dash-adm-kpi"><div class="dash-adm-kpi-label">Commandes</div><div class="dash-adm-kpi-val" id="da-nb-orders">&#8212;</div><div class="dash-adm-kpi-sub">enregistr&#233;es</div></div>
+      <div class="dash-adm-kpi"><div class="dash-adm-kpi-label">CA total HT</div><div class="dash-adm-kpi-val" id="da-ca">&#8212;</div><div class="dash-adm-kpi-sub">cumul all comptes</div></div>
+    </div>
+    <div class="dash-adm-section-title">&#128230; Commandes par commercial</div>
+    <div id="da-by-commercial"><div class="dash-adm-no-data">Chargement&#8230;</div></div>
   </div>
 
   <div id="dash-client">
@@ -581,9 +613,18 @@ function fbDeleteInscription(id) {
       }
       if(data.role === "user"){
         setTimeout(renderDashCommercial, 300);
+        var btnDash2=document.getElementById("btn-dashboard");
+        if(btnDash2) btnDash2.style.display="inline-flex";
       }
       if(data.role === "client"){
         setTimeout(renderDashClient, 300);
+        var btnDash=document.getElementById("btn-dashboard");
+        if(btnDash) btnDash.style.display="inline-flex";
+      }
+      if(data.role === "admin"){
+        setTimeout(renderDashAdmin, 300);
+        var btnDash3=document.getElementById("btn-dashboard");
+        if(btnDash3) btnDash3.style.display="inline-flex";
       }
       // // ── Gestion de la remise selon le rôle ──
       if(data.role === 'client'){
@@ -1910,6 +1951,156 @@ function _renderDashClientOrders(orders, el){
       +'</div>';
   });
   ol.innerHTML = html;
+}
+
+
+// ── Dashboard admin ───────────────────────────────────────────
+function renderDashAdmin(){
+  var dash = document.getElementById('dash-admin');
+  if(!dash) return;
+  dash.style.display = 'block';
+
+  var el = function(id){ return document.getElementById(id); };
+
+  // Lire tous les comptes
+  var allComptes = [];
+  try{ allComptes = JSON.parse(localStorage.getItem('mdm_comptes')||'[]'); }catch(e){}
+  var clients     = allComptes.filter(function(c){ return c.role==='client'; });
+  var commerciaux = allComptes.filter(function(c){ return c.role==='user'; });
+
+  if(el('da-nb-clients')) el('da-nb-clients').textContent = clients.length;
+  if(el('da-nb-com'))     el('da-nb-com').textContent     = commerciaux.length;
+
+  // Charger toutes les commandes de tous les clients depuis Firebase
+  var clientLogins = clients.map(function(co){
+    return co.login.replace(/[^a-zA-Z0-9_-]/g,'_');
+  });
+
+  if(!clientLogins.length){
+    if(el('da-nb-orders')) el('da-nb-orders').textContent = '0';
+    if(el('da-ca'))        el('da-ca').textContent        = '0\u00a0\u20ac';
+    var cont = el('da-by-commercial');
+    if(cont) cont.innerHTML = '<div class="dash-adm-no-data">Aucun client enregistr\u00e9.</div>';
+    return;
+  }
+
+  var promises = clientLogins.map(function(lg){
+    return fbLoadHistory(lg).then(function(orders){
+      return (orders||[]).map(function(o){ return Object.assign({},o,{_login:lg}); });
+    }).catch(function(){
+      var local=[];
+      try{local=JSON.parse(localStorage.getItem('mdm_history_'+lg)||'[]');}catch(e){}
+      return local.map(function(o){ return Object.assign({},o,{_login:lg}); });
+    });
+  });
+
+  Promise.all(promises).then(function(arrays){
+    var all = [].concat.apply([],arrays);
+    // Dédoublonner
+    var ids={};
+    all = all.filter(function(o){if(ids[o.id])return false;ids[o.id]=true;return true;});
+    all.sort(function(a,b){return (b.id||0)-(a.id||0);});
+
+    var nb = all.length;
+    var ca = all.reduce(function(s,o){return s+(o.totalNet||0);},0);
+    if(el('da-nb-orders')) el('da-nb-orders').textContent = nb;
+    if(el('da-ca'))        el('da-ca').textContent        = _dcFmt(ca);
+
+    // Grouper par commercial
+    // Construire map login_client → commercial
+    var clientComMap = {};
+    clients.forEach(function(co){
+      clientComMap[co.login.replace(/[^a-zA-Z0-9_-]/g,'_')] = co.commercial || '__aucun__';
+    });
+
+    // Grouper les commandes par commercial
+    var byCommercial = {}; // {commercial_login: [orders]}
+    all.forEach(function(o){
+      var com = clientComMap[o._login] || '__aucun__';
+      if(!byCommercial[com]) byCommercial[com] = [];
+      byCommercial[com].push(o);
+    });
+
+    // Construire la map login → nom pour les commerciaux
+    var comNameMap = {};
+    commerciaux.forEach(function(co){ comNameMap[co.login] = co.nom; });
+
+    // Afficher — d'abord les commerciaux assignés, puis "Sans commercial"
+    var comKeys = Object.keys(byCommercial).sort(function(a,b){
+      if(a==='__aucun__') return 1;
+      if(b==='__aucun__') return -1;
+      return (comNameMap[a]||a).localeCompare(comNameMap[b]||b);
+    });
+
+    var container = el('da-by-commercial');
+    if(!container) return;
+    if(!comKeys.length){
+      container.innerHTML = '<div class="dash-adm-no-data">Aucune commande enregistr\u00e9e.</div>';
+      return;
+    }
+
+    var html = '';
+    comKeys.forEach(function(comLogin, idx){
+      var orders  = byCommercial[comLogin];
+      var comNom  = comLogin==='__aucun__' ? 'Sans commercial assign\u00e9' : (comNameMap[comLogin]||comLogin);
+      var comCA   = orders.reduce(function(s,o){return s+(o.totalNet||0);},0);
+      var nbCom   = orders.length;
+
+      // Compter clients de ce commercial
+      var nbCliCom = clients.filter(function(co){
+        return (co.commercial||'__aucun__') === comLogin ||
+               (comLogin==='__aucun__' && !co.commercial);
+      }).length;
+
+      html += '<div class="dash-adm-com-block">';
+      html += '<div class="dash-adm-com-header" onclick="_toggleAdmCom(this)">';
+      html += '<div class="dash-adm-com-header-left">';
+      html += '<span class="dash-adm-com-name">&#128188; '+escHtml(comNom)+'</span>';
+      html += '<span class="dash-adm-com-stats">'
+        + nbCliCom+' client'+(nbCliCom>1?'s':'')
+        + ' &bull; '+nbCom+' commande'+(nbCom>1?'s':'')
+        +'</span>';
+      html += '</div>';
+      html += '<span class="dash-adm-com-ca">'+_dcFmt(comCA)+'</span>';
+      html += '</div>';
+
+      // Corps — liste des commandes (ouvert par défaut pour le 1er)
+      html += '<div class="dash-adm-com-body'+(idx===0?' open':'')+'">';
+      orders.slice(0,10).forEach(function(o){
+        var date   = o.date ? String(o.date).split(' ')[0] : '?';
+        var tn     = typeof o.totalNet==='number' ? o.totalNet.toFixed(2).replace('.',',')+'\u00a0\u20ac' : '\u2014';
+        var client = clients.find(function(co){
+          return co.login.replace(/[^a-zA-Z0-9_-]/g,'_')===o._login;
+        });
+        var clientNom = client ? client.nom : o._login;
+        html += '<div class="dash-adm-order-row">'
+          +'<span style="font-weight:600;color:var(--brown);max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+escHtml(o.magasin||clientNom)+'</span>'
+          +'<span style="font-size:10px;color:#888;background:var(--cream);padding:2px 7px;border-radius:8px">'+escHtml(clientNom)+'</span>'
+          +'<span style="font-size:11px;color:#aaa">'+date+'</span>'
+          +'<span style="font-weight:700;color:var(--terra)">'+tn+'</span>'
+          +'</div>';
+      });
+      if(orders.length>10){
+        html += '<div style="text-align:center;padding:8px;font-size:11px;color:#aaa">+'+(orders.length-10)+' autre'+(orders.length-10>1?'s':'')+'</div>';
+      }
+      html += '</div></div>';
+    });
+
+    container.innerHTML = html;
+  });
+}
+
+function _toggleAdmCom(header){
+  var body = header.nextElementSibling;
+  if(body) body.classList.toggle('open');
+}
+
+
+function scrollToDashboard(){
+  var role = window._userRole || 'client';
+  var id   = role==='user' ? 'dash-commercial' : (role==='admin' ? 'dash-admin' : 'dash-client');
+  var el   = document.getElementById(id);
+  if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
 }
 
 </script>

@@ -155,6 +155,7 @@ tbody tr.has-qty td.td-qty input{background:#ffe0b2;border-color:var(--terra)}
   <div class="header-actions">
     <span style="font-size:11px;opacity:.7;margin-right:4px;display:flex;flex-direction:column;align-items:flex-end;gap:2px">
       <span>&#128100; <span id="user-info"></span></span>
+      <span id="groupement-info" style="display:none;font-size:10px;opacity:.8;color:var(--gold)">&#127978; <span id="groupement-name"></span></span>
       <span id="commercial-info" style="display:none;font-size:10px;opacity:.8;color:var(--gold)">&#128188; <span id="commercial-name"></span></span>
     </span>
     <button class="btn btn-outline no-print" id="btn-admin" onclick="window.location.href='admin.html'" style="display:none;border-color:rgba(210,180,105,.6);color:#ffd580">&#9881; Admin</button>
@@ -489,7 +490,8 @@ function fbDeleteInscription(id) {
       window._userLogin      = data.login      || "guest";
       window._userRole       = data.role       || "client";
       window._userCommercial = data.commercial  || "";
-      window._franco = parseFloat(data.franco) || 0;
+      window._franco         = parseFloat(data.franco) || 0;
+      window._userGroupement = data.groupement || "";
       remisesProduitsMap = {};
       loadGrpRemises();
       if(data.remises_produits && Array.isArray(data.remises_produits)){
@@ -500,6 +502,15 @@ function fbDeleteInscription(id) {
         });
       }
 
+      // Afficher le groupement si défini
+      if(data.groupement){
+        var grpInfo = document.getElementById("groupement-info");
+        var grpName = document.getElementById("groupement-name");
+        if(grpInfo && grpName){
+          grpName.textContent = data.groupement;
+          grpInfo.style.display = "inline";
+        }
+      }
       // Afficher le commercial référent si compte client
       if(data.role === "client" && data.commercial){
         try{

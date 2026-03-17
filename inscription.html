@@ -390,6 +390,10 @@ footer a:hover{opacity:1}
       </div>
       <div class="success-title">Compte cr&#233;&#233; !</div>
       <p class="success-sub">Votre compte est actif. Connectez-vous d&#232;s maintenant avec votre login et mot de passe.</p>
+      <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:12px 14px;margin:12px 0;font-size:12px;color:#9a3412;text-align:left;line-height:1.6">
+        <strong>&#9993; Email de confirmation &#224; venir</strong><br>
+        Vous allez recevoir un email de <strong>FormSubmit</strong> vous demandant de confirmer votre adresse. Cliquez sur le bouton <em>&#171;&#160;Confirm submission&#160;&#187;</em> dans cet email pour activer la r&#233;ception de vos acc&#232;s.
+      </div>
       <p class="success-count">Redirection automatique dans <strong id="redirect-count">4</strong>&#160;secondes&#8230;</p>
       <a href="index.html" class="btn-login">&#128274; Se connecter maintenant</a>
     </div>
@@ -598,6 +602,28 @@ function submitForm(){
           if(ville) fd.append('Ville', ville + ' ' + cp);
           if(msg)   fd.append('Message', msg);
           fetch('https://formsubmit.co/cspoto@moulindesmoines.com', {method:'POST', body:fd}).catch(function(){});
+
+          // ── Email récapitulatif au client ──────────────────────
+          var fdC = new FormData();
+          fdC.append('_subject', 'Vos accès Bon de Commande — Moulin des Moines');
+          fdC.append('_captcha', 'false');
+          fdC.append('_template', 'box');
+          fdC.append('_replyto', 'cspoto@moulindesmoines.com');
+          fdC.append('Bonjour', nom);
+          fdC.append('Login', login);
+          fdC.append('Lien', 'https://loac1118.github.io/MDM-BDC26/index.html');
+          if(grp) fdC.append('Groupement', grp);
+          fdC.append('message',
+            'Bonjour ' + nom + ',\n\n'
+            + 'Votre compte Bon de Commande Moulin des Moines a été créé.\n\n'
+            + 'Vos identifiants :\n'
+            + '  Login : ' + login + '\n'
+            + '  Mot de passe : celui choisi lors de l\'inscription\n\n'
+            + 'Connexion : https://loac1118.github.io/MDM-BDC26/index.html\n'
+            + (grp ? 'Groupement : ' + grp + '\n' : '')
+            + '\nCordialement,\nL\'\u00e9quipe Moulin des Moines'
+          );
+          fetch('https://formsubmit.co/' + encodeURIComponent(email), {method:'POST', body:fdC}).catch(function(){});
 
           // Étape 6 : afficher le succès + redirection
           document.getElementById('form-card').style.display = 'none';

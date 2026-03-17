@@ -327,6 +327,7 @@ function fbDeleteInscription(id) {
     if(data && data.length){
       COMPTES.length=0;
       data.forEach(function(c){ COMPTES.push(c); });
+      window._comptesLoaded = true;
     } else {
       // Fallback localStorage
       try{
@@ -335,6 +336,7 @@ function fbDeleteInscription(id) {
           var list=JSON.parse(saved);
           COMPTES.length=0;
           list.forEach(function(c){ COMPTES.push(c); });
+          window._comptesLoaded = true;
           // Migration : sauvegarder dans Firebase
           if(list.length) fbSaveComptes(list);
         }
@@ -346,64 +348,53 @@ function fbDeleteInscription(id) {
       var saved=localStorage.getItem("mdm_comptes");
       if(saved){ var list=JSON.parse(saved); COMPTES.length=0; list.forEach(function(c){ COMPTES.push(c); }); }
     } catch(e){}
+    window._comptesLoaded = true;
   });
 })();
 
 async function doLogin(){
-  var login = document.getElementById("login").value.trim();
+  var login    = document.getElementById("login").value.trim();
   var password = document.getElementById("password").value;
-  var errorEl = document.getElementById("error-msg");
-  var btn = document.getElementById("btn-login");
-  var spinner = document.getElementById("spinner");
-  var label = document.getElementById("btn-label");
+  var btn      = document.getElementById("btn-login");
+  var spinner  = document.getElementById("spinner");
+  var label    = document.getElementById("btn-label");
 
-  errorEl.style.display = "none";
+  document.getElementById("error-msg").style.display = "none";
 
-  if(!login || !password){
-    showError("Veuillez remplir tous les champs.");
-    return;
-  }
+  if(!login || !password){ showError("Veuillez remplir tous les champs."); return; }
 
-  // Animation
   btn.disabled = true;
   spinner.style.display = "inline-block";
   label.textContent = "Vérification...";
 
-  // Attendre que Firebase ait chargé les comptes (max 3s)
-  await new Promise(function(resolve){ setTimeout(resolve, 800); });
-  (function(){
+  // Attendre que les comptes soient chargés (Firebase ou localStorage)
+  // puis tenter la connexion
+  function tryLogin(){
     var compte = null;
     for(var i=0;i<COMPTES.length;i++){
       if(COMPTES[i].login === login && COMPTES[i].password === password){
-        compte = COMPTES[i];
-        break;
+        compte = COMPTES[i]; break;
       }
     }
-
     if(compte){
-      // Créer token (8h)
       var tokenData = {
-        login:      compte.login,
-        nom:        compte.nom,
-        role:       compte.role,
-        remise:     compte.remise    || 0,
-        email:      compte.email     || "cspoto@moulindesmoines.com",
-        tel:        compte.tel       || "",
-        numclient:  compte.numclient || "",
-        groupement: compte.groupement|| "",
-        ville:      compte.ville     || "",
-        cp:         compte.cp        || "",
-        commercial:  compte.commercial || "",
-        franco:      compte.franco      || 0,
-
+        login:            compte.login,
+        nom:              compte.nom,
+        role:             compte.role,
+        remise:           compte.remise           || 0,
+        email:            compte.email            || "cspoto@moulindesmoines.com",
+        tel:              compte.tel              || "",
+        numclient:        compte.numclient        || "",
+        groupement:       compte.groupement       || "",
+        ville:            compte.ville            || "",
+        cp:               compte.cp              || "",
+        commercial:       compte.commercial       || "",
+        franco:           compte.franco           || 0,
         remises_produits: compte.remises_produits || [],
-        // grp_remises stockées directement dans le compte par l'admin
-        grp_remises: compte.grp_remises || [],
-        exp:         Date.now() + 8 * 60 * 60 * 1000
+        grp_remises:      compte.grp_remises      || [],
+        exp:              Date.now() + 8 * 60 * 60 * 1000
       };
-      var token = btoa(JSON.stringify(tokenData));
-      sessionStorage.setItem("mdm_token", token);
-      // Redirection
+      sessionStorage.setItem("mdm_token", btoa(JSON.stringify(tokenData)));
       label.textContent = "Connexion...";
       window.location.href = compte.role === "admin" ? "admin.html" : "commande.html";
     } else {
@@ -412,7 +403,31 @@ async function doLogin(){
       label.textContent = "Se connecter";
       showError("Identifiant ou mot de passe incorrect.");
     }
-  })();
+  }
+
+  // Si Firebase a déjà chargé les comptes → connexion immédiate
+  // Sinon → attendre Firebase (max 4s) puis fallback localStorage
+  if(window._comptesLoaded){
+    tryLogin();
+  } else {
+    label.textContent = "Chargement...";
+    var waited = 0;
+    var interval = setInterval(function(){
+      waited += 200;
+      if(window._comptesLoaded || waited >= 4000){
+        clearInterval(interval);
+        // Dernier fallback : localStorage
+        if(!window._comptesLoaded){
+          try{
+            var saved = localStorage.getItem("mdm_comptes");
+            if(saved){ var list=JSON.parse(saved); COMPTES.length=0; list.forEach(function(c){COMPTES.push(c);}); }
+          }catch(e){}
+        }
+        label.textContent = "Vérification...";
+        tryLogin();
+      }
+    }, 200);
+  }
 }
 
 function showError(msg){

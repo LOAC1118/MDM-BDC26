@@ -132,12 +132,21 @@ var COMPTES = [
 // ── La remise s'applique automatiquement à la connexion (0 = pas de remise)
 // ═══════════════════════════════════════════════════════════
 
+function _safeB64Encode(str){
+  try{ return btoa(unescape(encodeURIComponent(str))); }
+  catch(e){ return btoa(encodeURIComponent(str)); }
+}
+function _safeB64Decode(str){
+  try{ return decodeURIComponent(escape(atob(str))); }
+  catch(e){ return decodeURIComponent(atob(str)); }
+}
+
 // Rediriger si déjà connecté — nettoyer le token corrompu si besoin
 (function(){
   var token = sessionStorage.getItem("mdm_token");
   if(!token) return; // pas de token → rester sur index
   try {
-    var data = JSON.parse(atob(token));
+    var data = JSON.parse(_safeB64Decode(token));
     if(data && data.exp && Date.now() < data.exp) {
       // Token valide → rediriger
       window.location.href = data.role === "admin" ? "admin.html" : "commande.html";
@@ -394,7 +403,7 @@ async function doLogin(){
         grp_remises:      compte.grp_remises      || [],
         exp:              Date.now() + 8 * 60 * 60 * 1000
       };
-      sessionStorage.setItem("mdm_token", btoa(JSON.stringify(tokenData)));
+      sessionStorage.setItem("mdm_token", _safeB64Encode(JSON.stringify(tokenData)));
       label.textContent = "Connexion...";
       window.location.href = compte.role === "admin" ? "admin.html" : "commande.html";
     } else {

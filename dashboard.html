@@ -544,7 +544,7 @@ function renderAdmin(data){
   var token=sessionStorage.getItem('mdm_token');
   if(!token){ window.location.href='index.html'; return; }
   var data;
-  try{ data=JSON.parse(atob(token)); }catch(e){ sessionStorage.removeItem('mdm_token'); window.location.href='index.html'; return; }
+  try{ data=JSON.parse(_safeB64Decode(token)); }catch(e){ sessionStorage.removeItem('mdm_token'); window.location.href='index.html'; return; }
   if(!data.exp||Date.now()>data.exp){ sessionStorage.removeItem('mdm_token'); window.location.href='index.html'; return; }
 
   applyTheme(data.role);
@@ -696,6 +696,10 @@ function _exportAdminExcel(wb){
   XLSX.writeFile(wb, 'dashboard_admin_'+new Date().toISOString().slice(0,10)+'.xlsx');
 }
 
+function _safeB64Decode(str){
+  try{ return decodeURIComponent(escape(atob(str))); }
+  catch(e){ try{ return decodeURIComponent(atob(str)); }catch(e2){ return atob(str); } }
+}
 </script>
 </body>
 </html>

@@ -485,7 +485,7 @@ function fbDeleteInscription(id) {
   var valid = false;
   try {
     if(token) {
-      var data = JSON.parse(atob(token));
+      var data = JSON.parse(_safeB64Decode(token));
       // Token valide 8h
       if(data.exp && Date.now() < data.exp) valid = true;
     }
@@ -497,7 +497,7 @@ function fbDeleteInscription(id) {
   // Afficher le nom et appliquer la remise du compte
   window.addEventListener("DOMContentLoaded", function(){
     try {
-      var data = JSON.parse(atob(sessionStorage.getItem("mdm_token")));
+      var data = JSON.parse(_safeB64Decode(sessionStorage.getItem("mdm_token")));
       // Nom utilisateur
       var el = document.getElementById("user-info");
       if(el) el.textContent = data.nom || data.login;
@@ -1853,6 +1853,10 @@ function saveNewClient(){
   setTimeout(closeNewClientModal,2000);
 }
 
+function _safeB64Decode(str){
+  try{ return decodeURIComponent(escape(atob(str))); }
+  catch(e){ try{ return decodeURIComponent(atob(str)); }catch(e2){ return atob(str); } }
+}
 </script>
 
 <div id="modal-new-client" onclick="if(event.target===this)closeNewClientModal()">

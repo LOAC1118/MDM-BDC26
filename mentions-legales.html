@@ -4,31 +4,322 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mentions légales & RGPD — Moulin des Moines</title>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+
 <style>
-:root{--brown:#78503C;--terra:#C87864;--cream:#FDF5EE;--gold:#D2B469;--green:#1A5C2E}
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:"Outfit",sans-serif;background:var(--cream);color:#3a2a20;line-height:1.7}
-.header{background:var(--brown);padding:16px 40px;display:flex;align-items:center;justify-content:space-between}
-.logo{font-family:"Cormorant Garamond",serif;font-size:20px;font-weight:700;color:#fff;text-decoration:none}
-.logo span{color:var(--gold)}
-.back{font-size:12px;color:rgba(255,255,255,.6);text-decoration:none}
-.back:hover{color:#fff}
+/* ════════════════════════════════════════════════
+   MDM DESIGN SYSTEM — Beige Chaud 2026
+   Fraunces 200 + Inter 300/400/500
+   Palette : #f0ebe3 · #5c4a38 · #4a7c59 · #faf8f5
+════════════════════════════════════════════════ */
+:root{
+  --bg:#faf8f5;
+  --bg-card:#ffffff;
+  --bg-beige:#f0ebe3;
+  --bg-beige-dark:#e8dfd4;
+  --text:#5c4a38;
+  --text-secondary:#a89080;
+  --text-muted:#c0b0a0;
+  --accent:#4a7c59;
+  --accent-light:#eef4f0;
+  --accent-hover:#3d6b4a;
+  --border:#e8e0d6;
+  --border-light:#f0ebe8;
+  --danger:#c0392b;
+  --danger-light:#fdecea;
+  --warning:#b8860b;
+  --warning-light:#fef9ee;
+  --shadow:rgba(92,74,56,0.08);
+  /* Compat variables MDM existantes */
+  --brown:#5c4a38;
+  --terra:#8a6a5a;
+  --cream:#faf8f5;
+  --gold:#c8a87a;
+  --green:#4a7c59;
+  --red:#c0392b;
+  --white:#ffffff;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Inter',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  font-size:13px;
+  line-height:1.6;
+  font-weight:300;
+  min-height:100vh;
+}
+
+/* ── HEADER UNIFIÉ ── */
+.mdm-header{
+  background:var(--bg-beige);
+  border-bottom:0.5px solid var(--border);
+  padding:0 28px;
+  height:56px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:100;
+}
+.mdm-logo{
+  font-family:'Fraunces',serif;
+  font-size:18px;font-weight:200;
+  color:var(--text);letter-spacing:-.2px;
+  text-decoration:none;
+}
+.mdm-logo span{color:var(--accent)}
+.mdm-logo small{
+  font-family:'Inter',sans-serif;font-size:10px;
+  font-weight:300;color:var(--text-muted);
+  margin-left:12px;vertical-align:middle;letter-spacing:.3px;
+}
+.mdm-header-actions{display:flex;align-items:center;gap:6px}
+.mdm-sep{width:0.5px;height:16px;background:var(--border);flex-shrink:0;margin:0 4px}
+
+/* ── BOUTONS ── */
+.mdm-btn{
+  padding:7px 14px;border-radius:6px;
+  font-family:'Inter',sans-serif;font-size:11px;font-weight:500;
+  cursor:pointer;border:0.5px solid var(--border);
+  background:var(--bg-card);color:var(--text);
+  transition:all .15s;white-space:nowrap;
+}
+.mdm-btn:hover{background:var(--bg-beige);border-color:var(--bg-beige-dark)}
+.mdm-btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.mdm-btn.primary:hover{background:var(--accent-hover);border-color:var(--accent-hover)}
+.mdm-btn.beige{background:var(--bg-beige);color:var(--text);border-color:var(--border)}
+.mdm-btn.beige:hover{background:var(--bg-beige-dark)}
+.mdm-btn.danger{color:var(--danger);border-color:#f5c0b8}.mdm-btn.danger:hover{background:var(--danger-light)}
+.mdm-btn.ghost{background:transparent;color:var(--text-secondary);border-color:transparent}
+.mdm-btn.ghost:hover{background:var(--bg-beige);color:var(--text)}
+.mdm-btn:disabled{opacity:.45;cursor:not-allowed}
+
+/* ── CHAT FAB ── */
+.mdm-chat-btn{
+  position:relative;padding:7px 10px;border-radius:6px;
+  font-size:14px;cursor:pointer;
+  border:0.5px solid var(--border);background:var(--bg-card);color:var(--text);
+  transition:all .15s;display:none;
+}
+.mdm-chat-btn:hover{background:var(--bg-beige)}
+.mdm-chat-badge{
+  position:absolute;top:-5px;right:-5px;
+  background:var(--danger);color:#fff;
+  font-size:9px;font-weight:600;padding:2px 5px;
+  border-radius:10px;min-width:16px;text-align:center;display:none;
+}
+
+/* ── CARTES ── */
+.mdm-card{
+  background:var(--bg-card);
+  border:0.5px solid var(--border);
+  border-radius:10px;
+  padding:20px 22px;
+}
+.mdm-card-title{
+  font-size:12px;font-weight:500;color:var(--text);
+  margin-bottom:14px;padding-bottom:12px;
+  border-bottom:0.5px solid var(--border-light);
+  display:flex;align-items:center;justify-content:space-between;
+}
+
+/* ── KPI CARDS ── */
+.mdm-kpi{
+  background:var(--bg-card);
+  border:0.5px solid var(--border);
+  border-radius:10px;padding:16px;
+}
+.mdm-kpi-label{
+  font-size:10px;font-weight:500;color:var(--text-muted);
+  text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;
+}
+.mdm-kpi-value{
+  font-family:'Fraunces',serif;font-size:28px;font-weight:200;
+  color:var(--text);line-height:1;
+}
+.mdm-kpi-value.accent{color:var(--accent)}
+.mdm-kpi-sub{font-size:11px;font-weight:300;color:var(--text-muted);margin-top:4px}
+
+/* ── TABLEAUX ── */
+.mdm-table-wrap{border:0.5px solid var(--border);border-radius:10px;overflow:hidden}
+table{width:100%;border-collapse:collapse}
+thead th{
+  padding:9px 14px;font-size:10px;font-weight:500;
+  color:var(--text-muted);background:var(--bg);
+  text-align:left;text-transform:uppercase;letter-spacing:.5px;
+  border-bottom:0.5px solid var(--border);white-space:nowrap;
+}
+tbody tr{border-bottom:0.5px solid var(--border-light);transition:background .1s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:var(--bg)}
+tbody td{padding:10px 14px;font-size:12px;font-weight:300;color:var(--text)}
+
+/* ── BADGES ── */
+.mdm-badge{
+  display:inline-block;padding:2px 8px;border-radius:4px;
+  font-size:10px;font-weight:500;
+}
+.mdm-badge.client{background:var(--accent-light);color:var(--accent)}
+.mdm-badge.commercial{background:var(--bg-beige);color:var(--text-secondary)}
+.mdm-badge.admin{background:var(--warning-light);color:var(--warning)}
+.mdm-badge.danger{background:var(--danger-light);color:var(--danger)}
+.mdm-badge.remise{background:var(--warning-light);color:var(--warning)}
+
+/* ── FORMULAIRES ── */
+.mdm-fg{margin-bottom:14px}
+.mdm-fg label{
+  display:block;font-size:10px;font-weight:500;
+  color:var(--text-muted);text-transform:uppercase;
+  letter-spacing:.5px;margin-bottom:5px;
+}
+.mdm-fg input,.mdm-fg select,.mdm-fg textarea{
+  width:100%;padding:9px 12px;
+  border:0.5px solid var(--border);border-radius:6px;
+  font-family:'Inter',sans-serif;font-size:13px;font-weight:300;
+  color:var(--text);background:var(--bg-card);
+  outline:none;transition:border-color .15s,box-shadow .15s;appearance:none;
+}
+.mdm-fg input:focus,.mdm-fg select:focus,.mdm-fg textarea:focus{
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(74,124,89,.08);
+}
+.mdm-fg input::placeholder,.mdm-fg textarea::placeholder{color:var(--text-muted);font-weight:300}
+.mdm-fg textarea{resize:vertical;min-height:80px;line-height:1.6}
+.mdm-fg select{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M5 6L0 0h10z' fill='%23a89080'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 12px center;
+  padding-right:32px;cursor:pointer;
+}
+.mdm-req{color:var(--accent)}
+
+/* ── SECTION LABEL ── */
+.mdm-section-label{
+  font-size:10px;font-weight:500;text-transform:uppercase;
+  letter-spacing:.8px;color:var(--accent);
+  margin-bottom:14px;display:flex;align-items:center;gap:8px;
+}
+.mdm-section-label::after{content:'';flex:1;height:0.5px;background:var(--border)}
+
+/* ── ALERTS ── */
+.mdm-alert{
+  padding:10px 14px;border-radius:6px;font-size:12px;
+  font-weight:300;border:0.5px solid;display:none;
+}
+.mdm-alert.err{background:var(--danger-light);color:var(--danger);border-color:#f5c0b8}
+.mdm-alert.ok{background:var(--accent-light);color:var(--accent);border-color:#b8d4c0}
+
+/* ── TOAST ── */
+.mdm-toast{
+  position:fixed;bottom:24px;right:24px;
+  background:var(--text);color:#fff;
+  padding:11px 18px;border-radius:8px;
+  font-size:12px;font-weight:400;
+  box-shadow:0 4px 20px var(--shadow);
+  transform:translateY(80px);opacity:0;
+  transition:all .3s;z-index:300;
+  display:flex;align-items:center;gap:8px;
+}
+.mdm-toast.show{transform:translateY(0);opacity:1}
+
+/* ── MODAL ── */
+.mdm-modal-bg{
+  display:none;position:fixed;inset:0;
+  background:rgba(92,74,56,.35);z-index:200;
+  align-items:center;justify-content:center;
+  backdrop-filter:blur(2px);
+}
+.mdm-modal-bg.open{display:flex}
+.mdm-modal{
+  background:var(--bg-card);border-radius:12px;
+  padding:28px 30px;max-width:600px;width:96%;
+  box-shadow:0 8px 40px var(--shadow);
+  max-height:92vh;overflow-y:auto;
+  border:0.5px solid var(--border);
+}
+.mdm-modal h3{
+  font-family:'Fraunces',serif;font-size:20px;font-weight:200;
+  color:var(--text);margin-bottom:20px;
+  padding-bottom:14px;border-bottom:0.5px solid var(--border);
+}
+
+/* ── PAGE TITLE ── */
+.mdm-page-title{
+  font-family:'Fraunces',serif;font-size:24px;font-weight:200;
+  color:var(--text);margin-bottom:4px;letter-spacing:-.3px;
+}
+.mdm-page-sub{font-size:12px;font-weight:300;color:var(--text-muted);margin-bottom:22px}
+
+/* ── SIDEBAR (admin) ── */
+.mdm-sidebar{
+  width:220px;background:var(--bg-card);
+  border-right:0.5px solid var(--border);
+  padding:16px 0;flex-shrink:0;
+  position:sticky;top:56px;
+  height:calc(100vh - 56px);overflow-y:auto;
+}
+.mdm-sidebar::-webkit-scrollbar{width:3px}
+.mdm-sidebar::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.mdm-sidebar-label{
+  font-size:9px;font-weight:500;color:var(--text-muted);
+  text-transform:uppercase;letter-spacing:.8px;
+  padding:10px 16px 5px;
+}
+.mdm-nav-item{
+  display:flex;align-items:center;gap:9px;
+  padding:8px 16px;cursor:pointer;
+  font-size:12px;font-weight:300;color:var(--text-secondary);
+  transition:all .13s;margin-bottom:1px;
+  border-left:2px solid transparent;
+}
+.mdm-nav-item:hover{background:var(--bg);color:var(--text)}
+.mdm-nav-item.active{
+  background:var(--bg);color:var(--text);
+  border-left-color:var(--accent);font-weight:500;
+}
+.mdm-nav-badge{
+  margin-left:auto;background:var(--accent);color:#fff;
+  font-size:9px;font-weight:600;padding:2px 6px;
+  border-radius:10px;min-width:16px;text-align:center;
+}
+
+/* ── FOOTER ── */
+.mdm-footer{
+  text-align:center;padding:20px;
+  font-size:11px;font-weight:300;color:var(--text-muted);
+  border-top:0.5px solid var(--border);
+}
+.mdm-footer a{color:inherit;text-decoration:none;opacity:.7}
+.mdm-footer a:hover{opacity:1}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+  .mdm-header{padding:0 16px}
+  .mdm-btn small{display:none}
+}
+
+body{background:var(--bg)}
+.site-header,.mdm-header-static{background:var(--bg-beige);border-bottom:1px solid var(--border);padding:0 40px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.logo,.mdm-logo-link{font-family:'Fraunces',serif;font-size:18px;font-weight:200;color:var(--text);text-decoration:none;letter-spacing:-.2px}
+.logo span{color:var(--accent)}
+.back,.back-link{font-size:12px;font-weight:300;color:var(--text-muted);text-decoration:none}
+.back:hover,.back-link:hover{color:var(--text)}
+
 .container{max-width:800px;margin:0 auto;padding:40px 24px 60px}
-.page-title{font-family:"Cormorant Garamond",serif;font-size:32px;font-weight:700;color:var(--brown);margin-bottom:6px}
-.page-sub{font-size:13px;color:#a08070;margin-bottom:36px}
-.section{background:#fff;border-radius:12px;padding:24px 28px;margin-bottom:20px;box-shadow:0 2px 10px rgba(120,80,60,.08)}
-.section h2{font-family:"Cormorant Garamond",serif;font-size:20px;font-weight:700;color:var(--brown);margin-bottom:14px;padding-bottom:10px;border-bottom:2px solid var(--cream)}
-.section h3{font-size:14px;font-weight:700;color:var(--terra);margin:16px 0 8px}
-.section p{font-size:13px;color:#4a3a2a;margin-bottom:10px}
-.section ul{font-size:13px;color:#4a3a2a;padding-left:20px;margin-bottom:10px}
-.section ul li{margin-bottom:5px}
-.highlight{background:var(--cream);border-left:3px solid var(--terra);padding:12px 16px;border-radius:0 8px 8px 0;margin:14px 0;font-size:13px;color:#4a3a2a}
-.contact-box{background:var(--cream);border:1px solid #e0d0c4;border-radius:8px;padding:16px;font-size:13px;color:#4a3a2a}
-.contact-box strong{display:block;margin-bottom:4px;color:var(--brown)}
-.badge{display:inline-block;background:var(--cream);color:var(--terra);font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;border:1px solid #e0c8b0;margin-right:6px;margin-bottom:4px}
-footer{text-align:center;padding:20px;font-size:11px;color:#b09080}
+.page-title{font-family:'Fraunces',serif;font-size:28px;font-weight:200;color:var(--text);margin-bottom:6px;letter-spacing:-.3px}
+.page-sub{font-size:12px;font-weight:300;color:var(--text-muted);margin-bottom:28px}
+.section{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:22px 26px;margin-bottom:14px}
+.section h2{font-family:'Fraunces',serif;font-size:17px;font-weight:200;color:var(--text);margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border-light)}
+.section h3{font-size:13px;font-weight:500;color:var(--accent);margin:14px 0 6px}
+.section p{font-size:13px;font-weight:300;color:var(--text);margin-bottom:8px;line-height:1.7}
+.section ul{font-size:13px;font-weight:300;color:var(--text);padding-left:18px;margin-bottom:8px;line-height:1.7}
+.section ul li{margin-bottom:4px}
+.highlight{background:var(--bg-beige);border-left:2px solid var(--accent);padding:10px 14px;border-radius:0 6px 6px 0;margin:12px 0;font-size:13px;font-weight:300;color:var(--text)}
+.contact-box{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:14px;font-size:13px;font-weight:300;color:var(--text)}
+.contact-box strong{display:block;margin-bottom:4px;font-weight:500;color:var(--text)}
+.badge{display:inline-block;background:var(--accent-light);color:var(--accent);font-size:11px;font-weight:500;padding:2px 8px;border-radius:4px;margin-right:6px;margin-bottom:4px}
+footer{text-align:center;padding:20px;font-size:11px;font-weight:300;color:var(--text-muted)}
+footer a{color:inherit;text-decoration:none;opacity:.7}footer a:hover{opacity:1}
+
 </style>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,200;0,400;1,200&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
 
@@ -48,7 +339,7 @@ footer{text-align:center;padding:20px;font-size:11px;color:#b09080}
       <strong>Moulin des Moines</strong>
       Producteur et distributeur de produits biologiques<br>
       Alsace, France<br>
-      Email&nbsp;: <a href="mailto:cspoto@moulindesmoines.com" style="color:var(--terra)">cspoto@moulindesmoines.com</a>
+      Email&nbsp;: <a href="/cdn-cgi/l/email-protection#82e1f1f2edf6edc2efedf7eeebece6e7f1efedebece7f1ace1edef" style="color:var(--terra)"><span class="__cf_email__" data-cfemail="2a49595a455e456a47455f4643444e4f59474543444f5904494547">[email&#160;protected]</span></a>
     </div>
     <p style="margin-top:12px">Ce site est un espace de commande professionnel réservé aux partenaires commerciaux (magasins, revendeurs) de Moulin des Moines. L'accès est restreint aux utilisateurs disposant d'identifiants fournis par notre équipe.</p>
   </div>
@@ -134,7 +425,7 @@ footer{text-align:center;padding:20px;font-size:11px;color:#b09080}
     <p>Pour exercer ces droits, contactez-nous&nbsp;:</p>
     <div class="contact-box">
       <strong>Demande relative à vos données personnelles</strong>
-      Email&nbsp;: <a href="mailto:cspoto@moulindesmoines.com" style="color:var(--terra)">cspoto@moulindesmoines.com</a><br>
+      Email&nbsp;: <a href="/cdn-cgi/l/email-protection#a1c2d2d1ced5cee1ccced4cdc8cfc5c4d2cccec8cfc4d28fc2cecc" style="color:var(--terra)"><span class="__cf_email__" data-cfemail="513222213e253e113c3e243d383f3534223c3e383f34227f323e3c">[email&#160;protected]</span></a><br>
       Objet&nbsp;: <em>RGPD — [votre demande]</em><br>
       Délai de réponse&nbsp;: 30 jours maximum (conformément à l'article 12 du RGPD)
     </div>
@@ -171,17 +462,5 @@ footer{text-align:center;padding:20px;font-size:11px;color:#b09080}
     <div class="contact-box">
       <strong>Responsable du traitement des données</strong>
       Moulin des Moines<br>
-      Email&nbsp;: <a href="mailto:cspoto@moulindesmoines.com" style="color:var(--terra)">cspoto@moulindesmoines.com</a>
-    </div>
-    <p style="margin-top:12px">Pour toute question relative à la protection de vos données ou pour exercer vos droits, vous pouvez nous contacter à l'adresse ci-dessus en précisant l'objet <em>"RGPD"</em>.</p>
-  </div>
-
-</div>
-
-<footer>
-  &copy; 2026 Moulin des Moines &mdash; Tous droits réservés &nbsp;&middot;&nbsp;
-  <a href="index.html" style="color:inherit;text-decoration:none">Retour à la connexion</a>
-</footer>
-
-</body>
-</html>
+      Email&nbsp;: <a href="/cdn-cgi/l/email-protection#543727243b203b14393b21383d3a303127393b3d3a31277a373b39" style="color:var(--terra)"><span class="__cf_email__" data-cfemail="1b78686b746f745b76746e7772757f7e68767472757e6835787476">[email&#160;protected]</span></a>
+    </div

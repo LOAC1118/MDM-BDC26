@@ -4,271 +4,356 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Connexion &mdash; Moulin des Moines</title>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,200;0,400;1,200&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-:root{--terra:#C87864;--brown:#78503C;--cream:#FDF5EE;--gold:#D2B469;--green:#1A5C2E;--white:#fff;--shadow:rgba(120,80,60,0.18)}
+/* ════════════════════════════════════════════════
+   MDM DESIGN SYSTEM — Beige Chaud 2026
+   Fraunces 200 + Inter 300/400/500
+   Palette : #f0ebe3 · #5c4a38 · #4a7c59 · #faf8f5
+════════════════════════════════════════════════ */
+:root{
+  --bg:#faf8f5;
+  --bg-card:#ffffff;
+  --bg-beige:#f0ebe3;
+  --bg-beige-dark:#e8dfd4;
+  --text:#5c4a38;
+  --text-secondary:#a89080;
+  --text-muted:#c0b0a0;
+  --accent:#4a7c59;
+  --accent-light:#eef4f0;
+  --accent-hover:#3d6b4a;
+  --border:#e8e0d6;
+  --border-light:#f0ebe8;
+  --danger:#c0392b;
+  --danger-light:#fdecea;
+  --warning:#b8860b;
+  --warning-light:#fef9ee;
+  --shadow:rgba(92,74,56,0.08);
+  /* Compat variables MDM existantes */
+  --brown:#5c4a38;
+  --terra:#8a6a5a;
+  --cream:#faf8f5;
+  --gold:#c8a87a;
+  --green:#4a7c59;
+  --red:#c0392b;
+  --white:#ffffff;
+}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{font-family:"Outfit",sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--cream);background-image:radial-gradient(ellipse at 20% 50%,rgba(200,120,100,.08) 0%,transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(210,180,105,.10) 0%,transparent 50%)}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Inter',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  font-size:13px;
+  line-height:1.6;
+  font-weight:300;
+  min-height:100vh;
+}
 
-.login-wrap{width:100%;max-width:420px;padding:20px}
+/* ── HEADER UNIFIÉ ── */
+.mdm-header{
+  background:var(--bg-beige);
+  border-bottom:0.5px solid var(--border);
+  padding:0 28px;
+  height:56px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:100;
+}
+.mdm-logo{
+  font-family:'Fraunces',serif;
+  font-size:18px;font-weight:200;
+  color:var(--text);letter-spacing:-.2px;
+  text-decoration:none;
+}
+.mdm-logo span{color:var(--accent)}
+.mdm-logo small{
+  font-family:'Inter',sans-serif;font-size:10px;
+  font-weight:300;color:var(--text-muted);
+  margin-left:12px;vertical-align:middle;letter-spacing:.3px;
+}
+.mdm-header-actions{display:flex;align-items:center;gap:6px}
+.mdm-sep{width:0.5px;height:16px;background:var(--border);flex-shrink:0;margin:0 4px}
 
-/* Logo */
-.logo-block{text-align:center;margin-bottom:32px}
-.logo-icon{width:72px;height:72px;background:var(--brown);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:30px;margin-bottom:14px;box-shadow:0 4px 20px var(--shadow)}
-.logo-title{font-family:"Cormorant Garamond",serif;font-size:30px;font-weight:700;color:var(--brown);letter-spacing:.5px}
-.logo-title span{color:var(--terra)}
-.logo-sub{font-size:12px;color:#a08070;margin-top:4px;letter-spacing:.3px}
+/* ── BOUTONS ── */
+.mdm-btn{
+  padding:7px 14px;border-radius:6px;
+  font-family:'Inter',sans-serif;font-size:11px;font-weight:500;
+  cursor:pointer;border:0.5px solid var(--border);
+  background:var(--bg-card);color:var(--text);
+  transition:all .15s;white-space:nowrap;
+}
+.mdm-btn:hover{background:var(--bg-beige);border-color:var(--bg-beige-dark)}
+.mdm-btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.mdm-btn.primary:hover{background:var(--accent-hover);border-color:var(--accent-hover)}
+.mdm-btn.beige{background:var(--bg-beige);color:var(--text);border-color:var(--border)}
+.mdm-btn.beige:hover{background:var(--bg-beige-dark)}
+.mdm-btn.danger{color:var(--danger);border-color:#f5c0b8}.mdm-btn.danger:hover{background:var(--danger-light)}
+.mdm-btn.ghost{background:transparent;color:var(--text-secondary);border-color:transparent}
+.mdm-btn.ghost:hover{background:var(--bg-beige);color:var(--text)}
+.mdm-btn:disabled{opacity:.45;cursor:not-allowed}
 
-/* Card */
-.card{background:var(--white);border-radius:16px;padding:36px 32px;box-shadow:0 8px 40px var(--shadow);position:relative;overflow:hidden}
-.card::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--terra),var(--gold),var(--brown))}
-.card-title{font-size:14px;font-weight:600;color:var(--brown);margin-bottom:24px;text-align:center;opacity:.8}
+/* ── CHAT FAB ── */
+.mdm-chat-btn{
+  position:relative;padding:7px 10px;border-radius:6px;
+  font-size:14px;cursor:pointer;
+  border:0.5px solid var(--border);background:var(--bg-card);color:var(--text);
+  transition:all .15s;display:none;
+}
+.mdm-chat-btn:hover{background:var(--bg-beige)}
+.mdm-chat-badge{
+  position:absolute;top:-5px;right:-5px;
+  background:var(--danger);color:#fff;
+  font-size:9px;font-weight:600;padding:2px 5px;
+  border-radius:10px;min-width:16px;text-align:center;display:none;
+}
 
-/* Form */
-.form-group{margin-bottom:18px}
-.form-group label{display:block;font-size:11px;font-weight:600;color:var(--brown);text-transform:uppercase;letter-spacing:.6px;margin-bottom:7px}
-.input-wrap{position:relative}
-.input-wrap .icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:15px;opacity:.5;pointer-events:none}
-.form-group input{width:100%;padding:12px 14px 12px 40px;border:1.5px solid #e0d0c4;border-radius:8px;font-family:"Outfit",sans-serif;font-size:14px;background:var(--cream);color:#3a2a20;outline:none;transition:all .18s}
-.form-group input:focus{border-color:var(--terra);background:#fff;box-shadow:0 0 0 3px rgba(200,120,100,.12)}
-.form-group input::placeholder{color:#c0a898;font-size:13px}
+/* ── CARTES ── */
+.mdm-card{
+  background:var(--bg-card);
+  border:0.5px solid var(--border);
+  border-radius:10px;
+  padding:20px 22px;
+}
+.mdm-card-title{
+  font-size:12px;font-weight:500;color:var(--text);
+  margin-bottom:14px;padding-bottom:12px;
+  border-bottom:0.5px solid var(--border-light);
+  display:flex;align-items:center;justify-content:space-between;
+}
 
-/* Toggle password */
-.toggle-pw{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px;opacity:.4;padding:4px;transition:opacity .15s}
-.toggle-pw:hover{opacity:.8}
+/* ── KPI CARDS ── */
+.mdm-kpi{
+  background:var(--bg-card);
+  border:0.5px solid var(--border);
+  border-radius:10px;padding:16px;
+}
+.mdm-kpi-label{
+  font-size:10px;font-weight:500;color:var(--text-muted);
+  text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;
+}
+.mdm-kpi-value{
+  font-family:'Fraunces',serif;font-size:28px;font-weight:200;
+  color:var(--text);line-height:1;
+}
+.mdm-kpi-value.accent{color:var(--accent)}
+.mdm-kpi-sub{font-size:11px;font-weight:300;color:var(--text-muted);margin-top:4px}
 
-/* Bouton */
-.btn-login{width:100%;padding:13px;background:var(--brown);color:var(--white);border:none;border-radius:8px;font-family:"Outfit",sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all .18s;display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:.3px;margin-top:8px}
-.btn-login:hover{background:var(--terra);box-shadow:0 4px 16px rgba(200,120,100,.35)}
-.btn-login:active{transform:scale(.98)}
-.btn-login:disabled{opacity:.6;cursor:not-allowed}
+/* ── TABLEAUX ── */
+.mdm-table-wrap{border:0.5px solid var(--border);border-radius:10px;overflow:hidden}
+table{width:100%;border-collapse:collapse}
+thead th{
+  padding:9px 14px;font-size:10px;font-weight:500;
+  color:var(--text-muted);background:var(--bg);
+  text-align:left;text-transform:uppercase;letter-spacing:.5px;
+  border-bottom:0.5px solid var(--border);white-space:nowrap;
+}
+tbody tr{border-bottom:0.5px solid var(--border-light);transition:background .1s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:var(--bg)}
+tbody td{padding:10px 14px;font-size:12px;font-weight:300;color:var(--text)}
 
-/* Spinner */
-.spinner{width:16px;height:16px;border:2.5px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:none}
+/* ── BADGES ── */
+.mdm-badge{
+  display:inline-block;padding:2px 8px;border-radius:4px;
+  font-size:10px;font-weight:500;
+}
+.mdm-badge.client{background:var(--accent-light);color:var(--accent)}
+.mdm-badge.commercial{background:var(--bg-beige);color:var(--text-secondary)}
+.mdm-badge.admin{background:var(--warning-light);color:var(--warning)}
+.mdm-badge.danger{background:var(--danger-light);color:var(--danger)}
+.mdm-badge.remise{background:var(--warning-light);color:var(--warning)}
+
+/* ── FORMULAIRES ── */
+.mdm-fg{margin-bottom:14px}
+.mdm-fg label{
+  display:block;font-size:10px;font-weight:500;
+  color:var(--text-muted);text-transform:uppercase;
+  letter-spacing:.5px;margin-bottom:5px;
+}
+.mdm-fg input,.mdm-fg select,.mdm-fg textarea{
+  width:100%;padding:9px 12px;
+  border:0.5px solid var(--border);border-radius:6px;
+  font-family:'Inter',sans-serif;font-size:13px;font-weight:300;
+  color:var(--text);background:var(--bg-card);
+  outline:none;transition:border-color .15s,box-shadow .15s;appearance:none;
+}
+.mdm-fg input:focus,.mdm-fg select:focus,.mdm-fg textarea:focus{
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(74,124,89,.08);
+}
+.mdm-fg input::placeholder,.mdm-fg textarea::placeholder{color:var(--text-muted);font-weight:300}
+.mdm-fg textarea{resize:vertical;min-height:80px;line-height:1.6}
+.mdm-fg select{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M5 6L0 0h10z' fill='%23a89080'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 12px center;
+  padding-right:32px;cursor:pointer;
+}
+.mdm-req{color:var(--accent)}
+
+/* ── SECTION LABEL ── */
+.mdm-section-label{
+  font-size:10px;font-weight:500;text-transform:uppercase;
+  letter-spacing:.8px;color:var(--accent);
+  margin-bottom:14px;display:flex;align-items:center;gap:8px;
+}
+.mdm-section-label::after{content:'';flex:1;height:0.5px;background:var(--border)}
+
+/* ── ALERTS ── */
+.mdm-alert{
+  padding:10px 14px;border-radius:6px;font-size:12px;
+  font-weight:300;border:0.5px solid;display:none;
+}
+.mdm-alert.err{background:var(--danger-light);color:var(--danger);border-color:#f5c0b8}
+.mdm-alert.ok{background:var(--accent-light);color:var(--accent);border-color:#b8d4c0}
+
+/* ── TOAST ── */
+.mdm-toast{
+  position:fixed;bottom:24px;right:24px;
+  background:var(--text);color:#fff;
+  padding:11px 18px;border-radius:8px;
+  font-size:12px;font-weight:400;
+  box-shadow:0 4px 20px var(--shadow);
+  transform:translateY(80px);opacity:0;
+  transition:all .3s;z-index:300;
+  display:flex;align-items:center;gap:8px;
+}
+.mdm-toast.show{transform:translateY(0);opacity:1}
+
+/* ── MODAL ── */
+.mdm-modal-bg{
+  display:none;position:fixed;inset:0;
+  background:rgba(92,74,56,.35);z-index:200;
+  align-items:center;justify-content:center;
+  backdrop-filter:blur(2px);
+}
+.mdm-modal-bg.open{display:flex}
+.mdm-modal{
+  background:var(--bg-card);border-radius:12px;
+  padding:28px 30px;max-width:600px;width:96%;
+  box-shadow:0 8px 40px var(--shadow);
+  max-height:92vh;overflow-y:auto;
+  border:0.5px solid var(--border);
+}
+.mdm-modal h3{
+  font-family:'Fraunces',serif;font-size:20px;font-weight:200;
+  color:var(--text);margin-bottom:20px;
+  padding-bottom:14px;border-bottom:0.5px solid var(--border);
+}
+
+/* ── PAGE TITLE ── */
+.mdm-page-title{
+  font-family:'Fraunces',serif;font-size:24px;font-weight:200;
+  color:var(--text);margin-bottom:4px;letter-spacing:-.3px;
+}
+.mdm-page-sub{font-size:12px;font-weight:300;color:var(--text-muted);margin-bottom:22px}
+
+/* ── SIDEBAR (admin) ── */
+.mdm-sidebar{
+  width:220px;background:var(--bg-card);
+  border-right:0.5px solid var(--border);
+  padding:16px 0;flex-shrink:0;
+  position:sticky;top:56px;
+  height:calc(100vh - 56px);overflow-y:auto;
+}
+.mdm-sidebar::-webkit-scrollbar{width:3px}
+.mdm-sidebar::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.mdm-sidebar-label{
+  font-size:9px;font-weight:500;color:var(--text-muted);
+  text-transform:uppercase;letter-spacing:.8px;
+  padding:10px 16px 5px;
+}
+.mdm-nav-item{
+  display:flex;align-items:center;gap:9px;
+  padding:8px 16px;cursor:pointer;
+  font-size:12px;font-weight:300;color:var(--text-secondary);
+  transition:all .13s;margin-bottom:1px;
+  border-left:2px solid transparent;
+}
+.mdm-nav-item:hover{background:var(--bg);color:var(--text)}
+.mdm-nav-item.active{
+  background:var(--bg);color:var(--text);
+  border-left-color:var(--accent);font-weight:500;
+}
+.mdm-nav-badge{
+  margin-left:auto;background:var(--accent);color:#fff;
+  font-size:9px;font-weight:600;padding:2px 6px;
+  border-radius:10px;min-width:16px;text-align:center;
+}
+
+/* ── FOOTER ── */
+.mdm-footer{
+  text-align:center;padding:20px;
+  font-size:11px;font-weight:300;color:var(--text-muted);
+  border-top:0.5px solid var(--border);
+}
+.mdm-footer a{color:inherit;text-decoration:none;opacity:.7}
+.mdm-footer a:hover{opacity:1}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+  .mdm-header{padding:0 16px}
+  .mdm-btn small{display:none}
+}
+
+/* ── PAGE CONNEXION ── */
+body{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:20px;background:var(--bg)}
+.login-wrap{width:100%;max-width:380px}
+.login-logo{font-family:'Fraunces',serif;font-size:26px;font-weight:200;color:var(--text);text-align:center;margin-bottom:28px;letter-spacing:-.3px}
+.login-logo span{color:var(--accent)}
+.login-card{background:var(--bg-card);border:0.5px solid var(--border);border-radius:12px;padding:28px;margin-bottom:14px}
+.login-title{font-family:'Fraunces',serif;font-size:16px;font-weight:200;color:var(--text-muted);margin-bottom:20px;text-align:center;font-style:italic}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:10px;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:5px}
+.field input{width:100%;padding:10px 13px;border:0.5px solid var(--border);border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:300;color:var(--text);background:var(--bg-card);outline:none;transition:border-color .15s,box-shadow .15s}
+.field input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(74,124,89,.08)}
+.pwd-field{position:relative}.pwd-field input{padding-right:40px}
+.toggle-pw{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:14px;opacity:.35;padding:4px;transition:opacity .15s}.toggle-pw:hover{opacity:.6}
+.btn-login{width:100%;padding:11px;background:var(--accent);color:#fff;border:none;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:background .15s;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:10px}
+.btn-login:hover{background:var(--accent-hover)}.btn-login:disabled{opacity:.55;cursor:not-allowed}
+.btn-register{width:100%;padding:10px;background:var(--bg-beige);color:var(--text);border:0.5px solid var(--border);border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:300;cursor:pointer;transition:all .15s;text-decoration:none;display:block;text-align:center}
+.btn-register:hover{background:var(--bg-beige-dark)}
+.spinner{width:13px;height:13px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;display:none}
 @keyframes spin{to{transform:rotate(360deg)}}
-
-/* Erreur */
-.error-msg{background:#fdecea;color:#c62828;border:1px solid #ef9a9a;border-radius:8px;padding:11px 14px;font-size:13px;margin-top:16px;display:none;text-align:center;animation:shake .3s ease}
-@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
-
-/* Footer */
-.footer{text-align:center;margin-top:24px;font-size:11px;color:#b0988a}
-
-/* Comptes info (admin) */
-.accounts-hint{background:#f5ede5;border-radius:8px;padding:12px 14px;margin-top:20px;font-size:11px;color:#a07060;border:1px solid #e8d8cc}
-.accounts-hint strong{color:var(--brown);display:block;margin-bottom:6px}
-.accounts-hint ul{padding-left:16px;line-height:1.8}
+.error-msg{background:var(--danger-light);color:var(--danger);border:0.5px solid #f5c0b8;border-radius:6px;padding:10px 13px;font-size:12px;font-weight:300;margin-top:10px;display:none;text-align:center;animation:shake .3s ease}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.footer{text-align:center;font-size:11px;font-weight:300;color:var(--text-muted)}
+.footer a{color:inherit;text-decoration:none;opacity:.7}.footer a:hover{opacity:1}
 </style>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
-
 <div class="login-wrap">
-
-  <!-- Logo -->
-  <div class="logo-block">
-    <div class="logo-icon">&#127806;</div>
-    <div class="logo-title">Moulin <span>des</span> Moines</div>
-    <div class="logo-sub">Espace Commandes 2026</div>
-  </div>
-
-  <!-- Card connexion -->
-  <div class="card">
-    <div class="card-title">Veuillez vous identifier pour acc&#233;der au bon de commande</div>
-
-    <div class="form-group">
-      <label>Identifiant</label>
-      <div class="input-wrap">
-        <span class="icon">&#128100;</span>
-        <input type="text" id="login" placeholder="Votre identifiant" autocomplete="username" onkeydown="if(event.key==='Enter')doLogin()">
-      </div>
+  <div class="login-logo">Moulin <span>des</span> Moines</div>
+  <div class="login-card">
+    <div class="login-title">Espace commandes 2026</div>
+    <div class="field">
+      <label>Login</label>
+      <input type="text" id="login" placeholder="votre identifiant" autocomplete="username" onkeydown="if(event.key==='Enter')doLogin()">
     </div>
-
-    <div class="form-group">
+    <div class="field">
       <label>Mot de passe</label>
-      <div class="input-wrap">
-        <span class="icon">&#128274;</span>
-        <input type="password" id="password" placeholder="Votre mot de passe" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
-        <button class="toggle-pw" onclick="togglePw()" tabindex="-1" title="Afficher / masquer">&#128065;</button>
+      <div class="pwd-field">
+        <input type="password" id="password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+        <button class="toggle-pw" onclick="togglePw()" tabindex="-1">&#128065;</button>
       </div>
     </div>
-
     <button class="btn-login" id="btn-login" onclick="doLogin()">
       <span class="spinner" id="spinner"></span>
       <span id="btn-label">Se connecter</span>
-      <span>&#8594;</span>
     </button>
-
+    <a href="inscription.html" class="btn-register">Demande d&#8217;acc&#232;s</a>
     <div class="error-msg" id="error-msg">Identifiant ou mot de passe incorrect.</div>
-
-  <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.08)">
-    <a href="inscription.html" style="display:block;width:100%;padding:13px;background:transparent;color:var(--gold);border:1.5px solid rgba(210,180,105,.5);border-radius:8px;font-family:'Outfit',sans-serif;font-size:14px;font-weight:600;cursor:pointer;text-align:center;text-decoration:none;transition:all .2s;box-sizing:border-box;letter-spacing:.2px"
-      onmouseover="this.style.background='rgba(210,180,105,.12)';this.style.borderColor='rgba(210,180,105,.8)'"
-      onmouseout="this.style.background='transparent';this.style.borderColor='rgba(210,180,105,.5)'">
-      Faire une demande d&#8217;acc&#232;s
-    </a>
   </div>
-
-  <div class="footer">Moulin des Moines &copy; 2026 &nbsp;&middot;&nbsp; Acc&#233;s r&#233;serv&#233; aux utilisateurs autoris&#233;s &nbsp;&middot;&nbsp; <a href="tutoriel.html" style="color:inherit;opacity:.7;text-decoration:none">Guide d'utilisation</a> &nbsp;&middot;&nbsp; <a href="mentions-legales.html" style="color:inherit;opacity:.7;text-decoration:none">Mentions l&#233;gales</a></div>
-
-
+  <div class="footer">
+    &copy; 2026 Moulin des Moines &nbsp;&middot;&nbsp;
+    <a href="mentions-legales.html">Mentions l&eacute;gales</a> &nbsp;&middot;&nbsp;
+    <a href="tutoriel.html">Guide</a>
+  </div>
 </div>
-
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script>
-// ═══════════════════════════════════════════════════════════
-// COMPTES UTILISATEURS
-// Modifier ici pour ajouter / supprimer des comptes
-// Format : { login, password, nom, role }
-// ═══════════════════════════════════════════════════════════
-var COMPTES = [
-  {
-    "_id": "admin",
-    "remise": 0,
-    "email": "cspoto@moulindesmoines.com",
-    "_origIdx": 0,
-    "role": "admin",
-    "password": "mdm2026",
-    "nom": "Administrateur",
-    "login": "admin"
-  },
-  {
-    "_id": "commercial",
-    "role": "user",
-    "password": "mdm-ventes",
-    "commercial": "",
-    "email": "cspoto@moulindesmoines.com",
-    "login": "commercial",
-    "region": "",
-    "ville": "",
-    "numclient": "",
-    "cp": "",
-    "_origIdx": 1,
-    "remise": 0,
-    "tel": "",
-    "nom": "Spoto Christophe",
-    "groupement": "",
-    "remises_produits": [],
-    "notes": ""
-  },
-  {
-    "_id": "crocbauges",
-    "remises_produits": [],
-    "dateInscription": "2026-03-17T11:52:19.155Z",
-    "siret": "",
-    "notes": "",
-    "_origIdx": 2,
-    "grp_remises": [],
-    "remise": 8,
-    "tel": "",
-    "groupement": "",
-    "nom": "croc bauges",
-    "ville": "lescheraines",
-    "numclient": "007461",
-    "cp": "73340",
-    "password": "ded7d5826329091f917090867fb79fdfdd0b7bb277f3722dc127c0d1ea072b21",
-    "role": "client",
-    "commercial": "commercial",
-    "email": "fournisseurs@crocbauges.com",
-    "login": "crocbauges",
-    "region": "",
-    "franco": 450
-  },
-  {
-    "_id": "faverges",
-    "franco": 900,
-    "login": "faverges",
-    "region": "",
-    "email": "larondedubio74@orange.fr",
-    "role": "client",
-    "password": "1f0adea8f10900ac8d76f5ffc9b0a3b6419bbd9466f711976d7ae37645234475",
-    "commercial": "commercial",
-    "cp": "",
-    "numclient": "004471",
-    "ville": "faverges",
-    "tel": "",
-    "nom": "La ronde du bio 74",
-    "groupement": "ACCORD BIO",
-    "grp_remises": [
-      {
-        "categorie": "Fruits secs",
-        "remise": 15,
-        "code": "ABRICO",
-        "prixHT": 3.12,
-        "libelle": "Abricots secs entiers bio - 200g",
-        "ean": "3347430017992"
-      },
-      {
-        "remise": 15,
-        "categorie": "Fruits secs",
-        "code": "ABRCOU200",
-        "prixHT": 2.71,
-        "libelle": "Abricots secs coupés bio - 200g",
-        "ean": "3347430006538"
-      },
-      {
-        "code": "AMANDE",
-        "categorie": "Fruits secs",
-        "remise": 15,
-        "prixHT": 3.25,
-        "ean": "3347430021685",
-        "libelle": "Amandes décortiquées bio - 200g"
-      },
-      {
-        "categorie": "Chocolat",
-        "remise": 15,
-        "code": "CHO001",
-        "libelle": "Bière engrain petit épeautre bio - 33cl",
-        "ean": "3347430849487",
-        "prixHT": 1.44
-      },
-      {
-        "code": "FAR001",
-        "categorie": "Farines",
-        "remise": 15,
-        "prixHT": 1,
-        "ean": "3361730767678",
-        "libelle": "Eau celtic légère bouteille - verre perdu - 50cl"
-      },
-      {
-        "remise": 8,
-        "categorie": "Farines",
-        "code": "FAR002",
-        "libelle": "Eau celtic légère bouteille - verre perdu - 50cl",
-        "ean": "3361730767678",
-        "prixHT": 1
-      },
-      {
-        "remise": 12,
-        "categorie": "Miels",
-        "code": "MIE001",
-        "prixHT": 14.29,
-        "libelle": "Proponorm : poudre de propolis pure",
-        "ean": "3455270811028"
-      },
-      {
-        "ean": "3347430009560",
-        "libelle": "Graines de courge UE bio - 5kg",
-        "prixHT": 59.5,
-        "code": "JUS001",
-        "remise": 0,
-        "categorie": "Boissons"
-      }
-    ],
-    "remise": 13,
-    "_origIdx": 3,
-    "notes": "",
-    "remises_produits": []
-  }
-];
-// ── Remplacer les emails par les vraies adresses de chaque compte ──
-// ── Pour modifier une remise : changer le chiffre dans remise: XX
-// ── La remise s'applique automatiquement à la connexion (0 = pas de remise)
-// ═══════════════════════════════════════════════════════════
 
-
-// ── SHA-256 (Web Crypto API) ──────────────────────────────────
-// SHA-256 robuste (crypto.subtle + fallback pure JS)
+// SHA-256 robuste
 function sha256(str){
   if(window.crypto&&window.crypto.subtle){
     return window.crypto.subtle.digest('SHA-256',new TextEncoder().encode(str))
@@ -294,331 +379,115 @@ function _sha256Pure(s){
   }
   return H.map(n).join('');
 }
-
-
 function _safeB64Encode(str){
-  try{ return btoa(unescape(encodeURIComponent(str))); }
-  catch(e){ return btoa(encodeURIComponent(str)); }
+  try{return btoa(unescape(encodeURIComponent(str)));}
+  catch(e){return btoa(encodeURIComponent(str));}
 }
 function _safeB64Decode(str){
-  try{ return decodeURIComponent(escape(atob(str))); }
-  catch(e){ return decodeURIComponent(atob(str)); }
+  try{return decodeURIComponent(escape(atob(str)));}
+  catch(e){try{return decodeURIComponent(atob(str));}catch(e2){return atob(str);}}
 }
 
-// Rediriger si déjà connecté — nettoyer le token corrompu si besoin
+// Token check
 (function(){
-  var token = sessionStorage.getItem("mdm_token");
-  if(!token) return; // pas de token → rester sur index
-  try {
-    var data = JSON.parse(_safeB64Decode(token));
-    if(data && data.exp && Date.now() < data.exp) {
-      // Token valide → rediriger
-      window.location.href = data.role === "admin" ? "admin.html" : "commande.html";
-    } else {
-      // Token expiré → effacer et rester sur index
-      sessionStorage.removeItem("mdm_token");
-    }
-  } catch(e) {
-    // Token corrompu → effacer et rester sur index
-    sessionStorage.removeItem("mdm_token");
-  }
+  var token=sessionStorage.getItem('mdm_token');
+  if(!token) return;
+  try{
+    var data=JSON.parse(_safeB64Decode(token));
+    if(data&&data.exp&&Date.now()<data.exp){
+      window.location.href=data.role==='admin'?'admin.html':'commande.html';
+    } else { sessionStorage.removeItem('mdm_token'); }
+  }catch(e){ sessionStorage.removeItem('mdm_token'); }
 })();
 
-// ── Charger les comptes depuis Firebase (puis fallback localStorage)
-// ============================================================
-// MDM — Couche Firebase Firestore
-// Remplace localStorage pour : comptes, historique, actus, inscriptions
-// ============================================================
-
-var FIREBASE_CONFIG = {
-  apiKey:            "AIzaSyB000QDa4c-vMjO1Xuimw58iiRvwgbF1zc",
-  authDomain:        "mdm-bdc26.firebaseapp.com",
-  projectId:         "mdm-bdc26",
-  storageBucket:     "mdm-bdc26.firebasestorage.app",
-  messagingSenderId: "52658530893",
-  appId:             "1:52658530893:web:166626ae4d681465ddca04"
-};
-
-var _db = null;
-var _fbReady = false;
-
-function initFirebase() {
-  if (_fbReady) return Promise.resolve(_db);
-  return new Promise(function(resolve, reject) {
-    if (typeof firebase === 'undefined') {
-      reject(new Error('Firebase SDK non chargé'));
-      return;
-    }
-    if (!firebase.apps || !firebase.apps.length) {
-      firebase.initializeApp(FIREBASE_CONFIG);
-    }
-    _db = firebase.firestore();
-    _fbReady = true;
-    resolve(_db);
-  });
+// Comptes Firebase
+var FIREBASE_CONFIG={apiKey:"AIzaSyB000QDa4c-vMjO1Xuimw58iiRvwgbF1zc",authDomain:"mdm-bdc26.firebaseapp.com",projectId:"mdm-bdc26",storageBucket:"mdm-bdc26.firebasestorage.app",messagingSenderId:"52658530893",appId:"1:52658530893:web:166626ae4d681465ddca04"};
+var _fbApp2=null,_fbDb2=null;
+function initFirebase(){
+  if(_fbDb2) return Promise.resolve(_fbDb2);
+  if(!_fbApp2) _fbApp2=firebase.initializeApp(FIREBASE_CONFIG,'login');
+  _fbDb2=firebase.firestore(_fbApp2);
+  return Promise.resolve(_fbDb2);
 }
 
-// ── Comptes ──────────────────────────────────────────────────
-
-function fbLoadComptes() {
-  return initFirebase().then(function(db) {
-    return db.collection('comptes').get().then(function(snap) {
-      return snap.docs.map(function(d) { return Object.assign({_id: d.id}, d.data()); });
-    });
-  });
-}
-
-function fbSaveComptes(comptes) {
-  return initFirebase().then(function(db) {
-    var batch = db.batch();
-    // Supprimer tous puis réécrire (simple pour un petit volume)
-    return db.collection('comptes').get().then(function(snap) {
-      snap.docs.forEach(function(d) { batch.delete(d.ref); });
-      comptes.forEach(function(c) {
-        var ref = db.collection('comptes').doc(c.login);
-        batch.set(ref, c);
-      });
-      return batch.commit();
-    });
-  });
-}
-
-function fbSaveCompte(compte) {
-  return initFirebase().then(function(db) {
-    return db.collection('comptes').doc(compte.login).set(compte);
-  });
-}
-
-function fbDeleteCompte(login) {
-  return initFirebase().then(function(db) {
-    return db.collection('comptes').doc(login).delete();
-  });
-}
-
-// ── Historique commandes ─────────────────────────────────────
-
-function fbSaveOrder(login, order) {
-  return initFirebase().then(function(db) {
-    return db.collection('historique')
-      .doc(login)
-      .collection('commandes')
-      .doc(String(order.id || Date.now()))
-      .set(order);
-  });
-}
-
-function fbLoadHistory(login) {
-  return initFirebase().then(function(db) {
-    return db.collection('historique')
-      .doc(login)
-      .collection('commandes')
-      .orderBy('id', 'desc')
-      .limit(50)
-      .get()
-      .then(function(snap) {
-        return snap.docs.map(function(d) { return d.data(); });
-      });
-  });
-}
-
-function fbLoadAllHistory() {
-  return initFirebase().then(function(db) {
-    return db.collection('historique').get().then(function(snap) {
-      var promises = snap.docs.map(function(loginDoc) {
-        return loginDoc.ref.collection('commandes')
-          .orderBy('id', 'desc').limit(50).get()
-          .then(function(cmdSnap) {
-            return cmdSnap.docs.map(function(d) {
-              return Object.assign({_login: loginDoc.id}, d.data());
-            });
-          });
-      });
-      return Promise.all(promises).then(function(arrays) {
-        return [].concat.apply([], arrays).sort(function(a,b) {
-          return (b.id||0) - (a.id||0);
-        });
-      });
-    });
-  });
-}
-
-// ── Actualités ───────────────────────────────────────────────
-
-function fbLoadActus() {
-  return initFirebase().then(function(db) {
-    return db.collection('actus').orderBy('id', 'desc').get().then(function(snap) {
-      return snap.docs.map(function(d) { return d.data(); });
-    });
-  });
-}
-
-function fbSaveActus(actus) {
-  return initFirebase().then(function(db) {
-    var batch = db.batch();
-    return db.collection('actus').get().then(function(snap) {
-      snap.docs.forEach(function(d) { batch.delete(d.ref); });
-      actus.forEach(function(a) {
-        var ref = db.collection('actus').doc(String(a.id));
-        batch.set(ref, a);
-      });
-      return batch.commit();
-    });
-  });
-}
-
-// ── Inscriptions ─────────────────────────────────────────────
-
-function fbLoadInscriptions() {
-  return initFirebase().then(function(db) {
-    return db.collection('inscriptions').orderBy('id', 'desc').get().then(function(snap) {
-      return snap.docs.map(function(d) { return d.data(); });
-    });
-  });
-}
-
-function fbSaveInscription(inscription) {
-  return initFirebase().then(function(db) {
-    return db.collection('inscriptions').doc(String(inscription.id)).set(inscription);
-  });
-}
-
-function fbUpdateInscription(id, data) {
-  return initFirebase().then(function(db) {
-    return db.collection('inscriptions').doc(String(id)).update(data);
-  });
-}
-
-function fbDeleteInscription(id) {
-  return initFirebase().then(function(db) {
-    return db.collection('inscriptions').doc(String(id)).delete();
-  });
-}
+var COMPTES=[
+  {login:"admin",password:"mdm2026",nom:"Administrateur",role:"admin",remise:0,email:"cspoto@moulindesmoines.com"},
+  {login:"commercial",password:"mdm-ventes",nom:"Commercial MDM",role:"user",remise:0,email:"cspoto@moulindesmoines.com"}
+];
 
 (function(){
-  // 1. Charger depuis Firebase
-  fbLoadComptes().then(function(data){
-    if(data && data.length){
+  initFirebase().then(function(db){
+    return db.collection('comptes').get();
+  }).then(function(snap){
+    if(snap&&snap.docs&&snap.docs.length){
       COMPTES.length=0;
-      data.forEach(function(c){ COMPTES.push(c); });
-      window._comptesLoaded = true;
+      snap.docs.forEach(function(d){COMPTES.push(Object.assign({_id:d.id},d.data()));});
     } else {
-      // Fallback localStorage
-      try{
-        var saved=localStorage.getItem("mdm_comptes");
-        if(saved){
-          var list=JSON.parse(saved);
-          COMPTES.length=0;
-          list.forEach(function(c){ COMPTES.push(c); });
-          window._comptesLoaded = true;
-          // Migration : sauvegarder dans Firebase
-          if(list.length) fbSaveComptes(list);
-        }
-      } catch(e){}
+      try{var s=localStorage.getItem('mdm_comptes');if(s){var l=JSON.parse(s);COMPTES.length=0;l.forEach(function(c){COMPTES.push(c);});}}catch(e){}
     }
+    window._comptesLoaded=true;
   }).catch(function(){
-    // Firebase indisponible → localStorage
-    try{
-      var saved=localStorage.getItem("mdm_comptes");
-      if(saved){ var list=JSON.parse(saved); COMPTES.length=0; list.forEach(function(c){ COMPTES.push(c); }); }
-    } catch(e){}
-    window._comptesLoaded = true;
+    try{var s=localStorage.getItem('mdm_comptes');if(s){var l=JSON.parse(s);COMPTES.length=0;l.forEach(function(c){COMPTES.push(c);});}}catch(e){}
+    window._comptesLoaded=true;
   });
 })();
 
-async function doLogin(){
-  var login    = document.getElementById("login").value.trim();
-  var password = document.getElementById("password").value;
-  var btn      = document.getElementById("btn-login");
-  var spinner  = document.getElementById("spinner");
-  var label    = document.getElementById("btn-label");
+function doLogin(){
+  var login=document.getElementById('login').value.trim();
+  var password=document.getElementById('password').value;
+  var btn=document.getElementById('btn-login');
+  var spinner=document.getElementById('spinner');
+  var label=document.getElementById('btn-label');
+  document.getElementById('error-msg').style.display='none';
+  if(!login||!password){showError('Veuillez remplir tous les champs.');return;}
+  btn.disabled=true;spinner.style.display='inline-block';label.textContent='V\u00e9rification...';
 
-  document.getElementById("error-msg").style.display = "none";
-
-  if(!login || !password){ showError("Veuillez remplir tous les champs."); return; }
-
-  btn.disabled = true;
-  spinner.style.display = "inline-block";
-  label.textContent = "Vérification...";
-
-  // Attendre que les comptes soient chargés (Firebase ou localStorage)
-  // puis tenter la connexion
-  function tryLogin(hashedPwd){
-    var compte = null;
-    for(var i=0;i<COMPTES.length;i++){
-      // Comparer avec le hash OU le mot de passe clair (rétrocompatibilité)
-      var storedPwd = COMPTES[i].password||'';
-      if(COMPTES[i].login === login && (storedPwd === hashedPwd || storedPwd === password)){
-        compte = COMPTES[i]; break;
+  sha256(password).then(function(hashedPwd){
+    function tryLogin(h){
+      var compte=null;
+      for(var i=0;i<COMPTES.length;i++){
+        var sp=COMPTES[i].password||'';
+        if(COMPTES[i].login===login&&(sp===h||sp===password)){compte=COMPTES[i];break;}
+      }
+      if(compte){
+        var td={login:compte.login,nom:compte.nom,role:compte.role,remise:compte.remise||0,email:compte.email||'cspoto@moulindesmoines.com',tel:compte.tel||'',numclient:compte.numclient||'',groupement:compte.groupement||'',ville:compte.ville||'',cp:compte.cp||'',commercial:compte.commercial||'',franco:compte.franco||0,remises_produits:compte.remises_produits||[],grp_remises:compte.grp_remises||[],exp:Date.now()+8*60*60*1000};
+        sessionStorage.setItem('mdm_token',_safeB64Encode(JSON.stringify(td)));
+        label.textContent='Connexion...';
+        window.location.href=compte.role==='admin'?'admin.html':'commande.html';
+      } else {
+        btn.disabled=false;spinner.style.display='none';label.textContent='Se connecter';
+        showError('Identifiant ou mot de passe incorrect.');
       }
     }
-    if(compte){
-      var tokenData = {
-        login:            compte.login,
-        nom:              compte.nom,
-        role:             compte.role,
-        remise:           compte.remise           || 0,
-        email:            compte.email            || "cspoto@moulindesmoines.com",
-        tel:              compte.tel              || "",
-        numclient:        compte.numclient        || "",
-        groupement:       compte.groupement       || "",
-        ville:            compte.ville            || "",
-        cp:               compte.cp              || "",
-        commercial:       compte.commercial       || "",
-        franco:           compte.franco           || 0,
-        remises_produits: compte.remises_produits || [],
-        grp_remises:      compte.grp_remises      || [],
-        exp:              Date.now() + 8 * 60 * 60 * 1000
-      };
-      sessionStorage.setItem("mdm_token", _safeB64Encode(JSON.stringify(tokenData)));
-      label.textContent = "Connexion...";
-      window.location.href = compte.role === "admin" ? "admin.html" : "commande.html";
-    } else {
-      btn.disabled = false;
-      spinner.style.display = "none";
-      label.textContent = "Se connecter";
-      showError("Identifiant ou mot de passe incorrect.");
-    }
-  }
-
-  // Hacher le mot de passe avant toute comparaison
-  sha256(password).then(function(hashedPwd){
-    if(window._comptesLoaded){
-      tryLogin(hashedPwd);
-    } else {
-      label.textContent = "Chargement...";
-      var waited = 0;
-      var interval = setInterval(function(){
-        waited += 200;
-        if(window._comptesLoaded || waited >= 4000){
-          clearInterval(interval);
-          if(!window._comptesLoaded){
-            try{
-              var saved = localStorage.getItem("mdm_comptes");
-              if(saved){ var list=JSON.parse(saved); COMPTES.length=0; list.forEach(function(c){COMPTES.push(c);}); }
-            }catch(e){}
-          }
-          label.textContent = "Vérification...";
-          tryLogin(hashedPwd);
+    if(window._comptesLoaded){ tryLogin(hashedPwd); }
+    else {
+      label.textContent='Chargement...';
+      var waited=0;
+      var iv=setInterval(function(){
+        waited+=200;
+        if(window._comptesLoaded||waited>=4000){
+          clearInterval(iv);
+          if(!window._comptesLoaded){try{var s=localStorage.getItem('mdm_comptes');if(s){var l=JSON.parse(s);COMPTES.length=0;l.forEach(function(c){COMPTES.push(c);});}}catch(e){}}
+          label.textContent='V\u00e9rification...';tryLogin(hashedPwd);
         }
-      }, 200);
+      },200);
     }
+  }).catch(function(){
+    btn.disabled=false;spinner.style.display='none';label.textContent='Se connecter';
+    showError('Erreur technique. R\u00e9essayez.');
   });
 }
 
 function showError(msg){
-  var el = document.getElementById("error-msg");
-  el.textContent = msg;
-  el.style.display = "block";
-  // Relancer l'animation shake
-  el.style.animation = "none";
-  el.offsetHeight;
-  el.style.animation = "shake .3s ease";
+  var el=document.getElementById('error-msg');
+  el.textContent=msg;el.style.display='block';
+  el.style.animation='none';el.offsetHeight;el.style.animation='shake .3s ease';
+}
+function togglePw(){
+  var i=document.getElementById('password');
+  i.type=i.type==='password'?'text':'password';
 }
 
-function togglePw(){
-  var input = document.getElementById("password");
-  input.type = input.type === "password" ? "text" : "password";
-}
 </script>
 </body>
 </html>

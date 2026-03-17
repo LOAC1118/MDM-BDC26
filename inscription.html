@@ -4,69 +4,238 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Demande d'accès — Moulin des Moines</title>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-:root{--brown:#78503C;--terra:#C87864;--cream:#FDF5EE;--gold:#D2B469;--green:#1A5C2E;--white:#fff;--shadow:rgba(120,80,60,0.12)}
+:root{
+  --brown:#78503C; --terra:#C87864; --cream:#FDF5EE;
+  --gold:#D2B469;  --green:#1A5C2E; --white:#fff;
+  --shadow:rgba(120,80,60,0.12);
+}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Outfit',sans-serif;background:var(--cream);min-height:100vh;display:flex;flex-direction:column}
-.site-header{background:var(--brown);padding:18px 40px;display:flex;align-items:center;justify-content:space-between}
-.logo{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:#fff;letter-spacing:.5px;text-decoration:none}
+html{scroll-behavior:smooth}
+
+body{
+  font-family:'Outfit',sans-serif;
+  background:var(--cream);
+  min-height:100vh;
+  display:grid;
+  grid-template-rows:auto 1fr auto;
+}
+
+/* ── HEADER ── */
+.site-header{
+  background:var(--brown);
+  padding:0 40px;
+  height:56px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:100;
+  box-shadow:0 2px 16px rgba(0,0,0,.18);
+}
+.logo{font-family:'Cormorant Garamond',serif;font-size:21px;font-weight:700;color:#fff;text-decoration:none;letter-spacing:.3px}
 .logo span{color:var(--gold)}
-.back-link{font-size:12px;color:rgba(255,255,255,.6);text-decoration:none;display:flex;align-items:center;gap:6px;transition:color .2s}
+.back-link{font-size:12px;color:rgba(255,255,255,.55);text-decoration:none;display:flex;align-items:center;gap:5px;transition:color .2s}
 .back-link:hover{color:#fff}
-.hero{background:var(--brown);padding:48px 40px 64px;text-align:center;position:relative;overflow:hidden}
-.hero::after{content:'';position:absolute;bottom:-2px;left:0;right:0;height:40px;background:var(--cream);clip-path:ellipse(55% 100% at 50% 100%)}
-.hero-title{font-family:'Cormorant Garamond',serif;font-size:38px;font-weight:700;color:#fff;margin-bottom:10px;line-height:1.1}
-.hero-title span{color:var(--gold)}
-.hero-sub{font-size:14px;color:rgba(255,255,255,.65);max-width:480px;margin:0 auto;line-height:1.6}
-.form-wrap{max-width:640px;margin:0 auto;padding:32px 20px 60px;width:100%;flex:1}
-.card{background:#fff;border-radius:16px;box-shadow:0 4px 32px var(--shadow);overflow:hidden}
-.card-section{padding:28px 32px;border-bottom:1px solid #f5ede5}
-.card-section:last-child{border-bottom:none}
-.section-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--terra);margin-bottom:18px;display:flex;align-items:center;gap:8px}
-.section-label::after{content:'';flex:1;height:1px;background:#f0e4da}
-.fg{margin-bottom:16px}
+
+/* ── LAYOUT PRINCIPAL ── */
+.main-wrap{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  min-height:calc(100vh - 56px - 48px);
+}
+
+/* ── PANNEAU GAUCHE ── */
+.panel-left{
+  background:var(--brown);
+  padding:64px 48px;
+  display:flex;flex-direction:column;justify-content:center;
+  position:relative;overflow:hidden;
+}
+.panel-left::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 20% 50%, rgba(200,120,100,.15) 0%, transparent 60%),
+             radial-gradient(ellipse at 80% 20%, rgba(210,180,105,.1) 0%, transparent 50%);
+  pointer-events:none;
+}
+.panel-left::after{
+  content:'';position:absolute;
+  bottom:-60px;right:-60px;
+  width:280px;height:280px;
+  border-radius:50%;
+  border:40px solid rgba(255,255,255,.04);
+}
+.panel-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(210,180,105,.15);
+  border:1px solid rgba(210,180,105,.3);
+  color:var(--gold);
+  font-size:11px;font-weight:600;
+  padding:5px 14px;border-radius:20px;
+  letter-spacing:.6px;text-transform:uppercase;
+  margin-bottom:28px;width:fit-content;
+}
+.panel-title{
+  font-family:'Cormorant Garamond',serif;
+  font-size:42px;font-weight:700;
+  color:#fff;line-height:1.1;
+  margin-bottom:16px;
+}
+.panel-title em{color:var(--gold);font-style:italic}
+.panel-sub{
+  font-size:14px;color:rgba(255,255,255,.55);
+  line-height:1.7;max-width:320px;margin-bottom:36px;
+}
+.panel-steps{display:flex;flex-direction:column;gap:14px}
+.panel-step{display:flex;align-items:flex-start;gap:12px}
+.panel-step-num{
+  width:26px;height:26px;border-radius:50%;
+  background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);
+  color:rgba(255,255,255,.7);font-size:11px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;
+}
+.panel-step-text{font-size:13px;color:rgba(255,255,255,.6);line-height:1.5}
+.panel-step-text strong{color:rgba(255,255,255,.85);display:block;margin-bottom:1px}
+
+/* ── PANNEAU DROIT (FORMULAIRE) ── */
+.panel-right{
+  background:var(--cream);
+  padding:48px 48px 40px;
+  overflow-y:auto;
+  display:flex;flex-direction:column;justify-content:center;
+}
+
+/* ── ALERTE ── */
+.form-alert{
+  padding:11px 15px;border-radius:8px;font-size:13px;
+  margin-bottom:20px;display:none;
+  border:1px solid;
+}
+.form-alert.err{background:#fdecea;color:#c62828;border-color:#f5c0b8}
+.form-alert.ok {background:#e8f5e9;color:#1a5c2e;border-color:#b8d8bc}
+
+/* ── SECTIONS FORMULAIRE ── */
+.form-section{margin-bottom:24px}
+.form-section-label{
+  font-size:10px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.9px;color:var(--terra);
+  margin-bottom:14px;display:flex;align-items:center;gap:8px;
+}
+.form-section-label::after{content:'';flex:1;height:1px;background:#e0d0c4}
+
+/* ── CHAMPS ── */
+.fg{margin-bottom:14px}
 .fg:last-child{margin-bottom:0}
-.fg label{display:block;font-size:11px;font-weight:600;color:#8a6a5a;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px}
+.fg label{
+  display:block;font-size:11px;font-weight:600;
+  color:#8a6a5a;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px;
+}
 .fg .req{color:var(--terra)}
-.fg input,.fg select,.fg textarea{width:100%;padding:11px 14px;border:1.5px solid #e8d8cc;border-radius:8px;font-family:'Outfit',sans-serif;font-size:14px;color:var(--brown);background:#fff;transition:border-color .2s,box-shadow .2s;outline:none;appearance:none}
-.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--terra);box-shadow:0 0 0 3px rgba(200,120,100,.12)}
+.fg input,.fg select,.fg textarea{
+  width:100%;padding:10px 13px;
+  border:1.5px solid #e0ccc2;border-radius:8px;
+  font-family:'Outfit',sans-serif;font-size:13px;
+  color:var(--brown);background:#fff;
+  transition:border-color .2s,box-shadow .2s;outline:none;appearance:none;
+}
+.fg input:focus,.fg select:focus,.fg textarea:focus{
+  border-color:var(--terra);
+  box-shadow:0 0 0 3px rgba(200,120,100,.1);
+}
 .fg input::placeholder,.fg textarea::placeholder{color:#c0a898}
-.fg textarea{resize:vertical;min-height:90px;line-height:1.5}
-.fg select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M6 8L0 0h12z' fill='%23C87864'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px;cursor:pointer}
-.row2{display:grid;grid-template-columns:2fr 1fr;gap:14px}
-.row3{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.fg textarea{resize:vertical;min-height:80px;line-height:1.5}
+.fg select{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M6 8L0 0h12z' fill='%23C87864'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 12px center;padding-right:34px;cursor:pointer;
+}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.row3{display:grid;grid-template-columns:2fr 1fr;gap:12px}
+
+/* ── MOT DE PASSE ── */
 .pwd-wrap{display:flex;gap:8px;align-items:stretch}
 .pwd-wrap input{flex:1}
-.pwd-toggle{padding:0 14px;background:var(--cream);border:1.5px solid #e8d8cc;border-radius:8px;cursor:pointer;font-size:14px;color:var(--terra);display:flex;align-items:center;transition:background .2s;white-space:nowrap}
+.pwd-toggle{
+  padding:0 13px;background:#fff;border:1.5px solid #e0ccc2;border-radius:8px;
+  cursor:pointer;font-size:13px;color:var(--terra);display:flex;align-items:center;
+  transition:background .2s;white-space:nowrap;
+}
 .pwd-toggle:hover{background:#f5ede5}
-.pwd-strength{margin-top:6px;font-size:11px;color:#aaa;display:flex;align-items:center;gap:8px}
+.pwd-strength{margin-top:5px;font-size:10px;color:#aaa;display:flex;align-items:center;gap:7px}
 .strength-bar{flex:1;height:3px;background:#eee;border-radius:3px;overflow:hidden}
 .strength-fill{height:100%;border-radius:3px;transition:width .3s,background .3s;width:0}
-.info-box{background:linear-gradient(135deg,#fdf8f3,#fff5ec);border:1px solid #f0ddd0;border-radius:10px;padding:14px 16px;font-size:12px;color:#9a7060;line-height:1.6;display:flex;gap:10px}
-.info-box svg{flex-shrink:0;margin-top:1px}
-.submit-section{padding:24px 32px;display:flex;align-items:center;justify-content:space-between;gap:16px;background:var(--cream)}
-.btn-submit{background:var(--brown);color:#fff;border:none;padding:13px 32px;border-radius:8px;font-family:'Outfit',sans-serif;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .2s,transform .1s}
+
+/* ── RGPD ── */
+.rgpd-box{
+  background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;
+  padding:12px 14px;margin-bottom:18px;
+}
+.rgpd-box label{
+  display:flex;align-items:flex-start;gap:9px;
+  font-size:12px;color:#0c4a6e;cursor:pointer;line-height:1.6;
+}
+.rgpd-box input[type=checkbox]{
+  width:auto;margin:0;margin-top:3px;flex-shrink:0;
+  accent-color:var(--terra);
+}
+.rgpd-alert{display:none;margin-top:6px;font-size:11px;color:#c62828}
+
+/* ── BOUTON SUBMIT ── */
+.btn-submit{
+  width:100%;padding:13px;
+  background:var(--brown);color:#fff;border:none;border-radius:8px;
+  font-family:'Outfit',sans-serif;font-size:14px;font-weight:600;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;
+  transition:background .2s,transform .1s;
+  margin-bottom:12px;
+}
 .btn-submit:hover{background:#6a4432}
 .btn-submit:active{transform:scale(.98)}
 .btn-submit:disabled{background:#c0a898;cursor:not-allowed}
-.submit-note{font-size:11px;color:#b09080;line-height:1.5}
-.alert{padding:12px 16px;border-radius:8px;font-size:13px;margin:0 32px 24px;display:none}
-.alert.err{background:#fdecea;color:#c62828;border:1px solid #f5c0b8}
-.alert.ok{background:#e8f5e9;color:#1a5c2e;border:1px solid #b8d8bc}
-.success-screen{display:none;text-align:center;padding:60px 32px}
-.success-icon{width:64px;height:64px;background:var(--green);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px}
-.success-title{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:700;color:var(--brown);margin-bottom:10px}
-.success-sub{font-size:14px;color:#9a7060;line-height:1.6;max-width:380px;margin:0 auto 24px}
-.btn-login{display:inline-flex;align-items:center;gap:8px;background:var(--brown);color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-size:14px;font-weight:600;font-family:'Outfit',sans-serif;transition:background .2s}
-.btn-login:hover{background:#6a4432}
-footer{text-align:center;padding:24px;font-size:11px;color:#c0a898}
-@media(max-width:600px){
-  .hero{padding:32px 20px 50px}.hero-title{font-size:28px}
-  .card-section{padding:20px}.row2,.row3{grid-template-columns:1fr}
-  .submit-section{flex-direction:column;align-items:stretch}.btn-submit{justify-content:center}
-  .alert{margin:0 20px 20px}
+.form-note{font-size:11px;color:#b09080;text-align:center;line-height:1.5}
+
+/* ── SUCCÈS ── */
+.success-screen{
+  display:none;text-align:center;
+  padding:48px 32px;flex-direction:column;align-items:center;
 }
+.success-screen.visible{display:flex}
+.success-icon{
+  width:64px;height:64px;background:var(--green);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;margin-bottom:20px;
+}
+.success-title{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:700;color:var(--brown);margin-bottom:10px}
+.success-sub{font-size:13px;color:#9a7060;line-height:1.6;max-width:320px;margin-bottom:6px}
+.success-count{font-size:13px;color:#b09080;margin-bottom:20px}
+.btn-login{
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--brown);color:#fff;
+  padding:11px 26px;border-radius:8px;
+  text-decoration:none;font-size:14px;font-weight:600;
+  font-family:'Outfit',sans-serif;transition:background .2s;
+}
+.btn-login:hover{background:#6a4432}
+
+/* ── FOOTER ── */
+footer{
+  text-align:center;padding:14px 24px;
+  font-size:11px;color:#c0a898;
+  border-top:1px solid #e8d8cc;background:var(--cream);
+}
+footer a{color:inherit;text-decoration:none;opacity:.7}
+footer a:hover{opacity:1}
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px){
+  .main-wrap{grid-template-columns:1fr}
+  .panel-left{display:none}
+  .panel-right{padding:32px 24px}
+}
+@media(max-width:480px){
+  .row2,.row3{grid-template-columns:1fr}
+  .site-header{padding:0 20px}
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.panel-right{animation:fadeUp .4s ease}
 </style>
 </head>
 <body>
@@ -76,143 +245,168 @@ footer{text-align:center;padding:24px;font-size:11px;color:#c0a898}
   <a href="index.html" class="back-link">&#8592; D&#233;j&#224; inscrit ? Se connecter</a>
 </header>
 
-<div class="hero">
-  <div class="hero-title">Demande d&#8217;acc&#232;s<br><span>Bon de Commande 2026</span></div>
-  <p class="hero-sub" id="hero-sub">Remplissez ce formulaire pour obtenir vos identifiants. Notre &#233;quipe vous contactera sous 24&#160;h.</p>
-</div>
+<div class="main-wrap">
 
-<div class="form-wrap">
-  <div class="card" id="form-card">
-    <div class="alert" id="form-alert"></div>
-
-    <div class="card-section">
-      <div class="section-label">&#127978; Votre magasin</div>
-      <div class="fg">
-        <label>Nom du magasin <span class="req">*</span></label>
-        <input type="text" id="f-nom" placeholder="ex : Bio Village Strasbourg" autocomplete="organization">
+  <!-- ── PANNEAU GAUCHE ── -->
+  <div class="panel-left">
+    <div class="panel-badge">&#127807; Espace partenaires 2026</div>
+    <div class="panel-title">Rejoignez<br>l&#8217;<em>espace</em><br>commande</div>
+    <p class="panel-sub">Acc&#233;dez au catalogue complet, passez vos commandes en ligne et g&#233;rez votre relation commerciale directement avec notre &#233;quipe.</p>
+    <div class="panel-steps">
+      <div class="panel-step">
+        <div class="panel-step-num">1</div>
+        <div class="panel-step-text"><strong>Remplissez le formulaire</strong>Vos informations magasin et identifiants souhait&#233;s</div>
       </div>
-      <div class="row3">
-        <div class="fg">
-          <label>SIRET</label>
-          <input type="text" id="f-siret" placeholder="123 456 789 00012" maxlength="17">
-        </div>
-        <div class="fg">
-          <label>Groupement</label>
-          <select id="f-groupement">
-            <option value="">&#8212; Aucun &#8212;</option>
-          </select>
-        </div>
+      <div class="panel-step">
+        <div class="panel-step-num">2</div>
+        <div class="panel-step-text"><strong>Compte cr&#233;&#233; instantan&#233;ment</strong>Connexion disponible imm&#233;diatement apr&#232;s validation</div>
+      </div>
+      <div class="panel-step">
+        <div class="panel-step-num">3</div>
+        <div class="panel-step-text"><strong>Acc&#232;s au catalogue complet</strong>1 390 r&#233;f&#233;rences bio avec vos prix et remises groupement</div>
       </div>
     </div>
+  </div>
 
-    <div class="card-section">
-      <div class="section-label">&#128222; Contact</div>
-      <div class="row3">
-        <div class="fg">
-          <label>Email <span class="req">*</span></label>
-          <input type="email" id="f-email" placeholder="contact@magasin.fr" autocomplete="email">
-        </div>
-        <div class="fg">
-          <label>T&#233;l&#233;phone</label>
-          <input type="tel" id="f-tel" placeholder="06 12 34 56 78" autocomplete="tel">
-        </div>
-      </div>
-    </div>
+  <!-- ── PANNEAU DROIT ── -->
+  <div class="panel-right" id="panel-right">
 
-    <div class="card-section">
-      <div class="section-label">&#128205; Adresse</div>
-      <div class="fg">
-        <label>Adresse</label>
-        <input type="text" id="f-adresse" placeholder="12 rue des Fleurs" autocomplete="street-address">
-      </div>
-      <div class="row2">
-        <div class="fg">
-          <label>Ville</label>
-          <input type="text" id="f-ville" placeholder="Strasbourg" autocomplete="address-level2">
-        </div>
-        <div class="fg">
-          <label>Code postal</label>
-          <input type="text" id="f-cp" placeholder="67000" maxlength="5" autocomplete="postal-code">
-        </div>
-      </div>
-    </div>
+    <div class="form-alert" id="form-alert"></div>
 
-    <div class="card-section">
-      <div class="section-label">&#128274; Identifiants souhait&#233;s</div>
-      <div class="row3">
+    <!-- Formulaire -->
+    <div id="form-wrap">
+
+      <!-- Magasin -->
+      <div class="form-section">
+        <div class="form-section-label">&#127978; Votre magasin</div>
         <div class="fg">
-          <label>Login <span class="req">*</span></label>
-          <input type="text" id="f-login" placeholder="biovillage67" autocomplete="username"
-            oninput="this.value=this.value.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_-]/g,'')">
-          <div style="font-size:10px;color:#b09080;margin-top:4px">Minuscules, sans espace</div>
+          <label>Nom du magasin <span class="req">*</span></label>
+          <input type="text" id="f-nom" placeholder="ex : Bio Village Strasbourg" autocomplete="organization">
         </div>
-        <div class="fg">
-          <label>Mot de passe <span class="req">*</span></label>
-          <div class="pwd-wrap">
-            <input type="password" id="f-password" placeholder="Min. 8 caract&#232;res"
-              autocomplete="new-password" oninput="checkStrength(this.value)">
-            <button type="button" class="pwd-toggle" onclick="togglePwd()" id="pwd-btn">&#128065; Voir</button>
+        <div class="row2">
+          <div class="fg">
+            <label>SIRET</label>
+            <input type="text" id="f-siret" placeholder="123 456 789 00012" maxlength="17">
           </div>
-          <div class="pwd-strength">
-            <div class="strength-bar"><div class="strength-fill" id="strength-fill"></div></div>
-            <span id="strength-label" style="min-width:55px;text-align:right"></span>
+          <div class="fg">
+            <label>Groupement</label>
+            <select id="f-groupement">
+              <option value="">&#8212; Aucun &#8212;</option>
+            </select>
           </div>
         </div>
       </div>
-      <div class="info-box">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7.5" stroke="#C87864"/><path d="M8 7v5M8 5v1" stroke="#C87864" stroke-width="1.5" stroke-linecap="round"/></svg>
-        <div>Votre demande sera examin&#233;e par notre &#233;quipe. Vous recevrez vos acc&#232;s confirm&#233;s par email sous 24&#160;h.</div>
-      </div>
-    </div>
 
-    <div class="card-section">
-      <div class="section-label">&#128172; Message</div>
-      <div class="fg">
-        <label>Commentaire ou demande particuli&#232;re</label>
-        <textarea id="f-message" placeholder="Commercial r&#233;f&#233;rent, conditions souhait&#233;es, questions&#8230;"></textarea>
+      <!-- Contact -->
+      <div class="form-section">
+        <div class="form-section-label">&#128222; Contact</div>
+        <div class="row2">
+          <div class="fg">
+            <label>Email <span class="req">*</span></label>
+            <input type="email" id="f-email" placeholder="contact@magasin.fr" autocomplete="email">
+          </div>
+          <div class="fg">
+            <label>T&#233;l&#233;phone</label>
+            <input type="tel" id="f-tel" placeholder="06 12 34 56 78" autocomplete="tel">
+          </div>
+        </div>
       </div>
-    </div>
 
-        <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:14px 16px;margin-bottom:18px">
-      <div style="display:flex;align-items:flex-start;gap:10px">
-        <input type="checkbox" id="f-rgpd" style="width:auto;margin:0;margin-top:3px;flex-shrink:0">
-        <label for="f-rgpd" style="font-size:12px;color:#0c4a6e;cursor:pointer;line-height:1.6">
-          J&#8217;accepte que Moulin des Moines collecte mes donn&#233;es personnelles (nom, email, t&#233;l&#233;phone, adresse) dans le cadre de notre relation commerciale, conform&#233;ment au
-          <a href="mentions-legales.html" target="_blank" style="color:var(--terra);font-weight:600">RGPD</a>.
-          Ces donn&#233;es ne seront pas c&#233;d&#233;es &#224; des tiers.
+      <!-- Adresse -->
+      <div class="form-section">
+        <div class="form-section-label">&#128205; Adresse</div>
+        <div class="fg">
+          <label>Adresse</label>
+          <input type="text" id="f-adresse" placeholder="12 rue des Fleurs" autocomplete="street-address">
+        </div>
+        <div class="row3">
+          <div class="fg">
+            <label>Ville</label>
+            <input type="text" id="f-ville" placeholder="Strasbourg" autocomplete="address-level2">
+          </div>
+          <div class="fg">
+            <label>Code postal</label>
+            <input type="text" id="f-cp" placeholder="67000" maxlength="5" autocomplete="postal-code">
+          </div>
+        </div>
+      </div>
+
+      <!-- Identifiants -->
+      <div class="form-section">
+        <div class="form-section-label">&#128274; Identifiants</div>
+        <div class="row2">
+          <div class="fg">
+            <label>Login <span class="req">*</span></label>
+            <input type="text" id="f-login" placeholder="biovillage67" autocomplete="username"
+              oninput="this.value=this.value.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_-]/g,'')">
+            <div style="font-size:10px;color:#b09080;margin-top:3px">Minuscules, sans espace</div>
+          </div>
+          <div class="fg">
+            <label>Mot de passe <span class="req">*</span></label>
+            <div class="pwd-wrap">
+              <input type="password" id="f-password" placeholder="Min. 8 caract&#232;res"
+                autocomplete="new-password" oninput="checkStrength(this.value)">
+              <button type="button" class="pwd-toggle" onclick="togglePwd()" id="pwd-btn">&#128065;</button>
+            </div>
+            <div class="pwd-strength">
+              <div class="strength-bar"><div class="strength-fill" id="strength-fill"></div></div>
+              <span id="strength-label" style="min-width:52px;text-align:right;font-size:10px"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Message -->
+      <div class="form-section">
+        <div class="form-section-label">&#128172; Message</div>
+        <div class="fg">
+          <textarea id="f-message" placeholder="Commercial r&#233;f&#233;rent, questions, demandes particuli&#232;res&#8230;"></textarea>
+        </div>
+      </div>
+
+      <!-- RGPD -->
+      <div class="rgpd-box">
+        <label>
+          <input type="checkbox" id="f-rgpd">
+          J&#8217;accepte que Moulin des Moines collecte mes donn&#233;es dans le cadre de notre relation commerciale, conform&#233;ment au <a href="mentions-legales.html" target="_blank" style="color:var(--terra);font-weight:600">RGPD</a>. Ces donn&#233;es ne seront pas c&#233;d&#233;es &#224; des tiers.
         </label>
+        <div class="rgpd-alert" id="rgpd-alert">&#9888; Veuillez accepter les conditions pour continuer.</div>
       </div>
-      <div id="rgpd-alert" style="display:none;margin-top:8px;font-size:11px;color:#c62828">&#9888; Veuillez accepter les conditions pour continuer.</div>
-    </div>
-    <div class="submit-section">
-      <div class="submit-note">
-        En soumettant ce formulaire, vous acceptez d&#8217;&#234;tre contact&#233; par l&#8217;&#233;quipe MDM.<br>
-        Vos donn&#233;es restent confidentielles.
-      </div>
-      <button class="btn-submit" onclick="submitForm()" id="btn-submit">
-        <span>&#10003;</span> Envoyer la demande
-      </button>
-    </div>
-  </div>
 
-  <div class="success-screen" id="success-screen">
-    <div class="success-icon">
-      <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-        <path d="M7 16l7 7 11-13" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
+      <!-- Submit -->
+      <button class="btn-submit" onclick="submitForm()" id="btn-submit">
+        <span id="btn-label">Cr&#233;er mon compte</span>
+      </button>
+      <p class="form-note">Vos donn&#233;es sont prot&#233;g&#233;es et chiffr&#233;es &nbsp;&middot;&nbsp; <a href="mentions-legales.html" style="color:inherit">Mentions l&#233;gales</a></p>
+
     </div>
-    <div class="success-title">Compte cr&#233;&#233; !</div>
-    <p class="success-sub">Votre compte est actif. Vous pouvez vous connecter imm&#233;diatement avec votre login et mot de passe.</p>
-    <p style="font-size:13px;color:#9a7060;margin-bottom:20px">Redirection automatique dans <strong id="redirect-count">4</strong>&#160;secondes&#8230;</p>
-    <a href="index.html" class="btn-login">&#128274; Se connecter maintenant</a>
+
+    <!-- Écran succès -->
+    <div class="success-screen" id="success-screen">
+      <div class="success-icon">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+          <path d="M7 16l7 7 11-13" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="success-title">Compte cr&#233;&#233; !</div>
+      <p class="success-sub">Votre compte est actif. Connectez-vous d&#232;s maintenant avec votre login et mot de passe.</p>
+      <p class="success-count">Redirection automatique dans <strong id="redirect-count">4</strong>&#160;secondes&#8230;</p>
+      <a href="index.html" class="btn-login">&#128274; Se connecter maintenant</a>
+    </div>
+
   </div>
 </div>
 
-<footer>&copy; 2026 Moulin des Moines &mdash; Tous droits r&#233;serv&#233;s &nbsp;&middot;&nbsp; <a href="mentions-legales.html" style="color:#b09080;text-decoration:none">Mentions l&#233;gales &amp; RGPD</a></footer>
+<footer>
+  &copy; 2026 Moulin des Moines &nbsp;&middot;&nbsp;
+  <a href="mentions-legales.html">Mentions l&#233;gales &amp; RGPD</a> &nbsp;&middot;&nbsp;
+  <a href="tutoriel.html">Guide d&#8217;utilisation</a>
+</footer>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script>
+
 (function(){
   var sel=document.getElementById('f-groupement');
   var gl=[];
@@ -438,6 +632,7 @@ function submitForm(){
 document.addEventListener('keydown',function(e){
   if(e.key==='Enter'&&e.target.tagName!=='TEXTAREA')submitForm();
 });
+
 </script>
 </body>
 </html>

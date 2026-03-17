@@ -131,7 +131,6 @@ footer{text-align:center;padding:24px;font-size:11px;color:#b09080;border-top:1p
   <div class="role-tabs">
     <button class="role-tab active" onclick="showSection('client',this)">&#127978; Client / Magasin</button>
     <button class="role-tab" onclick="showSection('commercial',this)">&#128188; Commercial</button>
-    <button class="role-tab" onclick="showSection('admin',this)">&#9881; Administrateur</button>
   </div>
 </div>
 
@@ -319,7 +318,7 @@ footer{text-align:center;padding:24px;font-size:11px;color:#b09080;border-top:1p
     </div>
     <div class="faq-item">
       <div class="faq-q" onclick="toggleFaq(this)">Je n'arrive pas à me connecter, que faire ?</div>
-      <div class="faq-a">Vérifiez que votre login et mot de passe sont corrects (attention aux majuscules). Si vous avez oublié votre mot de passe, contactez votre commercial ou envoyez un email à cspoto@moulindesmoines.com.</div>
+      <div class="faq-a">Vérifiez que votre login et mot de passe sont corrects (attention aux majuscules). Si vous avez oublié votre mot de passe, contactez votre commercial ou envoyez un email à <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="395a4a49564d567954564c5550575d5c4a545650575c4a175a5654">[email&#160;protected]</a>.</div>
     </div>
     <div class="faq-item">
       <div class="faq-q" onclick="toggleFaq(this)">Le site ne charge pas, que faire ?</div>
@@ -435,128 +434,7 @@ footer{text-align:center;padding:24px;font-size:11px;color:#b09080;border-top:1p
 
 </div>
 
-<!-- ══════════════════════════════════════════
-     SECTION ADMIN
-══════════════════════════════════════════ -->
-<div class="section" id="section-admin">
 
-  <div class="intro-card" style="border-left-color:var(--green)">
-    <div class="intro-icon">&#9881;</div>
-    <div>
-      <div class="intro-title">Panneau d'administration</div>
-      <div class="intro-text">L'interface d'administration vous donne un contrôle total sur les comptes, les groupements, les remises produits, l'historique des commandes et les actualités. Accessible uniquement avec le compte admin.</div>
-    </div>
-  </div>
-
-  <div class="toc">
-    <div class="toc-title">Dans ce guide</div>
-    <div class="toc-list">
-      <a href="#ad-comptes" class="toc-link">1. Gérer les comptes</a>
-      <a href="#ad-groupements" class="toc-link">2. Groupements & remises</a>
-      <a href="#ad-historique" class="toc-link">3. Historique global</a>
-      <a href="#ad-actus" class="toc-link">4. Actualités</a>
-    </div>
-  </div>
-
-  <div class="chapter" id="ad-comptes">
-    <div class="steps-title">1 — Gérer les comptes</div>
-    <div class="step">
-      <div class="step-num">1</div>
-      <div class="step-body">
-        <div class="step-title">Créer un nouveau compte</div>
-        <div class="step-desc">Dans l'onglet <strong>Comptes</strong>, cliquez sur <strong>+ Nouveau compte</strong>. Renseignez le login, le mot de passe, le nom, le rôle (client / commercial / admin) et le groupement.</div>
-        <div class="illus">
-          <div class="illus-bar"><div class="illus-dot" style="background:#ff5f57"></div><div class="illus-dot" style="background:#ffbd2e"></div><div class="illus-dot" style="background:#28c840"></div></div>
-          <div class="illus-content">
-            <table class="mock-table">
-              <tr><th>Login</th><th>Nom</th><th>Rôle</th><th>Remise</th><th>Actions</th></tr>
-              <tr><td>biovillage</td><td>Bio Village Stbg</td><td><span class="mock-tag" style="background:#dbeafe;color:#1d4ed8">Client</span></td><td><span class="mock-tag" style="background:#fef9ee;color:#b45309">5%</span></td><td><span class="mock-btn" style="background:#e8f0fe;color:#1a56db;font-size:10px;padding:3px 8px">Modifier</span></td></tr>
-              <tr><td>jmartin</td><td>Jean Martin</td><td><span class="mock-tag" style="background:#d1fae5;color:#065f46">Commercial</span></td><td>—</td><td><span class="mock-btn" style="background:#e8f0fe;color:#1a56db;font-size:10px;padding:3px 8px">Modifier</span></td></tr>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="step">
-      <div class="step-num">2</div>
-      <div class="step-body">
-        <div class="step-title">Modifier un compte</div>
-        <div class="step-desc">Cliquez sur <strong>Modifier</strong> sur la ligne du compte. Vous pouvez changer tous les champs : remise, groupement, commercial attitré, email, adresse. Le mot de passe est automatiquement haché à la sauvegarde.</div>
-      </div>
-    </div>
-    <div class="step">
-      <div class="step-num">3</div>
-      <div class="step-body">
-        <div class="step-title">Envoyer les accès par email</div>
-        <div class="step-desc">Sur la fiche d'un compte, cliquez sur <strong>Envoyer les accès</strong> pour transmettre automatiquement le login et le lien de connexion par email au client.</div>
-        <div class="warn"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6.5" stroke="#ea580c"/><path d="M7 4v4M7 9.5v.5" stroke="#ea580c" stroke-width="1.5" stroke-linecap="round"/></svg> FormSubmit nécessite une activation à la première utilisation — un email de confirmation est envoyé à l'adresse MDM lors du tout premier envoi.</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="chapter" id="ad-groupements">
-    <div class="steps-title">2 — Groupements et remises produits</div>
-    <div class="step">
-      <div class="step-num">1</div>
-      <div class="step-body">
-        <div class="step-title">Créer un groupement</div>
-        <div class="step-desc">Dans l'onglet <strong>Groupements</strong>, créez un groupement (ex : Biocoop, Naturalia). Définissez la remise globale en % et le franco de port applicable.</div>
-      </div>
-    </div>
-    <div class="step">
-      <div class="step-num">2</div>
-      <div class="step-body">
-        <div class="step-title">Importer des remises produits</div>
-        <div class="step-desc">Cliquez sur <strong>Remises produits</strong> puis glissez un fichier Excel contenant les colonnes : Code, Désignation, Remise %, Prix HT spécial. Les remises sont importées et propagées à tous les comptes du groupement.</div>
-        <div class="tip"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6.5" stroke="#059669"/><path d="M7 6v4M7 4.5v.5" stroke="#059669" stroke-width="1.5" stroke-linecap="round"/></svg> Les remises s'appliquent automatiquement à la prochaine connexion des clients du groupement.</div>
-      </div>
-    </div>
-    <div class="step">
-      <div class="step-num">3</div>
-      <div class="step-body">
-        <div class="step-title">Comprendre les priorités de remise</div>
-        <div class="step-desc">L'ordre de priorité est le suivant : <strong>1. Prix spécial groupement</strong> (prix HT fixé) → <strong>2. Remise % groupement</strong> → <strong>3. Remise compte individuel</strong>. Le meilleur prix est toujours appliqué.</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="chapter" id="ad-historique">
-    <div class="steps-title">3 — Historique global des commandes</div>
-    <div class="step">
-      <div class="step-num">1</div>
-      <div class="step-body">
-        <div class="step-title">Consulter toutes les commandes</div>
-        <div class="step-desc">L'onglet <strong>Historique</strong> affiche toutes les commandes de tous les clients, triées par date. Vous pouvez filtrer par client, par commercial ou par période.</div>
-      </div>
-    </div>
-    <div class="step">
-      <div class="step-num">2</div>
-      <div class="step-body">
-        <div class="step-title">Exporter l'historique</div>
-        <div class="step-desc">Cliquez sur <strong>Export Excel</strong> pour télécharger l'historique complet au format Excel, prêt pour votre comptabilité ou vos analyses commerciales.</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="chapter" id="ad-actus">
-    <div class="steps-title">4 — Gestion des actualités</div>
-    <div class="step">
-      <div class="step-num">1</div>
-      <div class="step-body">
-        <div class="step-title">Publier une actualité</div>
-        <div class="step-desc">Dans l'onglet <strong>Actualités</strong>, rédigez un titre, un contenu et choisissez le type (Info, Promo, Alerte). L'actualité apparaît sur le tableau de bord de tous les clients connectés.</div>
-      </div>
-    </div>
-    <div class="step">
-      <div class="step-num">2</div>
-      <div class="step-body">
-        <div class="step-title">Activer / désactiver une actualité</div>
-        <div class="step-desc">Chaque actualité peut être activée ou désactivée sans la supprimer. Pratique pour les promotions saisonnières que vous souhaitez réutiliser.</div>
-      </div>
-    </div>
-  </div>
-
-</div>
 </div>
 
 <footer>
@@ -564,7 +442,7 @@ footer{text-align:center;padding:24px;font-size:11px;color:#b09080;border-top:1p
   <a href="mentions-legales.html" style="color:inherit;text-decoration:none;opacity:.7">Mentions légales</a>
 </footer>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 function showSection(name, btn){
   document.querySelectorAll('.section').forEach(function(s){ s.classList.remove('active'); });
   document.querySelectorAll('.role-tab').forEach(function(b){ b.classList.remove('active'); });
@@ -581,8 +459,7 @@ function toggleFaq(el){
 
 // Barre de progression lecture
 window.addEventListener('scroll', function(){
-  var bar = document.getElementById('progress-bar');
-  if(!bar) return;
+  var bar = docu
   var h = document.documentElement;
   var pct = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
   bar.style.width = Math.min(pct, 100) + '%';

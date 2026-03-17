@@ -121,11 +121,232 @@ body{font-family:"Outfit",sans-serif;min-height:100vh;display:flex;align-items:c
 // Format : { login, password, nom, role }
 // ═══════════════════════════════════════════════════════════
 var COMPTES = [
-  { login: "admin",      password: "mdm2026",      nom: "Administrateur",   role: "admin",   remise: 0,  email: "cspoto@moulindesmoines.com" },
-  { login: "commercial", password: "mdm-ventes",   nom: "Commercial MDM",   role: "user",    remise: 0,  email: "cspoto@moulindesmoines.com" },
-  { login: "magasin1",   password: "mag1-2026",    nom: "Magasin Alsace",   role: "client",  remise: 5,  email: "magasin1@exemple.fr"        },
-  { login: "magasin2",   password: "mag2-2026",    nom: "Magasin Lorraine", role: "client",  remise: 10, email: "magasin2@exemple.fr"        },
-  { login: "magasin3",   password: "mag3-2026",    nom: "Magasin Franche-C",role: "client",  remise: 15, email: "magasin3@exemple.fr"        }
+  {
+    "_id": "admin",
+    "login": "admin",
+    "password": "mdm2026",
+    "role": "admin",
+    "email": "cspoto@moulindesmoines.com",
+    "_origIdx": 0,
+    "remise": 0,
+    "nom": "Administrateur"
+  },
+  {
+    "_id": "bio_mas",
+    "cp": "38600",
+    "nom": "BIO MAS",
+    "remise": 12,
+    "theme_gold": "#4CAF7D",
+    "role": "client",
+    "theme_terra": "#2D8A57",
+    "theme_cream": "#F0FBF4",
+    "email": "spoto.christophe@gmail.com",
+    "remises_produits": [],
+    "notes": "",
+    "tel": "0677898987",
+    "_origIdx": 1,
+    "numclient": "",
+    "grp_remises": [
+      {
+        "categorie": "Fruits secs",
+        "ean": "3347430017992",
+        "prixHT": 3.12,
+        "code": "ABRICO",
+        "remise": 15,
+        "libelle": "Abricots secs entiers bio - 200g"
+      },
+      {
+        "remise": 15,
+        "prixHT": 2.71,
+        "ean": "3347430006538",
+        "categorie": "Fruits secs",
+        "code": "ABRCOU200",
+        "libelle": "Abricots secs coupés bio - 200g"
+      },
+      {
+        "libelle": "Amandes décortiquées bio - 200g",
+        "remise": 15,
+        "code": "AMANDE",
+        "prixHT": 3.25,
+        "categorie": "Fruits secs",
+        "ean": "3347430021685"
+      },
+      {
+        "remise": 15,
+        "ean": "3347430849487",
+        "categorie": "Chocolat",
+        "prixHT": 1.44,
+        "code": "CHO001",
+        "libelle": "Bière engrain petit épeautre bio - 33cl"
+      },
+      {
+        "ean": "3361730767678",
+        "categorie": "Farines",
+        "prixHT": 1,
+        "code": "FAR001",
+        "remise": 15,
+        "libelle": "Eau celtic légère bouteille - verre perdu - 50cl"
+      },
+      {
+        "libelle": "Eau celtic légère bouteille - verre perdu - 50cl",
+        "code": "FAR002",
+        "categorie": "Farines",
+        "ean": "3361730767678",
+        "prixHT": 1,
+        "remise": 8
+      },
+      {
+        "libelle": "Proponorm : poudre de propolis pure",
+        "categorie": "Miels",
+        "prixHT": 14.29,
+        "ean": "3455270811028",
+        "code": "MIE001",
+        "remise": 12
+      },
+      {
+        "libelle": "Graines de courge UE bio - 5kg",
+        "prixHT": 59.5,
+        "categorie": "Boissons",
+        "ean": "3347430009560",
+        "code": "JUS001",
+        "remise": 0
+      }
+    ],
+    "password": "n74bkwFHtN",
+    "franco": 600,
+    "region": "Auvergne-Rhône-Alpes",
+    "commercial": "commercial",
+    "ville": "Fontaine",
+    "groupement": "LGPB",
+    "theme_brown": "#1A5C2E",
+    "login": "bio_mas"
+  },
+  {
+    "_id": "commercial",
+    "role": "user",
+    "cp": "",
+    "nom": "Spoto Christophe",
+    "remise": 0,
+    "remises_produits": [],
+    "email": "cspoto@moulindesmoines.com",
+    "numclient": "",
+    "password": "mdm-ventes",
+    "notes": "",
+    "_origIdx": 2,
+    "tel": "",
+    "groupement": "",
+    "ville": "",
+    "login": "commercial",
+    "region": "",
+    "commercial": ""
+  },
+  {
+    "_id": "faverges",
+    "grp_remises": [
+      {
+        "code": "ABRICO",
+        "ean": "3347430017992",
+        "categorie": "Fruits secs",
+        "prixHT": 3.12,
+        "remise": 15,
+        "libelle": "Abricots secs entiers bio - 200g"
+      },
+      {
+        "libelle": "Abricots secs coupés bio - 200g",
+        "remise": 15,
+        "code": "ABRCOU200",
+        "ean": "3347430006538",
+        "categorie": "Fruits secs",
+        "prixHT": 2.71
+      },
+      {
+        "prixHT": 3.25,
+        "categorie": "Fruits secs",
+        "ean": "3347430021685",
+        "code": "AMANDE",
+        "remise": 15,
+        "libelle": "Amandes décortiquées bio - 200g"
+      },
+      {
+        "prixHT": 1.44,
+        "categorie": "Chocolat",
+        "ean": "3347430849487",
+        "code": "CHO001",
+        "remise": 15,
+        "libelle": "Bière engrain petit épeautre bio - 33cl"
+      },
+      {
+        "libelle": "Eau celtic légère bouteille - verre perdu - 50cl",
+        "remise": 15,
+        "code": "FAR001",
+        "categorie": "Farines",
+        "ean": "3361730767678",
+        "prixHT": 1
+      },
+      {
+        "code": "FAR002",
+        "ean": "3361730767678",
+        "prixHT": 1,
+        "categorie": "Farines",
+        "remise": 8,
+        "libelle": "Eau celtic légère bouteille - verre perdu - 50cl"
+      },
+      {
+        "libelle": "Proponorm : poudre de propolis pure",
+        "prixHT": 14.29,
+        "ean": "3455270811028",
+        "categorie": "Miels",
+        "code": "MIE001",
+        "remise": 12
+      },
+      {
+        "code": "JUS001",
+        "categorie": "Boissons",
+        "ean": "3347430009560",
+        "prixHT": 59.5,
+        "remise": 0,
+        "libelle": "Graines de courge UE bio - 5kg"
+      }
+    ],
+    "franco": 900,
+    "password": "3f73c31ddbb7a2af08772c3a8555e3360fc04432d7b0c913189b51909a9b2583",
+    "tel": "",
+    "groupement": "ACCORD BIO",
+    "ville": "faverges",
+    "login": "faverges",
+    "commercial": "commercial",
+    "role": "client",
+    "cp": "",
+    "nom": "La ronde du bio 74",
+    "remise": 13,
+    "email": "larondedubio74@orange.fr",
+    "_origIdx": 3
+  },
+  {
+    "_id": "spotoj",
+    "region": "Auvergne-Rhône-Alpes",
+    "commercial": "commercial",
+    "ville": "fontaine",
+    "groupement": "",
+    "login": "spotoj",
+    "theme_brown": "#1A5C2E",
+    "notes": "",
+    "tel": "0670200229",
+    "_origIdx": 4,
+    "grp_remises": [],
+    "numclient": "",
+    "password": "spoto62",
+    "franco": 0,
+    "email": "spoto-veranda@wanadoo.fr",
+    "remises_produits": [],
+    "cp": "38600",
+    "nom": "Spoto joseph",
+    "remise": 0,
+    "theme_gold": "#4CAF7D",
+    "role": "client",
+    "theme_terra": "#2D8A57",
+    "theme_cream": "#F0FBF4"
+  }
 ];
 // ── Remplacer les emails par les vraies adresses de chaque compte ──
 // ── Pour modifier une remise : changer le chiffre dans remise: XX

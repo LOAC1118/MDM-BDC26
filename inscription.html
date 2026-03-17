@@ -68,8 +68,6 @@ footer{text-align:center;padding:24px;font-size:11px;color:#c0a898}
   .alert{margin:0 20px 20px}
 }
 </style>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
 
@@ -212,6 +210,8 @@ footer{text-align:center;padding:24px;font-size:11px;color:#c0a898}
 
 <footer>&copy; 2026 Moulin des Moines &mdash; Tous droits r&#233;serv&#233;s &nbsp;&middot;&nbsp; <a href="mentions-legales.html" style="color:#b09080;text-decoration:none">Mentions l&#233;gales &amp; RGPD</a></footer>
 
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script>
 (function(){
   var sel=document.getElementById('f-groupement');
@@ -294,6 +294,7 @@ function _sha256Pure(s){
 var _fbApp=null,_fbDb=null;
 function initFB(){
   if(_fbDb) return Promise.resolve(_fbDb);
+  if(typeof firebase==="undefined") return Promise.reject(new Error("SDK Firebase non charg\u00e9. V\u00e9rifiez votre connexion internet."));
   if(!_fbApp) _fbApp=firebase.initializeApp({
     apiKey:"AIzaSyB000QDa4c-vMjO1Xuimw58iiRvwgbF1zc",
     authDomain:"mdm-bdc26.firebaseapp.com",

@@ -122,11 +122,144 @@ body{font-family:"Outfit",sans-serif;min-height:100vh;display:flex;align-items:c
 // Format : { login, password, nom, role }
 // ═══════════════════════════════════════════════════════════
 var COMPTES = [
-  { login: "admin",      password: "mdm2026",      nom: "Administrateur",   role: "admin",   remise: 0,  email: "cspoto@moulindesmoines.com" },
-  { login: "commercial", password: "mdm-ventes",   nom: "Commercial MDM",   role: "user",    remise: 0,  email: "cspoto@moulindesmoines.com" },
-  { login: "magasin1",   password: "mag1-2026",    nom: "Magasin Alsace",   role: "client",  remise: 5,  email: "magasin1@exemple.fr"        },
-  { login: "magasin2",   password: "mag2-2026",    nom: "Magasin Lorraine", role: "client",  remise: 10, email: "magasin2@exemple.fr"        },
-  { login: "magasin3",   password: "mag3-2026",    nom: "Magasin Franche-C",role: "client",  remise: 15, email: "magasin3@exemple.fr"        }
+  {
+    "_id": "admin",
+    "remise": 0,
+    "email": "cspoto@moulindesmoines.com",
+    "_origIdx": 0,
+    "role": "admin",
+    "password": "mdm2026",
+    "nom": "Administrateur",
+    "login": "admin"
+  },
+  {
+    "_id": "commercial",
+    "role": "user",
+    "password": "mdm-ventes",
+    "commercial": "",
+    "email": "cspoto@moulindesmoines.com",
+    "login": "commercial",
+    "region": "",
+    "ville": "",
+    "numclient": "",
+    "cp": "",
+    "_origIdx": 1,
+    "remise": 0,
+    "tel": "",
+    "nom": "Spoto Christophe",
+    "groupement": "",
+    "remises_produits": [],
+    "notes": ""
+  },
+  {
+    "_id": "crocbauges",
+    "remises_produits": [],
+    "dateInscription": "2026-03-17T11:52:19.155Z",
+    "siret": "",
+    "notes": "",
+    "_origIdx": 2,
+    "grp_remises": [],
+    "remise": 8,
+    "tel": "",
+    "groupement": "",
+    "nom": "croc bauges",
+    "ville": "lescheraines",
+    "numclient": "007461",
+    "cp": "73340",
+    "password": "ded7d5826329091f917090867fb79fdfdd0b7bb277f3722dc127c0d1ea072b21",
+    "role": "client",
+    "commercial": "commercial",
+    "email": "fournisseurs@crocbauges.com",
+    "login": "crocbauges",
+    "region": "",
+    "franco": 450
+  },
+  {
+    "_id": "faverges",
+    "franco": 900,
+    "login": "faverges",
+    "region": "",
+    "email": "larondedubio74@orange.fr",
+    "role": "client",
+    "password": "1f0adea8f10900ac8d76f5ffc9b0a3b6419bbd9466f711976d7ae37645234475",
+    "commercial": "commercial",
+    "cp": "",
+    "numclient": "004471",
+    "ville": "faverges",
+    "tel": "",
+    "nom": "La ronde du bio 74",
+    "groupement": "ACCORD BIO",
+    "grp_remises": [
+      {
+        "categorie": "Fruits secs",
+        "remise": 15,
+        "code": "ABRICO",
+        "prixHT": 3.12,
+        "libelle": "Abricots secs entiers bio - 200g",
+        "ean": "3347430017992"
+      },
+      {
+        "remise": 15,
+        "categorie": "Fruits secs",
+        "code": "ABRCOU200",
+        "prixHT": 2.71,
+        "libelle": "Abricots secs coupés bio - 200g",
+        "ean": "3347430006538"
+      },
+      {
+        "code": "AMANDE",
+        "categorie": "Fruits secs",
+        "remise": 15,
+        "prixHT": 3.25,
+        "ean": "3347430021685",
+        "libelle": "Amandes décortiquées bio - 200g"
+      },
+      {
+        "categorie": "Chocolat",
+        "remise": 15,
+        "code": "CHO001",
+        "libelle": "Bière engrain petit épeautre bio - 33cl",
+        "ean": "3347430849487",
+        "prixHT": 1.44
+      },
+      {
+        "code": "FAR001",
+        "categorie": "Farines",
+        "remise": 15,
+        "prixHT": 1,
+        "ean": "3361730767678",
+        "libelle": "Eau celtic légère bouteille - verre perdu - 50cl"
+      },
+      {
+        "remise": 8,
+        "categorie": "Farines",
+        "code": "FAR002",
+        "libelle": "Eau celtic légère bouteille - verre perdu - 50cl",
+        "ean": "3361730767678",
+        "prixHT": 1
+      },
+      {
+        "remise": 12,
+        "categorie": "Miels",
+        "code": "MIE001",
+        "prixHT": 14.29,
+        "libelle": "Proponorm : poudre de propolis pure",
+        "ean": "3455270811028"
+      },
+      {
+        "ean": "3347430009560",
+        "libelle": "Graines de courge UE bio - 5kg",
+        "prixHT": 59.5,
+        "code": "JUS001",
+        "remise": 0,
+        "categorie": "Boissons"
+      }
+    ],
+    "remise": 13,
+    "_origIdx": 3,
+    "notes": "",
+    "remises_produits": []
+  }
 ];
 // ── Remplacer les emails par les vraies adresses de chaque compte ──
 // ── Pour modifier une remise : changer le chiffre dans remise: XX

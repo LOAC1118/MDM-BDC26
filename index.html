@@ -117,82 +117,11 @@ body{font-family:"Outfit",sans-serif;min-height:100vh;display:flex;align-items:c
 // Format : { login, password, nom, role }
 // ═══════════════════════════════════════════════════════════
 var COMPTES = [
-  {
-    "_id": "admin",
-    "nom": "Administrateur",
-    "email": "cspoto@moulindesmoines.com",
-    "_origIdx": 0,
-    "remise": 0,
-    "role": "admin",
-    "login": "admin",
-    "password": "mdm2026"
-  },
-  {
-    "_id": "bio_mas",
-    "theme_gold": "#4CAF7D",
-    "role": "client",
-    "theme_terra": "#2D8A57",
-    "theme_cream": "#F0FBF4",
-    "nom": "BIO MAS",
-    "cp": "38600",
-    "remise": 12,
-    "remises_produits": [],
-    "email": "spoto.christophe@gmail.com",
-    "numclient": "",
-    "password": "n74bkwFHtN",
-    "franco": 600,
-    "notes": "",
-    "tel": "0677898987",
-    "_origIdx": 1,
-    "ville": "Fontaine",
-    "groupement": "LGPB",
-    "theme_brown": "#1A5C2E",
-    "login": "bio_mas",
-    "region": "Auvergne-Rhône-Alpes",
-    "commercial": "commercial"
-  },
-  {
-    "_id": "commercial",
-    "nom": "Spoto Christophe",
-    "cp": "",
-    "remise": 0,
-    "role": "user",
-    "email": "cspoto@moulindesmoines.com",
-    "remises_produits": [],
-    "notes": "",
-    "_origIdx": 2,
-    "tel": "",
-    "numclient": "",
-    "password": "mdm-ventes",
-    "region": "",
-    "commercial": "",
-    "groupement": "",
-    "ville": "",
-    "login": "commercial"
-  },
-  {
-    "_id": "spotoj",
-    "remise": 12,
-    "nom": "Spoto joseph",
-    "cp": "38600",
-    "theme_cream": "#F0FBF4",
-    "theme_terra": "#2D8A57",
-    "role": "client",
-    "theme_gold": "#4CAF7D",
-    "email": "spoto-veranda@wanadoo.fr",
-    "remises_produits": [],
-    "_origIdx": 3,
-    "tel": "0670200229",
-    "notes": "",
-    "password": "spoto62",
-    "numclient": "",
-    "commercial": "commercial",
-    "region": "Auvergne-Rhône-Alpes",
-    "theme_brown": "#1A5C2E",
-    "login": "spotoj",
-    "groupement": "Le grand panier bio",
-    "ville": "fontaine"
-  }
+  { login: "admin",      password: "mdm2026",      nom: "Administrateur",   role: "admin",   remise: 0,  email: "cspoto@moulindesmoines.com" },
+  { login: "commercial", password: "mdm-ventes",   nom: "Commercial MDM",   role: "user",    remise: 0,  email: "cspoto@moulindesmoines.com" },
+  { login: "magasin1",   password: "mag1-2026",    nom: "Magasin Alsace",   role: "client",  remise: 5,  email: "magasin1@exemple.fr"        },
+  { login: "magasin2",   password: "mag2-2026",    nom: "Magasin Lorraine", role: "client",  remise: 10, email: "magasin2@exemple.fr"        },
+  { login: "magasin3",   password: "mag3-2026",    nom: "Magasin Franche-C",role: "client",  remise: 15, email: "magasin3@exemple.fr"        }
 ];
 // ── Remplacer les emails par les vraies adresses de chaque compte ──
 // ── Pour modifier une remise : changer le chiffre dans remise: XX

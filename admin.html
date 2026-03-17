@@ -652,23 +652,63 @@ tbody td{padding:10px 12px;font-size:12px;vertical-align:middle;color:var(--text
 
 <!-- ══ MODAL COMPTE ══ -->
 <div class="modal-bg" id="modal" onclick="if(event.target===this)closeModal()">
-  <div class="modal">
-    <h3 id="modal-title">Nouveau compte</h3>
+  <div class="modal" style="max-width:680px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border)">
+      <div>
+        <h3 id="modal-title" style="margin-bottom:3px">Nouveau compte</h3>
+        <div style="font-size:12px;color:var(--text-muted)">Remplissez les informations du nouveau compte</div>
+      </div>
+      <button onclick="closeModal()" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--text-muted);padding:4px;line-height:1">&#10005;</button>
+    </div>
 
-    <div class="modal-tabs">
-      <button class="modal-tab active" onclick="switchModalTab('infos',this)">&#128101; Infos</button>
+    <div class="modal-tabs" style="margin-bottom:20px">
+      <button class="modal-tab active" onclick="switchModalTab('infos',this)">&#128101; Informations</button>
       <button class="modal-tab" id="tab-commandes" onclick="switchModalTab('commandes',this)" style="display:none">&#128230; Commandes</button>
     </div>
 
     <div id="modal-pane-infos" class="modal-pane active">
-    <div class="modal-section"><div class="modal-section-title">&#128274; Identifiants</div>
-      <div class="fg-row"><div class="fg"><label>Login <span style="color:var(--terra)">*</span></label><input type="text" id="f-login" placeholder="ex: magasin_bordeaux" autocomplete="off"><div class="hint">Minuscules, sans espace</div></div>
-      <div class="fg"><label>Mot de passe <span style="color:var(--terra)">*</span></label><div class="pwd-wrap"><input type="text" id="f-password" placeholder="ex: Bdx-2026!" autocomplete="off"><button class="pwd-generate" onclick="genPassword()" type="button">&#9881; G&#233;n&#233;rer</button></div><div class="hint">Min. 6 caract&#232;res</div></div></div>
+    <!-- ── Section identifiants ── -->
+    <div style="margin-bottom:20px">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.9px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px">
+        &#128274; Identifiants
+        <span style="flex:1;height:1px;background:var(--border);display:block"></span>
+      </div>
+      <div class="fg-row">
+        <div class="fg">
+          <label>Login <span style="color:var(--danger)">*</span></label>
+          <input type="text" id="f-login" placeholder="ex: magasin_bordeaux" autocomplete="off"
+            oninput="this.value=this.value.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_-]/g,'')">
+          <div class="hint">Minuscules, sans espace</div>
+        </div>
+        <div class="fg">
+          <label>Mot de passe <span style="color:var(--danger)">*</span></label>
+          <div class="pwd-wrap"><input type="text" id="f-password" placeholder="ex: Bdx-2026!" autocomplete="off"><button class="pwd-generate" onclick="genPassword()" type="button">&#9881; G&#233;n&#233;rer</button></div>
+          <div class="hint">Min. 6 caract&#232;res</div>
+        </div>
+      </div>
     </div>
 
-    <div class="modal-section"><div class="modal-section-title">&#128101; Informations du compte</div>
-      <div class="fg-row" style="margin-bottom:12px"><div class="fg"><label>Nom affich&#233; <span style="color:var(--terra)">*</span></label><input type="text" id="f-nom" placeholder="ex: Magasin Bordeaux"></div>
-      <div class="fg"><label>R&#244;le <span style="color:var(--terra)">*</span></label><select id="f-role" onchange="onRoleChange()"><option value="client">&#127978; Client / Magasin</option><option value="user">&#128188; Commercial</option><option value="admin">&#128737; Administrateur</option></select></div></div>
+    <!-- ── Section magasin ── -->
+    <div style="margin-bottom:20px">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.9px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px">
+        &#127978; Magasin / Compte
+        <span style="flex:1;height:1px;background:var(--border);display:block"></span>
+      </div>
+      <div class="fg-row" style="margin-bottom:0">
+        <div class="fg">
+          <label>Nom affich&#233; <span style="color:var(--danger)">*</span></label>
+          <input type="text" id="f-nom" placeholder="ex: Magasin Bordeaux">
+        </div>
+        <div class="fg">
+          <label>R&#244;le <span style="color:var(--danger)">*</span></label>
+          <select id="f-role" onchange="onRoleChange()">
+            <option value="client">&#127978; Client / Magasin</option>
+            <option value="user">&#128188; Commercial</option>
+            <option value="admin">&#128737; Administrateur</option>
+          </select>
+        </div>
+      </div>
+    </div>
       <div id="import-bloc" style="background:linear-gradient(135deg,#f0f7f2,#eaf4ec);border:1.5px solid rgba(26,92,46,.2);border-radius:9px;padding:12px 14px;margin-bottom:14px">
         <div style="display:flex;align-items:center;justify-content:space-between">
           <span style="font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.6px">&#128203; Importer depuis une demande d'inscription</span>
@@ -690,24 +730,43 @@ tbody td{padding:10px 12px;font-size:12px;vertical-align:middle;color:var(--text
           <button type="button" onclick="importerDemande()" style="width:100%;padding:9px;background:var(--green);color:#fff;border:none;border-radius:7px;font-family:Outfit,sans-serif;font-size:13px;font-weight:600;cursor:pointer">&#10003; Remplir automatiquement</button>
         </div>
       </div>
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.9px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px">
+        &#128222; Contact
+        <span style="flex:1;height:1px;background:var(--border);display:block"></span>
+      </div>
       <div class="fg-row"><div class="fg"><label>Email r&#233;ception commandes</label><input type="email" id="f-email" placeholder="commandes@magasin.fr"><div class="hint">Copie de chaque commande</div></div>
       <div class="fg"><label>T&#233;l&#233;phone</label><input type="tel" id="f-tel" placeholder="06 xx xx xx xx"></div></div>
       <div class="fg" id="section-groupement"><label>Groupement</label><select id="f-groupement" onchange="onGroupementChange()" style="width:100%;padding:9px 12px;border:1.5px solid #e0d0c4;border-radius:7px;font-family:Outfit,sans-serif;font-size:13px;background:var(--cream);color:#3a2a20;outline:none"><option value="">— Aucun groupement —</option></select></div>
     </div>
 
-    <div class="modal-section" id="section-localisation"><div class="modal-section-title">&#128205; Localisation</div>
+    <!-- ── Section localisation ── -->
+    <div class="modal-section" id="section-localisation">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.9px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px">
+        &#128205; Localisation
+        <span style="flex:1;height:1px;background:var(--border);display:block"></span>
+      </div>
       <div class="fg-row"><div class="fg"><label>Ville</label><input type="text" id="f-ville" placeholder="ex: Bordeaux"></div>
       <div class="fg"><label>Code postal</label><input type="text" id="f-cp" placeholder="33000" maxlength="5"></div></div>
       <div class="fg"><label>R&#233;gion</label><select id="f-region"><option value="">-- Non pr&#233;cis&#233;e --</option><option value="Alsace">Alsace</option><option value="Auvergne-Rh&#244;ne-Alpes">Auvergne-Rh&#244;ne-Alpes</option><option value="Bourgogne-Franche-Comt&#233;">Bourgogne-Franche-Comt&#233;</option><option value="Bretagne">Bretagne</option><option value="Centre-Val de Loire">Centre-Val de Loire</option><option value="Grand Est">Grand Est</option><option value="Hauts-de-France">Hauts-de-France</option><option value="&#206;le-de-France">&#206;le-de-France</option><option value="Lorraine">Lorraine</option><option value="Normandie">Normandie</option><option value="Nouvelle-Aquitaine">Nouvelle-Aquitaine</option><option value="Occitanie">Occitanie</option><option value="Pays de la Loire">Pays de la Loire</option><option value="Provence-Alpes-C&#244;te d'Azur">Provence-Alpes-C&#244;te d&#8217;Azur</option></select></div>
     </div>
 
-    <div class="modal-section"><div class="modal-section-title">&#128181; Conditions commerciales</div>
+    <!-- ── Section conditions ── -->
+    <div class="modal-section">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.9px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px">
+        &#128181; Conditions commerciales
+        <span style="flex:1;height:1px;background:var(--border);display:block"></span>
+      </div>
       <div class="fg-row"><div class="fg"><label>Remise (%)</label><input type="number" id="f-remise" placeholder="0" min="0" max="99" step="0.5" value="0" oninput="updateRemiseChips(this.value)"><div class="remise-chips"><span class="remise-chip" onclick="setRemiseChip(0)">0%</span><span class="remise-chip" onclick="setRemiseChip(5)">5%</span><span class="remise-chip" onclick="setRemiseChip(10)">10%</span><span class="remise-chip" onclick="setRemiseChip(15)">15%</span><span class="remise-chip" onclick="setRemiseChip(20)">20%</span></div><div style="display:flex;align-items:center;gap:8px;margin-top:8px"><span style="font-size:10px;color:#b09080;white-space:nowrap">Libre :</span><input type="number" id="f-remise-libre" placeholder="ex: 7.5" min="0" max="99" step="0.1" style="width:80px;padding:5px 8px;border:1.5px solid #e0d0c4;border-radius:6px;font-family:Outfit,sans-serif;font-size:12px;background:var(--cream);outline:none" oninput="setRemiseChip(parseFloat(this.value)||0)"><span style="font-size:11px;color:#b09080">%</span></div></div>
       <div class="fg"><label>N&#176; client MDM</label><input type="text" id="f-numclient" placeholder="ex: MDM-0123"><div class="hint">R&#233;f&#233;rence interne MDM</div></div>
           <div class="fg"><label>Franco de port (&#8364; HT) <span style="font-size:10px;color:#b09080;font-weight:400;text-transform:none">— laisser vide si aucun</span></label><input type="number" id="f-franco" placeholder="ex&#160;: 500" min="0" step="10" style="width:100%;padding:9px 12px;border:1.5px solid #e0d0c4;border-radius:7px;font-family:Outfit,sans-serif;font-size:13px;background:#fff;outline:none"><div class="hint">Laisser vide = pas de franco</div></div></div>
     </div>
 
-    <div class="modal-section" id="section-commercial"><div class="modal-section-title">&#128188; Commercial r&#233;f&#233;rent</div>
+    <!-- ── Section commercial ── -->
+    <div class="modal-section" id="section-commercial">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.9px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px">
+        &#128188; Commercial r&#233;f&#233;rent
+        <span style="flex:1;height:1px;background:var(--border);display:block"></span>
+      </div>
       <div class="fg">
         <label>Commercial assign&#233; <span style="font-size:10px;color:#b09080;font-weight:400;text-transform:none">(optionnel)</span></label>
         <select id="f-commercial" style="width:100%;padding:9px 12px;border:1.5px solid #e0d0c4;border-radius:7px;font-family:Outfit,sans-serif;font-size:13px;background:var(--cream);color:#3a2a20;outline:none">
@@ -716,7 +775,12 @@ tbody td{padding:10px 12px;font-size:12px;vertical-align:middle;color:var(--text
         
       </div>
     </div>
-    <div class="modal-section"><div class="modal-section-title">&#128203; Notes internes</div>
+    <!-- ── Section notes ── -->
+    <div class="modal-section">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.9px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px">
+        &#128203; Notes internes
+        <span style="flex:1;height:1px;background:var(--border);display:block"></span>
+      </div>
       <div class="fg"><textarea id="f-notes" placeholder="Informations compl&#233;mentaires&#8230;"></textarea></div>
     </div>
 
@@ -729,7 +793,13 @@ tbody td{padding:10px 12px;font-size:12px;vertical-align:middle;color:var(--text
     </div>
 
     <div class="modal-alert" id="modal-alert"></div>
-    <div class="modal-actions" style="display:flex;gap:8px;justify-content:space-between;align-items:center"><button class="btn-cancel" onclick="closeModal()">Annuler</button><div style="display:flex;gap:8px"><button class="btn-cancel" id="btn-send-access" onclick="sendAccessEmail()" style="background:#e3f2fd;color:#1565c0;border:none;display:none" title="Envoyer login et mot de passe par email">&#128231; Envoyer les acc&#232;s</button><button class="btn-save" onclick="saveCompte()">&#10003; Enregistrer</button></div></div>
+    <div class="modal-actions" style="display:flex;gap:8px;justify-content:space-between;align-items:center;padding-top:16px;border-top:1px solid var(--border);margin-top:4px">
+      <button class="btn-cancel" onclick="closeModal()">Annuler</button>
+      <div style="display:flex;gap:8px">
+        <button class="btn-cancel" id="btn-send-access" onclick="sendAccessEmail()" style="background:var(--accent-light);color:var(--accent);border:1px solid var(--accent-light);display:none" title="Envoyer login et mot de passe par email">&#128231; Envoyer les acc&#232;s</button>
+        <button class="btn-save" onclick="saveCompte()" style="padding:9px 24px;font-size:14px">&#10003; Enregistrer le compte</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1396,11 +1466,10 @@ function saveCompte(){
     }
     showToast("\u2705 Compte modifi\u00e9 : "+comptes[editIndex].login);
   }
-  }); // fin sha256
-
   saveComptes();
   renderComptes();
   closeModal();
+  }); // fin sha256
 }
 
 // ============================================

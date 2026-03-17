@@ -8,6 +8,31 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <style>
+
+/* ── HEADER UNIFIÉ ── */
+.unified-header{background:var(--brown);color:#fff;padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px var(--shadow)}
+.uh-logo{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;letter-spacing:.4px;flex-shrink:0}
+.uh-logo span{color:var(--gold)}
+.uh-logo small{font-family:'Outfit',sans-serif;font-size:10px;opacity:.45;margin-left:8px;font-weight:400;vertical-align:middle;text-transform:uppercase;letter-spacing:.5px}
+.uh-user{font-size:11px;opacity:.7;display:flex;flex-direction:column;align-items:flex-end;gap:1px;flex-shrink:0}
+.uh-actions{display:flex;align-items:center;gap:6px;flex-wrap:nowrap}
+.uh-btn{padding:6px 12px;border-radius:6px;font-family:'Outfit',sans-serif;font-size:11px;font-weight:600;cursor:pointer;border:1px solid rgba(255,255,255,.25);background:transparent;color:#fff;transition:all .15s;white-space:nowrap}
+.uh-btn:hover{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.4)}
+.uh-btn.gold{border-color:rgba(210,180,105,.6);color:#ffd580}.uh-btn.gold:hover{background:rgba(210,180,105,.15)}
+.uh-btn.green{border-color:rgba(80,200,120,.5);color:#a0f0b0}.uh-btn.green:hover{background:rgba(80,200,120,.1)}
+.uh-btn.red{border-color:rgba(255,100,80,.5);color:#ffb0a0}.uh-btn.red:hover{background:rgba(255,100,80,.1)}
+.uh-btn.blue{border-color:rgba(160,220,255,.5);color:#c0eaff}.uh-btn.blue:hover{background:rgba(100,180,255,.1)}
+.uh-btn.primary{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.3);color:#fff}.uh-btn.primary:hover{background:rgba(255,255,255,.22)}
+.uh-btn.accent{background:var(--gold);color:var(--brown);border-color:var(--gold);font-size:12px}.uh-btn.accent:hover{background:#c0a055;border-color:#c0a055}
+.uh-chat{position:relative;padding:6px 10px;border-radius:6px;font-family:'Outfit',sans-serif;font-size:14px;font-weight:600;cursor:pointer;border:1px solid rgba(255,255,255,.25);background:transparent;color:#fff;transition:all .15s}
+.uh-chat:hover{background:rgba(255,255,255,.12)}
+.uh-chat-badge{position:absolute;top:-4px;right:-4px;background:#ef4444;color:#fff;font-size:9px;font-weight:700;padding:2px 5px;border-radius:10px;min-width:16px;text-align:center;display:none}
+.uh-sep{width:1px;height:20px;background:rgba(255,255,255,.15);flex-shrink:0}
+@media(max-width:900px){
+  .uh-btn small,.uh-btn-label{display:none}
+  .uh-btn{padding:6px 8px;font-size:13px}
+}
+
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:"Outfit",sans-serif;background:var(--cream);color:var(--brown);min-height:100vh}
 
@@ -87,18 +112,20 @@ body{font-family:"Outfit",sans-serif;background:var(--cream);color:var(--brown);
 </head>
 <body>
 
-<div class="dash-header">
-  <div>
-    <div class="dash-logo">Moulin <span>des</span> Moines</div>
-    <div class="dash-user" id="dash-user-info">Chargement…</div>
+<header class="unified-header">
+  <div style="display:flex;align-items:center;gap:16px;flex-shrink:0">
+    <div class="uh-logo">Moulin <span>des</span> Moines <small>Tableau de bord</small></div>
   </div>
-  <div class="dash-header-actions">
-    <button class="btn-header primary" onclick="window.location.href='commande.html'">&#128221; Bon de commande</button>
-    <button class="btn-header" onclick="exportDashExcel()" style="border-color:rgba(80,200,120,.5);color:#a0f0b0">&#128202; Export Excel</button>
-    <button class="chat-fab no-print" id="chat-fab" onclick="chatToggle()" title="Messagerie">&#128172;<span class="chat-fab-badge" id="chat-badge"></span></button>
-    <button class="btn-header danger" onclick="logout()">&#x23FB; Déconnexion</button>
+  <div class="uh-actions">
+    <div class="uh-user" id="dash-user-info">Chargement&#8230;</div>
+    <div class="uh-sep"></div>
+    <button class="uh-btn primary no-print" onclick="window.location.href='commande.html'">&#128221; Bon de commande</button>
+    <button class="uh-btn green no-print" onclick="exportDashExcel()">&#128202; Export</button>
+    <div class="uh-sep"></div>
+    <button class="uh-chat no-print" id="chat-fab" onclick="chatToggle()" title="Messagerie" style="display:none">&#128172;<span class="uh-chat-badge" id="chat-badge"></span></button>
+    <button class="uh-btn red no-print" onclick="logout()">&#x23FB;</button>
   </div>
-</div>
+</header>
 
 <div class="dash-body">
   <div class="dash-title" id="dash-page-title">Tableau de bord</div>
@@ -1035,7 +1062,7 @@ function _escH(s){
 <style>
 .chat-fab{position:relative;width:36px;height:36px;border-radius:8px;background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.25);cursor:pointer;font-size:15px;display:none;align-items:center;justify-content:center;transition:background .2s}
 .chat-fab:hover{background:rgba(255,255,255,.22)}
-.chat-fab-badge{position:absolute;top:-4px;right:-4px;background:#ef4444;color:#fff;font-size:9px;font-weight:700;padding:2px 5px;border-radius:10px;min-width:18px;text-align:center;display:none}
+.uh-chat-badge{position:absolute;top:-4px;right:-4px;background:#ef4444;color:#fff;font-size:9px;font-weight:700;padding:2px 5px;border-radius:10px;min-width:18px;text-align:center;display:none}
 .chat-modal{position:fixed;bottom:88px;right:24px;width:360px;max-height:520px;background:#fff;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,.18);display:none;flex-direction:column;z-index:151;overflow:hidden;border:1px solid rgba(0,0,0,.08)}
 .chat-modal.open{display:flex}
 .chat-header{background:var(--brown,#78503C);color:#fff;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}

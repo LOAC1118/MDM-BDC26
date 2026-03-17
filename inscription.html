@@ -305,100 +305,131 @@ function initFB(){
 }
 
 function submitForm(){
-  var nom     =document.getElementById('f-nom').value.trim();
-  var email   =document.getElementById('f-email').value.trim();
-  var login   =document.getElementById('f-login').value.trim();
-  var password=document.getElementById('f-password').value.trim();
-  var siret   =document.getElementById('f-siret').value.trim();
-  var grp     =document.getElementById('f-groupement').value;
-  var tel     =document.getElementById('f-tel').value.trim();
-  var adresse =document.getElementById('f-adresse').value.trim();
-  var ville   =document.getElementById('f-ville').value.trim();
-  var cp      =document.getElementById('f-cp').value.trim();
-  var msg     =document.getElementById('f-message').value.trim();
+  var nom     = document.getElementById('f-nom').value.trim();
+  var email   = document.getElementById('f-email').value.trim();
+  var login   = document.getElementById('f-login').value.trim();
+  var password= document.getElementById('f-password').value.trim();
+  var siret   = document.getElementById('f-siret').value.trim();
+  var grp     = document.getElementById('f-groupement').value;
+  var tel     = document.getElementById('f-tel').value.trim();
+  var adresse = document.getElementById('f-adresse').value.trim();
+  var ville   = document.getElementById('f-ville').value.trim();
+  var cp      = document.getElementById('f-cp').value.trim();
+  var msg     = document.getElementById('f-message').value.trim();
 
-  var rgpdCb=document.getElementById('f-rgpd');
-  if(!rgpdCb||!rgpdCb.checked){
-    var ra=document.getElementById('rgpd-alert');if(ra)ra.style.display='block';
-    if(rgpdCb)rgpdCb.scrollIntoView({behavior:'smooth',block:'center'});
+  // Validation consentement RGPD
+  var rgpdCb = document.getElementById('f-rgpd');
+  if(!rgpdCb || !rgpdCb.checked){
+    var ra = document.getElementById('rgpd-alert');
+    if(ra) ra.style.display = 'block';
+    if(rgpdCb) rgpdCb.scrollIntoView({behavior:'smooth', block:'center'});
     return;
   }
-  if(!nom){showAlert('Le nom du magasin est obligatoire.','err');return;}
-  if(!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){showAlert('L’email n’est pas valide.','err');return;}
-  if(!login||login.length<3){showAlert('Le login doit faire au moins 3 caractères.','err');return;}
-  if(!password||password.length<8){showAlert('Le mot de passe doit faire au moins 8 caractères.','err');return;}
 
-  var btn=document.getElementById('btn-submit');
-  btn.disabled=true; btn.innerHTML='&#8987; Création…';
+  // Validation champs
+  if(!nom){ showAlert('Le nom du magasin est obligatoire.', 'err'); return; }
+  if(!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ showAlert("L\u2019email n\u2019est pas valide.", 'err'); return; }
+  if(!login || login.length < 3){ showAlert('Le login doit faire au moins 3 caract\u00e8res.', 'err'); return; }
+  if(!password || password.length < 8){ showAlert('Le mot de passe doit faire au moins 8 caract\u00e8res.', 'err'); return; }
 
-  // Hacher le mot de passe avant stockage
+  var btn = document.getElementById('btn-submit');
+  btn.disabled = true;
+  btn.innerHTML = '&#8987; Cr\u00e9ation\u2026';
+
+  function onError(msg){
+    showAlert(msg || 'Erreur. V\u00e9rifiez votre connexion.', 'err');
+    btn.disabled = false;
+    btn.innerHTML = '<span>&#10003;</span> Envoyer la demande';
+  }
+
+  // Étape 1 : hacher le mot de passe
   sha256(password).then(function(hashedPwd){
-    password = hashedPwd; // remplacer par le hash
 
-  // Vérifier que le login n'existe pas déjà
-  initFB().then(function(db){
-    return db.collection('comptes').doc(login).get();
-  }).then(function(doc){
-    if(doc.exists){
-      showAlert('Ce login est déjà utilisé. Choisissez-en un autre.','err');
-      btn.disabled=false; btn.innerHTML='<span>&#10003;</span> Envoyer la demande';
-      return Promise.reject('login_exists');
-    }
-    // Récupérer les infos du groupement
-    return initFB().then(function(db){
-      if(!grp) return {remise:0,franco:0,grpRemises:[]};
-      return db.collection('groupements').get().then(function(snap){
-        var g=snap.docs.map(function(d){return d.data();}).find(function(x){return x.nom===grp;});
-        return g ? {remise:parseFloat(g.remise)||0, franco:parseFloat(g.franco)||0,
-                    grpRemises:g.remises_produits||[]} : {remise:0,franco:0,grpRemises:[]};
+    // Étape 2 : vérifier que le login n'existe pas déjà
+    initFB().then(function(db){
+      return db.collection('comptes').doc(login).get();
+    }).then(function(doc){
+      if(doc.exists){
+        showAlert('Ce login est d\u00e9j\u00e0 utilis\u00e9. Choisissez-en un autre.', 'err');
+        btn.disabled = false;
+        btn.innerHTML = '<span>&#10003;</span> Envoyer la demande';
+        return;
+      }
+
+      // Étape 3 : récupérer les infos du groupement
+      var grpPromise;
+      if(!grp){
+        grpPromise = Promise.resolve({remise:0, franco:0, grpRemises:[]});
+      } else {
+        grpPromise = initFB().then(function(db){
+          return db.collection('groupements').get();
+        }).then(function(snap){
+          var g = snap.docs.map(function(d){ return d.data(); })
+                          .find(function(x){ return x.nom === grp; });
+          if(g) return {remise:parseFloat(g.remise)||0, franco:parseFloat(g.franco)||0, grpRemises:g.remises_produits||[]};
+          return {remise:0, franco:0, grpRemises:[]};
+        });
+      }
+
+      grpPromise.then(function(gd){
+
+        // Étape 4 : créer le compte dans Firebase
+        var nc = {
+          login:login, password:hashedPwd, nom:nom, role:'client',
+          remise:gd.remise, email:email, tel:tel,
+          ville:ville, cp:cp, siret:siret,
+          groupement:grp, franco:gd.franco,
+          grp_remises:gd.grpRemises,
+          remises_produits:[], commercial:'', numclient:'',
+          dateInscription: new Date().toISOString()
+        };
+
+        initFB().then(function(db){
+          return db.collection('comptes').doc(login).set(nc);
+        }).then(function(){
+
+          // Étape 5 : notifier l'admin (non-bloquant)
+          var fd = new FormData();
+          fd.append('_subject', 'Nouveau compte MDM \u2014 ' + nom);
+          fd.append('_captcha', 'false');
+          fd.append('_template', 'box');
+          fd.append('Login', login);
+          fd.append('Magasin', nom);
+          fd.append('Email', email);
+          if(grp)   fd.append('Groupement', grp);
+          if(tel)   fd.append('Tel', tel);
+          if(ville) fd.append('Ville', ville + ' ' + cp);
+          if(msg)   fd.append('Message', msg);
+          fetch('https://formsubmit.co/cspoto@moulindesmoines.com', {method:'POST', body:fd}).catch(function(){});
+
+          // Étape 6 : afficher le succès + redirection
+          document.getElementById('form-card').style.display = 'none';
+          document.getElementById('success-screen').style.display = 'block';
+          document.getElementById('hero-sub').textContent = '';
+          var count = 4;
+          var el = document.getElementById('redirect-count');
+          if(el) el.textContent = count;
+          var t = setInterval(function(){
+            count--;
+            if(el) el.textContent = count;
+            if(count <= 0){ clearInterval(t); window.location.href = 'index.html'; }
+          }, 1000);
+
+        }).catch(function(e){
+          onError('Erreur lors de la cr\u00e9ation du compte\u00a0: ' + (e.message || e));
+        });
+
+      }).catch(function(e){
+        onError('Erreur lors de la r\u00e9cup\u00e9ration du groupement\u00a0: ' + (e.message || e));
       });
-    });
-  }).then(function(gd){
-    // Créer le compte
-    var nc={
-      login:login,password:password,nom:nom,role:'client',
-      remise:gd.remise,email:email,tel:tel,
-      ville:ville,cp:cp,siret:siret,
-      groupement:grp,franco:gd.franco,
-      grp_remises:gd.grpRemises,
-      remises_produits:[],commercial:'',numclient:'',
-      dateInscription:new Date().toISOString()
-    };
-    return initFB().then(function(db){ return db.collection('comptes').doc(login).set(nc); });
-  }).then(function(){
-    // Notifier l'admin (non-bloquant)
-    var fd=new FormData();
-    fd.append('_subject','Nouveau compte MDM — '+nom);
-    fd.append('_captcha','false');
-    fd.append('_template','box');
-    fd.append('Login',login); fd.append('Magasin',nom); fd.append('Email',email);
-    if(grp)  fd.append('Groupement',grp);
-    if(tel)  fd.append('Tel',tel);
-    if(ville)fd.append('Ville',ville+' '+cp);
-    if(msg)  fd.append('Message',msg);
-    fetch('https://formsubmit.co/cspoto@moulindesmoines.com',{method:'POST',body:fd}).catch(function(){});
 
-    // Succès — redirection auto
-    document.getElementById('form-card').style.display='none';
-    document.getElementById('success-screen').style.display='block';
-    document.getElementById('hero-sub').textContent='';
-    var count=4;
-    var el=document.getElementById('redirect-count');
-    if(el) el.textContent=count;
-    var t=setInterval(function(){
-      count--;
-      if(el) el.textContent=count;
-      if(count<=0){clearInterval(t);window.location.href='index.html';}
-    },1000);
+    }).catch(function(e){
+      onError('Erreur de connexion Firebase\u00a0: ' + (e.message || e));
+    });
+
   }).catch(function(e){
-    if(e==='login_exists') return;
-    showAlert('Erreur : '+(e.message||e)+'. Vérifiez votre connexion.','err');
-    btn.disabled=false; btn.innerHTML='<span>&#10003;</span> Envoyer la demande';
+    onError('Erreur technique (hachage)\u00a0: ' + (e.message || e));
   });
-  }).catch(function(e){
-    showAlert('Erreur de hachage.','err');
-    btn.disabled=false; btn.innerHTML='<span>&#10003;</span> Envoyer la demande';
-  }); // fin sha256
 }
 
 document.addEventListener('keydown',function(e){

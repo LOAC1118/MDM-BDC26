@@ -182,6 +182,7 @@ tbody tr.has-qty td.td-qty input{background:#ffe0b2;border-color:var(--terra)}
     <button class="btn btn-outline no-print" onclick="doPrint()">&#128424; PDF / Imprimer</button>
     <button class="btn btn-outline no-print" onclick="exportExcel()" style="border-color:rgba(80,200,120,.5);color:#a0f0b0">&#128202; Export Excel</button>
     <button class="btn btn-gold no-print" onclick="openModal()">&#128231; Envoyer la commande</button>
+    <button class="chat-fab no-print" id="chat-fab" onclick="chatToggle()" title="Messagerie">&#128172;<span class="chat-fab-badge" id="chat-badge"></span></button>
     <button class="btn btn-outline no-print" onclick="logout()" style="border-color:rgba(255,100,80,.6);color:#ffb0a0">&#x23FB; D&#233;connexion</button>
   </div>
 </header>
@@ -1943,8 +1944,8 @@ function _safeB64Decode(str){
 <div style="text-align:center;padding:12px;font-size:10px;color:#c0a898;border-top:1px solid #f0e8e0;margin-top:20px">&copy; 2026 Moulin des Moines &nbsp;&middot;&nbsp; <a href="mentions-legales.html" style="color:#c0a898;text-decoration:none">Mentions l&eacute;gales &amp; RGPD</a></div>
 <!-- ══ CHAT MDM ══ -->
 <style>
-.chat-fab{position:fixed;bottom:24px;right:24px;width:40px;height:40px;border-radius:50%;background:var(--brown,#78503C);color:#fff;border:none;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 18px rgba(0,0,0,.22);z-index:150;transition:transform .2s,background .2s}
-.chat-fab:hover{transform:scale(1.08);background:var(--terra,#C87864)}
+.chat-fab{position:relative;width:36px;height:36px;border-radius:8px;background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.25);cursor:pointer;font-size:15px;display:none;align-items:center;justify-content:center;transition:background .2s}
+.chat-fab:hover{background:rgba(255,255,255,.22)}
 .chat-fab-badge{position:absolute;top:-4px;right:-4px;background:#ef4444;color:#fff;font-size:9px;font-weight:700;padding:2px 5px;border-radius:10px;min-width:18px;text-align:center;display:none}
 .chat-modal{position:fixed;bottom:88px;right:24px;width:360px;max-height:520px;background:#fff;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,.18);display:none;flex-direction:column;z-index:151;overflow:hidden;border:1px solid rgba(0,0,0,.08)}
 .chat-modal.open{display:flex}
@@ -1972,9 +1973,14 @@ function _safeB64Decode(str){
 .chat-input:focus{border-color:var(--terra,#C87864)}
 .chat-send{background:var(--brown,#78503C);color:#fff;border:none;border-radius:50%;width:38px;height:38px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-size:16px}
 .chat-send:hover{background:var(--terra,#C87864)}.chat-send:disabled{background:#c0a898;cursor:not-allowed}
+@keyframes chatPulse{
+  0%{transform:scale(1)}
+  50%{transform:scale(1.2);box-shadow:0 0 0 8px rgba(200,120,100,.3)}
+  100%{transform:scale(1)}
+}
 @media(max-width:480px){.chat-modal{width:calc(100vw - 16px);right:8px;bottom:80px}.chat-fab{bottom:16px;right:16px}}
 </style>
-<button class="chat-fab no-print" id="chat-fab" onclick="chatToggle()" title="Messagerie" style="display:none">&#128172;<span class="chat-fab-badge" id="chat-badge"></span></button>
+
 <div class="chat-modal" id="chat-modal">
   <div class="chat-header">
     <div class="chat-header-left">
@@ -2116,6 +2122,7 @@ function chatToggle(){
   if(modal) modal.classList.toggle('open', _chatOpen);
   if(_chatOpen){
     if(_chatConvId) chatSubscribe(_chatConvId);
+    _chatMarkRead(_chatConvId);
     _chatUnread = 0;
     _updateBadge(0);
     setTimeout(function(){ chatScrollBottom(); }, 100);
@@ -2231,33 +2238,49 @@ function chatSend(){
 // ── Comptage des messages non lus ─────────────────────────────
 function chatLoadUnread(){
   if(!_chatConvId) return;
+  // Écoute temps réel des non lus
   initFirebase().then(function(db){
-    return db.collection('chats').doc(_chatConvId)
-             .collection('messages')
-             .where('from', '!=', _chatMyLogin)
-             .where('read', '==', false)
-             .get();
-  }).then(function(snap){
-    _updateBadge(snap.size);
+    var ref = db.collection('chats').doc(_chatConvId)
+                .collection('messages')
+                .where('from','!=',_chatMyLogin)
+                .where('read','==',false);
+    // Stocker le listener pour pouvoir l'arrêter
+    if(window._chatUnreadUnsub) window._chatUnreadUnsub();
+    window._chatUnreadUnsub = ref.onSnapshot(function(snap){
+      var count = snap.size;
+      var prev  = _chatUnread;
+      _updateBadge(count);
+      // Notification visuelle + sonore si nouveau message et chat fermé
+      if(count > prev && !_chatOpen){
+        _chatNotify();
+      }
+    }, function(){});
   }).catch(function(){});
 }
 
 function chatLoadAllUnread(){
-  // Commercial : compter les non lus de tous ses clients
   if(!_chatClients.length) return;
-  var total = 0;
-  var promises = _chatClients.map(function(c){
-    var convId = c.login + '_' + _chatMyLogin;
-    return initFirebase().then(function(db){
-      return db.collection('chats').doc(convId)
-               .collection('messages')
-               .where('from', '!=', _chatMyLogin)
-               .where('read', '==', false)
-               .get();
-    }).then(function(snap){ total += snap.size; })
-    .catch(function(){});
+  // Écoute temps réel pour chaque client du commercial
+  if(window._chatUnreadUnsubs) window._chatUnreadUnsubs.forEach(function(u){u();});
+  window._chatUnreadUnsubs = [];
+  var counts = {};
+  _chatClients.forEach(function(cl){
+    var convId = cl.login + '_' + _chatMyLogin;
+    initFirebase().then(function(db){
+      var ref = db.collection('chats').doc(convId)
+                  .collection('messages')
+                  .where('from','!=',_chatMyLogin)
+                  .where('read','==',false);
+      var unsub = ref.onSnapshot(function(snap){
+        var prev = _chatUnread;
+        counts[convId] = snap.size;
+        var total = Object.values(counts).reduce(function(a,b){return a+b;},0);
+        _updateBadge(total);
+        if(total > prev && !_chatOpen) _chatNotify();
+      }, function(){});
+      window._chatUnreadUnsubs.push(unsub);
+    }).catch(function(){});
   });
-  Promise.all(promises).then(function(){ _updateBadge(total); });
 }
 
 function _updateBadge(count){
@@ -2271,6 +2294,41 @@ function _updateBadge(count){
     badge.style.display = 'none';
   }
 }
+
+function _chatNotify(){
+  // 1. Faire pulser le bouton
+  var fab = document.getElementById('chat-fab');
+  if(fab){
+    fab.style.animation = 'chatPulse .4s ease 3';
+    setTimeout(function(){ fab.style.animation = ''; }, 1200);
+  }
+  // 2. Changer le titre de la page
+  var origTitle = document.title;
+  var blinkCount = 0;
+  if(window._chatTitleBlink) clearInterval(window._chatTitleBlink);
+  window._chatTitleBlink = setInterval(function(){
+    document.title = blinkCount % 2 === 0 ? '\uD83D\uDCAC Nouveau message' : origTitle;
+    blinkCount++;
+    if(blinkCount >= 8){
+      clearInterval(window._chatTitleBlink);
+      document.title = origTitle;
+    }
+  }, 600);
+  // 3. Son (bip discret via Web Audio API)
+  try{
+    var ctx = new (window.AudioContext||window.webkitAudioContext)();
+    var osc = ctx.createOscillator();
+    var gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.frequency.value = 880;
+    osc.type = 'sine';
+    gain.gain.setValueAtTime(0.15, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.3);
+  }catch(e){}
+}
+
 
 function _escH(s){
   return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');

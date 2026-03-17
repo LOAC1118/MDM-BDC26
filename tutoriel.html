@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guide d'utilisation — Moulin des Moines</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --brown:#78503C;--terra:#C87864;--cream:#FDF5EE;
+  --gold:#D2B469;--green:#1A5C2E;--white:#fff;
+  --blue:#1d4ed8;--shadow:rgba(120,80,60,0.10);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Outfit',sans-serif;background:var(--cream);color:#3a2a20;line-height:1.7}
+
+/* ── HEADER ── */
+.site-header{background:var(--brown);padding:0 40px;height:58px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,.2)}
+.logo{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:#fff;text-decoration:none}
+.logo span{color:var(--gold)}
+.back-link{font-size:12px;color:rgba(255,255,255,.6);text-decoration:none;display:flex;align-items:center;gap:6px;transition:color .2s}
+.back-link:hover{color:#fff}
+
+/* ── HERO ── */
+.hero{background:var(--brown);padding:56px 40px 80px;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")}
+.hero::after{content:'';position:absolute;bottom:-2px;left:0;right:0;height:48px;background:var(--cream);clip-path:ellipse(55% 100% at 50% 100%)}
+.hero-badge{display:inline-block;background:rgba(210,180,105,.2);color:var(--gold);border:1px solid rgba(210,180,105,.4);font-size:11px;font-weight:600;padding:4px 14px;border-radius:20px;letter-spacing:.8px;text-transform:uppercase;margin-bottom:18px}
+.hero-title{font-family:'Cormorant Garamond',serif;font-size:44px;font-weight:700;color:#fff;margin-bottom:12px;line-height:1.1}
+.hero-title em{color:var(--gold);font-style:italic}
+.hero-sub{font-size:15px;color:rgba(255,255,255,.6);max-width:520px;margin:0 auto 32px;line-height:1.6}
+
+/* ── ONGLETS RÔLES ── */
+.role-tabs{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;position:relative;z-index:1}
+.role-tab{padding:10px 24px;border-radius:30px;border:1.5px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:rgba(255,255,255,.75);font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:8px}
+.role-tab:hover{background:rgba(255,255,255,.15);color:#fff}
+.role-tab.active{background:#fff;color:var(--brown);border-color:#fff}
+
+/* ── LAYOUT ── */
+.page-wrap{max-width:1000px;margin:0 auto;padding:48px 24px 80px}
+.section{display:none}.section.active{display:block}
+
+/* ── INTRO CARD ── */
+.intro-card{background:#fff;border-radius:14px;padding:24px 28px;margin-bottom:36px;box-shadow:0 2px 16px var(--shadow);display:flex;align-items:flex-start;gap:20px;border-left:4px solid var(--terra)}
+.intro-icon{font-size:36px;flex-shrink:0;margin-top:2px}
+.intro-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:var(--brown);margin-bottom:6px}
+.intro-text{font-size:13px;color:#6a4a38;line-height:1.7}
+
+/* ── STEPS ── */
+.steps-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:var(--brown);margin-bottom:20px;display:flex;align-items:center;gap:10px}
+.steps-title::after{content:'';flex:1;height:2px;background:linear-gradient(90deg,#e8d8cc,transparent)}
+
+.step{display:grid;grid-template-columns:auto 1fr;gap:0 20px;margin-bottom:0;position:relative}
+.step:not(:last-child)::before{content:'';position:absolute;left:19px;top:52px;bottom:-20px;width:2px;background:linear-gradient(180deg,#e0d0c4,transparent);z-index:0}
+.step-num{width:40px;height:40px;border-radius:50%;background:var(--brown);color:#fff;font-weight:700;font-size:15px;display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative;z-index:1;margin-top:4px;box-shadow:0 2px 8px var(--shadow)}
+.step-body{padding-bottom:28px}
+.step-title{font-size:15px;font-weight:700;color:var(--brown);margin-bottom:6px;margin-top:6px}
+.step-desc{font-size:13px;color:#5a3a2a;line-height:1.7;margin-bottom:10px}
+.step-card{background:#fff;border-radius:10px;padding:16px 18px;box-shadow:0 2px 10px var(--shadow);border:1px solid #ede0d8;margin-top:10px}
+
+/* ── TIPS & WARNINGS ── */
+.tip{background:#f0fdf4;border:1px solid #a7f3d0;border-radius:8px;padding:10px 14px;font-size:12px;color:#065f46;display:flex;gap:8px;align-items:flex-start;margin-top:10px;line-height:1.6}
+.tip svg{flex-shrink:0;margin-top:1px}
+.warn{background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:10px 14px;font-size:12px;color:#9a3412;display:flex;gap:8px;align-items:flex-start;margin-top:10px;line-height:1.6}
+
+/* ── ILLUSTRATION ── */
+.illus{border-radius:10px;overflow:hidden;border:1px solid #ede0d8;margin-top:12px;background:#fdfaf7}
+.illus-bar{background:var(--brown);height:28px;display:flex;align-items:center;padding:0 12px;gap:6px}
+.illus-dot{width:10px;height:10px;border-radius:50%}
+.illus-content{padding:14px}
+
+/* Illustrations SVG mini-mockups */
+.mock-row{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;font-size:11px;background:#fff;border:1px solid #f0e8e0;margin-bottom:6px}
+.mock-badge{padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700}
+.mock-input{flex:1;height:28px;background:#f8f4f0;border-radius:5px;border:1px solid #e0d0c4;padding:0 8px;font-size:11px;color:#888;display:flex;align-items:center}
+.mock-btn{padding:5px 12px;border-radius:5px;font-size:11px;font-weight:600;border:none;cursor:default}
+.mock-table{width:100%;border-collapse:collapse;font-size:11px}
+.mock-table th{background:var(--brown);color:#fff;padding:5px 8px;text-align:left;font-size:10px}
+.mock-table td{padding:5px 8px;border-bottom:1px solid #f0e8e0}
+.mock-table tr:last-child td{border:none}
+.mock-tag{display:inline-block;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:600}
+
+/* ── SECTION CHAPITRES ── */
+.chapter{margin-bottom:40px}
+
+/* ── FAQ ── */
+.faq-item{background:#fff;border-radius:10px;border:1px solid #ede0d8;margin-bottom:10px;overflow:hidden}
+.faq-q{padding:14px 18px;font-size:13px;font-weight:600;color:var(--brown);cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:12px;user-select:none}
+.faq-q::after{content:'＋';font-size:16px;flex-shrink:0;transition:transform .2s;color:var(--terra)}
+.faq-item.open .faq-q::after{transform:rotate(45deg)}
+.faq-a{display:none;padding:0 18px 14px;font-size:13px;color:#5a3a2a;line-height:1.7;border-top:1px solid #f5ede5}
+.faq-item.open .faq-a{display:block}
+
+/* ── TABLE OF CONTENTS ── */
+.toc{background:#fff;border-radius:12px;padding:20px 24px;box-shadow:0 2px 12px var(--shadow);margin-bottom:32px;border:1px solid #ede0d8}
+.toc-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--terra);margin-bottom:12px}
+.toc-list{display:flex;flex-wrap:wrap;gap:8px}
+.toc-link{font-size:12px;color:var(--brown);text-decoration:none;padding:5px 12px;background:var(--cream);border-radius:20px;border:1px solid #e0d0c4;transition:all .2s;font-weight:500}
+.toc-link:hover{background:var(--brown);color:#fff;border-color:var(--brown)}
+
+/* ── PROGRESS ── */
+.progress-bar{height:3px;background:var(--terra);width:0;transition:width .3s;position:fixed;top:58px;left:0;right:0;z-index:99}
+
+/* ── FOOTER ── */
+footer{text-align:center;padding:24px;font-size:11px;color:#b09080;border-top:1px solid #e8d8cc}
+
+/* ── RESPONSIVE ── */
+@media(max-width:640px){
+  .hero{padding:40px 20px 60px}
+  .hero-title{font-size:32px}
+  .page-wrap{padding:32px 16px 60px}
+  .intro-card{flex-direction:column;gap:12px}
+  .site-header{padding:0 20px}
+}
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progress-bar"></div>
+
+<header class="site-header">
+  <a href="index.html" class="logo">Moulin <span>des</span> Moines</a>
+  <a href="index.html" class="back-link">&#8592; Connexion</a>
+</header>
+
+<div class="hero">
+  <div class="hero-badge">Documentation 2026</div>
+  <div class="hero-title">Guide d&#8217;utilisation<br><em>Espace Commandes MDM</em></div>
+  <p class="hero-sub">Tout ce qu&#8217;il faut savoir pour utiliser la plateforme de commande Moulin des Moines selon votre r&#244;le.</p>
+  <div class="role-tabs">
+    <button class="role-tab active" onclick="showSection('client',this)">&#127978; Client / Magasin</button>
+    <button class="role-tab" onclick="showSection('commercial',this)">&#128188; Commercial</button>
+    <button class="role-tab" onclick="showSection('admin',this)">&#9881; Administrateur</button>
+  </div>
+</div>
+
+<div class="page-wrap">
+
+<!-- ══════════════════════════════════════════
+     SECTION CLIENT
+══════════════════════════════════════════ -->
+<div class="section active" id="section-client">
+
+  <div class="intro-card">
+    <div class="intro-icon">&#127978;</div>
+    <div>
+      <div class="intro-title">Bienvenue sur votre espace commande</div>
+      <div class="intro-text">Ce guide vous explique comment parcourir le catalogue Moulin des Moines, ajouter des produits à votre commande, envoyer votre bon de commande et suivre vos achats. En quelques minutes vous maîtriserez l'essentiel.</div>
+    </div>
+  </div>
+
+  <div class="toc">
+    <div class="toc-title">Dans ce guide</div>
+    <div class="toc-list">
+      <a href="#c-catalogue" class="toc-link">1. Parcourir le catalogue</a>
+      <a href="#c-panier" class="toc-link">2. Ajouter au panier</a>
+      <a href="#c-commande" class="toc-link">3. Envoyer la commande</a>
+      <a href="#c-historique" class="toc-link">4. Historique</a>
+      <a href="#c-chat" class="toc-link">5. Chat</a>
+      <a href="#c-faq" class="toc-link">6. FAQ</a>
+    </div>
+  </div>
+
+  <!-- 1. Catalogue -->
+  <div class="chapter" id="c-catalogue">
+    <div class="steps-title">1 — Parcourir le catalogue</div>
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <div class="step-title">Rechercher un produit</div>
+        <div class="step-desc">Utilisez la barre de recherche en haut du catalogue. Tapez le nom du produit, son code ou une catégorie. Les résultats s'affichent instantanément.</div>
+        <div class="illus">
+          <div class="illus-bar"><div class="illus-dot" style="background:#ff5f57"></div><div class="illus-dot" style="background:#ffbd2e"></div><div class="illus-dot" style="background:#28c840"></div></div>
+          <div class="illus-content">
+            <div class="mock-row"><span style="font-size:13px">&#128269;</span><div class="mock-input">Rechercher un produit, un code&#8230;</div><div class="mock-btn" style="background:var(--brown);color:#fff">Chercher</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <div class="step-title">Filtrer par catégorie</div>
+        <div class="step-desc">Utilisez le menu déroulant des catégories pour afficher uniquement les produits d'un rayon (Épicerie, Boissons, Hygiène…). Vous pouvez combiner filtre et recherche.</div>
+        <div class="tip"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6.5" stroke="#059669"/><path d="M7 6v4M7 4.5v.5" stroke="#059669" stroke-width="1.5" stroke-linecap="round"/></svg> Le filtre <strong>Mes produits</strong> affiche uniquement les références que vous avez déjà commandées.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <div class="step-title">Lire la fiche produit</div>
+        <div class="step-desc">Chaque ligne affiche : le code, la désignation, le PCB (nombre d'unités par colis), le poids, la TVA et votre prix HT. Si vous bénéficiez d'une remise groupement, le prix remisé apparaît en orange avec le prix barré.</div>
+        <div class="illus">
+          <div class="illus-bar"><div class="illus-dot" style="background:#ff5f57"></div><div class="illus-dot" style="background:#ffbd2e"></div><div class="illus-dot" style="background:#28c840"></div></div>
+          <div class="illus-content">
+            <table class="mock-table">
+              <tr><th>Code</th><th>Désignation</th><th>PCB</th><th>Prix HT</th><th>Qté</th></tr>
+              <tr><td>AB001</td><td>Huile d'olive BIO 50cl</td><td>6</td><td><strong style="color:var(--terra)">4,80 €</strong> <span style="text-decoration:line-through;color:#bbb;font-size:10px">5,65 €</span> <span class="mock-tag" style="background:#fce4ec;color:#c62828">-15%</span></td><td><div class="mock-input" style="width:50px;text-align:center">1</div></td></tr>
+              <tr><td>AB002</td><td>Purée de noisette 350g</td><td>12</td><td>3,20 €</td><td><div class="mock-input" style="width:50px;text-align:center">0</div></td></tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Panier -->
+  <div class="chapter" id="c-panier">
+    <div class="steps-title">2 — Ajouter des produits au panier</div>
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <div class="step-title">Saisir une quantité en colis</div>
+        <div class="step-desc">Dans la colonne <strong>Qté (colis)</strong>, saisissez le nombre de colis souhaités. Le total HT se met à jour automatiquement en bas de page. La quantité est toujours en <strong>colis entiers</strong> (un colis = PCB unités).</div>
+        <div class="warn"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6.5" stroke="#ea580c"/><path d="M7 4v4M7 9.5v.5" stroke="#ea580c" stroke-width="1.5" stroke-linecap="round"/></svg> Vous ne pouvez pas commander des unités isolées — la quantité minimale est 1 colis.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <div class="step-title">Vérifier le récapitulatif</div>
+        <div class="step-desc">La barre en bas de page affiche en temps réel : le nombre de références, le nombre total de colis, le total HT et la progression vers le franco de port. Lorsque le franco est atteint, la barre devient verte.</div>
+        <div class="tip"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6.5" stroke="#059669"/><path d="M7 6v4M7 4.5v.5" stroke="#059669" stroke-width="1.5" stroke-linecap="round"/></svg> Le franco de port est défini par votre groupement. En dessous, des frais de port peuvent s'appliquer.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Commande -->
+  <div class="chapter" id="c-commande">
+    <div class="steps-title">3 — Envoyer la commande</div>
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <div class="step-title">Cliquer sur "Envoyer la commande"</div>
+        <div class="step-desc">Le bouton doré en haut à droite ouvre le formulaire d'envoi. Vérifiez votre adresse email puis cliquez sur Envoyer.</div>
+        <div class="illus">
+          <div class="illus-bar"><div class="illus-dot" style="background:#ff5f57"></div><div class="illus-dot" style="background:#ffbd2e"></div><div class="illus-dot" style="background:#28c840"></div></div>
+          <div class="illus-content" style="display:flex;gap:8px;align-items:center">
+            <div class="mock-btn" style="background:var(--gold);color:var(--brown)">&#128231; Envoyer la commande</div>
+            <div class="mock-btn" style="background:#e8f5e9;color:#1a5c2e">&#128202; Export Excel</div>
+            <div class="mock-btn" style="background:#f5ede5;color:var(--brown)">&#128424; PDF</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <div class="step-title">Confirmation par email</div>
+        <div class="step-desc">Après envoi, vous recevez un email de confirmation avec le récapitulatif de votre commande. Moulin des Moines reçoit également une copie automatiquement.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <div class="step-title">Exporter en Excel ou PDF</div>
+        <div class="step-desc">Vous pouvez exporter votre bon de commande en Excel (pour vos archives) ou l'imprimer en PDF à tout moment, même avant de l'envoyer.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Historique -->
+  <div class="chapter" id="c-historique">
+    <div class="steps-title">4 — Consulter l'historique</div>
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <div class="step-title">Accéder à "Mes commandes"</div>
+        <div class="step-desc">Cliquez sur le bouton <strong>&#128203; Mes commandes</strong> dans la barre de navigation. Un panneau s'ouvre avec toutes vos commandes passées, classées par date.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <div class="step-title">Voir le détail d'une commande</div>
+        <div class="step-desc">Cliquez sur une commande pour voir le détail : liste des produits, quantités, prix HT et total. Vous pouvez aussi retélécharger votre bon de commande.</div>
+        <div class="tip"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6.5" stroke="#059669"/><path d="M7 6v4M7 4.5v.5" stroke="#059669" stroke-width="1.5" stroke-linecap="round"/></svg> Votre historique est conservé 5 ans conformément aux obligations comptables.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. Chat -->
+  <div class="chapter" id="c-chat">
+    <div class="steps-title">5 — Utiliser la messagerie</div>
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <div class="step-title">Ouvrir le chat</div>
+        <div class="step-desc">Cliquez sur le bouton <strong>&#128172;</strong> dans la barre de navigation en haut. Une fenêtre de conversation s'ouvre avec votre commercial attitré.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <div class="step-title">Envoyer un message</div>
+        <div class="step-desc">Tapez votre message dans le champ de saisie et appuyez sur <strong>Entrée</strong> ou cliquez sur &#10148;. Votre commercial reçoit une notification immédiate.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <div class="step-title">Notifications de nouveaux messages</div>
+        <div class="step-desc">Quand votre commercial vous répond, un badge rouge apparaît sur le bouton &#128172; et le titre de la page clignote. Les messages non lus sont marqués automatiquement lus quand vous ouvrez le chat.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FAQ Client -->
+  <div class="chapter" id="c-faq">
+    <div class="steps-title">Questions fréquentes</div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">Je ne vois pas mon prix remisé, pourquoi ?</div>
+      <div class="faq-a">Les remises groupement sont attribuées par votre commercial ou l'administrateur. Si vous ne voyez pas de remise, contactez votre commercial via le chat ou par email.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">Puis-je modifier une commande déjà envoyée ?</div>
+      <div class="faq-a">Non, une fois envoyée la commande est transmise à Moulin des Moines. Pour toute modification, contactez rapidement votre commercial via le chat.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">Je n'arrive pas à me connecter, que faire ?</div>
+      <div class="faq-a">Vérifiez que votre login et mot de passe sont corrects (attention aux majuscules). Si vous avez oublié votre mot de passe, contactez votre commercial ou envoyez un email à cspoto@moulindesmoines.com.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">Le site ne charge pas, que faire ?</div>
+      <div class="faq-a">Vérifiez votre connexion internet. Si le problème persiste, videz le cache de votre navigateur (Ctrl+Shift+R) et réessayez. Le site nécessite une connexion internet pour charger le catalogue depuis Firebase.</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════
+     SECTION COMMERCIAL
+══════════════════════════════════════════ -->
+<div class="section" id="section-commercial">
+
+  <div class="intro-card" style="border-left-color:var(--gold)">
+    <div class="intro-icon">&#128188;</div>
+    <div>
+      <div class="intro-title">Votre espace commercial</div>
+      <div class="intro-text">En tant que commercial, vous pouvez créer des comptes clients, consulter leurs commandes, gérer la messagerie et accéder au tableau de bord de votre activité.</div>
+    </div>
+  </div>
+
+  <div class="toc">
+    <div class="toc-title">Dans ce guide</div>
+    <div class="toc-list">
+      <a href="#co-clients" class="toc-link">1. Créer un compte client</a>
+      <a href="#co-historique" class="toc-link">2. Suivre les commandes</a>
+      <a href="#co-chat" class="toc-link">3. Chat avec les clients</a>
+      <a href="#co-dashboard" class="toc-link">4. Tableau de bord</a>
+    </div>
+  </div>
+
+  <div class="chapter" id="co-clients">
+    <div class="steps-title">1 — Créer un compte client</div>
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <div class="step-title">Bouton "+ Nouveau client"</div>
+        <div class="step-desc">Sur le bon de commande, cliquez sur <strong>+ Nouveau client</strong> dans la barre de navigation. Un formulaire s'ouvre pour créer le compte directement.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <div class="step-title">Remplir les informations</div>
+        <div class="step-desc">Renseignez : nom du magasin, login, mot de passe temporaire, email, ville et groupement. Le login doit être unique (minuscules, sans espaces).</div>
+        <div class="tip"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6.5" stroke="#059669"/><path d="M7 6v4M7 4.5v.5" stroke="#059669" stroke-width="1.5" stroke-linecap="round"/></svg> Cochez "Envoyer les accès par email" pour que le client reçoive automatiquement ses identifiants.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <div class="step-title">Le client est automatiquement rattaché à vous</div>
+        <div class="step-desc">Le compte créé vous est automatiquement assigné comme commercial référent. Le client apparaîtra dans votre liste de clients pour le chat et le tableau de bord.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chapter" id="co-historique">
+    <div class="steps-title">2 — Suivre les commandes de vos clients</div>
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <div class="step-title">Accéder au tableau de bord</div>
+        <div class="step-desc">Cliquez sur <strong>&#127968; Tableau de bord</strong> pour voir l'activité de tous vos clients : dernières commandes, montants, dates et statuts.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <div class="step-title">Voir les commandes d'un client spécifique</div>
+        <div class="step-desc">Dans le tableau de bord, cliquez sur un client pour voir son historique complet de commandes avec le détail de chaque bon.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chapter" id="co-chat">
+    <div class="steps-title">3 — Chat avec les clients</div>
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <div class="step-title">Ouvrir la messagerie</div>
+        <div class="step-desc">Cliquez sur &#128172; dans la barre de navigation. Un menu déroulant vous permet de choisir avec quel client vous souhaitez communiquer.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <div class="step-title">Badge de notifications</div>
+        <div class="step-desc">Le badge rouge sur le bouton &#128172; cumule tous les messages non lus de tous vos clients. Sélectionnez un client pour voir et répondre à ses messages.</div>
+        <div class="tip"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6.5" stroke="#059669"/><path d="M7 6v4M7 4.5v.5" stroke="#059669" stroke-width="1.5" stroke-linecap="round"/></svg> Les messages sont en temps réel — vous n'avez pas besoin de recharger la page.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chapter" id="co-dashboard">
+    <div class="steps-title">4 — Tableau de bord commercial</div>
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <div class="step-title">Vue d'ensemble de votre activité</div>
+        <div class="step-desc">Le tableau de bord affiche vos KPI : nombre de clients actifs, total des commandes du mois, derniers bons envoyés et tendances.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <div class="step-title">Accéder au tableau de bord depuis le bon de commande</div>
+        <div class="step-desc">Cliquez sur <strong>&#127968; Tableau de bord</strong> dans la barre de navigation du bon de commande pour basculer vers votre vue commerciale.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════
+     SECTION ADMIN
+══════════════════════════════════════════ -->
+<div class="section" id="section-admin">
+
+  <div class="intro-card" style="border-left-color:var(--green)">
+    <div class="intro-icon">&#9881;</div>
+    <div>
+      <div class="intro-title">Panneau d'administration</div>
+      <div class="intro-text">L'interface d'administration vous donne un contrôle total sur les comptes, les groupements, les remises produits, l'historique des commandes et les actualités. Accessible uniquement avec le compte admin.</div>
+    </div>
+  </div>
+
+  <div class="toc">
+    <div class="toc-title">Dans ce guide</div>
+    <div class="toc-list">
+      <a href="#ad-comptes" class="toc-link">1. Gérer les comptes</a>
+      <a href="#ad-groupements" class="toc-link">2. Groupements & remises</a>
+      <a href="#ad-historique" class="toc-link">3. Historique global</a>
+      <a href="#ad-actus" class="toc-link">4. Actualités</a>
+    </div>
+  </div>
+
+  <div class="chapter" id="ad-comptes">
+    <div class="steps-title">1 — Gérer les comptes</div>
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <div class="step-title">Créer un nouveau compte</div>
+        <div class="step-desc">Dans l'onglet <strong>Comptes</strong>, cliquez sur <strong>+ Nouveau compte</strong>. Renseignez le login, le mot de passe, le nom, le rôle (client / commercial / admin) et le groupement.</div>
+        <div class="illus">
+          <div class="illus-bar"><div class="illus-dot" style="background:#ff5f57"></div><div class="illus-dot" style="background:#ffbd2e"></div><div class="illus-dot" style="background:#28c840"></div></div>
+          <div class="illus-content">
+            <table class="mock-table">
+              <tr><th>Login</th><th>Nom</th><th>Rôle</th><th>Remise</th><th>Actions</th></tr>
+              <tr><td>biovillage</td><td>Bio Village Stbg</td><td><span class="mock-tag" style="background:#dbeafe;color:#1d4ed8">Client</span></td><td><span class="mock-tag" style="background:#fef9ee;color:#b45309">5%</span></td><td><span class="mock-btn" style="background:#e8f0fe;color:#1a56db;font-size:10px;padding:3px 8px">Modifier</span></td></tr>
+              <tr><td>jmartin</td><td>Jean Martin</td><td><span class="mock-tag" style="background:#d1fae5;color:#065f46">Commercial</span></td><td>—</td><td><span class="mock-btn" style="background:#e8f0fe;color:#1a56db;font-size:10px;padding:3px 8px">Modifier</span></td></tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <div class="step-title">Modifier un compte</div>
+        <div class="step-desc">Cliquez sur <strong>Modifier</strong> sur la ligne du compte. Vous pouvez changer tous les champs : remise, groupement, commercial attitré, email, adresse. Le mot de passe est automatiquement haché à la sauvegarde.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <div class="step-title">Envoyer les accès par email</div>
+        <div class="step-desc">Sur la fiche d'un compte, cliquez sur <strong>Envoyer les accès</strong> pour transmettre automatiquement le login et le lien de connexion par email au client.</div>
+        <div class="warn"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6.5" stroke="#ea580c"/><path d="M7 4v4M7 9.5v.5" stroke="#ea580c" stroke-width="1.5" stroke-linecap="round"/></svg> FormSubmit nécessite une activation à la première utilisation — un email de confirmation est envoyé à l'adresse MDM lors du tout premier envoi.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chapter" id="ad-groupements">
+    <div class="steps-title">2 — Groupements et remises produits</div>
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <div class="step-title">Créer un groupement</div>
+        <div class="step-desc">Dans l'onglet <strong>Groupements</strong>, créez un groupement (ex : Biocoop, Naturalia). Définissez la remise globale en % et le franco de port applicable.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <div class="step-title">Importer des remises produits</div>
+        <div class="step-desc">Cliquez sur <strong>Remises produits</strong> puis glissez un fichier Excel contenant les colonnes : Code, Désignation, Remise %, Prix HT spécial. Les remises sont importées et propagées à tous les comptes du groupement.</div>
+        <div class="tip"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6.5" stroke="#059669"/><path d="M7 6v4M7 4.5v.5" stroke="#059669" stroke-width="1.5" stroke-linecap="round"/></svg> Les remises s'appliquent automatiquement à la prochaine connexion des clients du groupement.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <div class="step-title">Comprendre les priorités de remise</div>
+        <div class="step-desc">L'ordre de priorité est le suivant : <strong>1. Prix spécial groupement</strong> (prix HT fixé) → <strong>2. Remise % groupement</strong> → <strong>3. Remise compte individuel</strong>. Le meilleur prix est toujours appliqué.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chapter" id="ad-historique">
+    <div class="steps-title">3 — Historique global des commandes</div>
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <div class="step-title">Consulter toutes les commandes</div>
+        <div class="step-desc">L'onglet <strong>Historique</strong> affiche toutes les commandes de tous les clients, triées par date. Vous pouvez filtrer par client, par commercial ou par période.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <div class="step-title">Exporter l'historique</div>
+        <div class="step-desc">Cliquez sur <strong>Export Excel</strong> pour télécharger l'historique complet au format Excel, prêt pour votre comptabilité ou vos analyses commerciales.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chapter" id="ad-actus">
+    <div class="steps-title">4 — Gestion des actualités</div>
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <div class="step-title">Publier une actualité</div>
+        <div class="step-desc">Dans l'onglet <strong>Actualités</strong>, rédigez un titre, un contenu et choisissez le type (Info, Promo, Alerte). L'actualité apparaît sur le tableau de bord de tous les clients connectés.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <div class="step-title">Activer / désactiver une actualité</div>
+        <div class="step-desc">Chaque actualité peut être activée ou désactivée sans la supprimer. Pratique pour les promotions saisonnières que vous souhaitez réutiliser.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<footer>
+  &copy; 2026 Moulin des Moines &mdash; Tous droits réservés &nbsp;&middot;&nbsp;
+  <a href="mentions-legales.html" style="color:inherit;text-decoration:none;opacity:.7">Mentions légales</a>
+</footer>
+
+<script>
+function showSection(name, btn){
+  document.querySelectorAll('.section').forEach(function(s){ s.classList.remove('active'); });
+  document.querySelectorAll('.role-tab').forEach(function(b){ b.classList.remove('active'); });
+  var sec = document.getElementById('section-'+name);
+  if(sec) sec.classList.add('active');
+  if(btn) btn.classList.add('active');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function toggleFaq(el){
+  var item = el.closest('.faq-item');
+  item.classList.toggle('open');
+}
+
+// Barre de progression lecture
+window.addEventListener('scroll', function(){
+  var bar = document.getElementById('progress-bar');
+  if(!bar) return;
+  var h = document.documentElement;
+  var pct = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+  bar.style.width = Math.min(pct, 100) + '%';
+});
+</script>
+</body>
+</html>

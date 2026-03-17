@@ -1442,8 +1442,16 @@ function saveCompte(){
       alertEl.style.display = "block";
       return;
     }
-    var fe=document.getElementById("f-email").value.trim(),ft=document.getElementById("f-tel").value.trim(),fv=document.getElementById("f-ville").value.trim(),fc=document.getElementById("f-cp").value.trim(),fr=document.getElementById("f-region").value,fn=document.getElementById("f-numclient").value.trim(),fno=document.getElementById("f-notes").value.trim(),fg=document.getElementById("f-groupement").value.trim();
-    comptes.push({login:login,password:password,nom:nom,role:role,remise:remise,email:fe,tel:ft,ville:fv,cp:fc,region:fr,numclient:fn,notes:fno,groupement:fg,commercial:(document.getElementById("f-commercial")?document.getElementById("f-commercial").value:""),remises_produits:JSON.parse(JSON.stringify(_rpData||[])),franco:ff,grp_remises:JSON.parse(JSON.stringify(window._currentGrpRemises||[]))});
+    var fe=document.getElementById("f-email").value.trim();
+    var ft=document.getElementById("f-tel").value.trim();
+    var fv=document.getElementById("f-ville").value.trim();
+    var fc=document.getElementById("f-cp").value.trim();
+    var fr=document.getElementById("f-region")?document.getElementById("f-region").value:"";
+    var fnc=document.getElementById("f-numclient").value.trim();
+    var fno=document.getElementById("f-notes")?document.getElementById("f-notes").value.trim():"";
+    var fg=document.getElementById("f-groupement")?document.getElementById("f-groupement").value.trim():"";
+    var ff=parseFloat(document.getElementById("f-franco")?document.getElementById("f-franco").value||0:0)||0;
+    comptes.push({login:login,password:password,nom:nom,role:role,remise:remise,email:fe,tel:ft,ville:fv,cp:fc,region:fr,numclient:fnc,notes:fno,groupement:fg,commercial:(document.getElementById("f-commercial")?document.getElementById("f-commercial").value:""),remises_produits:JSON.parse(JSON.stringify(_rpData||[])),franco:ff,grp_remises:JSON.parse(JSON.stringify(window._currentGrpRemises||[]))});
     showToast("\u2705 Compte cr\u00e9\u00e9 : "+login);
   } else {
     comptes[editIndex].password=password;comptes[editIndex].nom=nom;comptes[editIndex].role=role;comptes[editIndex].remise=remise;

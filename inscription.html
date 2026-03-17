@@ -626,9 +626,9 @@ function submitForm(){
           fetch('https://formsubmit.co/' + encodeURIComponent(email), {method:'POST', body:fdC}).catch(function(){});
 
           // Étape 6 : afficher le succès + redirection
-          document.getElementById('form-card').style.display = 'none';
-          document.getElementById('success-screen').style.display = 'block';
-          document.getElementById('hero-sub').textContent = '';
+          var _fw=document.getElementById('form-wrap');if(_fw)_fw.style.display='none';
+          var _ss=document.getElementById('success-screen');if(_ss)_ss.style.display='block';
+          // hero-sub supprimé dans le nouveau design
           var count = 4;
           var el = document.getElementById('redirect-count');
           if(el) el.textContent = count;

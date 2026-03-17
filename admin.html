@@ -651,11 +651,16 @@ table{font-size:11px}
 <!-- ══ TOAST ══ -->
 <div class="toast" id="toast"></div>
 
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+function _safeB64Encode(str){
+  try{ return btoa(unescape(encodeURIComponent(str))); }
+  catch(e){ return btoa(encodeURIComponent(str)); }
+}
 function _safeB64Decode(str){
   try{ return decodeURIComponent(escape(atob(str))); }
   catch(e){ try{ return decodeURIComponent(atob(str)); }catch(e2){ return atob(str); } }
 }
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+
 // ============================================================
 // MDM — Couche Firebase Firestore
 // Remplace localStorage pour : comptes, historique, actus, inscriptions
@@ -2715,4 +2720,13 @@ function sendAccessEmail(){
       if(btn){ btn.disabled=false; btn.innerHTML='\u2705 Envoy\u00e9'; }
       setTimeout(function(){ if(btn){ btn.disabled=false; btn.innerHTML=origHTML; } }, 3000);
     } else {
-      return res.text().then(function(t){ throw new 
+      return res.text().then(function(t){ throw new Error('HTTP '+res.status+': '+t.slice(0,100)); });
+    }
+  }).catch(function(e){
+    showToast('\u26a0 ' + (e.message||'Erreur r\u00e9seau'));
+    if(btn){ btn.disabled=false; btn.innerHTML=origHTML; }
+  });
+}
+</script>
+</body>
+</html>

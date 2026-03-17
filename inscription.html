@@ -173,6 +173,17 @@ footer{text-align:center;padding:24px;font-size:11px;color:#c0a898}
       </div>
     </div>
 
+        <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:14px 16px;margin-bottom:18px">
+      <div style="display:flex;align-items:flex-start;gap:10px">
+        <input type="checkbox" id="f-rgpd" style="width:auto;margin:0;margin-top:3px;flex-shrink:0">
+        <label for="f-rgpd" style="font-size:12px;color:#0c4a6e;cursor:pointer;line-height:1.6">
+          J&#8217;accepte que Moulin des Moines collecte mes donn&#233;es personnelles (nom, email, t&#233;l&#233;phone, adresse) dans le cadre de notre relation commerciale, conform&#233;ment au
+          <a href="mentions-legales.html" target="_blank" style="color:var(--terra);font-weight:600">RGPD</a>.
+          Ces donn&#233;es ne seront pas c&#233;d&#233;es &#224; des tiers.
+        </label>
+      </div>
+      <div id="rgpd-alert" style="display:none;margin-top:8px;font-size:11px;color:#c62828">&#9888; Veuillez accepter les conditions pour continuer.</div>
+    </div>
     <div class="submit-section">
       <div class="submit-note">
         En soumettant ce formulaire, vous acceptez d&#8217;&#234;tre contact&#233; par l&#8217;&#233;quipe MDM.<br>
@@ -190,13 +201,14 @@ footer{text-align:center;padding:24px;font-size:11px;color:#c0a898}
         <path d="M7 16l7 7 11-13" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
     </div>
-    <div class="success-title">Demande envoy&#233;e !</div>
-    <p class="success-sub">Notre &#233;quipe va examiner votre demande et vous envoyer vos acc&#232;s par email sous 24&#160;h.</p>
-    <a href="index.html" class="btn-login">&#128274; Se connecter</a>
+    <div class="success-title">Compte cr&#233;&#233; !</div>
+    <p class="success-sub">Votre compte est actif. Vous pouvez vous connecter imm&#233;diatement avec votre login et mot de passe.</p>
+    <p style="font-size:13px;color:#9a7060;margin-bottom:20px">Redirection automatique dans <strong id="redirect-count">4</strong>&#160;secondes&#8230;</p>
+    <a href="index.html" class="btn-login">&#128274; Se connecter maintenant</a>
   </div>
 </div>
 
-<footer>&copy; 2026 Moulin des Moines &mdash; Tous droits r&#233;serv&#233;s</footer>
+<footer>&copy; 2026 Moulin des Moines &mdash; Tous droits r&#233;serv&#233;s &nbsp;&middot;&nbsp; <a href="mentions-legales.html" style="color:#b09080;text-decoration:none">Mentions l&#233;gales &amp; RGPD</a></footer>
 
 <script>
 (function(){
@@ -246,6 +258,29 @@ function showAlert(msg,type){
   al.scrollIntoView({behavior:'smooth',block:'center'});
 }
 
+
+// ── SHA-256 (Web Crypto API) ──────────────────────────────────
+async function sha256(str){
+  var buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
+}
+
+// ── Config Firebase ──────────────────────────────────────────
+var _fbApp=null,_fbDb=null;
+function initFB(){
+  if(_fbDb) return Promise.resolve(_fbDb);
+  if(!_fbApp) _fbApp=firebase.initializeApp({
+    apiKey:"AIzaSyB000QDa4c-vMjO1Xuimw58iiRvwgbF1zc",
+    authDomain:"mdm-bdc26.firebaseapp.com",
+    projectId:"mdm-bdc26",
+    storageBucket:"mdm-bdc26.firebasestorage.app",
+    messagingSenderId:"52658530893",
+    appId:"1:52658530893:web:166626ae4d681465ddca04"
+  });
+  _fbDb=firebase.firestore(_fbApp);
+  return Promise.resolve(_fbDb);
+}
+
 function submitForm(){
   var nom     =document.getElementById('f-nom').value.trim();
   var email   =document.getElementById('f-email').value.trim();
@@ -259,41 +294,88 @@ function submitForm(){
   var cp      =document.getElementById('f-cp').value.trim();
   var msg     =document.getElementById('f-message').value.trim();
 
+  var rgpdCb=document.getElementById('f-rgpd');
+  if(!rgpdCb||!rgpdCb.checked){
+    var ra=document.getElementById('rgpd-alert');if(ra)ra.style.display='block';
+    if(rgpdCb)rgpdCb.scrollIntoView({behavior:'smooth',block:'center'});
+    return;
+  }
   if(!nom){showAlert('Le nom du magasin est obligatoire.','err');return;}
-  if(!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){showAlert("L\u2019email n\u2019est pas valide.",'err');return;}
-  if(!login||login.length<3){showAlert('Le login doit faire au moins 3 caract\u00e8res.','err');return;}
-  if(!password||password.length<8){showAlert('Le mot de passe doit faire au moins 8 caract\u00e8res.','err');return;}
+  if(!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){showAlert('L’email n’est pas valide.','err');return;}
+  if(!login||login.length<3){showAlert('Le login doit faire au moins 3 caractères.','err');return;}
+  if(!password||password.length<8){showAlert('Le mot de passe doit faire au moins 8 caractères.','err');return;}
 
   var btn=document.getElementById('btn-submit');
-  btn.disabled=true;btn.innerHTML='&#8987; Envoi\u2026';
+  btn.disabled=true; btn.innerHTML='&#8987; Création…';
 
-  var fd=new FormData();
-  fd.append('_subject','Nouvelle demande d\u2019acc\u00e8s MDM 2026 \u2014 '+nom);
-  fd.append('_captcha','false');
-  fd.append('_template','box');
-  fd.append('Magasin',nom);
-  fd.append('Email',email);
-  fd.append('Login souhait\u00e9',login);
-  fd.append('Mot de passe choisi',password);
-  if(siret)   fd.append('SIRET',siret);
-  if(grp)     fd.append('Groupement',grp);
-  if(tel)     fd.append('T\u00e9l\u00e9phone',tel);
-  if(adresse) fd.append('Adresse',adresse);
-  if(ville)   fd.append('Ville',ville);
-  if(cp)      fd.append('CP',cp);
-  if(msg)     fd.append('Message',msg);
+  // Hacher le mot de passe avant stockage
+  sha256(password).then(function(hashedPwd){
+    password = hashedPwd; // remplacer par le hash
 
-  fetch('https://formsubmit.co/cspoto@moulindesmoines.com',{method:'POST',body:fd})
-  .then(function(res){
-    if(res.ok||res.redirected){
-      document.getElementById('form-card').style.display='none';
-      document.getElementById('success-screen').style.display='block';
-      document.getElementById('hero-sub').textContent='';
-    } else { throw new Error('HTTP '+res.status); }
+  // Vérifier que le login n'existe pas déjà
+  initFB().then(function(db){
+    return db.collection('comptes').doc(login).get();
+  }).then(function(doc){
+    if(doc.exists){
+      showAlert('Ce login est déjà utilisé. Choisissez-en un autre.','err');
+      btn.disabled=false; btn.innerHTML='<span>&#10003;</span> Envoyer la demande';
+      return Promise.reject('login_exists');
+    }
+    // Récupérer les infos du groupement
+    return initFB().then(function(db){
+      if(!grp) return {remise:0,franco:0,grpRemises:[]};
+      return db.collection('groupements').get().then(function(snap){
+        var g=snap.docs.map(function(d){return d.data();}).find(function(x){return x.nom===grp;});
+        return g ? {remise:parseFloat(g.remise)||0, franco:parseFloat(g.franco)||0,
+                    grpRemises:g.remises_produits||[]} : {remise:0,franco:0,grpRemises:[]};
+      });
+    });
+  }).then(function(gd){
+    // Créer le compte
+    var nc={
+      login:login,password:password,nom:nom,role:'client',
+      remise:gd.remise,email:email,tel:tel,
+      ville:ville,cp:cp,siret:siret,
+      groupement:grp,franco:gd.franco,
+      grp_remises:gd.grpRemises,
+      remises_produits:[],commercial:'',numclient:'',
+      dateInscription:new Date().toISOString()
+    };
+    return initFB().then(function(db){ return db.collection('comptes').doc(login).set(nc); });
+  }).then(function(){
+    // Notifier l'admin (non-bloquant)
+    var fd=new FormData();
+    fd.append('_subject','Nouveau compte MDM — '+nom);
+    fd.append('_captcha','false');
+    fd.append('_template','box');
+    fd.append('Login',login); fd.append('Magasin',nom); fd.append('Email',email);
+    if(grp)  fd.append('Groupement',grp);
+    if(tel)  fd.append('Tel',tel);
+    if(ville)fd.append('Ville',ville+' '+cp);
+    if(msg)  fd.append('Message',msg);
+    fetch('https://formsubmit.co/cspoto@moulindesmoines.com',{method:'POST',body:fd}).catch(function(){});
+
+    // Succès — redirection auto
+    document.getElementById('form-card').style.display='none';
+    document.getElementById('success-screen').style.display='block';
+    document.getElementById('hero-sub').textContent='';
+    var count=4;
+    var el=document.getElementById('redirect-count');
+    if(el) el.textContent=count;
+    var t=setInterval(function(){
+      count--;
+      if(el) el.textContent=count;
+      if(count<=0){clearInterval(t);window.location.href='index.html';}
+    },1000);
   }).catch(function(e){
-    showAlert('Erreur d\u2019envoi ('+( e.message||e)+'). R\u00e9essayez ou contactez-nous.','err');
-    btn.disabled=false;btn.innerHTML='<span>&#10003;</span> Envoyer la demande';
+    if(e==='login_exists') return;
+    showAlert('Erreur : '+(e.message||e)+'. Vérifiez votre connexion.','err');
+    btn.disabled=false; btn.innerHTML='<span>&#10003;</span> Envoyer la demande';
   });
+  }).catch(function(e){
+    showAlert('Erreur de hachage.','err');
+    btn.disabled=false; btn.innerHTML='<span>&#10003;</span> Envoyer la demande';
+  }); // fin sha256
 }
 
 document.addEventListener('keydown',function(e){

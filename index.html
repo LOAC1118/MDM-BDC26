@@ -107,7 +107,7 @@ body{font-family:"Outfit",sans-serif;min-height:100vh;display:flex;align-items:c
     </div>
   </div>
 
-  <div class="footer">Moulin des Moines &copy; 2026 &nbsp;&middot;&nbsp; Acc&#232;s r&#233;serv&#233; aux utilisateurs autoris&#233;s</div>
+  <div class="footer">Moulin des Moines &copy; 2026 &nbsp;&middot;&nbsp; Acc&#233;s r&#233;serv&#233; aux utilisateurs autoris&#233;s &nbsp;&middot;&nbsp; <a href="mentions-legales.html" style="color:inherit;opacity:.7;text-decoration:none">Mentions l&#233;gales</a></div>
   <div style="text-align:center;margin-top:14px;font-size:12px;color:#a08070">
     Nouveau magasin ? <a href="inscription-client.html" style="color:var(--terra);text-decoration:none;font-weight:600">Faire une demande d&#8217;acc&#232;s &#8594;</a>
   </div>
@@ -131,6 +131,13 @@ var COMPTES = [
 // ── Pour modifier une remise : changer le chiffre dans remise: XX
 // ── La remise s'applique automatiquement à la connexion (0 = pas de remise)
 // ═══════════════════════════════════════════════════════════
+
+
+// ── SHA-256 (Web Crypto API) ──────────────────────────────────
+async function sha256(str){
+  var buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
+}
 
 function _safeB64Encode(str){
   try{ return btoa(unescape(encodeURIComponent(str))); }
@@ -378,10 +385,12 @@ async function doLogin(){
 
   // Attendre que les comptes soient chargés (Firebase ou localStorage)
   // puis tenter la connexion
-  function tryLogin(){
+  function tryLogin(hashedPwd){
     var compte = null;
     for(var i=0;i<COMPTES.length;i++){
-      if(COMPTES[i].login === login && COMPTES[i].password === password){
+      // Comparer avec le hash OU le mot de passe clair (rétrocompatibilité)
+      var storedPwd = COMPTES[i].password||'';
+      if(COMPTES[i].login === login && (storedPwd === hashedPwd || storedPwd === password)){
         compte = COMPTES[i]; break;
       }
     }
@@ -414,29 +423,29 @@ async function doLogin(){
     }
   }
 
-  // Si Firebase a déjà chargé les comptes → connexion immédiate
-  // Sinon → attendre Firebase (max 4s) puis fallback localStorage
-  if(window._comptesLoaded){
-    tryLogin();
-  } else {
-    label.textContent = "Chargement...";
-    var waited = 0;
-    var interval = setInterval(function(){
-      waited += 200;
-      if(window._comptesLoaded || waited >= 4000){
-        clearInterval(interval);
-        // Dernier fallback : localStorage
-        if(!window._comptesLoaded){
-          try{
-            var saved = localStorage.getItem("mdm_comptes");
-            if(saved){ var list=JSON.parse(saved); COMPTES.length=0; list.forEach(function(c){COMPTES.push(c);}); }
-          }catch(e){}
+  // Hacher le mot de passe avant toute comparaison
+  sha256(password).then(function(hashedPwd){
+    if(window._comptesLoaded){
+      tryLogin(hashedPwd);
+    } else {
+      label.textContent = "Chargement...";
+      var waited = 0;
+      var interval = setInterval(function(){
+        waited += 200;
+        if(window._comptesLoaded || waited >= 4000){
+          clearInterval(interval);
+          if(!window._comptesLoaded){
+            try{
+              var saved = localStorage.getItem("mdm_comptes");
+              if(saved){ var list=JSON.parse(saved); COMPTES.length=0; list.forEach(function(c){COMPTES.push(c);}); }
+            }catch(e){}
+          }
+          label.textContent = "Vérification...";
+          tryLogin(hashedPwd);
         }
-        label.textContent = "Vérification...";
-        tryLogin();
-      }
-    }, 200);
-  }
+      }, 200);
+    }
+  });
 }
 
 function showError(msg){

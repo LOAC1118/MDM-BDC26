@@ -132,15 +132,23 @@ var COMPTES = [
 // ── La remise s'applique automatiquement à la connexion (0 = pas de remise)
 // ═══════════════════════════════════════════════════════════
 
-// Rediriger si déjà connecté
+// Rediriger si déjà connecté — nettoyer le token corrompu si besoin
 (function(){
+  var token = sessionStorage.getItem("mdm_token");
+  if(!token) return; // pas de token → rester sur index
   try {
-    var token = sessionStorage.getItem("mdm_token");
-    if(token) {
-      var data = JSON.parse(atob(token));
-      if(data.exp && Date.now() < data.exp) window.location.href = data.role==="admin" ? "admin.html" : "commande.html";
+    var data = JSON.parse(atob(token));
+    if(data && data.exp && Date.now() < data.exp) {
+      // Token valide → rediriger
+      window.location.href = data.role === "admin" ? "admin.html" : "commande.html";
+    } else {
+      // Token expiré → effacer et rester sur index
+      sessionStorage.removeItem("mdm_token");
     }
-  } catch(e) {}
+  } catch(e) {
+    // Token corrompu → effacer et rester sur index
+    sessionStorage.removeItem("mdm_token");
+  }
 })();
 
 // ── Charger les comptes depuis Firebase (puis fallback localStorage)

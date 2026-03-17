@@ -544,8 +544,8 @@ function renderAdmin(data){
   var token=sessionStorage.getItem('mdm_token');
   if(!token){ window.location.href='index.html'; return; }
   var data;
-  try{ data=JSON.parse(atob(token)); }catch(e){ window.location.href='index.html'; return; }
-  if(!data.exp||Date.now()>data.exp){ window.location.href='index.html'; return; }
+  try{ data=JSON.parse(atob(token)); }catch(e){ sessionStorage.removeItem('mdm_token'); window.location.href='index.html'; return; }
+  if(!data.exp||Date.now()>data.exp){ sessionStorage.removeItem('mdm_token'); window.location.href='index.html'; return; }
 
   applyTheme(data.role);
 

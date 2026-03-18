@@ -2160,6 +2160,7 @@ function showProfil(){
 </script>
 <script>
 
+
 // ════════════════════════════════════════════════════════════
 // IMPORT PDF → BON DE COMMANDE
 // Utilise l'API Claude pour extraire produits/quantités
@@ -2281,34 +2282,42 @@ function _extractWithClaude(pdfB64){
     + '"code_mdm":"CODE ou null","designation_mdm":"nom MDM ou null",'
     + '"confiance":"exact|approx|aucun","note":""}]}';
 
-  fetch('https://api.anthropic.com/v1/messages', {
+    var ZAPIER_WEBHOOK = 'https://mdm-claude-proxy.spoto-christophe.workers.dev/';
+
+  fetch(ZAPIER_WEBHOOK, {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
     body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 4000,
-      messages: [{
-        role: 'user',
-        content: [
-          {type:'document', source:{type:'base64', media_type:'application/pdf', data:pdfB64}},
-          {type:'text', text:prompt}
-        ]
-      }]
+      pdf_b64: pdfB64,
+      prompt: 'Voici un extrait du catalogue MDM (code | d\u00e9signation) :\n'
+        + productsIndex.slice(0,300).map(function(p){ return p.code + ' | ' + p.designation; }).join('\n')
+        + '\n\nAnalyse ce bon de commande PDF et extrais TOUS les produits command\u00e9s.'
+        + ' Pour chaque produit, fais correspondre au catalogue MDM via code ET d\u00e9signation.'
+        + ' R\u00e9ponds UNIQUEMENT en JSON valide sans markdown :'
+        + ' {"produits":[{"designation_source":"...","quantite":1,"code_mdm":"...ou null","designation_mdm":"...ou null","confiance":"exact|approx|aucun","note":""}]}'
     })
   })
   .then(function(r){ return r.json(); })
   .then(function(data){
-    _showPDFProgress('Correspondance catalogue\u2026', 85);
-    var text = (data.content||[]).map(function(b){ return b.text||''; }).join('');
-    // Nettoyer le JSON
+    _showPDFProgress('Correspondance catalogue…', 85);
+    var text = (data.content||[]).map(function(b){return b.text||'';}).join('')
+      || data.result || data.output || JSON.stringify(data);
     text = text.replace(/```json|```/g,'').trim();
     var parsed;
     try{ parsed = JSON.parse(text); }
-    catch(e){ throw new Error('R\u00e9ponse non parsable: '+text.substring(0,200)); }
+    catch(e){ throw new Error('Réponse non parsable: '+text.substring(0,200)); }
     _pdfResults = parsed.produits || [];
-    // Enrichir avec les données catalogue
     _enrichResults(_pdfResults, productsIndex);
     _renderPDFResults(_pdfResults);
+  })
+  .catch(function(e){
+    var body = document.getElementById('pdf-body');
+    if(body) body.innerHTML = '<div style="padding:20px;text-align:center;color:var(--danger)">'
+      +'<div style="font-size:24px;margin-bottom:8px">&#9888;</div>'
+      +'<div style="font-size:13px;font-weight:400">Erreur lors de l\'analyse</div>'
+      +'<div style="font-size:11px;font-weight:300;color:var(--text-muted);margin-top:4px">'+e.message+'</div>'
+      +'<button onclick="closeImportPDF()" class="pdf-reset-btn" style="margin-top:12px;font-size:12px;color:var(--accent)">Fermer</button>'
+      +'</div>';
   })
   .catch(function(e){
     var body = document.getElementById('pdf-body');
@@ -2422,6 +2431,7 @@ function importPDFToCommande(){
   showToast('\u2705 Import pr\u00eat \u2014 redirection\u2026');
   setTimeout(function(){ window.location.href = 'commande.html?import=pdf'; }, 1200);
 }
+
 
 </script>
 </body>

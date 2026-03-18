@@ -278,7 +278,17 @@ tbody td{padding:10px 14px;font-size:12px;font-weight:300;color:var(--text)}
   margin-left:auto;background:var(--accent);color:#fff;
   font-size:9px;font-weight:600;padding:2px 6px;
   border-radius:10px;min-width:16px;text-align:center;
+  display:none;align-items:center;justify-content:center;
+  line-height:14px;
 }
+.mdm-nav-badge.red{background:#c0392b}
+.mdm-nav-badge.show{display:flex}
+@keyframes badgePop{
+  0%{transform:scale(0.5);opacity:0}
+  70%{transform:scale(1.2)}
+  100%{transform:scale(1);opacity:1}
+}
+.mdm-nav-badge.pop{animation:badgePop .3s ease forwards}
 
 /* ── FOOTER ── */
 .mdm-footer{
@@ -610,6 +620,10 @@ tbody tr.has-qty td.td-qty input{background:#ffe0b2;border-color:var(--terra)}
       <span class="mdm-nav-icon">&#127968;</span>
       <span class="mdm-nav-label">Tableau de bord</span>
     </a>
+    <a class="mdm-nav-item" href="tutoriel.html">
+      <span class="mdm-nav-icon">&#128218;</span>
+      <span class="mdm-nav-label">Guide d&apos;utilisation</span>
+    </a>
     <div class="mdm-nav-section">Actions</div>
     <a class="mdm-nav-item no-print" href="#" onclick="openHistoryModal();return false">
       <span class="mdm-nav-icon">&#128203;</span>
@@ -627,7 +641,7 @@ tbody tr.has-qty td.td-qty input{background:#ffe0b2;border-color:var(--terra)}
     <a class="mdm-nav-item" id="nav-chat" href="#" onclick="chatToggle();return false">
       <span class="mdm-nav-icon">&#128172;</span>
       <span class="mdm-nav-label">Messagerie</span>
-      <span class="mdm-nav-badge red" id="sidebar-chat-badge" style="display:none"></span>
+      <span class="mdm-nav-badge red" id="sidebar-chat-badge"></span>
     </a>
     <a class="mdm-nav-item" href="#" onclick="showProfilModal();return false">
       <span class="mdm-nav-icon">&#128100;</span>
@@ -2558,7 +2572,16 @@ function _updateBadge(count){
   var b=document.getElementById('chat-badge');
   if(b){ b.textContent=count>0?(count>9?'9+':String(count)):''; b.style.display=count>0?'flex':'none'; }
   var sb=document.getElementById('sidebar-chat-badge');
-  if(sb){ sb.textContent=count>0?(count>9?'9+':String(count)):''; sb.style.display=count>0?'flex':'none'; }
+  if(sb){
+    var wasHidden=!sb.classList.contains('show');
+    sb.textContent=count>0?(count>9?'9+':String(count)):'';
+    if(count>0){
+      sb.classList.add('show');
+      if(wasHidden){ sb.classList.remove('pop'); void sb.offsetWidth; sb.classList.add('pop'); }
+    } else {
+      sb.classList.remove('show','pop');
+    }
+  }
 }
 function _chatNotify(){
   var fab=document.getElementById('chat-fab');

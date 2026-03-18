@@ -638,6 +638,7 @@ footer a{color:inherit;text-decoration:none;opacity:.7}footer a:hover{opacity:1}
 
 
 
+
 var FIREBASE_CONFIG = {
   apiKey:            "AIzaSyB000QDa4c-vMjO1Xuimw58iiRvwgbF1zc",
   authDomain:        "mdm-bdc26.firebaseapp.com",
@@ -1428,6 +1429,25 @@ function _fillClientSelector(){
 }
 
 // ── Ouvrir/fermer ─────────────────────────────────────────────
+
+function _chatMarkRead(convId){
+  if(!convId) return;
+  initFirebase().then(function(db){
+    db.collection('chats').doc(convId)
+      .collection('messages')
+      .where('from','!=',_chatMyLogin)
+      .where('read','==',false)
+      .get()
+      .then(function(snap){
+        var batch = db.batch();
+        snap.docs.forEach(function(doc){
+          batch.update(doc.ref, {read: true});
+        });
+        if(snap.docs.length > 0) batch.commit().catch(function(){});
+      }).catch(function(){});
+  }).catch(function(){});
+}
+
 function chatToggle(){
   _chatOpen = !_chatOpen;
   var modal = document.getElementById('chat-modal');
@@ -1822,6 +1842,7 @@ function showProfil(){
   document.body.appendChild(bg);
   closeSidebar();
 }
+
 
 
 </script>

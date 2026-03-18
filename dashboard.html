@@ -563,6 +563,40 @@ footer a{color:inherit;text-decoration:none;opacity:.7}footer a:hover{opacity:1}
 }
 @media(max-width:480px){.chat-modal{width:calc(100vw - 16px);right:8px;bottom:80px}.chat-fab{bottom:16px;right:16px}}
 
+
+/* ── PRÉSENCE ── */
+.presence-dot{
+  width:9px;height:9px;border-radius:50%;
+  flex-shrink:0;border:1.5px solid var(--bg-card);
+  display:inline-block;
+}
+.presence-dot.online{background:#22c55e}
+.presence-dot.offline{background:#d1d5db}
+.presence-dot.away{background:#f59e0b}
+.chat-header-presence{
+  display:flex;align-items:center;gap:6px;
+}
+.chat-header-status{
+  display:flex;align-items:center;gap:5px;
+  font-size:10px;font-weight:300;color:var(--text-muted);
+}
+.presence-label{font-size:10px;font-weight:300}
+.presence-label.online{color:#16a34a}
+.presence-label.offline{color:var(--text-muted)}
+/* Sélecteur clients avec statut */
+.chat-client-option{
+  display:flex;align-items:center;gap:8px;
+  padding:8px 12px;cursor:pointer;
+  font-size:12px;font-weight:300;color:var(--text);
+  border-bottom:1px solid var(--border-light);
+  transition:background .13s;
+}
+.chat-client-option:hover{background:var(--bg)}
+.chat-client-option:last-child{border-bottom:none}
+.chat-client-option.selected{background:var(--bg-beige);font-weight:500}
+.client-option-name{flex:1}
+.client-option-status{font-size:10px;font-weight:300;color:var(--text-muted)}
+
 </style>
 </head>
 <body>
@@ -693,28 +727,8 @@ footer a{color:inherit;text-decoration:none;opacity:.7}footer a:hover{opacity:1}
 </style>
 
 <div class="chat-modal" id="chat-modal">
-  <div class="chat-header">
-    <div class="chat-header-left">
-      <div class="chat-avatar" id="chat-avatar">?</div>
-      <div><div class="chat-header-name" id="chat-header-name">Messagerie</div><div class="chat-header-status" id="chat-header-status">Chargement&#8230;</div></div>
-    </div>
-    <button class="chat-close" onclick="chatToggle()">&#10005;</button>
-  </div>
-  <div class="chat-client-selector" id="chat-client-selector">
-    <select id="chat-client-select" onchange="chatSelectClient(this.value)"><option value="">&#8212; Choisir un client &#8212;</option></select>
-  </div>
-  <div class="chat-messages" id="chat-messages"><div class="chat-loading">&#8987; Chargement&#8230;</div></div>
-  <div class="chat-input-row">
-    <textarea class="chat-input" id="chat-input" placeholder="Votre message&#8230;" rows="1"
-      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();chatSend();}"
-      oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,80)+'px'"></textarea>
-    <button class="chat-send" id="chat-send" onclick="chatSend()" disabled>&#10148;</button>
-  </div>
-</div>
-
-</body>
-
 <script>
+
 
 
 
@@ -1405,6 +1419,7 @@ function chatInit(login, nom, role, commercial, allComptes){
   _chatMyLogin = login;
   _chatMyNom   = nom;
   _chatMyRole  = role;
+  presenceInit(login);
 
   var fab = document.getElementById('chat-fab');
 
@@ -1413,6 +1428,9 @@ function chatInit(login, nom, role, commercial, allComptes){
     _chatConvId     = login + '_' + partner;
     _chatPartnerNom = _getCommercialNom(partner, allComptes) || 'Moulin des Moines';
     _setChatHeader(_chatPartnerNom, 'Votre contact MDM');
+    presenceWatch(_chatConvId.split('_')[1]||'admin', function(st,ls){
+      _updatePresenceHeader(st,ls);
+    });
     if(fab) fab.style.display = 'flex';
     if(!commercial){
       initFirebase().then(function(db){
@@ -1475,6 +1493,37 @@ function _setChatHeader(name, status){
 }
 
 function _fillClientSelector(){
+  // Afficher liste custom avec présence
+  var sel = document.getElementById('chat-client-selector');
+  if(!sel) return;
+  var listEl = document.getElementById('chat-client-list');
+  if(!listEl){
+    listEl = document.createElement('div');
+    listEl.id = 'chat-client-list';
+    sel.innerHTML = '';
+    sel.appendChild(listEl);
+  }
+  listEl.innerHTML = '';
+  _chatClients.forEach(function(cl){
+    var item = document.createElement('div');
+    item.className = 'chat-client-option' + (_chatConvId===cl.login+'_'+_chatMyLogin?' selected':'');
+    item.setAttribute('data-login', cl.login);
+    item.innerHTML = '<span class="presence-dot offline" id="dot-'+cl.login+'"></span>'
+      + '<span class="client-option-name">'+(cl.nom||cl.login)+'</span>'
+      + '<span class="client-option-status" id="status-'+cl.login+'">Hors ligne</span>';
+    item.onclick = function(){ chatSelectClient(cl.login); };
+    listEl.appendChild(item);
+    // Watcher présence
+    presenceWatch(cl.login, function(st,ls){
+      var dot = document.getElementById('dot-'+cl.login);
+      var lbl = document.getElementById('status-'+cl.login);
+      if(dot){ dot.className='presence-dot '+st; }
+      if(lbl){ lbl.textContent=_presenceLabel(st,ls); lbl.className='client-option-status presence-label '+st; }
+    });
+  });
+  return; // empêcher le code original de tourner
+  // code original ci-dessous (inatteignable)
+
   var sel = document.getElementById('chat-client-select');
   if(!sel) return;
   sel.innerHTML = '<option value="">&#8212; Choisir un client &#8212;</option>';
@@ -1503,6 +1552,15 @@ function chatToggle(){
 }
 
 function chatSelectClient(clientLogin){
+  // Mettre à jour visuellement l'item sélectionné
+  var items=document.querySelectorAll('.chat-client-option');
+  items.forEach(function(it){ it.classList.toggle('selected', it.getAttribute('data-login')===clientLogin); });
+  // Surveiller la présence de ce client
+  presenceStopWatch();
+  presenceWatch(clientLogin, function(st,ls){
+    _updatePresenceHeader(st,ls);
+  });
+
   if(!clientLogin) return;
   var client = _chatClients.find(function(c){ return c.login === clientLogin; });
   if(!client) return;
@@ -1755,6 +1813,131 @@ function showProfil(){
   var modal=document.createElement('div');
   modal.style.cssText='background:var(--bg-card);border-radius:12px;padding:24px 28px;max-width:420px;width:94%;border:1px solid var(--border);max-height:90vh;overflow-y:auto';
   modal.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border)">'
+    +'<span style="font-family:Fraunces,serif;font-size:18px;font-weight:200;color:var(--text)">Mon profil</span>'
+    +'<button onclick="document.body.removeChild(this.closest(\'[style*=position:fixed]\'))" style="background:none;border:none;cursor:pointer;font-size:18px;color:var(--text-muted);padding:2px">&#10005;</button>'
+    +'</div>'+html;
+  bg.appendChild(modal);
+  document.body.appendChild(bg);
+  closeSidebar();
+}
+
+// Synchroniser badge chat avec la sidebar
+function _syncSidebarBadge(count){
+  var sb=document.getElementById('sidebar-chat-badge');
+  if(!sb) return;
+  if(count>0){ sb.textContent=count>9?'9+':count; sb.style.display='flex'; }
+  else { sb.style.display='none'; }
+}
+
+// Remplir les infos user dans la sidebar
+function _setSidebarUser(data){
+  var nameEl=document.getElementById('sidebar-user-name');
+  var roleEl=document.getElementById('sidebar-user-role');
+  if(nameEl) nameEl.textContent=data.nom||data.login||'';
+  if(roleEl) roleEl.textContent=data.role==='user'?'Commercial':'Client';
+}
+
+
+
+// ── PRÉSENCE TEMPS RÉEL ──────────────────────────────────────
+var _presenceUnsub = null;
+var _myPresenceRef = null;
+var PRESENCE_TIMEOUT = 5 * 60 * 1000; // 5 min = away
+
+function presenceInit(login){
+  initFirebase().then(function(db){
+    // Écrire ma présence
+    var ref = db.collection('presence').doc(login);
+    _myPresenceRef = ref;
+    ref.set({
+      login: login,
+      online: true,
+      lastSeen: firebase.firestore.FieldValue.serverTimestamp()
+    }, {merge: true});
+
+    // Mettre à jour lastSeen toutes les 2 min
+    setInterval(function(){
+      ref.set({
+        lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
+        online: true
+      }, {merge: true});
+    }, 2 * 60 * 1000);
+
+    // Marquer offline avant de quitter
+    window.addEventListener('beforeunload', function(){
+      ref.set({online: false,
+        lastSeen: firebase.firestore.FieldValue.serverTimestamp()
+      }, {merge: true}).catch(function(){});
+    });
+  }).catch(function(){});
+}
+
+function presenceGet(login, cb){
+  initFirebase().then(function(db){
+    return db.collection('presence').doc(login).get();
+  }).then(function(doc){
+    if(!doc.exists){ cb('offline', null); return; }
+    var data = doc.data();
+    var online = data.online === true;
+    var lastSeen = data.lastSeen ? data.lastSeen.toDate() : null;
+    // Si online mais lastSeen > 5 min → away
+    if(online && lastSeen && (Date.now() - lastSeen.getTime()) > PRESENCE_TIMEOUT){
+      cb('away', lastSeen);
+    } else if(online){
+      cb('online', lastSeen);
+    } else {
+      cb('offline', lastSeen);
+    }
+  }).catch(function(){ cb('offline', null); });
+}
+
+function presenceWatch(login, cb){
+  initFirebase().then(function(db){
+    if(_presenceUnsub) _presenceUnsub();
+    _presenceUnsub = db.collection('presence').doc(login)
+      .onSnapshot(function(doc){
+        if(!doc.exists){ cb('offline', null); return; }
+        var data = doc.data();
+        var online = data.online === true;
+        var lastSeen = data.lastSeen ? data.lastSeen.toDate() : null;
+        if(online && lastSeen && (Date.now() - lastSeen.getTime()) > PRESENCE_TIMEOUT){
+          cb('away', lastSeen);
+        } else if(online){
+          cb('online', lastSeen);
+        } else {
+          cb('offline', lastSeen);
+        }
+      }, function(){ cb('offline', null); });
+  }).catch(function(){ cb('offline', null); });
+}
+
+function presenceStopWatch(){
+  if(_presenceUnsub){ _presenceUnsub(); _presenceUnsub = null; }
+}
+
+function _presenceLabel(status, lastSeen){
+  if(status === 'online') return 'En ligne';
+  if(status === 'away')   return 'Absent';
+  if(!lastSeen) return 'Hors ligne';
+  var diff = Date.now() - lastSeen.getTime();
+  var mins = Math.floor(diff / 60000);
+  var hrs  = Math.floor(mins / 60);
+  var days = Math.floor(hrs / 24);
+  if(mins < 2)   return 'Vu à l\'instant';
+  if(mins < 60)  return 'Vu il y a ' + mins + ' min';
+  if(hrs < 24)   return 'Vu il y a ' + hrs + 'h';
+  return 'Vu il y a ' + days + 'j';
+}
+
+function _updatePresenceHeader(status, lastSeen){
+  var s = document.getElementById('chat-header-status');
+  if(!s) return;
+  var dot = '<span class="presence-dot ' + status + '"></span>';
+  var label = '<span class="presence-label ' + status + '">' + _presenceLabel(status, lastSeen) + '</span>';
+  s.innerHTML = dot + label;
+}
+
+</script>:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border)">'
     +'<span style="font-family:Fraunces,serif;font-size:18px;font-weight:200;color:var(--text)">Mon profil</span>'
     +'<button onclick="document.body.removeChild(this.closest(\'[style*=position:fixed]\'))" style="background:none;border:none;cursor:pointer;font-size:18px;color:var(--text-muted);padding:2px">&#10005;</button>'
     +'</div>'+html;

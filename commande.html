@@ -495,6 +495,24 @@ tbody tr.has-qty td.td-qty input{background:#ffe0b2;border-color:var(--terra)}
   .mdm-sidebar-overlay.open{display:block}
 }
 
+
+/* ── PRÉSENCE ── */
+.presence-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;border:1.5px solid var(--bg-card);display:inline-block}
+.presence-dot.online{background:#22c55e}
+.presence-dot.offline{background:#d1d5db}
+.presence-dot.away{background:#f59e0b}
+.chat-header-status{display:flex;align-items:center;gap:5px;font-size:10px;font-weight:300;color:var(--text-muted)}
+.presence-label{font-size:10px;font-weight:300}
+.presence-label.online{color:#16a34a}
+.presence-label.offline{color:var(--text-muted)}
+.presence-label.away{color:#d97706}
+.chat-client-option{display:flex;align-items:center;gap:8px;padding:8px 12px;cursor:pointer;font-size:12px;font-weight:300;color:var(--text);border-bottom:1px solid var(--border-light);transition:background .13s}
+.chat-client-option:hover{background:var(--bg)}
+.chat-client-option:last-child{border-bottom:none}
+.chat-client-option.selected{background:var(--bg-beige);font-weight:500}
+.client-option-name{flex:1}
+.client-option-status{font-size:10px;font-weight:300;color:var(--text-muted)}
+
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
@@ -701,7 +719,8 @@ tbody tr.has-qty td.td-qty input{background:#ffe0b2;border-color:var(--terra)}
   </div>
 </div>
 
-<script>// ============================================================
+<script>
+// ============================================================
 // MDM — Couche Firebase Firestore
 // Remplace localStorage pour : comptes, historique, actus, inscriptions
 // ============================================================
@@ -2285,6 +2304,66 @@ function _safeB64Decode(str){
   try{ return decodeURIComponent(escape(atob(str))); }
   catch(e){ try{ return decodeURIComponent(atob(str)); }catch(e2){ return atob(str); } }
 }
+
+
+// ── PRÉSENCE TEMPS RÉEL ──────────────────────────────────────
+var _presenceUnsub=null;
+var PRESENCE_TIMEOUT=5*60*1000;
+
+function presenceInit(login){
+  initFirebase().then(function(db){
+    var ref=db.collection('presence').doc(login);
+    ref.set({login:login,online:true,lastSeen:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+    setInterval(function(){
+      ref.set({lastSeen:firebase.firestore.FieldValue.serverTimestamp(),online:true},{merge:true});
+    },2*60*1000);
+    window.addEventListener('beforeunload',function(){
+      ref.set({online:false,lastSeen:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}).catch(function(){});
+    });
+  }).catch(function(){});
+}
+
+function presenceWatch(login,cb){
+  initFirebase().then(function(db){
+    if(_presenceUnsub){_presenceUnsub();_presenceUnsub=null;}
+    _presenceUnsub=db.collection('presence').doc(login)
+      .onSnapshot(function(doc){
+        if(!doc.exists){cb('offline',null);return;}
+        var data=doc.data();
+        var online=data.online===true;
+        var lastSeen=data.lastSeen?data.lastSeen.toDate():null;
+        if(online&&lastSeen&&(Date.now()-lastSeen.getTime())>PRESENCE_TIMEOUT){cb('away',lastSeen);}
+        else if(online){cb('online',lastSeen);}
+        else{cb('offline',lastSeen);}
+      },function(){cb('offline',null);});
+  }).catch(function(){cb('offline',null);});
+}
+
+function presenceStopWatch(){
+  if(_presenceUnsub){_presenceUnsub();_presenceUnsub=null;}
+}
+
+function _presenceLabel(status,lastSeen){
+  if(status==='online') return 'En ligne';
+  if(status==='away') return 'Absent';
+  if(!lastSeen) return 'Hors ligne';
+  var diff=Date.now()-lastSeen.getTime();
+  var mins=Math.floor(diff/60000);
+  var hrs=Math.floor(mins/60);
+  var days=Math.floor(hrs/24);
+  if(mins<2) return 'Vu à l\'instant';
+  if(mins<60) return 'Vu il y a '+mins+' min';
+  if(hrs<24) return 'Vu il y a '+hrs+'h';
+  return 'Vu il y a '+days+'j';
+}
+
+function _updatePresenceHeader(status,lastSeen){
+  var s=document.getElementById('chat-header-status');
+  if(!s) return;
+  s.innerHTML='<span class="presence-dot '+status+'"></span>'
+    +'<span class="presence-label '+status+'">'+_presenceLabel(status,lastSeen)+'</span>';
+}
+
 </script>
 
 <div id="modal-new-client" onclick="if(event.target===this)closeNewClientModal()">

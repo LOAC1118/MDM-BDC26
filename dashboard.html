@@ -389,43 +389,28 @@ body{background:var(--bg);display:flex;flex-direction:column;min-height:100vh}
 .chat-send{background:var(--accent);color:#fff;border:none;border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-size:14px;transition:background .15s}
 .chat-send:hover{background:var(--accent-hover)}.chat-send:disabled{background:var(--border);cursor:not-allowed}
 @keyframes chatPulse{0%{transform:scale(1)}50%{transform:scale(1.15);box-shadow:0 0 0 6px rgba(74,124,89,.2)}100%{transform:scale(1)}}
+.actu-feed{display:flex;flex-direction:column;gap:10px}
+.actu-card{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;overflow:hidden;transition:opacity .3s,max-height .3s;position:relative}
+.actu-card.read{opacity:.5}
+.actu-card-top{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--border-light)}
+.actu-badge{padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap}
+.actu-badge.info{background:#e8f4ed;color:#2d6a4a}
+.actu-badge.promo{background:#fef3c7;color:#92400e}
+.actu-badge.alerte{background:#fee2e2;color:#991b1b}
+.actu-card-title{font-size:13px;font-weight:400;color:var(--text);flex:1}
+.actu-card-date{font-size:10px;font-weight:300;color:var(--text-muted);white-space:nowrap}
+.actu-close{background:none;border:none;cursor:pointer;font-size:15px;color:var(--text-muted);padding:2px 5px;line-height:1;transition:color .15s;flex-shrink:0}
+.actu-close:hover{color:var(--text)}
+.actu-body{padding:12px 14px;font-size:12px;font-weight:300;color:var(--text-secondary);line-height:1.7;white-space:pre-wrap}
+.actu-empty{text-align:center;padding:24px;font-size:12px;font-weight:300;color:var(--text-muted)}
 footer{text-align:center;padding:14px;font-size:11px;font-weight:300;color:var(--text-muted);border-top:1px solid var(--border)}
 footer a{color:inherit;text-decoration:none;opacity:.7}footer a:hover{opacity:1}
 @media(max-width:768px){.dash-body{grid-template-columns:1fr}.dash-sidebar{display:none}.dash-main{padding:16px}}
 
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,200;0,400;1,200&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-</head>
-<body>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,200;0,400;1,200&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"><script>
 
-<header class="unified-header">
-  <div style="display:flex;align-items:center;gap:16px;flex-shrink:0">
-    <div class="uh-logo">Moulin <span>des</span> Moines <small>Tableau de bord</small></div>
-  </div>
-  <div class="uh-actions">
-    <div class="uh-user" id="dash-user-info">Chargement&#8230;</div>
-    <div class="uh-sep"></div>
-    <button class="uh-btn primary no-print" onclick="window.location.href='commande.html'">&#128221; Bon de commande</button>
-    <button class="uh-btn green no-print" onclick="exportDashExcel()">&#128202; Export</button>
-    <div class="uh-sep"></div>
-    <button class="uh-chat no-print" id="chat-fab" onclick="chatToggle()" title="Messagerie" style="display:none">&#128172;<span class="uh-chat-badge" id="chat-badge"></span></button>
-    <button class="uh-btn red no-print" onclick="logout()">&#x23FB;</button>
-  </div>
-</header>
-
-<div class="dash-body">
-  <div class="dash-title" id="dash-page-title">Tableau de bord</div>
-  <div class="dash-sub" id="dash-page-sub">Vue d&#8217;ensemble de votre activité</div>
-
-  <!-- KPI -->
-  <div class="kpi-grid" id="kpi-grid"></div>
-
-  <!-- Contenu dynamique selon rôle -->
-  <div id="dash-content"><div class="empty-state">Chargement…</div></div>
-</div>
-
-<script>
 
 var FIREBASE_CONFIG = {
   apiKey:            "AIzaSyB000QDa4c-vMjO1Xuimw58iiRvwgbF1zc",
@@ -635,6 +620,67 @@ function orderRow(o, clientNom, showClient){
 }
 
 // ── DASHBOARD CLIENT ──────────────────────────────────────────
+
+// ── ACTUALITÉS CLIENT ────────────────────────────────────────
+var _readActus={};
+try{_readActus=JSON.parse(localStorage.getItem('mdm_read_actus')||'{}');}catch(e){}
+
+function fbLoadActus(){
+  return initFirebase().then(function(db){
+    return db.collection('actus')
+      .where('active','==',true)
+      .orderBy('date','desc')
+      .limit(3)
+      .get()
+      .then(function(snap){
+        return snap.docs.map(function(doc){return Object.assign({_id:doc.id},doc.data());});
+      });
+  }).catch(function(){return[];});
+}
+
+function renderActusClient(actus){
+  var el=document.getElementById('actu-feed-container');
+  if(!el) return;
+  if(!actus||!actus.length){
+    el.innerHTML='<div class="actu-empty">Aucune actualit\u00e9 pour le moment.</div>';
+    return;
+  }
+  var html='<div class="actu-feed">';
+  actus.forEach(function(a){
+    var type=(a.type||'info').toLowerCase();
+    var label=type==='promo'?'Promotion':type==='alerte'?'Alerte':'Info';
+    var date='';
+    if(a.date){
+      try{date=new Date(a.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'});}catch(e){}
+    }
+    html+='<div class="actu-card" id="actu-'+a._id+'">'
+      +'<div class="actu-card-top">'
+      +'<span class="actu-badge '+type+'">'+label+'</span>'
+      +'<span class="actu-card-title">'+escH(a.titre||a.title||'')+'</span>'
+      +(date?'<span class="actu-card-date">'+date+'</span>':'')
+      +'<button class="actu-close" onclick="closeActu(\''+a._id+'\')" title="Fermer">&#10005;</button>'
+      +'</div>'
+      +'<div class="actu-body">'+escH(a.contenu||a.content||'')+'</div>'
+      +'</div>';
+  });
+  html+='</div>';
+  el.innerHTML=html;
+}
+
+function closeActu(id){
+  _readActus[id]=true;
+  try{localStorage.setItem('mdm_read_actus',JSON.stringify(_readActus));}catch(e){}
+  var el=document.getElementById('actu-'+id);
+  if(el){
+    el.style.transition='opacity .3s, max-height .3s';
+    el.style.opacity='0';
+    el.style.overflow='hidden';
+    el.style.maxHeight=el.offsetHeight+'px';
+    setTimeout(function(){el.style.maxHeight='0';},50);
+    setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el);},350);
+  }
+}
+
 function renderClient(data){
   window._currentData = data;
   var _allCd=[];try{_allCd=JSON.parse(localStorage.getItem("mdm_comptes")||"[]");}catch(e){}
@@ -666,6 +712,8 @@ function renderClient(data){
     localStorage.setItem('mdm_history_'+login,JSON.stringify(local));
     renderClientOrders(local, franco);
   }).catch(function(){});
+  // Charger les actualités
+  fbLoadActus().then(renderActusClient).catch(function(){});
 }
 
 function renderClientOrders(orders, franco){
@@ -680,8 +728,14 @@ function renderClientOrders(orders, franco){
   }
   var content = document.getElementById('dash-content');
   if(!content) return;
+  // Section actualités (peuplée par renderActusClient)
+  var actuHtml = '<div class="dash-section" style="margin-bottom:14px">'
+    +'<div class="dash-section-header"><span class="dash-section-title">Actualit\u00e9s MDM</span></div>'
+    +'<div id="actu-feed-container" style="padding:12px"><div class="actu-empty">Chargement\u2026</div></div>'
+    +'</div>';
+
   if(!orders.length){
-    content.innerHTML = '<div class="dash-section"><div class="empty-state">Aucune commande enregistrée.\nPassez votre première commande !</div></div>';
+    content.innerHTML = actuHtml + '<div class="dash-section"><div class="empty-state">Aucune commande enregistrée.\nPassez votre première commande !</div></div>';
     return;
   }
   var html = '<div class="dash-section">'
@@ -691,7 +745,7 @@ function renderClientOrders(orders, franco){
     +'</div>';
   orders.forEach(function(o){ html += orderRow(o, null, false); });
   html += '</div>';
-  content.innerHTML = html;
+  content.innerHTML = actuHtml + html;
 }
 
 // ── DASHBOARD COMMERCIAL ──────────────────────────────────────
@@ -1307,6 +1361,43 @@ function _updateBadge(count){
 function _chatNotify(){
   // 1. Faire pulser le bouton
   var fab = document.getElementById('chat-fab');
+  if(fab){
+    fab.style.animation = 'chatPulse .4s ease 3';
+    setTimeout(function(){ fab.style.animation = ''; }, 1200);
+  }
+  // 2. Changer le titre de la page
+  var origTitle = document.title;
+  var blinkCount = 0;
+  if(window._chatTitleBlink) clearInterval(window._chatTitleBlink);
+  window._chatTitleBlink = setInterval(function(){
+    document.title = blinkCount % 2 === 0 ? '\uD83D\uDCAC Nouveau message' : origTitle;
+    blinkCount++;
+    if(blinkCount >= 8){
+      clearInterval(window._chatTitleBlink);
+      document.title = origTitle;
+    }
+  }, 600);
+  // 3. Son (bip discret via Web Audio API)
+  try{
+    var ctx = new (window.AudioContext||window.webkitAudioContext)();
+    var osc = ctx.createOscillator();
+    var gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.frequency.value = 880;
+    osc.type = 'sine';
+    gain.gain.setValueAtTime(0.15, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.3);
+  }catch(e){}
+}
+
+
+function _escH(s){
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+}
+
+</script>getElementById('chat-fab');
   if(fab){
     fab.style.animation = 'chatPulse .4s ease 3';
     setTimeout(function(){ fab.style.animation = ''; }, 1200);

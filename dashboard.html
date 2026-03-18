@@ -10,6 +10,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 
+
 /* ════════════════════════════════════════════════
    MDM DESIGN SYSTEM — Beige Chaud 2026
    Fraunces 200 + Inter 300/400/500
@@ -507,25 +508,29 @@ footer a{color:inherit;text-decoration:none;opacity:.7}footer a:hover{opacity:1}
 }
 @media(max-width:480px){.chat-modal{width:calc(100vw - 16px);right:8px;bottom:80px}.chat-fab{bottom:16px;right:16px}}
 
+
 </style>
 </head>
 <body>
 
+<!-- HEADER -->
 <header style="background:var(--bg-beige);border-bottom:1px solid var(--border);padding:0 20px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;font-family:'Inter',sans-serif">
   <div style="display:flex;align-items:center">
-    <button class="mdm-menu-toggle" onclick="openSidebar()" title="Menu">&#9776;</button>
+    <button class="mdm-menu-toggle" onclick="openSidebar()" title="Menu" style="display:none;background:none;border:none;cursor:pointer;padding:6px;color:var(--text);font-size:18px;margin-right:8px">&#9776;</button>
     <a href="commande.html" style="font-family:'Fraunces',serif;font-size:18px;font-weight:200;color:var(--text);letter-spacing:-.2px;text-decoration:none">Moulin <span style="color:var(--accent)">des</span> Moines</a>
     <span style="font-size:10px;font-weight:300;color:var(--text-muted);margin-left:12px">Tableau de bord</span>
   </div>
   <div style="display:flex;align-items:center;gap:8px">
-    <span style="font-size:11px;font-weight:300;color:var(--text-secondary)" id="dash-user-info"></span>
+    <span id="dash-user-info" style="font-size:11px;font-weight:300;color:var(--text-secondary)"></span>
     <button id="chat-fab" onclick="chatToggle()" title="Messagerie" style="display:none;position:relative;padding:7px 10px;border-radius:6px;font-size:14px;cursor:pointer;border:1px solid var(--border);background:var(--bg-card);color:var(--text)">
       &#128172;<span id="chat-badge" style="position:absolute;top:-5px;right:-5px;background:#c0392b;color:#fff;font-size:9px;font-weight:600;padding:2px 5px;border-radius:10px;min-width:16px;text-align:center;display:none"></span>
     </button>
   </div>
 </header>
 
+<!-- LAYOUT -->
 <div class="mdm-layout">
+
   <nav class="mdm-sidebar" id="mdm-sidebar">
   <div class="mdm-sidebar-header">
     <div class="mdm-sidebar-user" id="sidebar-user-name"></div>
@@ -572,6 +577,8 @@ footer a{color:inherit;text-decoration:none;opacity:.7}footer a:hover{opacity:1}
   <div class="mdm-sidebar-footer"></div>
 </nav>
 <div class="mdm-sidebar-overlay" id="mdm-overlay" onclick="closeSidebar()"></div>
+
+  <!-- CONTENU PRINCIPAL -->
   <div class="mdm-main-content">
     <div style="padding:24px 28px">
       <div class="dash-title" id="dash-page-title">Tableau de bord</div>
@@ -648,6 +655,1186 @@ footer a{color:inherit;text-decoration:none;opacity:.7}footer a:hover{opacity:1}
 
 
 <script>
+
+
+
+
+var FIREBASE_CONFIG = {
+  apiKey:            "AIzaSyB000QDa4c-vMjO1Xuimw58iiRvwgbF1zc",
+  authDomain:        "mdm-bdc26.firebaseapp.com",
+  projectId:         "mdm-bdc26",
+  storageBucket:     "mdm-bdc26.firebasestorage.app",
+  messagingSenderId: "52658530893",
+  appId:             "1:52658530893:web:166626ae4d681465ddca04"
+};
+
+var _db = null;
+var _fbReady = false;
+
+function initFirebase() {
+  if (_fbReady) return Promise.resolve(_db);
+  return new Promise(function(resolve, reject) {
+    if (typeof firebase === 'undefined') {
+      reject(new Error('Firebase SDK non chargé'));
+      return;
+    }
+    if (!firebase.apps || !firebase.apps.length) {
+      firebase.initializeApp(FIREBASE_CONFIG);
+    }
+    _db = firebase.firestore();
+    _fbReady = true;
+    resolve(_db);
+  });
+}
+
+// ── Comptes ──────────────────────────────────────────────────
+
+function fbLoadComptes() {
+  return initFirebase().then(function(db) {
+    return db.collection('comptes').get().then(function(snap) {
+      return snap.docs.map(function(d) { return Object.assign({_id: d.id}, d.data()); });
+    });
+  });
+}
+
+function fbSaveComptes(comptes) {
+  return initFirebase().then(function(db) {
+    var batch = db.batch();
+    // Supprimer tous puis réécrire (simple pour un petit volume)
+    return db.collection('comptes').get().then(function(snap) {
+      snap.docs.forEach(function(d) { batch.delete(d.ref); });
+      comptes.forEach(function(c) {
+        var ref = db.collection('comptes').doc(c.login);
+        batch.set(ref, c);
+      });
+      return batch.commit();
+    });
+  });
+}
+
+function fbSaveCompte(compte) {
+  return initFirebase().then(function(db) {
+    return db.collection('comptes').doc(compte.login).set(compte);
+  });
+}
+
+function fbDeleteCompte(login) {
+  return initFirebase().then(function(db) {
+    return db.collection('comptes').doc(login).delete();
+  });
+}
+
+// ── Historique commandes ─────────────────────────────────────
+
+function fbSaveOrder(login, order) {
+  return initFirebase().then(function(db) {
+    return db.collection('historique')
+      .doc(login)
+      .collection('commandes')
+      .doc(String(order.id || Date.now()))
+      .set(order);
+  });
+}
+
+function fbLoadHistory(login) {
+  return initFirebase().then(function(db) {
+    return db.collection('historique')
+      .doc(login)
+      .collection('commandes')
+      .orderBy('id', 'desc')
+      .limit(50)
+      .get()
+      .then(function(snap) {
+        return snap.docs.map(function(d) { return d.data(); });
+      });
+  });
+}
+
+function fbLoadAllHistory() {
+  return initFirebase().then(function(db) {
+    return db.collection('historique').get().then(function(snap) {
+      var promises = snap.docs.map(function(loginDoc) {
+        return loginDoc.ref.collection('commandes')
+          .orderBy('id', 'desc').limit(50).get()
+          .then(function(cmdSnap) {
+            return cmdSnap.docs.map(function(d) {
+              return Object.assign({_login: loginDoc.id}, d.data());
+            });
+          });
+      });
+      return Promise.all(promises).then(function(arrays) {
+        return [].concat.apply([], arrays).sort(function(a,b) {
+          return (b.id||0) - (a.id||0);
+        });
+      });
+    });
+  });
+}
+
+var ROLE_THEMES = {
+  client: {brown:'#78503C',terra:'#C87864',cream:'#FDF5EE',gold:'#D2B469',green:'#1A5C2E',shadow:'rgba(120,80,60,0.12)'},
+  user:   {brown:'#4A6898',terra:'#7094C8',cream:'#F2F5FB',gold:'#90B0E0',green:'#4A7C6E',shadow:'rgba(74,104,152,0.10)'},
+  admin:  {brown:'#1B2A4A',terra:'#2E4878',cream:'#F0F4FA',gold:'#A8C0E8',green:'#5B9B7A',shadow:'rgba(27,42,74,0.12)'}
+};
+
+// ── Utilitaires ───────────────────────────────────────────────
+function fmt2(n){ return typeof n==='number' ? n.toFixed(2).replace('.',',')+'\u00a0\u20ac' : '\u2014'; }
+function fmtCA(n){
+  if(!n) return '0\u00a0\u20ac';
+  if(n>=1000) return (n/1000).toFixed(1).replace('.',',')+'\u00a0k\u00a0\u20ac';
+  return n.toFixed(0)+'\u00a0\u20ac';
+}
+function escH(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function logout(){
+  sessionStorage.removeItem('mdm_token');
+  window.location.href='index.html';
+}
+
+// ── Appliquer le thème selon le rôle ─────────────────────────
+function applyTheme(role){
+  var t = ROLE_THEMES[role] || ROLE_THEMES.client;
+  var r = document.documentElement;
+  r.style.setProperty('--brown', t.brown);
+  r.style.setProperty('--terra', t.terra);
+  r.style.setProperty('--cream', t.cream);
+  r.style.setProperty('--gold',  t.gold);
+  r.style.setProperty('--green', t.green||'#1A5C2E');
+  r.style.setProperty('--shadow', t.shadow||'rgba(120,80,60,0.10)');
+}
+
+// ── KPI helper ────────────────────────────────────────────────
+function setKPI(id, val, sub){
+  var el=document.getElementById(id);
+  if(el){
+    el.querySelector('.kpi-val').textContent=val;
+    if(sub) el.querySelector('.kpi-sub').textContent=sub;
+  }
+}
+function makeKPI(id,label,val,sub){
+  return '<div class="kpi-card" id="'+id+'">'
+    +'<div class="kpi-label">'+label+'</div>'
+    +'<div class="kpi-val">'+val+'</div>'
+    +'<div class="kpi-sub">'+sub+'</div>'
+    +'</div>';
+}
+
+// ── Toggle détail commande ────────────────────────────────────
+function toggleOrder(row){
+  var detail = row.nextElementSibling;
+  if(!detail) return;
+  var open = detail.style.display==='block';
+  detail.style.display = open ? 'none' : 'block';
+}
+function toggleComBlock(header){
+  var body   = header.nextElementSibling;
+  var chev   = header.querySelector('.chevron');
+  if(!body) return;
+  var open   = body.classList.toggle('open');
+  if(chev) chev.classList.toggle('open', open);
+}
+
+// ── Construire une ligne commande ─────────────────────────────
+function orderRow(o, clientNom, showClient){
+  var date = o.date ? String(o.date).split(' ')[0] : '?';
+  var tn   = fmt2(o.totalNet);
+  var refs = o.nbRefs||(o.articles?o.articles.length:'?');
+  var cols = o.nbColis||'?';
+  var html = '<div class="order-row expandable" onclick="toggleOrder(this)">'
+    +'<span class="order-mag">'+escH(o.magasin||clientNom||'?')+'</span>'
+    +(showClient?'<span class="order-client-badge">'+escH(clientNom||'')+'</span>':'<span class="order-client-badge">'+refs+' réf. · '+cols+' colis</span>')
+    +'<span class="order-date">'+date+'</span>'
+    +'<span class="order-total">'+tn+'</span>'
+    +'</div>';
+  // Détail articles
+  html += '<div class="order-detail">';
+  if(o.articles && o.articles.length){
+    html += '<table><thead><tr><th>Code</th><th>Désignation</th><th>Qté</th><th>Total HT</th></tr></thead><tbody>';
+    o.articles.forEach(function(a){
+      html += '<tr>'
+        +'<td style="font-family:monospace;color:var(--brown)">'+escH(a.code||'')+'</td>'
+        +'<td>'+escH(a.libelle||'')+'</td>'
+        +'<td style="text-align:center">'+a.qty+'</td>'
+        +'<td style="text-align:right;font-weight:600;color:var(--terra)">'+fmt2(a.totalHT)+'</td>'
+        +'</tr>';
+    });
+    html += '</tbody></table>';
+  } else {
+    html += '<div style="color:#ccc;font-size:11px;text-align:center;padding:6px">Détail non disponible</div>';
+  }
+  html += '</div>';
+  return html;
+}
+
+// ── DASHBOARD CLIENT ──────────────────────────────────────────
+
+// ── ACTUALITÉS CLIENT ────────────────────────────────────────
+var _readActus={};
+try{_readActus=JSON.parse(localStorage.getItem('mdm_read_actus')||'{}');}catch(e){}
+
+function fbLoadActus(){
+  return initFirebase().then(function(db){
+    return db.collection('actus')
+      .where('active','==',true)
+      .orderBy('date','desc')
+      .limit(3)
+      .get()
+      .then(function(snap){
+        return snap.docs.map(function(doc){return Object.assign({_id:doc.id},doc.data());});
+      });
+  }).catch(function(){return[];});
+}
+
+function renderActusClient(actus){
+  var el=document.getElementById('actu-feed-container');
+  if(!el) return;
+  if(!actus||!actus.length){
+    el.innerHTML='<div class="actu-empty">Aucune actualit\u00e9 pour le moment.</div>';
+    return;
+  }
+  var html='<div class="actu-feed">';
+  actus.forEach(function(a){
+    var type=(a.type||'info').toLowerCase();
+    var label=type==='promo'?'Promotion':type==='alerte'?'Alerte':'Info';
+    var date='';
+    if(a.date){
+      try{date=new Date(a.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'});}catch(e){}
+    }
+    html+='<div class="actu-card" id="actu-'+a._id+'">'
+      +'<div class="actu-card-top">'
+      +'<span class="actu-badge '+type+'">'+label+'</span>'
+      +'<span class="actu-card-title">'+escH(a.titre||a.title||'')+'</span>'
+      +(date?'<span class="actu-card-date">'+date+'</span>':'')
+      +'<button class="actu-close" onclick="closeActu(\''+a._id+'\')" title="Fermer">&#10005;</button>'
+      +'</div>'
+      +'<div class="actu-body">'+escH(a.contenu||a.content||'')+'</div>'
+      +'</div>';
+  });
+  html+='</div>';
+  el.innerHTML=html;
+}
+
+function closeActu(id){
+  _readActus[id]=true;
+  try{localStorage.setItem('mdm_read_actus',JSON.stringify(_readActus));}catch(e){}
+  var el=document.getElementById('actu-'+id);
+  if(el){
+    el.style.transition='opacity .3s, max-height .3s';
+    el.style.opacity='0';
+    el.style.overflow='hidden';
+    el.style.maxHeight=el.offsetHeight+'px';
+    setTimeout(function(){el.style.maxHeight='0';},50);
+    setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el);},350);
+  }
+}
+
+function renderClient(data){
+  window._currentData = data;
+  _setSidebarUser(data);
+  var _allCd=[];try{_allCd=JSON.parse(localStorage.getItem("mdm_comptes")||"[]");}catch(e){}
+  chatInit(data.login,data.nom||data.login,data.role,data.commercial||"",_allCd);
+  document.getElementById('dash-page-title').textContent = 'Bonjour, '+escH(data.nom||data.login)+' \u2728';
+  document.getElementById('dash-page-sub').textContent   = 'Retrouvez ici l\u2019historique de vos commandes.';
+
+  var login = (data.login||'guest').replace(/[^a-zA-Z0-9_-]/g,'_');
+  var franco= parseFloat(data.franco)||0;
+
+  // KPI placeholders
+  var kpis = makeKPI('kpi-orders','Commandes','\u2014','passées')
+    + makeKPI('kpi-ca','Total HT','\u2014','cumul commandes')
+    + makeKPI('kpi-last','Dernière commande','\u2014','date')
+    + (franco>0 ? makeKPI('kpi-franco','Franco de port',franco.toFixed(0)+'\u00a0\u20ac','minimum HT') : '');
+  document.getElementById('kpi-grid').innerHTML = kpis;
+
+  // Charger historique
+  var local=[];
+  try{local=JSON.parse(localStorage.getItem('mdm_history_'+login)||'[]');}catch(e){}
+  renderClientOrders(local, franco);
+
+  fbLoadHistory(login).then(function(fbOrders){
+    if(!fbOrders||!fbOrders.length) return;
+    var ids={}; local.forEach(function(o){ids[o.id]=true;});
+    fbOrders.forEach(function(o){if(!ids[o.id]){local.push(o);ids[o.id]=true;}});
+    local.sort(function(a,b){return (b.id||0)-(a.id||0);});
+    if(local.length>50) local=local.slice(0,50);
+    localStorage.setItem('mdm_history_'+login,JSON.stringify(local));
+    renderClientOrders(local, franco);
+  }).catch(function(){});
+  // Charger les actualités
+  fbLoadActus().then(renderActusClient).catch(function(){});
+}
+
+function renderClientOrders(orders, franco){
+  var nb  = orders.length;
+  var ca  = orders.reduce(function(s,o){return s+(o.totalNet||0);},0);
+  var last= orders[0];
+  setKPI('kpi-orders', nb, nb===0?'aucune':nb>1?'commandes':'commande');
+  setKPI('kpi-ca', fmtCA(ca), 'cumul commandes');
+  if(last){
+    var d = last.date?String(last.date).split(' ')[0]:'?';
+    setKPI('kpi-last', d, fmt2(last.totalNet));
+  }
+  var content = document.getElementById('dash-content');
+  if(!content) return;
+  // Section actualités (peuplée par renderActusClient)
+  var actuHtml = '<div class="dash-section" style="margin-bottom:14px">'
+    +'<div class="dash-section-header"><span class="dash-section-title">Actualit\u00e9s MDM</span></div>'
+    +'<div id="actu-feed-container" style="padding:12px"><div class="actu-empty">Chargement\u2026</div></div>'
+    +'</div>';
+
+  if(!orders.length){
+    content.innerHTML = actuHtml + '<div class="dash-section"><div class="empty-state">Aucune commande enregistrée.\nPassez votre première commande !</div></div>';
+    return;
+  }
+  var html = '<div class="dash-section">'
+    +'<div class="dash-section-header">'
+    +'<span class="dash-section-title">\u23f3 Historique de mes commandes</span>'
+    +'<span class="dash-section-badge">'+nb+' commande'+(nb>1?'s':'')+'</span>'
+    +'</div>';
+  orders.forEach(function(o){ html += orderRow(o, null, false); });
+  html += '</div>';
+  content.innerHTML = actuHtml + html;
+}
+
+// ── DASHBOARD COMMERCIAL ──────────────────────────────────────
+function renderCommercial(data){
+  window._currentData = data;
+  _setSidebarUser(data);
+  var _allCd=[];try{_allCd=JSON.parse(localStorage.getItem("mdm_comptes")||"[]");}catch(e){}
+  chatInit(data.login,data.nom||data.login,data.role,data.commercial||"",_allCd);
+  document.getElementById('dash-page-title').textContent = 'Bonjour, '+escH(data.nom||data.login)+' \u2728';
+  document.getElementById('dash-page-sub').textContent   = 'Activité de vos clients assignés.';
+
+  var login = data.login||'';
+  var allComptes=[];
+  try{allComptes=JSON.parse(localStorage.getItem('mdm_comptes')||'[]');}catch(e){}
+  var clients = allComptes.filter(function(co){return co.role==='client'&&co.commercial===login;});
+
+  var kpis = makeKPI('kpi-clients','Mes clients',clients.length,'assignés')
+    + makeKPI('kpi-orders','Commandes','\u2014','enregistrées')
+    + makeKPI('kpi-ca','CA total HT','\u2014','cumul clients')
+    + makeKPI('kpi-avg','Commande moy.','\u2014','par commande');
+  document.getElementById('kpi-grid').innerHTML = kpis;
+
+  if(!clients.length){
+    document.getElementById('dash-content').innerHTML = '<div class="dash-section"><div class="empty-state">Aucun client assigné.</div></div>';
+    return;
+  }
+
+  var logins = clients.map(function(co){return co.login.replace(/[^a-zA-Z0-9_-]/g,'_');});
+  var promises = logins.map(function(lg){
+    return fbLoadHistory(lg).then(function(orders){
+      return (orders||[]).map(function(o){return Object.assign({},o,{_login:lg});});
+    }).catch(function(){
+      var local=[];
+      try{local=JSON.parse(localStorage.getItem('mdm_history_'+lg)||'[]');}catch(e){}
+      return local.map(function(o){return Object.assign({},o,{_login:lg});});
+    });
+  });
+
+  Promise.all(promises).then(function(arrays){
+    var all=[].concat.apply([],arrays);
+    var ids={}; all=all.filter(function(o){if(ids[o.id])return false;ids[o.id]=true;return true;});
+    all.sort(function(a,b){return (b.id||0)-(a.id||0);});
+
+    var nb  = all.length;
+    var ca  = all.reduce(function(s,o){return s+(o.totalNet||0);},0);
+    var avg = nb>0?ca/nb:0;
+    setKPI('kpi-orders', nb, 'enregistrées');
+    setKPI('kpi-ca',  fmtCA(ca),  'cumul clients');
+    setKPI('kpi-avg', fmtCA(avg), 'par commande');
+
+    var content = document.getElementById('dash-content');
+    if(!content) return;
+    if(!all.length){
+      content.innerHTML = '<div class="dash-section"><div class="empty-state">Aucune commande enregistrée.</div></div>';
+      return;
+    }
+    var html = '<div class="dash-section">'
+      +'<div class="dash-section-header">'
+      +'<span class="dash-section-title">\u23f3 Dernières commandes de mes clients</span>'
+      +'<span class="dash-section-badge">'+nb+' commande'+(nb>1?'s':'')+'</span>'
+      +'</div>';
+    all.forEach(function(o){
+      var client = clients.find(function(co){return co.login.replace(/[^a-zA-Z0-9_-]/g,'_')===o._login;});
+      html += orderRow(o, client?client.nom:o._login, true);
+    });
+    html += '</div>';
+    content.innerHTML = html;
+  });
+}
+
+// ── DASHBOARD ADMIN ───────────────────────────────────────────
+function renderAdmin(data){
+  window._currentData = data;
+  document.getElementById('dash-page-title').textContent = 'Tableau de bord admin';
+  document.getElementById('dash-page-sub').textContent   = 'Toutes les commandes classées par commercial.';
+
+  var allComptes=[];
+  try{allComptes=JSON.parse(localStorage.getItem('mdm_comptes')||'[]');}catch(e){}
+  var clients     = allComptes.filter(function(c){return c.role==='client';});
+  var commerciaux = allComptes.filter(function(c){return c.role==='user';});
+
+  var kpis = makeKPI('kpi-clients','Clients',clients.length,'actifs')
+    + makeKPI('kpi-com','Commerciaux',commerciaux.length,'actifs')
+    + makeKPI('kpi-orders','Commandes','\u2014','enregistrées')
+    + makeKPI('kpi-ca','CA total HT','\u2014','cumul all');
+  document.getElementById('kpi-grid').innerHTML = kpis;
+
+  var logins = clients.map(function(co){return co.login.replace(/[^a-zA-Z0-9_-]/g,'_');});
+  if(!logins.length){
+    document.getElementById('dash-content').innerHTML='<div class="dash-section"><div class="empty-state">Aucun client.</div></div>';
+    return;
+  }
+
+  var promises = logins.map(function(lg){
+    return fbLoadHistory(lg).then(function(orders){
+      return (orders||[]).map(function(o){return Object.assign({},o,{_login:lg});});
+    }).catch(function(){
+      var local=[];
+      try{local=JSON.parse(localStorage.getItem('mdm_history_'+lg)||'[]');}catch(e){}
+      return local.map(function(o){return Object.assign({},o,{_login:lg});});
+    });
+  });
+
+  Promise.all(promises).then(function(arrays){
+    var all=[].concat.apply([],arrays);
+    var ids={}; all=all.filter(function(o){if(ids[o.id])return false;ids[o.id]=true;return true;});
+    all.sort(function(a,b){return (b.id||0)-(a.id||0);});
+
+    setKPI('kpi-orders', all.length, 'enregistrées');
+    setKPI('kpi-ca', fmtCA(all.reduce(function(s,o){return s+(o.totalNet||0);},0)), 'cumul all');
+
+    // Grouper par commercial
+    var clientComMap={};
+    clients.forEach(function(co){
+      clientComMap[co.login.replace(/[^a-zA-Z0-9_-]/g,'_')]=co.commercial||'__aucun__';
+    });
+    var comNameMap={};
+    commerciaux.forEach(function(co){comNameMap[co.login]=co.nom;});
+
+    var byCommercial={};
+    all.forEach(function(o){
+      var com=clientComMap[o._login]||'__aucun__';
+      if(!byCommercial[com])byCommercial[com]=[];
+      byCommercial[com].push(o);
+    });
+
+    var keys=Object.keys(byCommercial).sort(function(a,b){
+      if(a==='__aucun__')return 1; if(b==='__aucun__')return -1;
+      return (comNameMap[a]||a).localeCompare(comNameMap[b]||b);
+    });
+
+    var content=document.getElementById('dash-content');
+    if(!content)return;
+    var html='<div class="dash-section">'
+      +'<div class="dash-section-header"><span class="dash-section-title">\u23f3 Commandes par commercial</span></div>';
+
+    keys.forEach(function(comLogin,i){
+      var orders=byCommercial[comLogin];
+      var nom=comLogin==='__aucun__'?'Sans commercial':comNameMap[comLogin]||comLogin;
+      var ca=orders.reduce(function(s,o){return s+(o.totalNet||0);},0);
+      var nbCli=clients.filter(function(co){
+        return (co.commercial||'__aucun__')===(comLogin==='__aucun__'?'__aucun__':comLogin)||
+               (comLogin==='__aucun__'&&!co.commercial);
+      }).length;
+
+      html+='<div class="com-block">'
+        +'<div class="com-block-header" onclick="toggleComBlock(this)">'
+        +'<div class="com-block-name">\u{1F4BC} '+escH(nom)
+        +'<span class="com-block-stats">'
+        +nbCli+' client'+(nbCli>1?'s':'')+' · '+orders.length+' commande'+(orders.length>1?'s':'')+''
+        +'</span></div>'
+        +'<div style="display:flex;align-items:center;gap:10px">'
+        +'<span class="com-block-ca">'+fmtCA(ca)+'</span>'
+        +'<span class="chevron'+(i===0?' open':'')+'">▼</span>'
+        +'</div></div>'
+        +'<div class="com-block-body'+(i===0?' open':'')+'">';
+
+      orders.forEach(function(o){
+        var client=clients.find(function(co){return co.login.replace(/[^a-zA-Z0-9_-]/g,'_')===o._login;});
+        html+=orderRow(o, client?client.nom:o._login, true);
+      });
+      html+='</div></div>';
+    });
+    html+='</div>';
+    content.innerHTML=html;
+  });
+}
+
+// ── Init ──────────────────────────────────────────────────────
+(function(){
+  var token=sessionStorage.getItem('mdm_token');
+  if(!token){ window.location.href='index.html'; return; }
+  var data;
+  try{ data=JSON.parse(_safeB64Decode(token)); }catch(e){ sessionStorage.removeItem('mdm_token'); window.location.href='index.html'; return; }
+  if(!data.exp||Date.now()>data.exp){ sessionStorage.removeItem('mdm_token'); window.location.href='index.html'; return; }
+
+  applyTheme(data.role);
+
+  var userInfo=document.getElementById('dash-user-info');
+  if(userInfo) userInfo.innerHTML='&#128100; '+escH(data.nom||data.login)
+    +'<br><span style="opacity:.6;font-size:10px">'+escH(data.role==='user'?'Commercial':(data.role==='admin'?'Administrateur':'Client'))+'</span>';
+
+  if(data.role==='client')     renderClient(data);
+  else if(data.role==='user')  renderCommercial(data);
+  else if(data.role==='admin') renderAdmin(data);
+  else window.location.href='commande.html';
+})();
+
+// ── Export Excel dashboard ────────────────────────────────────
+function exportDashExcel(){
+  if(typeof XLSX==='undefined'){ alert('SheetJS non chargé'); return; }
+
+  var role = _currentData ? _currentData.role : 'client';
+  var wb   = XLSX.utils.book_new();
+
+  if(role === 'client'){
+    _exportClientExcel(wb);
+  } else if(role === 'user'){
+    _exportCommercialExcel(wb);
+  } else if(role === 'admin'){
+    _exportAdminExcel(wb);
+  }
+}
+
+function _fmtDate(d){ return d ? String(d).split(' ')[0] : ''; }
+
+function _exportClientExcel(wb){
+  // Feuille : toutes mes commandes
+  var login=(window._currentData.login||'guest').replace(/[^a-zA-Z0-9_-]/g,'_');
+  var orders=[];
+  try{orders=JSON.parse(localStorage.getItem('mdm_history_'+login)||'[]');}catch(e){}
+
+  var rows=[['Date','Magasin','Nb références','Nb colis','Total Brut HT','Remise %','Total Net HT']];
+  orders.forEach(function(o){
+    rows.push([_fmtDate(o.date), o.magasin||'', o.nbRefs||0, o.nbColis||0,
+      o.totalBrut||0, o.remise||0, o.totalNet||0]);
+  });
+  var ws = XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols']=[{wch:14},{wch:25},{wch:14},{wch:10},{wch:15},{wch:10},{wch:15}];
+  XLSX.utils.book_append_sheet(wb, ws, 'Mes commandes');
+
+  // Feuille détail articles (dernière commande)
+  if(orders.length && orders[0].articles && orders[0].articles.length){
+    var rows2=[['Code','Désignation','Qté','PCB','PU HT','Total HT']];
+    orders[0].articles.forEach(function(a){
+      rows2.push([a.code||'',a.libelle||'',a.qty||0,a.pcb||1,a.puHT||0,a.totalHT||0]);
+    });
+    var ws2=XLSX.utils.aoa_to_sheet(rows2);
+    ws2['!cols']=[{wch:14},{wch:35},{wch:6},{wch:6},{wch:10},{wch:12}];
+    XLSX.utils.book_append_sheet(wb, ws2, 'Dernière commande');
+  }
+
+  var nom = (window._currentData.nom||'client').replace(/[^a-zA-Z0-9]/g,'_');
+  XLSX.writeFile(wb, 'commandes_'+nom+'_'+new Date().toISOString().slice(0,10)+'.xlsx');
+}
+
+function _exportCommercialExcel(wb){
+  var login = window._currentData.login||'';
+  var allComptes=[];
+  try{allComptes=JSON.parse(localStorage.getItem('mdm_comptes')||'[]');}catch(e){}
+  var clients=allComptes.filter(function(c){return c.role==='client'&&c.commercial===login;});
+
+  // Feuille résumé clients
+  var rows=[['Client','Login','Email','Groupement','Remise %','Nb commandes','Total HT']];
+  clients.forEach(function(co){
+    var lg=co.login.replace(/[^a-zA-Z0-9_-]/g,'_');
+    var hist=[];
+    try{hist=JSON.parse(localStorage.getItem('mdm_history_'+lg)||'[]');}catch(e){}
+    var ca=hist.reduce(function(s,o){return s+(o.totalNet||0);},0);
+    rows.push([co.nom||'',co.login||'',co.email||'',co.groupement||'',co.remise||0,hist.length,Math.round(ca*100)/100]);
+  });
+  var ws=XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols']=[{wch:25},{wch:15},{wch:28},{wch:15},{wch:10},{wch:14},{wch:12}];
+  XLSX.utils.book_append_sheet(wb, ws, 'Mes clients');
+
+  // Feuille toutes les commandes
+  var rows2=[['Date','Client','Magasin','Nb références','Nb colis','Total Net HT']];
+  clients.forEach(function(co){
+    var lg=co.login.replace(/[^a-zA-Z0-9_-]/g,'_');
+    var hist=[];
+    try{hist=JSON.parse(localStorage.getItem('mdm_history_'+lg)||'[]');}catch(e){}
+    hist.forEach(function(o){
+      rows2.push([_fmtDate(o.date),co.nom||co.login,o.magasin||'',o.nbRefs||0,o.nbColis||0,o.totalNet||0]);
+    });
+  });
+  rows2.sort(function(a,b){return String(b[0]).localeCompare(String(a[0]));});
+  var ws2=XLSX.utils.aoa_to_sheet(rows2);
+  ws2['!cols']=[{wch:14},{wch:25},{wch:25},{wch:12},{wch:10},{wch:14}];
+  XLSX.utils.book_append_sheet(wb, ws2, 'Toutes les commandes');
+
+  var nom=(window._currentData.nom||'commercial').replace(/[^a-zA-Z0-9]/g,'_');
+  XLSX.writeFile(wb, 'dashboard_'+nom+'_'+new Date().toISOString().slice(0,10)+'.xlsx');
+}
+
+function _exportAdminExcel(wb){
+  var allComptes=[];
+  try{allComptes=JSON.parse(localStorage.getItem('mdm_comptes')||'[]');}catch(e){}
+  var clients=allComptes.filter(function(c){return c.role==='client';});
+  var coms   =allComptes.filter(function(c){return c.role==='user';});
+  var comMap ={};
+  coms.forEach(function(c){comMap[c.login]=c.nom;});
+
+  // Feuille toutes les commandes
+  var rows=[['Date','Client','Magasin','Commercial','Groupement','Nb références','Nb colis','Total Net HT']];
+  var all=[];
+  clients.forEach(function(co){
+    var lg=co.login.replace(/[^a-zA-Z0-9_-]/g,'_');
+    var hist=[];
+    try{hist=JSON.parse(localStorage.getItem('mdm_history_'+lg)||'[]');}catch(e){}
+    hist.forEach(function(o){
+      all.push([_fmtDate(o.date),co.nom||co.login,o.magasin||'',
+        comMap[co.commercial||'']||co.commercial||'',
+        co.groupement||'',o.nbRefs||0,o.nbColis||0,o.totalNet||0]);
+    });
+  });
+  all.sort(function(a,b){return String(b[0]).localeCompare(String(a[0]));});
+  rows=rows.concat(all);
+  var ws=XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols']=[{wch:14},{wch:25},{wch:25},{wch:20},{wch:15},{wch:12},{wch:10},{wch:14}];
+  XLSX.utils.book_append_sheet(wb, ws, 'Toutes les commandes');
+
+  // Feuille CA par commercial
+  var rows2=[['Commercial','Nb clients','Nb commandes','CA total HT']];
+  var bycom={};
+  clients.forEach(function(co){
+    var com=co.commercial||'__aucun__';
+    if(!bycom[com]) bycom[com]={clients:0,orders:0,ca:0,nom:comMap[com]||com};
+    bycom[com].clients++;
+    var lg=co.login.replace(/[^a-zA-Z0-9_-]/g,'_');
+    var hist=[];
+    try{hist=JSON.parse(localStorage.getItem('mdm_history_'+lg)||'[]');}catch(e){}
+    bycom[com].orders+=hist.length;
+    bycom[com].ca+=hist.reduce(function(s,o){return s+(o.totalNet||0);},0);
+  });
+  Object.keys(bycom).sort().forEach(function(k){
+    var v=bycom[k];
+    rows2.push([v.nom==='__aucun__'?'Sans commercial':v.nom,v.clients,v.orders,Math.round(v.ca*100)/100]);
+  });
+  var ws2=XLSX.utils.aoa_to_sheet(rows2);
+  ws2['!cols']=[{wch:25},{wch:12},{wch:14},{wch:14}];
+  XLSX.utils.book_append_sheet(wb, ws2, 'CA par commercial');
+
+  XLSX.writeFile(wb, 'dashboard_admin_'+new Date().toISOString().slice(0,10)+'.xlsx');
+}
+
+function _safeB64Decode(str){
+  try{ return decodeURIComponent(escape(atob(str))); }
+  catch(e){ try{ return decodeURIComponent(atob(str)); }catch(e2){ return atob(str); } }
+}
+
+// ══ MODULE CHAT ══
+// ══════════════════════════════════════════════════════════════
+// MODULE CHAT MDM — Firebase Firestore temps réel
+// Collection : chats/{convId}/messages
+// convId = loginClient + "_" + loginCommercial
+// ══════════════════════════════════════════════════════════════
+
+var _chatOpen        = false;
+var _chatConvId      = null;   // conversation active
+var _chatMyLogin     = null;
+var _chatMyNom       = null;
+var _chatMyRole      = null;
+var _chatPartnerNom  = null;
+var _chatUnsubscribe = null;   // listener Firestore
+var _chatClients     = [];     // liste clients du commercial
+var _chatUnread      = 0;
+
+// ── Initialisation depuis le token ───────────────────────────
+function chatInit(login, nom, role, commercial, allComptes){
+  _chatMyLogin = login;
+  _chatMyNom   = nom;
+  _chatMyRole  = role;
+  if(typeof presenceInit==='function') presenceInit(login);
+  presenceInit(login);
+
+  var fab = document.getElementById('chat-fab');
+
+  if(role === 'client'){
+    var partner = commercial || 'admin';
+    _chatConvId     = login + '_' + partner;
+    _chatPartnerNom = _getCommercialNom(partner, allComptes) || 'Moulin des Moines';
+    _setChatHeader(_chatPartnerNom, 'Votre contact MDM');
+    presenceWatch(_chatConvId.split('_').slice(1).join('_')||'admin', _updatePresenceHeader);
+    if(fab) fab.style.display = 'flex';
+    if(!commercial){
+      initFirebase().then(function(db){
+        return db.collection('comptes').doc(login).get();
+      }).then(function(doc){
+        if(doc.exists){
+          var d=doc.data();
+          if(d.commercial){
+            _chatConvId=login+'_'+d.commercial;
+            _chatPartnerNom=_getCommercialNom(d.commercial,allComptes)||d.commercial;
+            _setChatHeader(_chatPartnerNom,'Votre commercial MDM');
+          }
+        }
+      }).catch(function(){});
+    }
+    chatLoadUnread();
+
+  } else if(role === 'user'){
+    initFirebase().then(function(db){
+      return db.collection('comptes').where('commercial','==',login).where('role','==','client').get();
+    }).then(function(snap){
+      _chatClients = snap.docs.map(function(d){ return d.data(); });
+      if(_chatClients.length > 0){
+        _fillClientSelector();
+        var sel=document.getElementById('chat-client-selector');
+        if(sel) sel.style.display='block';
+        _setChatHeader('Messagerie clients',_chatClients.length+' client(s)');
+        if(fab) fab.style.display='flex';
+        chatLoadAllUnread();
+      } else {
+        _setChatHeader('Messagerie','MDM');
+        if(fab) fab.style.display='flex';
+      }
+    }).catch(function(){
+      _chatClients=(allComptes||[]).filter(function(c){return c.role==='client'&&c.commercial===login;});
+      if(_chatClients.length>0){
+        _fillClientSelector();
+        var sel=document.getElementById('chat-client-selector');
+        if(sel) sel.style.display='block';
+        _setChatHeader('Messagerie clients',_chatClients.length+' client(s)');
+        if(fab) fab.style.display='flex';
+        chatLoadAllUnread();
+      }
+    });
+  }
+}
+
+function _getCommercialNom(login, allComptes){
+  var co = (allComptes||[]).find(function(c){ return c.login === login; });
+  return co ? co.nom : login;
+}
+
+function _setChatHeader(name, status){
+  var n = document.getElementById('chat-header-name');
+  var s = document.getElementById('chat-header-status');
+  var a = document.getElementById('chat-avatar');
+  if(n) n.textContent = name;
+  if(s) s.textContent = status;
+  if(a) a.textContent = name.substring(0,2).toUpperCase();
+}
+
+function _fillClientSelector(){
+  var wrap = document.getElementById('chat-client-selector');
+  if(!wrap) return;
+  // Supprimer ancien select, créer liste custom
+  wrap.innerHTML = '';
+  var list = document.createElement('div');
+  list.id = 'chat-pres-list';
+  wrap.appendChild(list);
+  // Nettoyer les anciens watchers clients
+  presenceUnwatchAll();
+  _chatClients.forEach(function(cl){
+    var item = document.createElement('div');
+    var isActive = (_chatConvId === cl.login + '_' + _chatMyLogin);
+    item.className = 'chat-client-option' + (isActive ? ' selected' : '');
+    item.setAttribute('data-login', cl.login);
+    item.innerHTML =
+      '<span class="presence-dot offline" id="pdot-' + cl.login + '"></span>'
+      + '<span class="client-option-name">' + escH(cl.nom||cl.login) + '</span>'
+      + '<span class="client-option-status presence-label offline" id="plbl-' + cl.login + '">Hors ligne</span>';
+    item.onclick = function(){ chatSelectClient(cl.login); };
+    list.appendChild(item);
+    // Watcher temps réel
+    presenceWatch(cl.login, function(st, ls){
+      var dot = document.getElementById('pdot-' + cl.login);
+      var lbl = document.getElementById('plbl-' + cl.login);
+      if(dot) dot.className = 'presence-dot ' + st;
+      if(lbl){ lbl.textContent = _presenceLabel(st, ls); lbl.className = 'client-option-status presence-label ' + st; }
+    });
+  });
+}
+
+// ── Ouvrir/fermer ─────────────────────────────────────────────
+function chatToggle(){
+  _chatOpen = !_chatOpen;
+  var modal = document.getElementById('chat-modal');
+  if(modal) modal.classList.toggle('open', _chatOpen);
+  if(_chatOpen){
+    if(_chatConvId) chatSubscribe(_chatConvId);
+    _chatMarkRead(_chatConvId);
+    _chatUnread = 0;
+    _updateBadge(0);
+    setTimeout(function(){ chatScrollBottom(); }, 100);
+  } else {
+    chatUnsubscribe();
+  }
+}
+
+function chatSelectClient(clientLogin){
+  document.querySelectorAll('.chat-client-option').forEach(function(it){
+    it.classList.toggle('selected', it.getAttribute('data-login') === clientLogin);
+  });
+  // Surveiller la présence du client sélectionné
+  presenceUnwatchAll();
+  // Rewatcher tous les clients pour la liste
+  if(_chatClients) _chatClients.forEach(function(cl){
+    presenceWatch(cl.login, function(st,ls){
+      var dot=document.getElementById('pdot-'+cl.login);
+      var lbl=document.getElementById('plbl-'+cl.login);
+      if(dot) dot.className='presence-dot '+st;
+      if(lbl){lbl.textContent=_presenceLabel(st,ls);lbl.className='client-option-status presence-label '+st;}
+    });
+  });
+  presenceWatch(clientLogin, _updatePresenceHeader);
+
+  if(!clientLogin) return;
+  var client = _chatClients.find(function(c){ return c.login === clientLogin; });
+  if(!client) return;
+  _chatConvId    = clientLogin + '_' + _chatMyLogin;
+  _chatPartnerNom = client.nom || clientLogin;
+  _setChatHeader(client.nom || clientLogin, 'Client');
+  chatSubscribe(_chatConvId);
+  // Activer le champ de saisie
+  var sendBtn = document.getElementById('chat-send');
+  if(sendBtn) sendBtn.disabled = false;
+}
+
+// ── Firestore listener ────────────────────────────────────────
+function chatSubscribe(convId){
+  chatUnsubscribe();
+  var container = document.getElementById('chat-messages');
+  if(container) container.innerHTML = '<div class="chat-loading">&#8987; Chargement&#8230;</div>';
+
+  initFirebase().then(function(db){
+    var ref = db.collection('chats').doc(convId).collection('messages')
+               .orderBy('ts', 'asc').limitToLast(60);
+
+    _chatUnsubscribe = ref.onSnapshot(function(snap){
+      _renderMessages(snap.docs.map(function(d){ return Object.assign({id:d.id}, d.data()); }));
+      // Activer saisie
+      var sendBtn = document.getElementById('chat-send');
+      if(sendBtn) sendBtn.disabled = false;
+    }, function(err){
+      console.warn('Chat erreur:', err);
+    });
+  }).catch(function(e){
+    console.warn('Chat Firebase:', e);
+  });
+}
+
+function chatUnsubscribe(){
+  if(_chatUnsubscribe){ _chatUnsubscribe(); _chatUnsubscribe = null; }
+}
+
+// ── Affichage des messages ────────────────────────────────────
+function _renderMessages(msgs){
+  var container = document.getElementById('chat-messages');
+  if(!container) return;
+
+  if(!msgs.length){
+    container.innerHTML = '<div class="chat-empty">Aucun message. Commencez la conversation&#160;!</div>';
+    return;
+  }
+
+  var html = '';
+  msgs.forEach(function(m){
+    var mine = m.from === _chatMyLogin;
+    var time = m.ts ? new Date(m.ts).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}) : '';
+    var date = m.ts ? new Date(m.ts).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'}) : '';
+    html += '<div class="chat-msg ' + (mine?'mine':'theirs') + '">';
+    if(!mine) html += '<div class="chat-sender">' + _escH(m.fromNom||m.from) + '</div>';
+    html += '<div class="chat-bubble">' + _escH(m.text) + '</div>';
+    html += '<div class="chat-time">' + date + ' ' + time + '</div>';
+    html += '</div>';
+  });
+  container.innerHTML = html;
+  chatScrollBottom();
+}
+
+function chatScrollBottom(){
+  var c = document.getElementById('chat-messages');
+  if(c) c.scrollTop = c.scrollHeight;
+}
+
+// ── Envoyer un message ────────────────────────────────────────
+function chatSend(){
+  var input = document.getElementById('chat-input');
+  if(!input) return;
+  var text = input.value.trim();
+  if(!text || !_chatConvId) return;
+
+  input.value = '';
+  input.style.height = 'auto';
+
+  var msg = {
+    from:    _chatMyLogin,
+    fromNom: _chatMyNom,
+    text:    text,
+    ts:      Date.now(),
+    read:    false
+  };
+
+  initFirebase().then(function(db){
+    return db.collection('chats').doc(_chatConvId)
+             .collection('messages').add(msg);
+  }).then(function(){
+    // Mettre à jour le dernier message sur le doc parent
+    return initFirebase().then(function(db){
+      return db.collection('chats').doc(_chatConvId).set({
+        lastMsg: text,
+        lastTs:  msg.ts,
+        lastFrom: _chatMyLogin,
+        participants: _chatConvId.split('_')
+      }, {merge: true});
+    });
+  }).catch(function(e){ console.warn('Chat send:', e); });
+}
+
+// ── Comptage des messages non lus ─────────────────────────────
+function chatLoadUnread(){
+  if(!_chatConvId) return;
+  // Écoute temps réel des non lus
+  initFirebase().then(function(db){
+    var ref = db.collection('chats').doc(_chatConvId)
+                .collection('messages')
+                .where('from','!=',_chatMyLogin)
+                .where('read','==',false);
+    // Stocker le listener pour pouvoir l'arrêter
+    if(window._chatUnreadUnsub) window._chatUnreadUnsub();
+    window._chatUnreadUnsub = ref.onSnapshot(function(snap){
+      var count = snap.size;
+      var prev  = _chatUnread;
+      _updateBadge(count);
+      // Notification visuelle + sonore si nouveau message et chat fermé
+      if(count > prev && !_chatOpen){
+        _chatNotify();
+      }
+    }, function(){});
+  }).catch(function(){});
+}
+
+function chatLoadAllUnread(){
+  if(!_chatClients.length) return;
+  // Écoute temps réel pour chaque client du commercial
+  if(window._chatUnreadUnsubs) window._chatUnreadUnsubs.forEach(function(u){u();});
+  window._chatUnreadUnsubs = [];
+  var counts = {};
+  _chatClients.forEach(function(cl){
+    var convId = cl.login + '_' + _chatMyLogin;
+    initFirebase().then(function(db){
+      var ref = db.collection('chats').doc(convId)
+                  .collection('messages')
+                  .where('from','!=',_chatMyLogin)
+                  .where('read','==',false);
+      var unsub = ref.onSnapshot(function(snap){
+        var prev = _chatUnread;
+        counts[convId] = snap.size;
+        var total = Object.values(counts).reduce(function(a,b){return a+b;},0);
+        _updateBadge(total);
+        if(total > prev && !_chatOpen) _chatNotify();
+      }, function(){});
+      window._chatUnreadUnsubs.push(unsub);
+    }).catch(function(){});
+  });
+}
+
+function _updateBadge(count){
+  _syncSidebarBadge(count);
+  _chatUnread = count;
+  var badge = document.getElementById('chat-badge');
+  if(!badge) return;
+  if(count > 0){
+    badge.textContent = count > 9 ? '9+' : count;
+    badge.style.display = 'block';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+function _chatNotify(){
+  // 1. Faire pulser le bouton
+  var fab = document.getElementById('chat-fab');
+  if(fab){
+    fab.style.animation = 'chatPulse .4s ease 3';
+    setTimeout(function(){ fab.style.animation = ''; }, 1200);
+  }
+  // 2. Changer le titre de la page
+  var origTitle = document.title;
+  var blinkCount = 0;
+  if(window._chatTitleBlink) clearInterval(window._chatTitleBlink);
+  window._chatTitleBlink = setInterval(function(){
+    document.title = blinkCount % 2 === 0 ? '\uD83D\uDCAC Nouveau message' : origTitle;
+    blinkCount++;
+    if(blinkCount >= 8){
+      clearInterval(window._chatTitleBlink);
+      document.title = origTitle;
+    }
+  }, 600);
+  // 3. Son (bip discret via Web Audio API)
+  try{
+    var ctx = new (window.AudioContext||window.webkitAudioContext)();
+    var osc = ctx.createOscillator();
+    var gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.frequency.value = 880;
+    osc.type = 'sine';
+    gain.gain.setValueAtTime(0.15, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.3);
+  }catch(e){}
+}
+
+
+function _escH(s){
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+}
+
+
+
+// ── PRÉSENCE TEMPS RÉEL ──────────────────────────────────────
+var _presenceUnsub = null;
+var _presenceWatchers = {};
+var PRESENCE_TIMEOUT = 5 * 60 * 1000;
+
+function presenceInit(login){
+  initFirebase().then(function(db){
+    var ref = db.collection('presence').doc(login);
+    function heartbeat(){
+      ref.set({login:login, online:true,
+        lastSeen: firebase.firestore.FieldValue.serverTimestamp()
+      },{merge:true}).catch(function(){});
+    }
+    heartbeat();
+    setInterval(heartbeat, 2 * 60 * 1000);
+    window.addEventListener('beforeunload', function(){
+      ref.set({online:false,
+        lastSeen: firebase.firestore.FieldValue.serverTimestamp()
+      },{merge:true}).catch(function(){});
+    });
+  }).catch(function(){});
+}
+
+function _parsePresence(doc){
+  if(!doc || !doc.exists) return {status:'offline', lastSeen:null};
+  var data = doc.data();
+  var online = data.online === true;
+  var lastSeen = data.lastSeen ? data.lastSeen.toDate() : null;
+  if(online && lastSeen && (Date.now() - lastSeen.getTime()) > PRESENCE_TIMEOUT)
+    return {status:'away', lastSeen:lastSeen};
+  if(online) return {status:'online', lastSeen:lastSeen};
+  return {status:'offline', lastSeen:lastSeen};
+}
+
+function presenceWatch(login, cb){
+  initFirebase().then(function(db){
+    var unsub = db.collection('presence').doc(login)
+      .onSnapshot(function(doc){
+        var p = _parsePresence(doc);
+        cb(p.status, p.lastSeen);
+      }, function(){ cb('offline', null); });
+    _presenceWatchers[login] = unsub;
+  }).catch(function(){ cb('offline', null); });
+}
+
+function presenceUnwatch(login){
+  if(_presenceWatchers[login]){
+    _presenceWatchers[login]();
+    delete _presenceWatchers[login];
+  }
+}
+
+function presenceUnwatchAll(){
+  Object.keys(_presenceWatchers).forEach(function(k){
+    _presenceWatchers[k](); delete _presenceWatchers[k];
+  });
+}
+
+function _presenceLabel(status, lastSeen){
+  if(status === 'online') return 'En ligne';
+  if(status === 'away')   return 'Absent';
+  if(!lastSeen) return 'Hors ligne';
+  var diff = Date.now() - lastSeen.getTime();
+  var mins = Math.floor(diff / 60000);
+  var hrs  = Math.floor(mins / 60);
+  var days = Math.floor(hrs / 24);
+  if(mins < 2)   return 'Vu à l’instant';
+  if(mins < 60)  return 'Vu il y a ' + mins + ' min';
+  if(hrs < 24)   return 'Vu il y a ' + hrs + 'h';
+  return 'Vu il y a ' + days + 'j';
+}
+
+function _updatePresenceHeader(status, lastSeen){
+  var s = document.getElementById('chat-header-status');
+  if(!s) return;
+  s.innerHTML =
+    '<span class="presence-dot ' + status + '"></span>' +
+    '<span class="presence-label ' + status + '">' + _presenceLabel(status, lastSeen) + '</span>';
+}
+
+
+// ── SIDEBAR ──────────────────────────────────────────────────
+function _closeTopModal(){
+  var m=document.querySelector('[data-modal="profil"]');
+  if(m) document.body.removeChild(m);
+}
+function openSidebar(){
+  document.getElementById('mdm-sidebar').classList.add('open');
+  document.getElementById('mdm-overlay').classList.add('open');
+}
+function closeSidebar(){
+  document.getElementById('mdm-sidebar').classList.remove('open');
+  document.getElementById('mdm-overlay').classList.remove('open');
+}
+function scrollToHistory(){
+  var el = document.getElementById('dash-content');
+  if(el) el.scrollIntoView({behavior:'smooth'});
+  closeSidebar();
+}
+function _setSidebarUser(data){
+  var n = document.getElementById('sidebar-user-name');
+  var r = document.getElementById('sidebar-user-role');
+  if(n) n.textContent = data.nom || data.login || '';
+  if(r) r.textContent = data.role === 'user' ? 'Commercial' : 'Client';
+}
+function _syncSidebarBadge(count){
+  var sb = document.getElementById('sidebar-chat-badge');
+  if(!sb) return;
+  if(count > 0){ sb.textContent = count > 9 ? '9+' : count; sb.style.display = 'flex'; }
+  else { sb.style.display = 'none'; }
+}
+function _closeProfilModal(){ var m=document.querySelector("[data-modal=profil]"); if(m) document.body.removeChild(m); }
+function showProfil(){
+  var data = window._currentData || {};
+  var rows = [
+    ['Login', data.login||'—'], ['Email', data.email||'—'],
+    ['Téléphone', data.tel||'—'], ['Groupement', data.groupement||'—'],
+    ['N° client', data.numclient||'—'],
+    ['Remise', data.remise > 0 ? data.remise + '%' : '—'],
+    ['Franco', data.franco > 0 ? data.franco + ' € HT' : '—'],
+    ['Commercial', data.commercial||'—']
+  ];
+  var tbl = rows.map(function(r){
+    return '<tr style="border-bottom:1px solid var(--border-light)">'
+      +'<td style="padding:8px 0;font-weight:400;color:var(--text-muted);width:110px">'+r[0]+'</td>'
+      +'<td style="padding:8px 0;font-weight:300;color:var(--text)">'+escH(String(r[1]))+'</td>'
+      +'</tr>';
+  }).join('');
+  var bg = document.createElement('div');
+  bg.style.cssText = 'position:fixed;inset:0;background:rgba(92,74,56,.35);z-index:300;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(2px)';
+  bg.setAttribute('data-modal','profil');
+  bg.onclick = function(e){ if(e.target===bg) document.body.removeChild(bg); };
+  var box = document.createElement('div');
+  box.style.cssText = 'background:var(--bg-card);border-radius:12px;padding:24px 28px;max-width:420px;width:94%;border:1px solid var(--border);max-height:90vh;overflow-y:auto';
+  box.innerHTML =
+    '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border)">'
+    +'<span style="font-family:Fraunces,serif;font-size:18px;font-weight:200;color:var(--text)">Mon profil</span>'
+    +'<button onclick="_closeTopModal()" style="background:none;border:none;cursor:pointer;font-size:18px;color:var(--text-muted)">&#10005;</button>'
+    +'</div><table style="width:100%;font-size:12px;border-collapse:collapse">'+tbl+'</table>';
+  bg.appendChild(box);
+  document.body.appendChild(bg);
+  closeSidebar();
+}
+
+
+</script>
+<script>
+
 
 
 // ══════════════════════════════════════════════════════════════
@@ -857,6 +2044,76 @@ function chatLoadAllUnread(){
 }
 function _escH(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
+
+
+</script>
+<script>
+
+</script>
+<script>
+
+// ── SIDEBAR ──────────────────────────────────────────────────
+function openSidebar(){
+  document.getElementById('mdm-sidebar').classList.add('open');
+  document.getElementById('mdm-overlay').classList.add('open');
+}
+function closeSidebar(){
+  document.getElementById('mdm-sidebar').classList.remove('open');
+  document.getElementById('mdm-overlay').classList.remove('open');
+}
+function scrollToHistory(){
+  var el=document.getElementById('dash-content');
+  if(el) el.scrollIntoView({behavior:'smooth'});
+  closeSidebar();
+}
+function _setSidebarUser(data){
+  var n=document.getElementById('sidebar-user-name');
+  var r=document.getElementById('sidebar-user-role');
+  if(n) n.textContent=data.nom||data.login||'';
+  if(r) r.textContent=data.role==='user'?'Commercial':'Client';
+}
+function _syncSidebarBadge(count){
+  var sb=document.getElementById('sidebar-chat-badge');
+  if(!sb) return;
+  var wasHidden=!sb.classList.contains('show');
+  sb.textContent=count>0?(count>9?'9+':String(count)):'';
+  if(count>0){
+    sb.classList.add('show');
+    if(wasHidden){ sb.classList.remove('pop'); void sb.offsetWidth; sb.classList.add('pop'); }
+  } else {
+    sb.classList.remove('show','pop');
+  }
+}
+function _closeProfilModal(){ var m=document.querySelector("[data-modal=profil]"); if(m) document.body.removeChild(m); }
+function showProfil(){
+  var data=window._currentData||{};
+  var rows=[
+    ['Login',data.login||'—'],['Email',data.email||'—'],
+    ['Téléphone',data.tel||'—'],['Groupement',data.groupement||'—'],
+    ['N° client',data.numclient||'—'],
+    ['Remise',data.remise>0?data.remise+'%':'—'],
+    ['Franco',data.franco>0?data.franco+' € HT':'—'],
+    ['Commercial',data.commercial||'—']
+  ];
+  var tbl=rows.map(function(r){
+    return '<tr style="border-bottom:1px solid var(--border-light)">'
+      +'<td style="padding:8px 0;font-weight:400;color:var(--text-muted);width:110px">'+r[0]+'</td>'
+      +'<td style="padding:8px 0;font-weight:300;color:var(--text)">'+String(r[1])+'</td></tr>';
+  }).join('');
+  var bg=document.createElement('div');
+  bg.style.cssText='position:fixed;inset:0;background:rgba(92,74,56,.35);z-index:300;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(2px)';
+  bg.setAttribute('data-modal','profil');
+  bg.onclick=function(e){if(e.target===bg)document.body.removeChild(bg);};
+  var box=document.createElement('div');
+  box.style.cssText='background:var(--bg-card);border-radius:12px;padding:24px 28px;max-width:420px;width:94%;border:1px solid var(--border);max-height:90vh;overflow-y:auto';
+  box.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border)">'
+    +'<span style="font-family:Fraunces,serif;font-size:18px;font-weight:200;color:var(--text)">Mon profil</span>'
+    +'<button onclick="_closeProfilModal()" style="background:none;border:none;cursor:pointer;font-size:18px;color:var(--text-muted)">&#10005;</button>'
+    +'</div><table style="width:100%;font-size:12px;border-collapse:collapse">'+tbl+'</table>';
+  bg.appendChild(box);
+  document.body.appendChild(bg);
+  closeSidebar();
+}
 
 </script>
 </body>

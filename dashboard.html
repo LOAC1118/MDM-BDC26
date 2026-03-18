@@ -2327,13 +2327,14 @@ function _showPDFProgress(label, pct){
 function _getProductsIndex(){
   // Construire un index des produits du catalogue pour la correspondance
   var products = window.PRODUCTS || [];
-  return products.map(function(p){
+  return products.map(function(p,i){
     return {
       code: (p.code||p.ref||'').toUpperCase(),
-      designation: (p.designation||p.des||p.nom||'').toLowerCase(),
+      designation: (p.designation||p.libelle||p.des||p.nom||'').toLowerCase(),
+      ean: String(p.ean||p.EAN||'').trim(),
       pcb: p.pcb||p.colis||1,
-      prix: p.prixHT||p.prix||0,
-      idx: products.indexOf(p)
+      prix: p.prixHT||p.prix||p.pu_ht||0,
+      idx: i
     };
   });
 }
@@ -2363,12 +2364,17 @@ function _extractWithClaude(pdfB64){
     headers: {'Content-Type': 'application/json'},
     body: JSON.stringify({
       pdf_b64: pdfB64,
-      prompt: 'Voici un extrait du catalogue MDM (code | d\u00e9signation) :\n'
-        + productsIndex.slice(0,300).map(function(p){ return p.code + ' | ' + p.designation; }).join('\n')
-        + '\n\nAnalyse ce bon de commande PDF et extrais TOUS les produits command\u00e9s.'
-        + ' Pour chaque produit, fais correspondre au catalogue MDM via code ET d\u00e9signation.'
-        + ' R\u00e9ponds UNIQUEMENT en JSON valide sans markdown :'
-        + ' {"produits":[{"designation_source":"...","quantite":1,"code_mdm":"...ou null","designation_mdm":"...ou null","confiance":"exact|approx|aucun","note":""}]}'
+      prompt: 'Tu analyses un bon de commande MDM (Moulin des Moines).\n'
+        + 'Ce PDF contient des colonnes : EAN | Code article MDM | D\u00e9signation | Quantit\u00e9 | Prix\n'
+        + '\nCatalogue MDM disponible (code | d\u00e9signation) :\n'
+        + productsIndex.slice(0,500).map(function(p){ return p.code + ' | ' + p.designation; }).join('\n')
+        + '\n\nExtrais TOUS les produits du PDF.\n'
+        + 'Pour chaque ligne produit :\n'
+        + '1. Utilise le Code article MDM de la colonne "Ref Fournis" pour trouver la correspondance EXACTE dans le catalogue\n'
+        + '2. Si le code ne correspond pas, utilise l\'EAN (code barre) pour chercher dans la d\u00e9signation\n'
+        + '3. La quantit\u00e9 est dans la colonne "Quantit\u00e9" (ex: 6,000 = 6 colis)\n'
+        + '\nR\u00e9ponds UNIQUEMENT en JSON valide, sans markdown, sans explication :\n'
+        + '{"produits":[{"designation_source":"d\u00e9signation du PDF","code_source":"code du PDF","ean_source":"EAN du PDF","quantite":6,"code_mdm":"code trouv\u00e9 ou null","designation_mdm":"nom MDM ou null","confiance":"exact|approx|aucun"}]}'
     })
   })
   .then(function(r){ return r.json(); })
@@ -2406,21 +2412,40 @@ function _extractWithClaude(pdfB64){
 
 function _enrichResults(results, index){
   results.forEach(function(r){
-    if(r.code_mdm && r.confiance === 'exact'){
-      // Chercher par code
-      var found = index.find(function(p){ return p.code === r.code_mdm.toUpperCase(); });
-      if(found){ r._productIdx = found.idx; r._pcb = found.pcb; }
+    // 1. Correspondance par code article MDM (prioritaire)
+    var codeToSearch = (r.code_mdm||r.code_source||'').toUpperCase().trim();
+    if(codeToSearch){
+      var found = index.find(function(p){ return p.code === codeToSearch; });
+      if(found){ r._productIdx=found.idx; r._pcb=found.pcb; r.confiance='exact'; r.code_mdm=found.code; r.designation_mdm=found.designation; }
     }
-    if(!r._productIdx && r.designation_mdm){
-      // Chercher par désignation (fuzzy)
-      var dl = r.designation_mdm.toLowerCase();
-      var best = null, bestScore = 0;
+    // 2. Correspondance par EAN
+    if(r._productIdx===undefined && r.ean_source){
+      var ean = String(r.ean_source||'').trim();
+      var products = window.PRODUCTS||[];
+      var foundByEan = products.find(function(p){ return String(p.ean||p.EAN||'').trim()===ean; });
+      if(foundByEan){
+        var idxEan = products.indexOf(foundByEan);
+        r._productIdx=idxEan; r._pcb=foundByEan.pcb||1;
+        r.confiance='exact'; r.code_mdm=foundByEan.code; r.designation_mdm=foundByEan.libelle||foundByEan.designation;
+      }
+    }
+    // 3. Correspondance par désignation (fuzzy fallback)
+    if(r._productIdx===undefined){
+      var dl=(r.designation_mdm||r.designation_source||'').toLowerCase();
+      var best=null,bestScore=0;
       index.forEach(function(p){
-        var words = dl.split(' ').filter(function(w){ return w.length>3; });
-        var score = words.filter(function(w){ return p.designation.indexOf(w)>=0; }).length / Math.max(words.length,1);
-        if(score > bestScore){ bestScore=score; best=p; }
+        var words=dl.split(' ').filter(function(w){return w.length>3;});
+        var score=words.filter(function(w){return p.designation.indexOf(w)>=0;}).length/Math.max(words.length,1);
+        if(score>bestScore){bestScore=score;best=p;}
       });
-      if(best && bestScore > 0.5){ r._productIdx = best.idx; r._pcb = best.pcb; if(bestScore<0.85) r.confiance='approx'; }
+      if(best&&bestScore>0.6){
+        r._productIdx=best.idx; r._pcb=best.pcb;
+        r.confiance=bestScore>=0.85?'exact':'approx';
+        if(!r.code_mdm) r.code_mdm=best.code;
+        if(!r.designation_mdm) r.designation_mdm=best.designation;
+      } else {
+        r.confiance='aucun';
+      }
     }
   });
 }

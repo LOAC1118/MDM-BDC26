@@ -706,6 +706,8 @@ footer a{color:inherit;text-decoration:none;opacity:.7}footer a:hover{opacity:1}
 
 
 
+
+
 var FIREBASE_CONFIG = {
   apiKey:            "AIzaSyB000QDa4c-vMjO1Xuimw58iiRvwgbF1zc",
   authDomain:        "mdm-bdc26.firebaseapp.com",
@@ -795,6 +797,25 @@ function fbLoadHistory(login) {
         return snap.docs.map(function(d) { return d.data(); });
       });
   });
+}
+
+// Écoute temps réel des commandes client
+function fbWatchHistory(login, franco, callback) {
+  initFirebase().then(function(db) {
+    // Annuler l'écoute précédente si elle existe
+    if(window._historyUnsub) window._historyUnsub();
+    window._historyUnsub = db.collection('historique')
+      .doc(login)
+      .collection('commandes')
+      .orderBy('id', 'desc')
+      .limit(50)
+      .onSnapshot(function(snap) {
+        var orders = snap.docs.map(function(d) { return d.data(); });
+        callback(orders);
+      }, function(e) {
+        console.warn('fbWatchHistory error:', e);
+      });
+  }).catch(function(){});
 }
 
 function fbLoadAllHistory() {
@@ -993,20 +1014,23 @@ function renderClient(data){
     + (franco>0 ? makeKPI('kpi-franco','Franco de port',franco.toFixed(0)+'\u00a0\u20ac','minimum HT') : '');
   document.getElementById('kpi-grid').innerHTML = kpis;
 
-  // Charger historique
+  // Charger historique local d'abord (affichage immédiat)
   var local=[];
   try{local=JSON.parse(localStorage.getItem('mdm_history_'+login)||'[]');}catch(e){}
-  renderClientOrders(local, franco);
+  if(local.length) renderClientOrders(local, franco);
 
-  fbLoadHistory(login).then(function(fbOrders){
-    if(!fbOrders||!fbOrders.length) return;
-    var ids={}; local.forEach(function(o){ids[o.id]=true;});
-    fbOrders.forEach(function(o){if(!ids[o.id]){local.push(o);ids[o.id]=true;}});
-    local.sort(function(a,b){return (b.id||0)-(a.id||0);});
-    if(local.length>50) local=local.slice(0,50);
-    localStorage.setItem('mdm_history_'+login,JSON.stringify(local));
-    renderClientOrders(local, franco);
-  }).catch(function(){});
+  // Écoute temps réel Firebase
+  fbWatchHistory(login, franco, function(fbOrders){
+    if(!fbOrders) return;
+    // Fusionner local + Firebase
+    var ids={}; var merged=[];
+    fbOrders.forEach(function(o){ids[o.id]=true; merged.push(o);});
+    local.forEach(function(o){if(!ids[o.id]){merged.push(o);ids[o.id]=true;}});
+    merged.sort(function(a,b){return (b.id||0)-(a.id||0);});
+    if(merged.length>50) merged=merged.slice(0,50);
+    localStorage.setItem('mdm_history_'+login,JSON.stringify(merged));
+    renderClientOrders(merged, franco);
+  });
   // Charger les actualités
   fbLoadActus().then(renderActusClient).catch(function(){});
   // Charger le brouillon
@@ -1046,6 +1070,31 @@ function renderClientOrders(orders, franco){
 }
 
 // ── DASHBOARD COMMERCIAL ──────────────────────────────────────
+
+// Écoute temps réel de toutes les commandes (commercial/admin)
+function fbWatchAllHistory(callback){
+  initFirebase().then(function(db){
+    if(window._allHistoryUnsub) window._allHistoryUnsub();
+    // Écouter la collection historique au niveau racine
+    window._allHistoryUnsub = db.collection('historique')
+      .onSnapshot(function(snap){
+        var promises=snap.docs.map(function(loginDoc){
+          return loginDoc.ref.collection('commandes')
+            .orderBy('id','desc').limit(50).get()
+            .then(function(cmdSnap){
+              return cmdSnap.docs.map(function(d){
+                return Object.assign({_login:loginDoc.id},d.data());
+              });
+            });
+        });
+        Promise.all(promises).then(function(arrays){
+          var all=[].concat.apply([],arrays).sort(function(a,b){return (b.id||0)-(a.id||0);});
+          callback(all);
+        }).catch(function(){});
+      },function(e){ console.warn('fbWatchAllHistory error:',e); });
+  }).catch(function(){});
+}
+
 function renderCommercial(data){
   window._currentData = data;
   _setSidebarUser(data);
@@ -1071,46 +1120,61 @@ function renderCommercial(data){
   }
 
   var logins = clients.map(function(co){return co.login.replace(/[^a-zA-Z0-9_-]/g,'_');});
-  var promises = logins.map(function(lg){
-    return fbLoadHistory(lg).then(function(orders){
-      return (orders||[]).map(function(o){return Object.assign({},o,{_login:lg});});
-    }).catch(function(){
-      var local=[];
-      try{local=JSON.parse(localStorage.getItem('mdm_history_'+lg)||'[]');}catch(e){}
-      return local.map(function(o){return Object.assign({},o,{_login:lg});});
-    });
-  });
+  // Écoute temps réel — un onSnapshot par client
+  if(window._comHistoryUnsubs) window._comHistoryUnsubs.forEach(function(u){u();});
+  window._comHistoryUnsubs = [];
+  var allOrdersMap = {}; // login → orders[]
 
-  Promise.all(promises).then(function(arrays){
-    var all=[].concat.apply([],arrays);
+  function _renderComOrders(){
+    var all = [];
+    Object.keys(allOrdersMap).forEach(function(lg){
+      allOrdersMap[lg].forEach(function(o){ all.push(Object.assign({},o,{_login:lg})); });
+    });
     var ids={}; all=all.filter(function(o){if(ids[o.id])return false;ids[o.id]=true;return true;});
     all.sort(function(a,b){return (b.id||0)-(a.id||0);});
-
-    var nb  = all.length;
-    var ca  = all.reduce(function(s,o){return s+(o.totalNet||0);},0);
-    var avg = nb>0?ca/nb:0;
-    setKPI('kpi-orders', nb, 'enregistrées');
-    setKPI('kpi-ca',  fmtCA(ca),  'cumul clients');
-    setKPI('kpi-avg', fmtCA(avg), 'par commande');
-
-    var content = document.getElementById('dash-content');
+    var nb=all.length, ca=all.reduce(function(s,o){return s+(o.totalNet||0);},0);
+    var avg=nb>0?ca/nb:0;
+    setKPI('kpi-orders',nb,'enregistrées');
+    setKPI('kpi-ca',fmtCA(ca),'cumul clients');
+    setKPI('kpi-avg',fmtCA(avg),'par commande');
+    var content=document.getElementById('dash-content');
     if(!content) return;
     if(!all.length){
-      content.innerHTML = '<div class="dash-section"><div class="empty-state">Aucune commande enregistrée.</div></div>';
+      content.innerHTML='<div class="dash-section"><div class="empty-state">Aucune commande enregistrée.</div></div>';
       return;
     }
-    var html = '<div class="dash-section">'
-      +'<div class="dash-section-header">'
-      +'<span class="dash-section-title">\u23f3 Dernières commandes de mes clients</span>'
+    var html='<div class="dash-section"><div class="dash-section-header">'
+      +'<span class="dash-section-title">&#9203; Dernières commandes de mes clients</span>'
       +'<span class="dash-section-badge">'+nb+' commande'+(nb>1?'s':'')+'</span>'
       +'</div>';
     all.forEach(function(o){
-      var client = clients.find(function(co){return co.login.replace(/[^a-zA-Z0-9_-]/g,'_')===o._login;});
-      html += orderRow(o, client?client.nom:o._login, true);
+      var client=clients.find(function(co){return co.login.replace(/[^a-zA-Z0-9_-]/g,'_')===o._login;});
+      html+=orderRow(o,client?client.nom:o._login,true);
     });
-    html += '</div>';
-    content.innerHTML = html;
+    html+='</div>';
+    content.innerHTML=html;
+  }
+
+  // Initialiser avec localStorage pour affichage immédiat
+  logins.forEach(function(lg){
+    var local=[];
+    try{local=JSON.parse(localStorage.getItem('mdm_history_'+lg)||'[]');}catch(e){}
+    if(local.length) allOrdersMap[lg]=local;
   });
+  if(Object.keys(allOrdersMap).length) _renderComOrders();
+
+  // Démarrer les watchers Firebase
+  initFirebase().then(function(db){
+    logins.forEach(function(lg){
+      var unsub=db.collection('historique').doc(lg).collection('commandes')
+        .orderBy('id','desc').limit(50)
+        .onSnapshot(function(snap){
+          allOrdersMap[lg]=snap.docs.map(function(dd){return dd.data();});
+          _renderComOrders();
+        },function(){});
+      window._comHistoryUnsubs.push(unsub);
+    });
+  }).catch(function(){});
 }
 
 // ── DASHBOARD ADMIN ───────────────────────────────────────────
@@ -1879,6 +1943,8 @@ function showProfil(){
   document.body.appendChild(bg);
   closeSidebar();
 }
+
+
 
 
 

@@ -411,121 +411,55 @@ footer a{color:inherit;text-decoration:none;opacity:.7}footer a:hover{opacity:1}
 
 
 
-/* ── LAYOUT AVEC SIDEBAR ── */
+/* ── SIDEBAR ── */
 .mdm-layout{display:flex;min-height:calc(100vh - 56px)}
-.mdm-sidebar{
-  width:220px;flex-shrink:0;
-  background:var(--bg-card);
-  border-right:1px solid var(--border);
-  display:flex;flex-direction:column;
-  position:sticky;top:56px;
-  height:calc(100vh - 56px);
-  overflow-y:auto;
-  z-index:50;
-  transition:transform .25s;
-}
-.mdm-sidebar::-webkit-scrollbar{width:3px}
-.mdm-sidebar::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
-.mdm-sidebar-header{
-  padding:20px 16px 12px;
-  border-bottom:1px solid var(--border-light);
-}
-.mdm-sidebar-user{
-  font-size:13px;font-weight:500;color:var(--text);
-  margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-}
-.mdm-sidebar-role{
-  font-size:10px;font-weight:300;color:var(--text-muted);
-  text-transform:uppercase;letter-spacing:.5px;
-}
+.mdm-sidebar{width:220px;flex-shrink:0;background:var(--bg-card);border-right:1px solid var(--border);display:flex;flex-direction:column;position:sticky;top:56px;height:calc(100vh - 56px);overflow-y:auto;z-index:50;transition:transform .25s}
+.mdm-sidebar::-webkit-scrollbar{width:3px}.mdm-sidebar::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.mdm-sidebar-header{padding:20px 16px 12px;border-bottom:1px solid var(--border-light)}
+.mdm-sidebar-user{font-size:13px;font-weight:500;color:var(--text);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mdm-sidebar-role{font-size:10px;font-weight:300;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px}
 .mdm-sidebar-nav{padding:10px 8px;flex:1}
-.mdm-nav-section{
-  font-size:9px;font-weight:600;color:var(--text-muted);
-  text-transform:uppercase;letter-spacing:.8px;
-  padding:12px 10px 5px;
-}
-.mdm-nav-item{
-  display:flex;align-items:center;gap:10px;
-  padding:9px 10px;border-radius:7px;
-  font-size:12px;font-weight:300;color:var(--text-secondary);
-  cursor:pointer;text-decoration:none;
-  transition:all .13s;margin-bottom:2px;
-  border:1px solid transparent;
-  position:relative;
-}
-.mdm-nav-item:hover{
-  background:var(--bg);color:var(--text);
-  border-color:var(--border-light);
-}
-.mdm-nav-item.active{
-  background:var(--bg-beige);color:var(--text);
-  border-color:var(--border);font-weight:500;
-}
-.mdm-nav-item.active::before{
-  content:'';position:absolute;left:-8px;top:50%;transform:translateY(-50%);
-  width:3px;height:20px;background:var(--accent);border-radius:2px;
-}
+.mdm-nav-section{font-size:9px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.8px;padding:12px 10px 5px}
+.mdm-nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:7px;font-size:12px;font-weight:300;color:var(--text-secondary);cursor:pointer;text-decoration:none;transition:all .13s;margin-bottom:2px;border:1px solid transparent;position:relative}
+.mdm-nav-item:hover{background:var(--bg);color:var(--text);border-color:var(--border-light)}
+.mdm-nav-item.active{background:var(--bg-beige);color:var(--text);border-color:var(--border);font-weight:500}
+.mdm-nav-item.active::before{content:'';position:absolute;left:-8px;top:50%;transform:translateY(-50%);width:3px;height:20px;background:var(--accent);border-radius:2px}
 .mdm-nav-icon{font-size:15px;width:20px;text-align:center;flex-shrink:0}
 .mdm-nav-label{flex:1}
-.mdm-nav-badge{
-  background:var(--accent);color:#fff;
-  font-size:9px;font-weight:600;
-  padding:2px 6px;border-radius:10px;
-  min-width:16px;text-align:center;
-}
+.mdm-nav-badge{background:var(--accent);color:#fff;font-size:9px;font-weight:600;padding:2px 6px;border-radius:10px;min-width:16px;text-align:center}
 .mdm-nav-badge.red{background:var(--danger)}
-.mdm-sidebar-footer{
-  padding:12px 16px;border-top:1px solid var(--border-light);
-}
-.mdm-nav-logout{
-  display:flex;align-items:center;gap:10px;
-  padding:9px 10px;border-radius:7px;
-  font-size:12px;font-weight:300;color:var(--text-muted);
-  cursor:pointer;transition:all .13s;
-  border:1px solid transparent;text-decoration:none;
-}
-.mdm-nav-logout:hover{
-  background:var(--danger-light);color:var(--danger);
-  border-color:#f5c0b8;
-}
-.mdm-main-content{flex:1;overflow-y:auto;min-width:0}
-
-/* Bouton menu mobile */
-.mdm-menu-toggle{
-  display:none;
-  background:none;border:none;cursor:pointer;
-  padding:6px;color:var(--text);font-size:18px;
-  margin-right:8px;
-}
-.mdm-sidebar-overlay{
-  display:none;position:fixed;inset:0;
-  background:rgba(0,0,0,.3);z-index:49;
-}
-
-/* Header sans les boutons de navigation (ils sont dans la sidebar) */
-.mdm-header-slim{
-  background:var(--bg-beige);border-bottom:1px solid var(--border);
-  padding:0 20px;height:56px;
-  display:flex;align-items:center;justify-content:space-between;
-  position:sticky;top:0;z-index:100;
-}
-.mdm-header-logo{
-  font-family:'Fraunces',serif;font-size:18px;font-weight:200;
-  color:var(--text);letter-spacing:-.2px;text-decoration:none;
-}
-.mdm-header-logo span{color:var(--accent)}
-.mdm-header-right{display:flex;align-items:center;gap:8px}
-
+.mdm-sidebar-footer{padding:12px 16px;border-top:1px solid var(--border-light)}
+.mdm-nav-logout{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:7px;font-size:12px;font-weight:300;color:var(--text-muted);cursor:pointer;transition:all .13s;border:1px solid transparent;text-decoration:none}
+.mdm-nav-logout:hover{background:var(--danger-light);color:var(--danger);border-color:#f5c0b8}
+.mdm-main-content{flex:1;overflow-x:hidden;min-width:0}
+.mdm-menu-toggle{display:none;background:none;border:none;cursor:pointer;padding:6px;color:var(--text);font-size:18px;margin-right:8px}
+.mdm-sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:49}
 @media(max-width:768px){
   .mdm-menu-toggle{display:flex;align-items:center}
-  .mdm-sidebar{
-    position:fixed;top:56px;left:0;bottom:0;
-    transform:translateX(-100%);z-index:99;
-  }
+  .mdm-sidebar{position:fixed;top:56px;left:0;bottom:0;transform:translateX(-100%);z-index:99}
   .mdm-sidebar.open{transform:translateX(0)}
   .mdm-sidebar-overlay.open{display:block}
-  .mdm-main-content{width:100%}
 }
+
+
+/* ── PRÉSENCE ── */
+.presence-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;display:inline-block;vertical-align:middle}
+.presence-dot.online{background:#22c55e}
+.presence-dot.offline{background:#d1d5db}
+.presence-dot.away{background:#f59e0b}
+.presence-label{font-size:10px;font-weight:300}
+.presence-label.online{color:#16a34a}
+.presence-label.offline{color:var(--text-muted)}
+.presence-label.away{color:#d97706}
+/* Override du statut chat pour flex */
+#chat-header-status{display:flex !important;align-items:center;gap:5px;font-size:10px;font-weight:300;color:var(--text-muted)}
+/* Liste clients avec présence */
+.chat-client-option{display:flex;align-items:center;gap:8px;padding:9px 12px;cursor:pointer;font-size:12px;font-weight:300;color:var(--text);border-bottom:1px solid var(--border-light);transition:background .13s}
+.chat-client-option:hover{background:var(--bg)}
+.chat-client-option:last-child{border-bottom:none}
+.chat-client-option.selected{background:var(--bg-beige);font-weight:500}
+.client-option-name{flex:1}
+.client-option-status{font-size:10px;font-weight:300}
 
 .chat-fab{position:relative;width:36px;height:36px;border-radius:8px;background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.25);cursor:pointer;font-size:15px;display:none;align-items:center;justify-content:center;transition:background .2s}
 .chat-fab:hover{background:rgba(255,255,255,.22)}
@@ -563,74 +497,37 @@ footer a{color:inherit;text-decoration:none;opacity:.7}footer a:hover{opacity:1}
 }
 @media(max-width:480px){.chat-modal{width:calc(100vw - 16px);right:8px;bottom:80px}.chat-fab{bottom:16px;right:16px}}
 
-
-/* ── PRÉSENCE ── */
-.presence-dot{
-  width:9px;height:9px;border-radius:50%;
-  flex-shrink:0;border:1.5px solid var(--bg-card);
-  display:inline-block;
-}
-.presence-dot.online{background:#22c55e}
-.presence-dot.offline{background:#d1d5db}
-.presence-dot.away{background:#f59e0b}
-.chat-header-presence{
-  display:flex;align-items:center;gap:6px;
-}
-.chat-header-status{
-  display:flex;align-items:center;gap:5px;
-  font-size:10px;font-weight:300;color:var(--text-muted);
-}
-.presence-label{font-size:10px;font-weight:300}
-.presence-label.online{color:#16a34a}
-.presence-label.offline{color:var(--text-muted)}
-/* Sélecteur clients avec statut */
-.chat-client-option{
-  display:flex;align-items:center;gap:8px;
-  padding:8px 12px;cursor:pointer;
-  font-size:12px;font-weight:300;color:var(--text);
-  border-bottom:1px solid var(--border-light);
-  transition:background .13s;
-}
-.chat-client-option:hover{background:var(--bg)}
-.chat-client-option:last-child{border-bottom:none}
-.chat-client-option.selected{background:var(--bg-beige);font-weight:500}
-.client-option-name{flex:1}
-.client-option-status{font-size:10px;font-weight:300;color:var(--text-muted)}
-
 </style>
 </head>
 <body>
 
-<!-- ── HEADER ── -->
-<header class="mdm-header-slim">
+<header style="background:var(--bg-beige);border-bottom:1px solid var(--border);padding:0 20px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;font-family:'Inter',sans-serif">
   <div style="display:flex;align-items:center">
     <button class="mdm-menu-toggle" onclick="openSidebar()" title="Menu">&#9776;</button>
-    <a href="commande.html" class="mdm-header-logo">Moulin <span>des</span> Moines</a>
-    <span style="font-size:10px;font-weight:300;color:var(--text-muted);margin-left:12px;vertical-align:middle">Tableau de bord</span>
+    <a href="commande.html" style="font-family:'Fraunces',serif;font-size:18px;font-weight:200;color:var(--text);letter-spacing:-.2px;text-decoration:none">Moulin <span style="color:var(--accent)">des</span> Moines</a>
+    <span style="font-size:10px;font-weight:300;color:var(--text-muted);margin-left:12px">Tableau de bord</span>
   </div>
-  <div class="mdm-header-right">
-    <button id="chat-fab" onclick="chatToggle()" title="Messagerie" style="display:none;position:relative;padding:7px 10px;border-radius:6px;font-size:14px;cursor:pointer;border:1px solid var(--border);background:var(--bg-card);color:var(--text);transition:all .15s">
+  <div style="display:flex;align-items:center;gap:8px">
+    <span style="font-size:11px;font-weight:300;color:var(--text-secondary)" id="dash-user-info"></span>
+    <button id="chat-fab" onclick="chatToggle()" title="Messagerie" style="display:none;position:relative;padding:7px 10px;border-radius:6px;font-size:14px;cursor:pointer;border:1px solid var(--border);background:var(--bg-card);color:var(--text)">
       &#128172;<span id="chat-badge" style="position:absolute;top:-5px;right:-5px;background:#c0392b;color:#fff;font-size:9px;font-weight:600;padding:2px 5px;border-radius:10px;min-width:16px;text-align:center;display:none"></span>
     </button>
   </div>
 </header>
 
-<!-- ── LAYOUT ── -->
 <div class="mdm-layout">
-
-  
-<nav class="mdm-sidebar" id="mdm-sidebar">
+  <nav class="mdm-sidebar" id="mdm-sidebar">
   <div class="mdm-sidebar-header">
     <div class="mdm-sidebar-user" id="sidebar-user-name">Chargement&hellip;</div>
     <div class="mdm-sidebar-role" id="sidebar-user-role"></div>
   </div>
   <div class="mdm-sidebar-nav">
     <div class="mdm-nav-section">Navigation</div>
-    <a class="mdm-nav-item" id="nav-commande" href="commande.html">
+    <a class="mdm-nav-item" href="commande.html">
       <span class="mdm-nav-icon">&#128221;</span>
       <span class="mdm-nav-label">Bon de commande</span>
     </a>
-    <a class="mdm-nav-item active" id="nav-dashboard" href="dashboard.html">
+    <a class="mdm-nav-item active" href="dashboard.html">
       <span class="mdm-nav-icon">&#127968;</span>
       <span class="mdm-nav-label">Tableau de bord</span>
     </a>
@@ -641,10 +538,10 @@ footer a{color:inherit;text-decoration:none;opacity:.7}footer a:hover{opacity:1}
     </a>
     <a class="mdm-nav-item" href="#" onclick="exportDashExcel();return false">
       <span class="mdm-nav-icon">&#128202;</span>
-      <span class="mdm-nav-label">Exporter Excel</span>
+      <span class="mdm-nav-label">Export Excel</span>
     </a>
     <div class="mdm-nav-section">Compte</div>
-    <a class="mdm-nav-item" id="nav-chat" href="#" onclick="chatToggle();return false">
+    <a class="mdm-nav-item" href="#" onclick="chatToggle();return false">
       <span class="mdm-nav-icon">&#128172;</span>
       <span class="mdm-nav-label">Messagerie</span>
       <span class="mdm-nav-badge red" id="sidebar-chat-badge" style="display:none"></span>
@@ -655,31 +552,20 @@ footer a{color:inherit;text-decoration:none;opacity:.7}footer a:hover{opacity:1}
     </a>
   </div>
   <div class="mdm-sidebar-footer">
-    <a class="mdm-nav-logout" onclick="logout();return false" href="#">
+    <a class="mdm-nav-logout" href="#" onclick="logout();return false">
       <span class="mdm-nav-icon">&#x23FB;</span>
       <span>D&eacute;connexion</span>
     </a>
   </div>
 </nav>
 <div class="mdm-sidebar-overlay" id="mdm-overlay" onclick="closeSidebar()"></div>
-
-
-  <!-- ── CONTENU PRINCIPAL ── -->
-  <div class="mdm-main-content" id="mdm-main-content">
+  <div class="mdm-main-content">
     <div style="padding:24px 28px">
-
-      <!-- Titre -->
       <div class="dash-title" id="dash-page-title">Tableau de bord</div>
       <div class="dash-sub" id="dash-page-sub">Chargement&hellip;</div>
-
-      <!-- KPI -->
       <div class="kpi-grid" id="kpi-grid"></div>
-
-      <!-- Contenu dynamique -->
       <div id="dash-content"></div>
-
     </div>
-
     <footer style="text-align:center;padding:16px;font-size:11px;font-weight:300;color:var(--text-muted);border-top:1px solid var(--border)">
       &copy; 2026 Moulin des Moines &nbsp;&middot;&nbsp;
       <a href="mentions-legales.html" style="color:inherit;opacity:.7;text-decoration:none">Mentions l&eacute;gales</a>
@@ -727,8 +613,28 @@ footer a{color:inherit;text-decoration:none;opacity:.7}footer a:hover{opacity:1}
 </style>
 
 <div class="chat-modal" id="chat-modal">
-<script>
+  <div class="chat-header">
+    <div class="chat-header-left">
+      <div class="chat-avatar" id="chat-avatar">?</div>
+      <div><div class="chat-header-name" id="chat-header-name">Messagerie</div><div class="chat-header-status" id="chat-header-status">Chargement&#8230;</div></div>
+    </div>
+    <button class="chat-close" onclick="chatToggle()">&#10005;</button>
+  </div>
+  <div class="chat-client-selector" id="chat-client-selector">
+    <select id="chat-client-select" onchange="chatSelectClient(this.value)"><option value="">&#8212; Choisir un client &#8212;</option></select>
+  </div>
+  <div class="chat-messages" id="chat-messages"><div class="chat-loading">&#8987; Chargement&#8230;</div></div>
+  <div class="chat-input-row">
+    <textarea class="chat-input" id="chat-input" placeholder="Votre message&#8230;" rows="1"
+      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();chatSend();}"
+      oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,80)+'px'"></textarea>
+    <button class="chat-send" id="chat-send" onclick="chatSend()" disabled>&#10148;</button>
+  </div>
+</div>
 
+
+
+<script>
 
 
 
@@ -1428,9 +1334,7 @@ function chatInit(login, nom, role, commercial, allComptes){
     _chatConvId     = login + '_' + partner;
     _chatPartnerNom = _getCommercialNom(partner, allComptes) || 'Moulin des Moines';
     _setChatHeader(_chatPartnerNom, 'Votre contact MDM');
-    presenceWatch(_chatConvId.split('_')[1]||'admin', function(st,ls){
-      _updatePresenceHeader(st,ls);
-    });
+    presenceWatch(_chatConvId.split('_').slice(1).join('_')||'admin', _updatePresenceHeader);
     if(fab) fab.style.display = 'flex';
     if(!commercial){
       initFirebase().then(function(db){
@@ -1493,45 +1397,33 @@ function _setChatHeader(name, status){
 }
 
 function _fillClientSelector(){
-  // Afficher liste custom avec présence
-  var sel = document.getElementById('chat-client-selector');
-  if(!sel) return;
-  var listEl = document.getElementById('chat-client-list');
-  if(!listEl){
-    listEl = document.createElement('div');
-    listEl.id = 'chat-client-list';
-    sel.innerHTML = '';
-    sel.appendChild(listEl);
-  }
-  listEl.innerHTML = '';
+  var wrap = document.getElementById('chat-client-selector');
+  if(!wrap) return;
+  // Supprimer ancien select, créer liste custom
+  wrap.innerHTML = '';
+  var list = document.createElement('div');
+  list.id = 'chat-pres-list';
+  wrap.appendChild(list);
+  // Nettoyer les anciens watchers clients
+  presenceUnwatchAll();
   _chatClients.forEach(function(cl){
     var item = document.createElement('div');
-    item.className = 'chat-client-option' + (_chatConvId===cl.login+'_'+_chatMyLogin?' selected':'');
+    var isActive = (_chatConvId === cl.login + '_' + _chatMyLogin);
+    item.className = 'chat-client-option' + (isActive ? ' selected' : '');
     item.setAttribute('data-login', cl.login);
-    item.innerHTML = '<span class="presence-dot offline" id="dot-'+cl.login+'"></span>'
-      + '<span class="client-option-name">'+(cl.nom||cl.login)+'</span>'
-      + '<span class="client-option-status" id="status-'+cl.login+'">Hors ligne</span>';
+    item.innerHTML =
+      '<span class="presence-dot offline" id="pdot-' + cl.login + '"></span>'
+      + '<span class="client-option-name">' + escH(cl.nom||cl.login) + '</span>'
+      + '<span class="client-option-status presence-label offline" id="plbl-' + cl.login + '">Hors ligne</span>';
     item.onclick = function(){ chatSelectClient(cl.login); };
-    listEl.appendChild(item);
-    // Watcher présence
-    presenceWatch(cl.login, function(st,ls){
-      var dot = document.getElementById('dot-'+cl.login);
-      var lbl = document.getElementById('status-'+cl.login);
-      if(dot){ dot.className='presence-dot '+st; }
-      if(lbl){ lbl.textContent=_presenceLabel(st,ls); lbl.className='client-option-status presence-label '+st; }
+    list.appendChild(item);
+    // Watcher temps réel
+    presenceWatch(cl.login, function(st, ls){
+      var dot = document.getElementById('pdot-' + cl.login);
+      var lbl = document.getElementById('plbl-' + cl.login);
+      if(dot) dot.className = 'presence-dot ' + st;
+      if(lbl){ lbl.textContent = _presenceLabel(st, ls); lbl.className = 'client-option-status presence-label ' + st; }
     });
-  });
-  return; // empêcher le code original de tourner
-  // code original ci-dessous (inatteignable)
-
-  var sel = document.getElementById('chat-client-select');
-  if(!sel) return;
-  sel.innerHTML = '<option value="">&#8212; Choisir un client &#8212;</option>';
-  _chatClients.forEach(function(c){
-    var opt = document.createElement('option');
-    opt.value = c.login;
-    opt.textContent = c.nom || c.login;
-    sel.appendChild(opt);
   });
 }
 
@@ -1552,14 +1444,21 @@ function chatToggle(){
 }
 
 function chatSelectClient(clientLogin){
-  // Mettre à jour visuellement l'item sélectionné
-  var items=document.querySelectorAll('.chat-client-option');
-  items.forEach(function(it){ it.classList.toggle('selected', it.getAttribute('data-login')===clientLogin); });
-  // Surveiller la présence de ce client
-  presenceStopWatch();
-  presenceWatch(clientLogin, function(st,ls){
-    _updatePresenceHeader(st,ls);
+  document.querySelectorAll('.chat-client-option').forEach(function(it){
+    it.classList.toggle('selected', it.getAttribute('data-login') === clientLogin);
   });
+  // Surveiller la présence du client sélectionné
+  presenceUnwatchAll();
+  // Rewatcher tous les clients pour la liste
+  if(_chatClients) _chatClients.forEach(function(cl){
+    presenceWatch(cl.login, function(st,ls){
+      var dot=document.getElementById('pdot-'+cl.login);
+      var lbl=document.getElementById('plbl-'+cl.login);
+      if(dot) dot.className='presence-dot '+st;
+      if(lbl){lbl.textContent=_presenceLabel(st,ls);lbl.className='client-option-status presence-label '+st;}
+    });
+  });
+  presenceWatch(clientLogin, _updatePresenceHeader);
 
   if(!clientLogin) return;
   var client = _chatClients.find(function(c){ return c.login === clientLogin; });
@@ -1766,153 +1665,62 @@ function _escH(s){
 
 
 
-// ── SIDEBAR ──────────────────────────────────────────────────
-function openSidebar(){
-  document.getElementById('mdm-sidebar').classList.add('open');
-  document.getElementById('mdm-overlay').classList.add('open');
-}
-function closeSidebar(){
-  document.getElementById('mdm-sidebar').classList.remove('open');
-  document.getElementById('mdm-overlay').classList.remove('open');
-}
-function scrollToHistory(){
-  var el=document.getElementById('dash-content');
-  if(el) el.scrollIntoView({behavior:'smooth'});
-  closeSidebar();
-}
-function showProfil(){
-  var data=window._currentData||{};
-  var html='<div style="font-family:Inter,sans-serif">'
-    +'<div style="display:flex;align-items:center;gap:14px;margin-bottom:20px">'
-    +'<div style="width:48px;height:48px;border-radius:50%;background:var(--accent-light);color:var(--accent);display:flex;align-items:center;justify-content:center;font-family:Fraunces,serif;font-size:20px;font-weight:200">'+(data.nom||'?').charAt(0).toUpperCase()+'</div>'
-    +'<div><div style="font-size:15px;font-weight:500;color:var(--text)">'+(data.nom||data.login||'')+'</div>'
-    +'<div style="font-size:11px;font-weight:300;color:var(--text-muted)">'+(data.role==='user'?'Commercial':'Client')+'</div></div></div>'
-    +'<table style="width:100%;font-size:12px;border-collapse:collapse">';
-  var rows=[
-    ['Login',data.login||'—'],
-    ['Email',data.email||'—'],
-    ['Téléphone',data.tel||'—'],
-    ['Ville',(data.ville?(data.ville+(data.cp?' '+data.cp:'')):'—')],
-    ['Groupement',data.groupement||'—'],
-    ['N° client',data.numclient||'—'],
-    ['Remise',(data.remise>0?data.remise+'%':'—')],
-    ['Franco',(data.franco>0?data.franco+' € HT':'—')],
-    ['Commercial',data.commercial||'—'],
-  ];
-  rows.forEach(function(r){
-    html+='<tr style="border-bottom:1px solid var(--border-light)">'
-      +'<td style="padding:8px 0;font-weight:400;color:var(--text-muted);width:110px">'+r[0]+'</td>'
-      +'<td style="padding:8px 0;font-weight:300;color:var(--text)">'+escH(String(r[1]))+'</td>'
-      +'</tr>';
-  });
-  html+='</table></div>';
-  // Afficher dans une modale simple
-  var bg=document.createElement('div');
-  bg.style.cssText='position:fixed;inset:0;background:rgba(92,74,56,.35);z-index:300;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(2px)';
-  bg.onclick=function(e){if(e.target===bg)document.body.removeChild(bg);};
-  var modal=document.createElement('div');
-  modal.style.cssText='background:var(--bg-card);border-radius:12px;padding:24px 28px;max-width:420px;width:94%;border:1px solid var(--border);max-height:90vh;overflow-y:auto';
-  modal.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border)">'
-    +'<span style="font-family:Fraunces,serif;font-size:18px;font-weight:200;color:var(--text)">Mon profil</span>'
-    +'<button onclick="document.body.removeChild(this.closest(\'[style*=position:fixed]\'))" style="background:none;border:none;cursor:pointer;font-size:18px;color:var(--text-muted);padding:2px">&#10005;</button>'
-    +'</div>'+html;
-  bg.appendChild(modal);
-  document.body.appendChild(bg);
-  closeSidebar();
-}
-
-// Synchroniser badge chat avec la sidebar
-function _syncSidebarBadge(count){
-  var sb=document.getElementById('sidebar-chat-badge');
-  if(!sb) return;
-  if(count>0){ sb.textContent=count>9?'9+':count; sb.style.display='flex'; }
-  else { sb.style.display='none'; }
-}
-
-// Remplir les infos user dans la sidebar
-function _setSidebarUser(data){
-  var nameEl=document.getElementById('sidebar-user-name');
-  var roleEl=document.getElementById('sidebar-user-role');
-  if(nameEl) nameEl.textContent=data.nom||data.login||'';
-  if(roleEl) roleEl.textContent=data.role==='user'?'Commercial':'Client';
-}
-
-
-
 // ── PRÉSENCE TEMPS RÉEL ──────────────────────────────────────
 var _presenceUnsub = null;
-var _myPresenceRef = null;
-var PRESENCE_TIMEOUT = 5 * 60 * 1000; // 5 min = away
+var _presenceWatchers = {};
+var PRESENCE_TIMEOUT = 5 * 60 * 1000;
 
 function presenceInit(login){
   initFirebase().then(function(db){
-    // Écrire ma présence
     var ref = db.collection('presence').doc(login);
-    _myPresenceRef = ref;
-    ref.set({
-      login: login,
-      online: true,
-      lastSeen: firebase.firestore.FieldValue.serverTimestamp()
-    }, {merge: true});
-
-    // Mettre à jour lastSeen toutes les 2 min
-    setInterval(function(){
-      ref.set({
-        lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
-        online: true
-      }, {merge: true});
-    }, 2 * 60 * 1000);
-
-    // Marquer offline avant de quitter
-    window.addEventListener('beforeunload', function(){
-      ref.set({online: false,
+    function heartbeat(){
+      ref.set({login:login, online:true,
         lastSeen: firebase.firestore.FieldValue.serverTimestamp()
-      }, {merge: true}).catch(function(){});
+      },{merge:true}).catch(function(){});
+    }
+    heartbeat();
+    setInterval(heartbeat, 2 * 60 * 1000);
+    window.addEventListener('beforeunload', function(){
+      ref.set({online:false,
+        lastSeen: firebase.firestore.FieldValue.serverTimestamp()
+      },{merge:true}).catch(function(){});
     });
   }).catch(function(){});
 }
 
-function presenceGet(login, cb){
-  initFirebase().then(function(db){
-    return db.collection('presence').doc(login).get();
-  }).then(function(doc){
-    if(!doc.exists){ cb('offline', null); return; }
-    var data = doc.data();
-    var online = data.online === true;
-    var lastSeen = data.lastSeen ? data.lastSeen.toDate() : null;
-    // Si online mais lastSeen > 5 min → away
-    if(online && lastSeen && (Date.now() - lastSeen.getTime()) > PRESENCE_TIMEOUT){
-      cb('away', lastSeen);
-    } else if(online){
-      cb('online', lastSeen);
-    } else {
-      cb('offline', lastSeen);
-    }
-  }).catch(function(){ cb('offline', null); });
+function _parsePresence(doc){
+  if(!doc || !doc.exists) return {status:'offline', lastSeen:null};
+  var data = doc.data();
+  var online = data.online === true;
+  var lastSeen = data.lastSeen ? data.lastSeen.toDate() : null;
+  if(online && lastSeen && (Date.now() - lastSeen.getTime()) > PRESENCE_TIMEOUT)
+    return {status:'away', lastSeen:lastSeen};
+  if(online) return {status:'online', lastSeen:lastSeen};
+  return {status:'offline', lastSeen:lastSeen};
 }
 
 function presenceWatch(login, cb){
   initFirebase().then(function(db){
-    if(_presenceUnsub) _presenceUnsub();
-    _presenceUnsub = db.collection('presence').doc(login)
+    var unsub = db.collection('presence').doc(login)
       .onSnapshot(function(doc){
-        if(!doc.exists){ cb('offline', null); return; }
-        var data = doc.data();
-        var online = data.online === true;
-        var lastSeen = data.lastSeen ? data.lastSeen.toDate() : null;
-        if(online && lastSeen && (Date.now() - lastSeen.getTime()) > PRESENCE_TIMEOUT){
-          cb('away', lastSeen);
-        } else if(online){
-          cb('online', lastSeen);
-        } else {
-          cb('offline', lastSeen);
-        }
+        var p = _parsePresence(doc);
+        cb(p.status, p.lastSeen);
       }, function(){ cb('offline', null); });
+    _presenceWatchers[login] = unsub;
   }).catch(function(){ cb('offline', null); });
 }
 
-function presenceStopWatch(){
-  if(_presenceUnsub){ _presenceUnsub(); _presenceUnsub = null; }
+function presenceUnwatch(login){
+  if(_presenceWatchers[login]){
+    _presenceWatchers[login]();
+    delete _presenceWatchers[login];
+  }
+}
+
+function presenceUnwatchAll(){
+  Object.keys(_presenceWatchers).forEach(function(k){
+    _presenceWatchers[k](); delete _presenceWatchers[k];
+  });
 }
 
 function _presenceLabel(status, lastSeen){
@@ -1923,8 +1731,8 @@ function _presenceLabel(status, lastSeen){
   var mins = Math.floor(diff / 60000);
   var hrs  = Math.floor(mins / 60);
   var days = Math.floor(hrs / 24);
-  if(mins < 2)   return 'Vu à l\'instant';
-  if(mins < 60)  return 'Vu il y a ' + mins + ' min';
+  if(mins < 2)   return 'Vu à l’instant';
+  if(mins < 60)  return 'Vu il y a ' + mins + ' min';
   if(hrs < 24)   return 'Vu il y a ' + hrs + 'h';
   return 'Vu il y a ' + days + 'j';
 }
@@ -1932,34 +1740,72 @@ function _presenceLabel(status, lastSeen){
 function _updatePresenceHeader(status, lastSeen){
   var s = document.getElementById('chat-header-status');
   if(!s) return;
-  var dot = '<span class="presence-dot ' + status + '"></span>';
-  var label = '<span class="presence-label ' + status + '">' + _presenceLabel(status, lastSeen) + '</span>';
-  s.innerHTML = dot + label;
+  s.innerHTML =
+    '<span class="presence-dot ' + status + '"></span>' +
+    '<span class="presence-label ' + status + '">' + _presenceLabel(status, lastSeen) + '</span>';
 }
 
-</script>:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border)">'
-    +'<span style="font-family:Fraunces,serif;font-size:18px;font-weight:200;color:var(--text)">Mon profil</span>'
-    +'<button onclick="document.body.removeChild(this.closest(\'[style*=position:fixed]\'))" style="background:none;border:none;cursor:pointer;font-size:18px;color:var(--text-muted);padding:2px">&#10005;</button>'
-    +'</div>'+html;
-  bg.appendChild(modal);
-  document.body.appendChild(bg);
+
+// ── SIDEBAR ──────────────────────────────────────────────────
+function _closeTopModal(){
+  var m=document.querySelector('[data-modal="profil"]');
+  if(m) document.body.removeChild(m);
+}
+function openSidebar(){
+  document.getElementById('mdm-sidebar').classList.add('open');
+  document.getElementById('mdm-overlay').classList.add('open');
+}
+function closeSidebar(){
+  document.getElementById('mdm-sidebar').classList.remove('open');
+  document.getElementById('mdm-overlay').classList.remove('open');
+}
+function scrollToHistory(){
+  var el = document.getElementById('dash-content');
+  if(el) el.scrollIntoView({behavior:'smooth'});
   closeSidebar();
 }
-
-// Synchroniser badge chat avec la sidebar
-function _syncSidebarBadge(count){
-  var sb=document.getElementById('sidebar-chat-badge');
-  if(!sb) return;
-  if(count>0){ sb.textContent=count>9?'9+':count; sb.style.display='flex'; }
-  else { sb.style.display='none'; }
-}
-
-// Remplir les infos user dans la sidebar
 function _setSidebarUser(data){
-  var nameEl=document.getElementById('sidebar-user-name');
-  var roleEl=document.getElementById('sidebar-user-role');
-  if(nameEl) nameEl.textContent=data.nom||data.login||'';
-  if(roleEl) roleEl.textContent=data.role==='user'?'Commercial':'Client';
+  var n = document.getElementById('sidebar-user-name');
+  var r = document.getElementById('sidebar-user-role');
+  if(n) n.textContent = data.nom || data.login || '';
+  if(r) r.textContent = data.role === 'user' ? 'Commercial' : 'Client';
+}
+function _syncSidebarBadge(count){
+  var sb = document.getElementById('sidebar-chat-badge');
+  if(!sb) return;
+  if(count > 0){ sb.textContent = count > 9 ? '9+' : count; sb.style.display = 'flex'; }
+  else { sb.style.display = 'none'; }
+}
+function showProfil(){
+  var data = window._currentData || {};
+  var rows = [
+    ['Login', data.login||'—'], ['Email', data.email||'—'],
+    ['Téléphone', data.tel||'—'], ['Groupement', data.groupement||'—'],
+    ['N° client', data.numclient||'—'],
+    ['Remise', data.remise > 0 ? data.remise + '%' : '—'],
+    ['Franco', data.franco > 0 ? data.franco + ' € HT' : '—'],
+    ['Commercial', data.commercial||'—']
+  ];
+  var tbl = rows.map(function(r){
+    return '<tr style="border-bottom:1px solid var(--border-light)">'
+      +'<td style="padding:8px 0;font-weight:400;color:var(--text-muted);width:110px">'+r[0]+'</td>'
+      +'<td style="padding:8px 0;font-weight:300;color:var(--text)">'+escH(String(r[1]))+'</td>'
+      +'</tr>';
+  }).join('');
+  var bg = document.createElement('div');
+  bg.style.cssText = 'position:fixed;inset:0;background:rgba(92,74,56,.35);z-index:300;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(2px)';
+  bg.setAttribute('data-modal','profil');
+  bg.onclick = function(e){ if(e.target===bg) document.body.removeChild(bg); };
+  var box = document.createElement('div');
+  box.style.cssText = 'background:var(--bg-card);border-radius:12px;padding:24px 28px;max-width:420px;width:94%;border:1px solid var(--border);max-height:90vh;overflow-y:auto';
+  box.innerHTML =
+    '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border)">'
+    +'<span style="font-family:Fraunces,serif;font-size:18px;font-weight:200;color:var(--text)">Mon profil</span>'
+    +'<button onclick="_closeTopModal()" style="background:none;border:none;cursor:pointer;font-size:18px;color:var(--text-muted)">&#10005;</button>'
+    +'</div><table style="width:100%;font-size:12px;border-collapse:collapse">'+tbl+'</table>';
+  bg.appendChild(box);
+  document.body.appendChild(bg);
+  closeSidebar();
 }
 
 </script>

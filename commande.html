@@ -508,29 +508,22 @@ tbody tr.has-qty td.td-qty input{background:#ffe0b2;border-color:var(--terra)}
 
 
 
-<header style="background:var(--bg-beige);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;font-family:'Inter',sans-serif">
-  <div style="display:flex;align-items:baseline;gap:12px;flex-shrink:0">
-    <span style="font-family:'Fraunces',serif;font-size:18px;font-weight:200;color:var(--text);letter-spacing:-.2px">Moulin <span style="color:var(--accent)">des</span> Moines</span>
-    <span style="font-size:10px;font-weight:300;color:var(--text-muted)">Bon de Commande 2026</span>
+<header class="mdm-header-slim">
+  <div style="display:flex;align-items:center">
+    <button class="mdm-menu-toggle no-print" onclick="openSidebar()" title="Menu">&#9776;</button>
+    <a href="commande.html" class="mdm-header-logo" style="font-family:'Fraunces',serif;font-size:18px;font-weight:200;color:var(--text);letter-spacing:-.2px;text-decoration:none">Moulin <span style="color:var(--accent)">des</span> Moines</a>
+    <span style="font-size:10px;font-weight:300;color:var(--text-muted);margin-left:12px">Bon de Commande 2026</span>
   </div>
-  <div style="display:flex;align-items:center;gap:5px">
+  <div style="display:flex;align-items:center;gap:8px">
     <span style="font-size:11px;font-weight:300;color:var(--text-secondary);display:flex;flex-direction:column;align-items:flex-end;gap:1px">
-      <span>&#128100; <span id="user-info"></span></span>
+      <span id="user-info"></span>
       <span id="groupement-info" style="display:none;font-size:10px;color:var(--accent)">&#127978; <span id="groupement-name"></span></span>
       <span id="commercial-info" style="display:none;font-size:10px;color:var(--accent)">&#128188; <span id="commercial-name"></span></span>
     </span>
-    <div style="width:1px;height:16px;background:var(--border);flex-shrink:0;margin:0 2px"></div>
-    <button class="no-print" id="btn-admin" onclick="window.location.href='admin.html'" style="display:none;font-size:11px;font-weight:400;padding:6px 11px;border-radius:6px;border:1px solid var(--border);background:var(--bg-card);color:var(--text);cursor:pointer;font-family:inherit;transition:all .15s">&#9881; Admin</button>
-    <button class="no-print" id="btn-dashboard" onclick="window.location.href='dashboard.html'" style="display:none;font-size:11px;font-weight:400;padding:6px 11px;border-radius:6px;border:1px solid var(--border);background:var(--bg-card);color:var(--text);cursor:pointer;font-family:inherit;transition:all .15s">&#127968; Dashboard</button>
-    <button class="no-print" id="btn-new-client" onclick="openNewClientModal()" style="display:none;font-size:11px;font-weight:400;padding:6px 11px;border-radius:6px;border:1px solid var(--border);background:var(--bg-card);color:var(--accent);cursor:pointer;font-family:inherit;transition:all .15s">&#43; Client</button>
-    <div style="width:1px;height:16px;background:var(--border);flex-shrink:0;margin:0 2px"></div>
-    <button class="no-print" onclick="openHistoryModal()" style="font-size:11px;font-weight:400;padding:6px 11px;border-radius:6px;border:1px solid var(--border);background:var(--bg-card);color:var(--text);cursor:pointer;font-family:inherit;white-space:nowrap">Commandes</button>
-    <button class="no-print" onclick="doPrint()" style="font-size:11px;font-weight:400;padding:6px 11px;border-radius:6px;border:1px solid var(--border);background:var(--bg-card);color:var(--text);cursor:pointer;font-family:inherit">PDF</button>
-    <button class="no-print" onclick="exportExcel()" style="font-size:11px;font-weight:400;padding:6px 11px;border-radius:6px;border:1px solid var(--border);background:var(--bg-card);color:var(--accent);cursor:pointer;font-family:inherit;white-space:nowrap">Excel</button>
-    <button class="no-print" onclick="openModal()" style="font-size:12px;font-weight:500;padding:6px 14px;border-radius:6px;border:none;background:var(--accent);color:#fff;cursor:pointer;font-family:inherit;white-space:nowrap">Envoyer</button>
-    <div style="width:1px;height:16px;background:var(--border);flex-shrink:0;margin:0 2px"></div>
+    <button class="no-print" id="btn-admin" onclick="window.location.href='admin.html'" style="display:none;font-size:11px;padding:6px 11px;border-radius:6px;border:1px solid var(--border);background:var(--bg-card);color:var(--text);cursor:pointer;font-family:'Inter',sans-serif">&#9881; Admin</button>
+    <button class="no-print" id="btn-new-client" onclick="openNewClientModal()" style="display:none;font-size:11px;padding:6px 11px;border-radius:6px;border:1px solid var(--border);background:var(--bg-card);color:var(--accent);cursor:pointer;font-family:'Inter',sans-serif">&#43; Client</button>
+    <button class="no-print" onclick="openModal()" style="font-size:12px;font-weight:500;padding:6px 16px;border-radius:6px;border:none;background:var(--accent);color:#fff;cursor:pointer;font-family:'Inter',sans-serif">Envoyer</button>
     <button class="no-print" id="chat-fab" onclick="chatToggle()" title="Messagerie" style="display:none;position:relative;padding:6px 9px;border-radius:6px;font-size:14px;cursor:pointer;border:1px solid var(--border);background:var(--bg-card);color:var(--text)">&#128172;<span id="chat-badge" style="position:absolute;top:-5px;right:-5px;background:#c0392b;color:#fff;font-size:9px;font-weight:600;padding:2px 5px;border-radius:10px;min-width:16px;text-align:center;display:none"></span></button>
-    <button class="no-print" onclick="logout()" style="font-size:11px;font-weight:300;padding:6px 11px;border-radius:6px;border:1px solid var(--border);background:var(--bg-card);color:var(--text-muted);cursor:pointer;font-family:inherit">&#x23FB;</button>
   </div>
 </header>
 <div class="mdm-layout">
@@ -550,23 +543,32 @@ tbody tr.has-qty td.td-qty input{background:#ffe0b2;border-color:var(--terra)}
       <span class="mdm-nav-icon">&#127968;</span>
       <span class="mdm-nav-label">Tableau de bord</span>
     </a>
-    <div class="mdm-nav-section">Outils</div>
-    <a class="mdm-nav-item" id="nav-historique" href="#" onclick="openHistoryModal();return false">
+    <div class="mdm-nav-section">Actions</div>
+    <a class="mdm-nav-item no-print" href="#" onclick="openHistoryModal();return false">
       <span class="mdm-nav-icon">&#128203;</span>
       <span class="mdm-nav-label">Historique</span>
     </a>
+    <a class="mdm-nav-item no-print" href="#" onclick="doPrint();return false">
+      <span class="mdm-nav-icon">&#128424;</span>
+      <span class="mdm-nav-label">Exporter PDF</span>
+    </a>
+    <a class="mdm-nav-item no-print" href="#" onclick="exportExcel();return false">
+      <span class="mdm-nav-icon">&#128202;</span>
+      <span class="mdm-nav-label">Exporter Excel</span>
+    </a>
+    <div class="mdm-nav-section">Compte</div>
     <a class="mdm-nav-item" id="nav-chat" href="#" onclick="chatToggle();return false">
       <span class="mdm-nav-icon">&#128172;</span>
       <span class="mdm-nav-label">Messagerie</span>
       <span class="mdm-nav-badge red" id="sidebar-chat-badge" style="display:none"></span>
     </a>
-    <a class="mdm-nav-item" id="nav-profil" href="#" onclick="showProfilModal();return false">
+    <a class="mdm-nav-item" href="#" onclick="showProfilModal();return false">
       <span class="mdm-nav-icon">&#128100;</span>
       <span class="mdm-nav-label">Mon profil</span>
     </a>
   </div>
   <div class="mdm-sidebar-footer">
-    <a class="mdm-nav-logout" onclick="logout();return false" href="#">
+    <a class="mdm-nav-logout no-print" onclick="logout();return false" href="#">
       <span class="mdm-nav-icon">&#x23FB;</span>
       <span>D&eacute;connexion</span>
     </a>

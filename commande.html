@@ -798,6 +798,7 @@ tbody tr.has-qty td.td-qty input{background:#ffe0b2;border-color:var(--terra)}
 </div>
 
 <script>
+
 // ============================================================
 // MDM — Couche Firebase Firestore
 // Remplace localStorage pour : comptes, historique, actus, inscriptions
@@ -2388,61 +2389,14 @@ function _safeB64Decode(str){
 
 // ── PRÉSENCE TEMPS RÉEL ──────────────────────────────────────
 var _presenceUnsub=null;
-var PRESENCE_TIMEOUT=5*60*1000;
-
-function presenceInit(login){
-  initFirebase().then(function(db){
-    var ref=db.collection('presence').doc(login);
-    ref.set({login:login,online:true,lastSeen:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
-    setInterval(function(){
-      ref.set({lastSeen:firebase.firestore.FieldValue.serverTimestamp(),online:true},{merge:true});
-    },2*60*1000);
-    window.addEventListener('beforeunload',function(){
-      ref.set({online:false,lastSeen:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}).catch(function(){});
-    });
-  }).catch(function(){});
-}
-
-function presenceWatch(login,cb){
-  initFirebase().then(function(db){
-    if(_presenceUnsub){_presenceUnsub();_presenceUnsub=null;}
-    _presenceUnsub=db.collection('presence').doc(login)
-      .onSnapshot(function(doc){
-        if(!doc.exists){cb('offline',null);return;}
-        var data=doc.data();
-        var online=data.online===true;
-        var lastSeen=data.lastSeen?data.lastSeen.toDate():null;
-        if(online&&lastSeen&&(Date.now()-lastSeen.getTime())>PRESENCE_TIMEOUT){cb('away',lastSeen);}
-        else if(online){cb('online',lastSeen);}
-        else{cb('offline',lastSeen);}
-      },function(){cb('offline',null);});
-  }).catch(function(){cb('offline',null);});
-}
-
 function presenceStopWatch(){
   if(_presenceUnsub){_presenceUnsub();_presenceUnsub=null;}
 }
 
-function _presenceLabel(status,lastSeen){
-  if(status==='online') return 'En ligne';
-  if(status==='away') return 'Absent';
-  if(!lastSeen) return 'Hors ligne';
-  var diff=Date.now()-lastSeen.getTime();
-  var mins=Math.floor(diff/60000);
-  var hrs=Math.floor(mins/60);
-  var days=Math.floor(hrs/24);
-  if(mins<2) return 'Vu à l\'instant';
-  if(mins<60) return 'Vu il y a '+mins+' min';
-  if(hrs<24) return 'Vu il y a '+hrs+'h';
-  return 'Vu il y a '+days+'j';
-}
 
-function _updatePresenceHeader(status,lastSeen){
-  var s=document.getElementById('chat-header-status');
-  if(!s) return;
-  s.innerHTML='<span class="presence-dot '+status+'"></span>'
-    +'<span class="presence-label '+status+'">'+_presenceLabel(status,lastSeen)+'</span>';
-}
+
+
+
 
 </script>
 
@@ -2553,377 +2507,234 @@ function _updatePresenceHeader(status,lastSeen){
 </div>
 <script>
 
-
 // ══════════════════════════════════════════════════════════════
-// MODULE CHAT MDM — Firebase Firestore temps réel
-// Collection : chats/{convId}/messages
-// convId = loginClient + "_" + loginCommercial
+// MODULE CHAT + PRÉSENCE — MDM 2026
 // ══════════════════════════════════════════════════════════════
+var _chatMyLogin='',_chatMyNom='',_chatMyRole='',_chatConvId='';
+var _chatPartnerNom='',_chatClients=[],_chatOpen=false,_chatUnread=0,_chatUnsub=null;
+var _presenceWatchers={},PRESENCE_TIMEOUT=5*60*1000;
 
-var _chatOpen        = false;
-var _chatConvId      = null;   // conversation active
-var _chatMyLogin     = null;
-var _chatMyNom       = null;
-var _chatMyRole      = null;
-var _chatPartnerNom  = null;
-var _chatUnsubscribe = null;   // listener Firestore
-var _chatClients     = [];     // liste clients du commercial
-var _chatUnread      = 0;
-
-// ── Initialisation depuis le token ───────────────────────────
-function chatInit(login, nom, role, commercial, allComptes){
-  _chatMyLogin = login;
-  _chatMyNom   = nom;
-  _chatMyRole  = role;
-
-  var fab = document.getElementById('chat-fab');
-
-  if(role === 'client'){
-    // Client : conversation avec son commercial (ou admin si pas de commercial)
-    var partner = commercial || 'admin';
-    _chatConvId     = login + '_' + partner;
-    _chatPartnerNom = _getCommercialNom(partner, allComptes) || 'Moulin des Moines';
-    _setChatHeader(_chatPartnerNom, 'Votre contact MDM');
-    // Rendre le bouton chat visible immédiatement
-    if(fab){ fab.style.display = 'flex'; }
-    var navChat = document.getElementById('nav-chat');
-    if(navChat) navChat.style.display = 'flex';
-
-    // Si pas de commercial dans allComptes, charger depuis Firebase
-    if(!commercial){
-      initFirebase().then(function(db){
-        return db.collection('comptes').doc(login).get();
-      }).then(function(doc){
-        if(doc.exists){
-          var d = doc.data();
-          var comm = d.commercial || '';
-          if(comm){
-            _chatConvId     = login + '_' + comm;
-            _chatPartnerNom = _getCommercialNom(comm, allComptes) || comm;
-            _setChatHeader(_chatPartnerNom, 'Votre commercial MDM');
-          }
-        }
-      }).catch(function(){});
-    }
-    chatLoadUnread();
-
-  } else if(role === 'user'){
-    // Commercial : charger ses clients depuis Firebase en temps réel
-    initFirebase().then(function(db){
-      return db.collection('comptes')
-               .where('commercial','==',login)
-               .where('role','==','client')
-               .get();
-    }).then(function(snap){
-      _chatClients = snap.docs.map(function(d){ return d.data(); });
-      if(_chatClients.length > 0){
-        _fillClientSelector();
-        var sel = document.getElementById('chat-client-selector');
-        if(sel) sel.style.display = 'block';
-        _setChatHeader('Messagerie clients', _chatClients.length + ' client(s)');
-        if(fab) fab.style.display = 'flex';
-        chatLoadAllUnread();
-      } else {
-        // Fallback : afficher quand même le bouton pour contacter l'admin
-        _setChatHeader('Messagerie', 'MDM');
-        if(fab) fab.style.display = 'flex';
-      }
-    }).catch(function(e){
-      // En cas d'erreur Firebase, utiliser allComptes
-      _chatClients = (allComptes||[]).filter(function(c){
-        return c.role === 'client' && c.commercial === login;
-      });
-      if(_chatClients.length > 0){
-        _fillClientSelector();
-        var sel = document.getElementById('chat-client-selector');
-        if(sel) sel.style.display = 'block';
-        _setChatHeader('Messagerie clients', _chatClients.length + ' client(s)');
-        if(fab) fab.style.display = 'flex';
-        chatLoadAllUnread();
-      }
-    });
-  }
+// ── PRÉSENCE ──────────────────────────────────────────────────
+function presenceInit(login){
+  initFirebase().then(function(db){
+    var ref=db.collection('presence').doc(login);
+    function hb(){ ref.set({login:login,online:true,lastSeen:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}).catch(function(){}); }
+    hb(); setInterval(hb,2*60*1000);
+    window.addEventListener('beforeunload',function(){ ref.set({online:false,lastSeen:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}).catch(function(){}); });
+  }).catch(function(){});
+}
+function presenceWatch(login,cb){
+  if(_presenceWatchers[login]){ _presenceWatchers[login](); }
+  initFirebase().then(function(db){
+    _presenceWatchers[login]=db.collection('presence').doc(login).onSnapshot(function(doc){
+      if(!doc.exists){cb('offline',null);return;}
+      var d=doc.data(),online=d.online===true,ls=d.lastSeen?d.lastSeen.toDate():null;
+      if(online&&ls&&(Date.now()-ls.getTime())>PRESENCE_TIMEOUT) cb('away',ls);
+      else if(online) cb('online',ls);
+      else cb('offline',ls);
+    },function(){cb('offline',null);});
+  }).catch(function(){cb('offline',null);});
+}
+function presenceUnwatchAll(){ Object.keys(_presenceWatchers).forEach(function(k){_presenceWatchers[k]();}); _presenceWatchers={}; }
+function _presenceLabel(status,ls){
+  if(status==='online') return 'En ligne';
+  if(status==='away')   return 'Absent';
+  if(!ls) return 'Hors ligne';
+  var diff=Date.now()-ls.getTime(),mins=Math.floor(diff/60000),hrs=Math.floor(mins/60),days=Math.floor(hrs/24);
+  if(mins<2)  return 'Vu \u00e0 l\u2019instant';
+  if(mins<60) return 'Vu il y a '+mins+'\u00a0min';
+  if(hrs<24)  return 'Vu il y a '+hrs+'h';
+  return 'Vu il y a '+days+'j';
+}
+function _updatePresenceHeader(status,ls){
+  var s=document.getElementById('chat-header-status');
+  if(!s) return;
+  s.innerHTML='<span class="presence-dot '+status+'"></span><span class="presence-label '+status+'">'+_presenceLabel(status,ls)+'</span>';
 }
 
-function _getCommercialNom(login, allComptes){
-  var co = (allComptes||[]).find(function(c){ return c.login === login; });
-  return co ? co.nom : login;
+// ── BADGES ────────────────────────────────────────────────────
+function _updateBadge(count){
+  _chatUnread=count;
+  var b=document.getElementById('chat-badge');
+  if(b){ b.textContent=count>0?(count>9?'9+':String(count)):''; b.style.display=count>0?'flex':'none'; }
+  var sb=document.getElementById('sidebar-chat-badge');
+  if(sb){ sb.textContent=count>0?(count>9?'9+':String(count)):''; sb.style.display=count>0?'flex':'none'; }
 }
-
-function _setChatHeader(name, status){
-  var n = document.getElementById('chat-header-name');
-  var s = document.getElementById('chat-header-status');
-  var a = document.getElementById('chat-avatar');
-  if(n) n.textContent = name;
-  if(s) s.textContent = status;
-  if(a) a.textContent = name.substring(0,2).toUpperCase();
+function _chatNotify(){
+  var fab=document.getElementById('chat-fab');
+  if(fab){fab.style.animation='chatPulse .4s ease 3'; setTimeout(function(){fab.style.animation='';},1200);}
+  var orig=document.title,n=0;
+  if(window._chatBlink) clearInterval(window._chatBlink);
+  window._chatBlink=setInterval(function(){
+    document.title=(n%2===0)?'\ud83d\udcac Nouveau message':orig; n++;
+    if(n>=8){clearInterval(window._chatBlink);document.title=orig;}
+  },600);
+  try{var ctx=new(window.AudioContext||window.webkitAudioContext)(),osc=ctx.createOscillator(),g=ctx.createGain();osc.connect(g);g.connect(ctx.destination);osc.frequency.value=880;osc.type='sine';g.gain.setValueAtTime(0.1,ctx.currentTime);g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.3);osc.start(ctx.currentTime);osc.stop(ctx.currentTime+0.3);}catch(e){}
 }
-
-function _fillClientSelector(){
-  var sel = document.getElementById('chat-client-select');
-  if(!sel) return;
-  sel.innerHTML = '<option value="">&#8212; Choisir un client &#8212;</option>';
-  _chatClients.forEach(function(c){
-    var opt = document.createElement('option');
-    opt.value = c.login;
-    opt.textContent = c.nom || c.login;
-    sel.appendChild(opt);
-  });
-}
-
-// ── Ouvrir/fermer ─────────────────────────────────────────────
-
 function _chatMarkRead(convId){
   if(!convId) return;
   initFirebase().then(function(db){
-    db.collection('chats').doc(convId)
-      .collection('messages')
-      .where('from','!=',_chatMyLogin)
-      .where('read','==',false)
-      .get()
+    db.collection('chats').doc(convId).collection('messages')
+      .where('from','!=',_chatMyLogin).where('read','==',false).get()
       .then(function(snap){
-        var batch = db.batch();
-        snap.docs.forEach(function(doc){
-          batch.update(doc.ref, {read: true});
-        });
-        if(snap.docs.length > 0) batch.commit().catch(function(){});
+        if(!snap.docs.length) return;
+        var batch=db.batch(); snap.docs.forEach(function(d){batch.update(d.ref,{read:true});}); batch.commit().catch(function(){});
       }).catch(function(){});
   }).catch(function(){});
 }
 
+// ── INIT ──────────────────────────────────────────────────────
+function _getCommercialNom(login,all){ var c=(all||[]).find(function(x){return x.login===login;}); return c?(c.nom||c.login):''; }
+function _setChatHeader(name,status){
+  var n=document.getElementById('chat-header-name'),s=document.getElementById('chat-header-status'),a=document.getElementById('chat-avatar');
+  if(n)n.textContent=name; if(a)a.textContent=name.substring(0,2).toUpperCase();
+  if(s){ if(typeof status==='string'&&status.indexOf('<')<0){s.textContent=status;}else if(status){s.innerHTML=status;} }
+}
+function chatInit(login,nom,role,commercial,allComptes){
+  _chatMyLogin=login; _chatMyNom=nom; _chatMyRole=role;
+  presenceInit(login);
+  var fab=document.getElementById('chat-fab'),nc=document.getElementById('nav-chat');
+  if(role==='client'){
+    var partner=commercial||'admin';
+    _chatConvId=login+'_'+partner;
+    _chatPartnerNom=_getCommercialNom(partner,allComptes)||'Moulin des Moines';
+    _setChatHeader(_chatPartnerNom,'Votre contact MDM');
+    if(fab) fab.style.display='flex';
+    if(nc) nc.style.display='flex';
+    presenceWatch(partner,_updatePresenceHeader);
+    if(!commercial){
+      initFirebase().then(function(db){return db.collection('comptes').doc(login).get();})
+        .then(function(doc){
+          if(doc.exists&&doc.data().commercial){
+            var comm=doc.data().commercial;
+            _chatConvId=login+'_'+comm;
+            _chatPartnerNom=_getCommercialNom(comm,allComptes)||comm;
+            _setChatHeader(_chatPartnerNom,'Votre commercial MDM');
+            presenceWatch(comm,_updatePresenceHeader);
+          }
+        }).catch(function(){});
+    }
+    chatLoadUnread();
+  } else if(role==='user'){
+    initFirebase().then(function(db){
+      return db.collection('comptes').where('commercial','==',login).where('role','==','client').get();
+    }).then(function(snap){
+      _chatClients=snap.docs.map(function(d){return d.data();});
+      var hasCl=_chatClients.length>0;
+      _setChatHeader(hasCl?'Messagerie clients':'Messagerie',hasCl?_chatClients.length+' client(s)':'MDM');
+      if(fab) fab.style.display='flex';
+      if(nc) nc.style.display='flex';
+      if(hasCl){ _fillClientSelector(); var sel=document.getElementById('chat-client-selector'); if(sel)sel.style.display='block'; chatLoadAllUnread(); }
+    }).catch(function(){
+      _chatClients=(allComptes||[]).filter(function(cc){return cc.role==='client'&&cc.commercial===login;});
+      if(_chatClients.length>0){ _fillClientSelector(); var sel=document.getElementById('chat-client-selector'); if(sel)sel.style.display='block'; _setChatHeader('Messagerie clients',_chatClients.length+' client(s)'); if(fab)fab.style.display='flex'; if(nc)nc.style.display='flex'; chatLoadAllUnread(); }
+    });
+  }
+}
+
+// ── SÉLECTEUR CLIENTS ─────────────────────────────────────────
+function _fillClientSelector(){
+  var wrap=document.getElementById('chat-client-selector');
+  if(!wrap) return;
+  wrap.innerHTML='';
+  var list=document.createElement('div'); list.id='chat-pres-list'; wrap.appendChild(list);
+  presenceUnwatchAll();
+  _chatClients.forEach(function(cl){
+    (function(login,nom){
+      var item=document.createElement('div');
+      item.className='chat-client-option'+(_chatConvId===login+'_'+_chatMyLogin?' selected':'');
+      item.setAttribute('data-login',login);
+      item.innerHTML='<span class="presence-dot offline" id="pdot-'+login+'"></span><span class="client-option-name">'+_escH(nom)+'</span><span class="client-option-status presence-label offline" id="plbl-'+login+'">Hors ligne</span>';
+      item.onclick=function(){chatSelectClient(login);};
+      list.appendChild(item);
+      presenceWatch(login,function(st,ls){
+        var dot=document.getElementById('pdot-'+login),lbl=document.getElementById('plbl-'+login);
+        if(dot) dot.className='presence-dot '+st;
+        if(lbl){lbl.textContent=_presenceLabel(st,ls);lbl.className='client-option-status presence-label '+st;}
+      });
+    })(cl.login, cl.nom||cl.login);
+  });
+}
+
+// ── TOGGLE / SELECT ───────────────────────────────────────────
 function chatToggle(){
-  _chatOpen = !_chatOpen;
-  var modal = document.getElementById('chat-modal');
-  if(modal) modal.classList.toggle('open', _chatOpen);
-  if(_chatOpen){
-    if(_chatConvId) chatSubscribe(_chatConvId);
-    _chatMarkRead(_chatConvId);
-    _chatUnread = 0;
-    _updateBadge(0);
-    setTimeout(function(){ chatScrollBottom(); }, 100);
-  } else {
-    chatUnsubscribe();
-  }
+  _chatOpen=!_chatOpen;
+  var modal=document.getElementById('chat-modal');
+  if(modal) modal.classList.toggle('open',_chatOpen);
+  if(_chatOpen){ if(_chatConvId){chatSubscribe(_chatConvId);_chatMarkRead(_chatConvId);} _chatUnread=0; _updateBadge(0); setTimeout(chatScrollBottom,100); }
+  else chatUnsubscribe();
 }
-
 function chatSelectClient(clientLogin){
-  if(!clientLogin) return;
-  var client = _chatClients.find(function(c){ return c.login === clientLogin; });
-  if(!client) return;
-  _chatConvId    = clientLogin + '_' + _chatMyLogin;
-  _chatPartnerNom = client.nom || clientLogin;
-  _setChatHeader(client.nom || clientLogin, 'Client');
-  chatSubscribe(_chatConvId);
-  // Activer le champ de saisie
-  var sendBtn = document.getElementById('chat-send');
-  if(sendBtn) sendBtn.disabled = false;
+  document.querySelectorAll('.chat-client-option').forEach(function(it){it.classList.toggle('selected',it.getAttribute('data-login')===clientLogin);});
+  _chatConvId=clientLogin+'_'+_chatMyLogin;
+  var cl=_chatClients.find(function(x){return x.login===clientLogin;})||{};
+  _setChatHeader(cl.nom||clientLogin,'');
+  presenceWatch(clientLogin,_updatePresenceHeader);
+  chatSubscribe(_chatConvId); _chatMarkRead(_chatConvId);
 }
 
-// ── Firestore listener ────────────────────────────────────────
+// ── SUBSCRIBE / MESSAGES ──────────────────────────────────────
 function chatSubscribe(convId){
-  chatUnsubscribe();
-  var container = document.getElementById('chat-messages');
-  if(container) container.innerHTML = '<div class="chat-loading">&#8987; Chargement&#8230;</div>';
-
+  chatUnsubscribe(); if(!convId) return;
+  var cont=document.getElementById('chat-messages');
+  if(cont) cont.innerHTML='<div class="chat-loading">Chargement\u2026</div>';
   initFirebase().then(function(db){
-    var ref = db.collection('chats').doc(convId).collection('messages')
-               .orderBy('ts', 'asc').limitToLast(60);
-
-    _chatUnsubscribe = ref.onSnapshot(function(snap){
-      _renderMessages(snap.docs.map(function(d){ return Object.assign({id:d.id}, d.data()); }));
-      // Activer saisie
-      var sendBtn = document.getElementById('chat-send');
-      if(sendBtn) sendBtn.disabled = false;
-    }, function(err){
-      console.warn('Chat erreur:', err);
-    });
-  }).catch(function(e){
-    console.warn('Chat Firebase:', e);
-  });
-}
-
-function chatUnsubscribe(){
-  if(_chatUnsubscribe){ _chatUnsubscribe(); _chatUnsubscribe = null; }
-}
-
-// ── Affichage des messages ────────────────────────────────────
-function _renderMessages(msgs){
-  var container = document.getElementById('chat-messages');
-  if(!container) return;
-
-  if(!msgs.length){
-    container.innerHTML = '<div class="chat-empty">Aucun message. Commencez la conversation&#160;!</div>';
-    return;
-  }
-
-  var html = '';
-  msgs.forEach(function(m){
-    var mine = m.from === _chatMyLogin;
-    var time = m.ts ? new Date(m.ts).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}) : '';
-    var date = m.ts ? new Date(m.ts).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'}) : '';
-    html += '<div class="chat-msg ' + (mine?'mine':'theirs') + '">';
-    if(!mine) html += '<div class="chat-sender">' + _escH(m.fromNom||m.from) + '</div>';
-    html += '<div class="chat-bubble">' + _escH(m.text) + '</div>';
-    html += '<div class="chat-time">' + date + ' ' + time + '</div>';
-    html += '</div>';
-  });
-  container.innerHTML = html;
-  chatScrollBottom();
-}
-
-function chatScrollBottom(){
-  var c = document.getElementById('chat-messages');
-  if(c) c.scrollTop = c.scrollHeight;
-}
-
-// ── Envoyer un message ────────────────────────────────────────
-function chatSend(){
-  var input = document.getElementById('chat-input');
-  if(!input) return;
-  var text = input.value.trim();
-  if(!text || !_chatConvId) return;
-
-  input.value = '';
-  input.style.height = 'auto';
-
-  var msg = {
-    from:    _chatMyLogin,
-    fromNom: _chatMyNom,
-    text:    text,
-    ts:      Date.now(),
-    read:    false
-  };
-
-  initFirebase().then(function(db){
-    return db.collection('chats').doc(_chatConvId)
-             .collection('messages').add(msg);
-  }).then(function(){
-    // Mettre à jour le dernier message sur le doc parent
-    return initFirebase().then(function(db){
-      return db.collection('chats').doc(_chatConvId).set({
-        lastMsg: text,
-        lastTs:  msg.ts,
-        lastFrom: _chatMyLogin,
-        participants: _chatConvId.split('_')
-      }, {merge: true});
-    });
-  }).catch(function(e){ console.warn('Chat send:', e); });
-}
-
-// ── Comptage des messages non lus ─────────────────────────────
-function chatLoadUnread(){
-  if(!_chatConvId) return;
-  // Écoute temps réel des non lus
-  initFirebase().then(function(db){
-    var ref = db.collection('chats').doc(_chatConvId)
-                .collection('messages')
-                .where('from','!=',_chatMyLogin)
-                .where('read','==',false);
-    // Stocker le listener pour pouvoir l'arrêter
-    if(window._chatUnreadUnsub) window._chatUnreadUnsub();
-    window._chatUnreadUnsub = ref.onSnapshot(function(snap){
-      var count = snap.size;
-      var prev  = _chatUnread;
-      _updateBadge(count);
-      // Notification visuelle + sonore si nouveau message et chat fermé
-      if(count > prev && !_chatOpen){
-        _chatNotify();
-      }
-    }, function(){});
+    _chatUnsub=db.collection('chats').doc(convId).collection('messages')
+      .orderBy('ts','asc').limitToLast(60)
+      .onSnapshot(function(snap){_renderMessages(snap.docs.map(function(d){return Object.assign({_id:d.id},d.data());}));},function(){});
   }).catch(function(){});
 }
+function chatUnsubscribe(){ if(_chatUnsub){_chatUnsub();_chatUnsub=null;} }
+function _renderMessages(msgs){
+  var cont=document.getElementById('chat-messages'); if(!cont) return;
+  if(!msgs.length){cont.innerHTML='<div class="chat-empty">Aucun message. Commencez la conversation\u00a0!</div>';return;}
+  cont.innerHTML=msgs.map(function(m){
+    var mine=(m.from===_chatMyLogin),ts='';
+    if(m.ts&&m.ts.toDate) ts=m.ts.toDate().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+    return '<div class="chat-msg '+(mine?'mine':'theirs')+'">'+(mine?'':'<div class="chat-sender">'+_escH(m.fromNom||m.from)+'</div>')+'<div class="chat-bubble">'+_escH(m.text||'')+'</div>'+(ts?'<div class="chat-time">'+ts+'</div>':'')+'</div>';
+  }).join('');
+  chatScrollBottom();
+}
+function chatScrollBottom(){ var c=document.getElementById('chat-messages'); if(c) c.scrollTop=c.scrollHeight; }
+function chatSend(){
+  var inp=document.getElementById('chat-input'); if(!inp) return;
+  var text=(inp.value||'').trim(); if(!text||!_chatConvId) return;
+  inp.value=''; inp.style.height='auto';
+  var btn=document.getElementById('chat-send'); if(btn) btn.disabled=true;
+  initFirebase().then(function(db){
+    return db.collection('chats').doc(_chatConvId).collection('messages').add({from:_chatMyLogin,fromNom:_chatMyNom,text:text,read:false,ts:firebase.firestore.FieldValue.serverTimestamp()});
+  }).then(function(){if(btn)btn.disabled=false;}).catch(function(){if(btn)btn.disabled=false;});
+}
+document.addEventListener('keydown',function(e){
+  var inp=document.getElementById('chat-input');
+  if(inp&&document.activeElement===inp&&e.key==='Enter'&&!e.shiftKey){e.preventDefault();chatSend();}
+});
 
+// ── UNREAD ────────────────────────────────────────────────────
+function chatLoadUnread(){
+  if(!_chatConvId) return;
+  if(window._chatUnreadUnsub) window._chatUnreadUnsub();
+  initFirebase().then(function(db){
+    window._chatUnreadUnsub=db.collection('chats').doc(_chatConvId).collection('messages')
+      .where('from','!=',_chatMyLogin).where('read','==',false)
+      .onSnapshot(function(snap){var count=snap.size,prev=_chatUnread;_updateBadge(count);if(count>prev&&!_chatOpen)_chatNotify();},function(){});
+  }).catch(function(){});
+}
 function chatLoadAllUnread(){
   if(!_chatClients.length) return;
-  // Écoute temps réel pour chaque client du commercial
   if(window._chatUnreadUnsubs) window._chatUnreadUnsubs.forEach(function(u){u();});
-  window._chatUnreadUnsubs = [];
-  var counts = {};
+  window._chatUnreadUnsubs=[]; var counts={};
   _chatClients.forEach(function(cl){
-    var convId = cl.login + '_' + _chatMyLogin;
+    var cid=cl.login+'_'+_chatMyLogin;
     initFirebase().then(function(db){
-      var ref = db.collection('chats').doc(convId)
-                  .collection('messages')
-                  .where('from','!=',_chatMyLogin)
-                  .where('read','==',false);
-      var unsub = ref.onSnapshot(function(snap){
-        var prev = _chatUnread;
-        counts[convId] = snap.size;
-        var total = Object.values(counts).reduce(function(a,b){return a+b;},0);
-        _updateBadge(total);
-        if(total > prev && !_chatOpen) _chatNotify();
-      }, function(){});
+      var unsub=db.collection('chats').doc(cid).collection('messages')
+        .where('from','!=',_chatMyLogin).where('read','==',false)
+        .onSnapshot(function(snap){var prev=_chatUnread;counts[cid]=snap.size;var total=Object.keys(counts).reduce(function(a,k){return a+counts[k];},0);_updateBadge(total);if(total>prev&&!_chatOpen)_chatNotify();},function(){});
       window._chatUnreadUnsubs.push(unsub);
     }).catch(function(){});
   });
 }
-
-function _updateBadge(count){
-  _chatUnread = count;
-  // Badge dans le bouton chat header
-  var badge = document.getElementById('chat-badge');
-  if(badge){
-    if(count > 0){
-      badge.textContent = count > 9 ? '9+' : count;
-      badge.style.display = 'flex';
-      badge.style.alignItems = 'center';
-      badge.style.justifyContent = 'center';
-    } else {
-      badge.style.display = 'none';
-    }
-  }
-  // Badge dans la sidebar
-  var sb = document.getElementById('sidebar-chat-badge');
-  if(sb){
-    if(count > 0){
-      sb.textContent = count > 9 ? '9+' : count;
-      sb.style.display = 'flex';
-    } else {
-      sb.style.display = 'none';
-    }
-  }
-}
-
-function _chatNotify(){
-  // 1. Faire pulser le bouton
-  var fab = document.getElementById('chat-fab');
-  if(fab){
-    fab.style.animation = 'chatPulse .4s ease 3';
-    setTimeout(function(){ fab.style.animation = ''; }, 1200);
-  }
-  // 2. Changer le titre de la page
-  var origTitle = document.title;
-  var blinkCount = 0;
-  if(window._chatTitleBlink) clearInterval(window._chatTitleBlink);
-  window._chatTitleBlink = setInterval(function(){
-    document.title = blinkCount % 2 === 0 ? '\uD83D\uDCAC Nouveau message' : origTitle;
-    blinkCount++;
-    if(blinkCount >= 8){
-      clearInterval(window._chatTitleBlink);
-      document.title = origTitle;
-    }
-  }, 600);
-  // 3. Son (bip discret via Web Audio API)
-  try{
-    var ctx = new (window.AudioContext||window.webkitAudioContext)();
-    var osc = ctx.createOscillator();
-    var gain = ctx.createGain();
-    osc.connect(gain); gain.connect(ctx.destination);
-    osc.frequency.value = 880;
-    osc.type = 'sine';
-    gain.gain.setValueAtTime(0.15, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + 0.3);
-  }catch(e){}
-}
-
-
-function _escH(s){
-  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
-}
-
-
+function _escH(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 </script>
 

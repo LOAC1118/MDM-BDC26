@@ -701,6 +701,7 @@ footer a{color:inherit;text-decoration:none;opacity:.7}footer a:hover{opacity:1}
 
 
 
+
 var FIREBASE_CONFIG = {
   apiKey:            "AIzaSyB000QDa4c-vMjO1Xuimw58iiRvwgbF1zc",
   authDomain:        "mdm-bdc26.firebaseapp.com",
@@ -1004,6 +1005,8 @@ function renderClient(data){
   }).catch(function(){});
   // Charger les actualités
   fbLoadActus().then(renderActusClient).catch(function(){});
+  // Charger le brouillon
+  fbLoadDraft(login);
 }
 
 function renderClientOrders(orders, franco){
@@ -1874,6 +1877,7 @@ function showProfil(){
 }
 
 
+
 </script>
 <script>
 
@@ -2432,6 +2436,62 @@ function importPDFToCommande(){
   setTimeout(function(){ window.location.href = 'commande.html?import=pdf'; }, 1200);
 }
 
+
+</script>
+<script>
+
+// ── BROUILLON DANS LE DASHBOARD ──────────────────────────────
+function fbLoadDraft(login){
+  if(!login||login==='guest') return;
+  initFirebase().then(function(db){
+    return db.collection('brouillons').doc(login).get();
+  }).then(function(doc){
+    if(!doc.exists) return;
+    var data=doc.data();
+    if(!data||!data.qtys) return;
+    var nb=Object.keys(data.qtys||{}).filter(function(k){return(data.qtys[k]||0)>0;}).length;
+    if(nb===0) return;
+    renderDraftCard(data,login);
+  }).catch(function(){});
+}
+
+function renderDraftCard(data,login){
+  var content=document.getElementById('dash-content');
+  if(!content) return;
+  var existing=document.getElementById('draft-dash-card');
+  if(existing) existing.remove();
+  var dateStr=data.savedAt?new Date(data.savedAt).toLocaleString('fr-FR',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):'';
+  var nb=Object.keys(data.qtys||{}).filter(function(k){return(data.qtys[k]||0)>0;}).length;
+  var card=document.createElement('div');
+  card.id='draft-dash-card';
+  card.style.cssText='background:var(--bg-card);border:1px solid var(--border);border-left:3px solid #f59e0b;border-radius:10px;padding:14px 16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap';
+  var safe=login.replace(/'/g,'');
+  card.innerHTML=
+    '<div style="display:flex;align-items:center;gap:10px">'
+    +'<span style="font-size:18px">&#128190;</span>'
+    +'<div>'
+    +'<div style="font-size:13px;font-weight:500;color:var(--text)">Brouillon en attente</div>'
+    +'<div style="font-size:11px;font-weight:300;color:var(--text-muted)">'+nb+' référence'+(nb>1?'s':'')+' &middot; Sauvegardé le '+dateStr+'</div>'
+    +'</div>'
+    +'</div>'
+    +'<div style="display:flex;gap:8px">'
+    +'<button onclick="location.href=String.fromCharCode(99,111,109,109,97,110,100,101,46,104,116,109,108)+(String.fromCharCode(63))+String.fromCharCode(100,114,97,102,116,61,114,101,115,116,111,114,101)" style="padding:7px 14px;background:var(--accent);color:#fff;border:none;border-radius:6px;font-family:Inter,sans-serif;font-size:12px;font-weight:500;cursor:pointer">&#128221; Reprendre</button>'
+    +'<button id="draft-del-btn" style="padding:7px 12px;background:var(--bg);color:var(--danger);border:1px solid var(--border);border-radius:6px;font-family:Inter,sans-serif;font-size:12px;cursor:pointer">Effacer</button>'
+    +'</div>';
+  content.insertBefore(card,content.firstChild);
+  document.getElementById('draft-del-btn').onclick=function(){ deleteDraftDash(login); };
+}
+
+function deleteDraftDash(login){
+  if(!confirm('Effacer le brouillon ?')) return;
+  initFirebase().then(function(db){
+    return db.collection('brouillons').doc(login).delete();
+  }).then(function(){
+    var card=document.getElementById('draft-dash-card');
+    if(card) card.remove();
+    showToast('Brouillon effacé');
+  }).catch(function(){});
+}
 
 </script>
 </body>

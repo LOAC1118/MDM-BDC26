@@ -561,6 +561,58 @@ tbody tr.has-qty td.td-qty input{background:#ffe0b2;border-color:var(--terra)}
   line-height:14px;
 }
 
+
+/* ── BROUILLON ── */
+.draft-indicator{
+  display:none;align-items:center;gap:6px;
+  font-size:10px;font-weight:300;color:var(--text-muted);
+  padding:4px 10px;border-radius:20px;
+  background:var(--bg-beige);border:1px solid var(--border);
+  transition:all .3s;
+}
+.draft-indicator.saved{display:flex;color:var(--accent)}
+.draft-indicator.saving{display:flex;color:var(--text-muted)}
+.draft-dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0}
+.draft-restore-banner{
+  background:var(--bg-beige);border:1px solid var(--border);
+  border-radius:8px;padding:12px 16px;margin:12px 0;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  font-size:12px;font-weight:300;color:var(--text);
+}
+.draft-restore-info{display:flex;align-items:center;gap:8px}
+.draft-restore-date{font-size:10px;font-weight:300;color:var(--text-muted)}
+.draft-restore-actions{display:flex;gap:8px;flex-shrink:0}
+.btn-draft-restore{padding:6px 14px;background:var(--accent);color:#fff;border:none;border-radius:6px;font-family:'Inter',sans-serif;font-size:11px;font-weight:500;cursor:pointer;transition:background .15s}
+.btn-draft-restore:hover{background:var(--accent-hover)}
+.btn-draft-discard{padding:6px 12px;background:none;border:1px solid var(--border);border-radius:6px;font-family:'Inter',sans-serif;font-size:11px;font-weight:300;color:var(--text-muted);cursor:pointer;transition:all .15s}
+.btn-draft-discard:hover{background:var(--danger-light);color:var(--danger);border-color:var(--danger)}
+
+
+/* ── BROUILLON ── */
+.draft-bar{
+  position:fixed;bottom:52px;left:220px;right:0;z-index:89;
+  background:var(--bg-beige);border-top:1px solid var(--border);
+  padding:0 20px;height:36px;
+  display:flex;align-items:center;justify-content:space-between;
+  font-family:'Inter',sans-serif;font-size:11px;font-weight:300;
+  color:var(--text-muted);transition:all .3s;
+}
+.draft-bar.hidden{display:none}
+.draft-bar.saved{color:var(--accent)}
+.draft-indicator{display:flex;align-items:center;gap:6px}
+.draft-dot{width:6px;height:6px;border-radius:50%;background:var(--text-muted);flex-shrink:0}
+.draft-dot.saving{background:#f59e0b;animation:draftPulse .8s infinite}
+.draft-dot.saved{background:var(--accent)}
+@keyframes draftPulse{0%,100%{opacity:1}50%{opacity:.3}}
+.draft-actions{display:flex;align-items:center;gap:8px}
+.draft-btn{padding:4px 10px;border-radius:5px;font-family:'Inter',sans-serif;font-size:11px;font-weight:400;cursor:pointer;border:1px solid var(--border);background:var(--bg-card);color:var(--text);transition:all .15s}
+.draft-btn:hover{background:var(--bg-beige)}
+.draft-btn.restore{background:var(--accent);color:#fff;border-color:var(--accent)}
+.draft-btn.restore:hover{background:var(--accent-hover)}
+.draft-btn.discard{color:var(--danger);border-color:var(--border)}
+.draft-btn.discard:hover{background:var(--danger-light)}
+@media(max-width:768px){.draft-bar{left:0}}
+
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
@@ -632,6 +684,10 @@ tbody tr.has-qty td.td-qty input{background:#ffe0b2;border-color:var(--terra)}
     <a class="mdm-nav-item no-print" href="#" onclick="doPrint();return false">
       <span class="mdm-nav-icon">&#128424;</span>
       <span class="mdm-nav-label">Exporter PDF</span>
+    </a>
+    <a class="mdm-nav-item no-print" href="#" onclick="saveDraft(true);return false" id="nav-save-draft">
+      <span class="mdm-nav-icon">&#128190;</span>
+      <span class="mdm-nav-label">Sauvegarder</span>
     </a>
     <a class="mdm-nav-item no-print" href="#" onclick="exportExcel();return false">
       <span class="mdm-nav-icon">&#128202;</span>
@@ -1008,6 +1064,7 @@ function fbDeleteInscription(id) {
       if(el) el.textContent = data.nom || data.login;
       // Sidebar user
       _setSidebarUser(data);
+      setTimeout(function(){ loadDraftIfExists(); startDraftAutoSave(); }, 1500);
       // Stocker l'email de destination pour FormSubmit
       applyTheme(data);
       if(data.franco)setTimeout(updateFranco,100);
@@ -1116,6 +1173,8 @@ function fbDeleteInscription(id) {
           }
         }
       }
+      // Init brouillon
+      if(data.role === 'client' || data.role === 'user') draftInit();
       } catch(e) { console.error(e); }
   });
 })();
@@ -2866,6 +2925,451 @@ function showProfilModal(){
   if(document.readyState === 'complete') applyImport();
   else window.addEventListener('load', applyImport);
 })();
+
+</script>
+<script>
+
+// ════════════════════════════════════════════════════════════
+// BROUILLON — Sauvegarde automatique + manuelle dans Firebase
+// Collection : brouillons/{login}
+// ════════════════════════════════════════════════════════════
+
+var _draftTimer = null;
+var _draftSaving = false;
+var _draftLastSaved = null;
+var DRAFT_AUTO_INTERVAL = 2 * 60 * 1000; // 2 min
+
+// ── Collecter l'état actuel de la commande ────────────────────
+function _collectDraftData(){
+  var data = {
+    ts: Date.now(),
+    qtys: JSON.parse(JSON.stringify(window.qtys || {})),
+    fields: {}
+  };
+  ['magasin','numclient','email','contact','tel'].forEach(function(id){
+    var el = document.getElementById(id);
+    if(el) data.fields[id] = el.value || '';
+  });
+  // Remise courante
+  var remiseEl = document.getElementById('remise-display') || document.getElementById('remise-value');
+  if(!remiseEl){
+    // Essayer de récupérer depuis la variable globale
+    data.remise = window._currentRemise || 0;
+  } else {
+    data.remise = parseFloat(remiseEl.textContent) || 0;
+  }
+  return data;
+}
+
+// ── Sauvegarder dans Firebase ────────────────────────────────
+function saveDraft(manual){
+  if(_draftSaving) return;
+  var login = (window._userLogin||'guest').replace(/[^a-zA-Z0-9_-]/g,'_');
+  if(!login || login === 'guest') return;
+
+  // Vérifier qu'il y a des produits
+  var draftData = _collectDraftData();
+  var hasProducts = Object.keys(draftData.qtys).some(function(k){ return draftData.qtys[k] > 0; });
+  if(!hasProducts && !manual) return; // Pas d'auto-save si commande vide
+
+  _draftSaving = true;
+  _setDraftIndicator('saving', 'Sauvegarde\u2026');
+
+  initFirebase().then(function(db){
+    return db.collection('brouillons').doc(login).set(draftData);
+  }).then(function(){
+    _draftSaving = false;
+    _draftLastSaved = new Date();
+    _setDraftIndicator('saved', manual ? 'Sauvegard\u00e9 !' : 'Brouillon sauvegard\u00e9');
+    if(manual) showToast('\u{1F4BE} Brouillon sauvegard\u00e9');
+    // Effacer le message après 3s si manuel
+    if(manual) setTimeout(function(){ _setDraftIndicator('saved', 'Brouillon sauvegard\u00e9'); }, 3000);
+  }).catch(function(e){
+    _draftSaving = false;
+    _setDraftIndicator('', '');
+    if(manual) showToast('\u26a0 Erreur sauvegarde brouillon');
+  });
+}
+
+function _setDraftIndicator(state, label){
+  var el = document.getElementById('draft-indicator');
+  var lbl = document.getElementById('draft-indicator-label');
+  if(!el) return;
+  el.className = 'draft-indicator no-print' + (state ? ' '+state : '');
+  if(lbl) lbl.textContent = label;
+}
+
+// ── Charger et proposer de restaurer ────────────────────────
+function loadDraftIfExists(){
+  var login = (window._userLogin||'guest').replace(/[^a-zA-Z0-9_-]/g,'_');
+  if(!login || login === 'guest') return;
+
+  initFirebase().then(function(db){
+    return db.collection('brouillons').doc(login).get();
+  }).then(function(doc){
+    if(!doc.exists) return;
+    var draft = doc.data();
+    if(!draft || !draft.ts) return;
+
+    // Vérifier qu'il y a des produits sauvegardés
+    var hasProducts = draft.qtys && Object.keys(draft.qtys).some(function(k){ return draft.qtys[k] > 0; });
+    if(!hasProducts) return;
+
+    // Vérifier que le brouillon date de moins de 7 jours
+    var age = Date.now() - draft.ts;
+    if(age > 7 * 24 * 60 * 60 * 1000) return;
+
+    // Afficher la bannière de restauration
+    _showDraftRestoreBanner(draft);
+  }).catch(function(){});
+}
+
+function _showDraftRestoreBanner(draft){
+  var existing = document.getElementById('draft-restore-banner');
+  if(existing) existing.remove();
+
+  var date = new Date(draft.ts);
+  var dateStr = date.toLocaleDateString('fr-FR',{day:'2-digit',month:'short'})
+    + ' \u00e0 ' + date.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+
+  var nbProducts = Object.keys(draft.qtys||{}).filter(function(k){ return draft.qtys[k]>0; }).length;
+
+  var banner = document.createElement('div');
+  banner.id = 'draft-restore-banner';
+  banner.className = 'draft-restore-banner no-print';
+  banner.innerHTML =
+    '<div class="draft-restore-info">'
+    + '<span style="font-size:18px">&#128190;</span>'
+    + '<div>'
+    + '<div style="font-weight:500;margin-bottom:2px">Un brouillon est disponible</div>'
+    + '<div class="draft-restore-date">' + nbProducts + ' produit' + (nbProducts>1?'s':'') + ' \u2014 sauvegard\u00e9 le ' + dateStr + '</div>'
+    + '</div>'
+    + '</div>'
+    + '<div class="draft-restore-actions">'
+    + '<button class="btn-draft-restore" onclick="restoreDraft()">Reprendre</button>'
+    + '<button class="btn-draft-discard" onclick="discardDraft()">Ignorer</button>'
+    + '</div>';
+
+  // Insérer avant le container principal
+  var container = document.querySelector('.container') || document.querySelector('#main-content') || document.body;
+  var firstCard = container.querySelector('.card');
+  if(firstCard){
+    container.insertBefore(banner, firstCard);
+  } else {
+    container.insertBefore(banner, container.firstChild);
+  }
+
+  // Stocker le brouillon en mémoire pour restauration
+  window._pendingDraft = draft;
+}
+
+function restoreDraft(){
+  var draft = window._pendingDraft;
+  if(!draft) return;
+
+  // Restaurer les champs
+  Object.keys(draft.fields||{}).forEach(function(id){
+    var el = document.getElementById(id);
+    if(el) el.value = draft.fields[id];
+  });
+
+  // Restaurer les quantités
+  var qtys = draft.qtys || {};
+  Object.keys(qtys).forEach(function(code){
+    var qty = qtys[code];
+    if(!qty) return;
+    // Chercher le champ input pour ce produit
+    var input = document.querySelector('input[data-code="'+code+'"]')
+      || document.querySelector('input.qty-input[data-product="'+code+'"]')
+      || document.getElementById('qty-'+code);
+    if(input){
+      input.value = qty;
+      input.dispatchEvent(new Event('input',{bubbles:true}));
+      input.dispatchEvent(new Event('change',{bubbles:true}));
+    } else {
+      // Mettre dans qtys directement pour quand les produits se chargent
+      if(window.qtys) window.qtys[code] = qty;
+    }
+  });
+
+  // Mettre à jour les totaux
+  if(typeof updateTotals === 'function') updateTotals();
+
+  // Supprimer la bannière
+  var banner = document.getElementById('draft-restore-banner');
+  if(banner) banner.remove();
+  window._pendingDraft = null;
+
+  showToast('\u2705 Brouillon restaur\u00e9');
+  _setDraftIndicator('saved','Brouillon charg\u00e9');
+}
+
+function discardDraft(){
+  // Supprimer dans Firebase
+  var login = (window._userLogin||'guest').replace(/[^a-zA-Z0-9_-]/g,'_');
+  if(login && login !== 'guest'){
+    initFirebase().then(function(db){
+      db.collection('brouillons').doc(login).delete().catch(function(){});
+    }).catch(function(){});
+  }
+  var banner = document.getElementById('draft-restore-banner');
+  if(banner){ banner.style.opacity='0'; banner.style.transition='opacity .3s'; setTimeout(function(){banner.remove();},300); }
+  window._pendingDraft = null;
+}
+
+// ── Auto-save toutes les 2 minutes ───────────────────────────
+function startDraftAutoSave(){
+  if(_draftTimer) clearInterval(_draftTimer);
+  _draftTimer = setInterval(function(){
+    saveDraft(false);
+  }, DRAFT_AUTO_INTERVAL);
+
+  // Sauvegarder aussi avant de quitter la page
+  window.addEventListener('beforeunload', function(){
+    saveDraft(false);
+  });
+}
+
+// ── Effacer le brouillon après envoi de la commande ──────────
+function clearDraftAfterSend(){
+  var login = (window._userLogin||'guest').replace(/[^a-zA-Z0-9_-]/g,'_');
+  if(!login || login === 'guest') return;
+  initFirebase().then(function(db){
+    db.collection('brouillons').doc(login).delete().catch(function(){});
+  }).catch(function(){});
+  _setDraftIndicator('','');
+  if(_draftTimer){ clearInterval(_draftTimer); _draftTimer=null; }
+}
+
+</script>
+
+<!-- ── BARRE BROUILLON ── -->
+<div class="draft-bar hidden" id="draft-bar">
+  <div class="draft-indicator">
+    <span class="draft-dot" id="draft-dot"></span>
+    <span id="draft-label">Brouillon</span>
+  </div>
+  <div class="draft-actions" id="draft-actions"></div>
+</div>
+
+<script>
+
+// ════════════════════════════════════════════════════════════
+// BROUILLON — Sauvegarde auto + manuelle
+// Firebase : brouillons/{login}
+// ════════════════════════════════════════════════════════════
+
+var _draftTimer       = null;
+var _draftSaving      = false;
+var _draftLoaded      = false;
+var DRAFT_AUTO_MS     = 2 * 60 * 1000; // 2 minutes
+
+// ── Lire le brouillon ────────────────────────────────────────
+function draftLoad(){
+  var autoRestore = new URLSearchParams(window.location.search).get('draft') === 'restore';
+  var login = window._userLogin;
+  if(!login || login === 'guest') return;
+  initFirebase().then(function(db){
+    return db.collection('brouillons').doc(login).get();
+  }).then(function(doc){
+    if(!doc.exists) return;
+    var data = doc.data();
+    if(!data || !data.qtys) return;
+    // Proposer la restauration
+    if(autoRestore){
+      draftRestore();
+    } else {
+      _showDraftRestore(data);
+    }
+  }).catch(function(){});
+}
+
+function _showDraftRestore(data){
+  var bar   = document.getElementById('draft-bar');
+  var label = document.getElementById('draft-label');
+  var actions = document.getElementById('draft-actions');
+  if(!bar) return;
+  var nbProds = Object.keys(data.qtys||{}).filter(function(k){ return (data.qtys[k]||0)>0; }).length;
+  var dateStr = data.savedAt ? new Date(data.savedAt).toLocaleString('fr-FR',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '';
+  label.innerHTML = 'Brouillon du ' + dateStr + ' \u00b7 <strong>' + nbProds + ' r\u00e9f.</strong>';
+  actions.innerHTML =
+    '<button class="draft-btn restore" onclick="draftRestore()">&#8635; Reprendre</button>'
+    +'<button class="draft-btn discard" onclick="draftDiscard()">Ignorer</button>';
+  bar.classList.remove('hidden');
+  var dot = document.getElementById('draft-dot');
+  if(dot){ dot.className = 'draft-dot'; dot.style.background = '#f59e0b'; }
+}
+
+// ── Restaurer ────────────────────────────────────────────────
+function draftRestore(){
+  var login = window._userLogin;
+  if(!login || login === 'guest') return;
+  initFirebase().then(function(db){
+    return db.collection('brouillons').doc(login).get();
+  }).then(function(doc){
+    if(!doc.exists) return;
+    var data = doc.data();
+    // Restaurer les quantités
+    if(data.qtys){
+      qtys = data.qtys;
+      // Mettre à jour les inputs
+      Object.keys(qtys).forEach(function(code){
+        var q = qtys[code]||0;
+        var inp = document.querySelector('input[data-code="'+code+'"]');
+        if(inp){ inp.value = q>0?q:''; }
+      });
+      updateTotals();
+    }
+    // Restaurer les champs du formulaire
+    if(data.fields){
+      Object.keys(data.fields).forEach(function(id){
+        var el = document.getElementById(id);
+        if(el) el.value = data.fields[id]||'';
+      });
+    }
+    _draftLoaded = true;
+    _hideDraftRestore();
+    _showDraftSaved('Brouillon restaur\u00e9');
+    showToast('\u2705 Brouillon restaur\u00e9');
+  }).catch(function(){
+    showToast('\u26a0 Erreur lors de la restauration');
+  });
+}
+
+function draftDiscard(){
+  var login = window._userLogin;
+  if(login && login !== 'guest'){
+    initFirebase().then(function(db){
+      db.collection('brouillons').doc(login).delete().catch(function(){});
+    }).catch(function(){});
+  }
+  _hideDraftRestore();
+}
+
+function _hideDraftRestore(){
+  var bar = document.getElementById('draft-bar');
+  if(bar) bar.classList.add('hidden');
+}
+
+// ── Sauvegarder ──────────────────────────────────────────────
+function draftSave(showFeedback){
+  var login = window._userLogin;
+  if(!login || login === 'guest') return;
+  // Collecter les données
+  var activeQtys = {};
+  Object.keys(qtys).forEach(function(k){ if((qtys[k]||0)>0) activeQtys[k]=qtys[k]; });
+  if(!Object.keys(activeQtys).length){
+    if(showFeedback) showToast('\u26a0 Aucun produit \u00e0 sauvegarder');
+    return;
+  }
+  var fields = {};
+  ['magasin','numclient','email','tel','contact','livraison','commentaire'].forEach(function(id){
+    var el = document.getElementById(id);
+    if(el && el.value) fields[id] = el.value;
+  });
+  var draft = {
+    qtys: activeQtys,
+    fields: fields,
+    savedAt: Date.now(),
+    login: login
+  };
+  // Indicateur sauvegarde
+  _showDraftSaving();
+  initFirebase().then(function(db){
+    return db.collection('brouillons').doc(login).set(draft);
+  }).then(function(){
+    _showDraftSaved('Brouillon sauvegard\u00e9');
+    if(showFeedback) showToast('\u2705 Brouillon sauvegard\u00e9');
+  }).catch(function(){
+    _showDraftError();
+    if(showFeedback) showToast('\u26a0 Erreur lors de la sauvegarde');
+  });
+}
+
+function _showDraftSaving(){
+  var bar   = document.getElementById('draft-bar');
+  var dot   = document.getElementById('draft-dot');
+  var label = document.getElementById('draft-label');
+  var actions = document.getElementById('draft-actions');
+  if(!bar) return;
+  bar.classList.remove('hidden');
+  if(dot) dot.className = 'draft-dot saving';
+  if(label) label.textContent = 'Sauvegarde en cours\u2026';
+  if(actions) actions.innerHTML = '';
+}
+
+function _showDraftSaved(msg){
+  var bar   = document.getElementById('draft-bar');
+  var dot   = document.getElementById('draft-dot');
+  var label = document.getElementById('draft-label');
+  var actions = document.getElementById('draft-actions');
+  if(!bar) return;
+  bar.classList.remove('hidden');
+  if(dot) dot.className = 'draft-dot saved';
+  var now = new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+  if(label) label.textContent = (msg||'Brouillon sauvegard\u00e9') + ' \u00e0 ' + now;
+  if(actions) actions.innerHTML =
+    '<button class="draft-btn" onclick="draftSave(true)">&#128190; Sauvegarder</button>'
+    +'<button class="draft-btn discard" onclick="draftClear()">Effacer</button>';
+}
+
+function _showDraftError(){
+  var dot = document.getElementById('draft-dot');
+  var label = document.getElementById('draft-label');
+  if(dot){ dot.className='draft-dot'; dot.style.background='var(--danger)'; }
+  if(label) label.textContent = 'Erreur de sauvegarde';
+}
+
+// ── Effacer ──────────────────────────────────────────────────
+function draftClear(){
+  var login = window._userLogin;
+  if(!login || login==='guest') return;
+  if(!confirm('Effacer le brouillon ?')) return;
+  initFirebase().then(function(db){
+    return db.collection('brouillons').doc(login).delete();
+  }).then(function(){
+    var bar = document.getElementById('draft-bar');
+    if(bar) bar.classList.add('hidden');
+    showToast('Brouillon effac\u00e9');
+  }).catch(function(){});
+}
+
+// ── Auto-save ────────────────────────────────────────────────
+function draftStartAutoSave(){
+  if(_draftTimer) clearInterval(_draftTimer);
+  _draftTimer = setInterval(function(){
+    var hasItems = Object.keys(qtys).some(function(k){ return (qtys[k]||0)>0; });
+    if(hasItems) draftSave(false);
+  }, DRAFT_AUTO_MS);
+}
+
+// ── Initialiser au chargement ─────────────────────────────────
+function draftInit(){
+  // Afficher le bouton dans la barre
+  var bar   = document.getElementById('draft-bar');
+  var dot   = document.getElementById('draft-dot');
+  var label = document.getElementById('draft-label');
+  var actions = document.getElementById('draft-actions');
+  if(bar){
+    bar.classList.remove('hidden');
+    if(dot) dot.className = 'draft-dot';
+    if(label) label.textContent = 'Brouillon non sauvegard\u00e9';
+    if(actions) actions.innerHTML =
+      '<button class="draft-btn" onclick="draftSave(true)">&#128190; Sauvegarder</button>';
+  }
+  // Vérifier s'il existe un brouillon
+  draftLoad();
+  // Démarrer l'auto-save
+  draftStartAutoSave();
+  // Déclencher save manuel sur toute modification
+  document.addEventListener('input', function(e){
+    if(e.target && (e.target.classList.contains('qty-input') || e.target.closest('#form-section'))){
+      // Afficher indicateur modifié
+      if(dot){ dot.className='draft-dot'; dot.style.background='#f59e0b'; }
+      if(label) label.textContent = 'Modifications non sauvegard\u00e9es';
+    }
+  });
+}
 
 </script>
 </body>

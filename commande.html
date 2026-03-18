@@ -380,10 +380,27 @@ td.td-qty input{width:68px;padding:5px 8px;border:1.5px solid #ddd;border-radius
 td.td-qty input:focus{border-color:var(--terra);background:#fff;box-shadow:0 0 0 3px rgba(200,120,100,.15)}
 tbody tr.has-qty td.td-qty input{background:#ffe0b2;border-color:var(--terra)}
 /* TOTAUX STICKY */
-.totals-bar{position:fixed;bottom:0;left:0;right:0;z-index:90;background:var(--brown);color:var(--white);padding:10px 28px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;box-shadow:0 -4px 16px var(--shadow)}
-.total-item{text-align:center}
-.total-label{font-size:9px;text-transform:uppercase;letter-spacing:.5px;opacity:.7}
-.total-value{font-size:16px;font-weight:700;color:var(--gold);margin-top:1px}
+.totals-bar{
+  position:fixed;bottom:0;left:220px;right:0;z-index:90;
+  background:var(--bg-card);
+  border-top:1px solid var(--border);
+  padding:0 24px;
+  height:52px;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  box-shadow:0 -2px 12px rgba(92,74,56,.06);
+}
+.total-item{display:flex;flex-direction:column;align-items:center;gap:1px}
+.total-label{
+  font-size:9px;font-weight:500;text-transform:uppercase;
+  letter-spacing:.6px;color:var(--text-muted);
+}
+.total-value{
+  font-family:'Fraunces',serif;font-size:15px;font-weight:200;
+  color:var(--text);line-height:1;
+}
+.total-value.accent{color:var(--accent)}
+.totals-sep{width:1px;height:24px;background:var(--border);flex-shrink:0}
+@media(max-width:768px){.totals-bar{left:0}}
 /* MODAL */
 .modal-bg{display:none;position:fixed;inset:0;background:rgba(60,30,10,.5);z-index:200;align-items:center;justify-content:center}
 .modal-bg.open{display:flex}
@@ -701,17 +718,47 @@ tbody tr.has-qty td.td-qty input{background:#ffe0b2;border-color:var(--terra)}
 </div>
 
 <div class="totals-bar no-print">
-  <div class="total-item"><div class="total-label">R&#233;f. command&#233;es</div><div class="total-value" id="nb-refs">0</div></div>
-  <div class="total-item"><div class="total-label">Total colis</div><div class="total-value" id="nb-colis">0</div></div>
-  <div class="total-item"><div class="total-label">Total HT brut</div><div class="total-value" id="total-brut">0,00 &#8364;</div></div>
-  <div class="total-item"><div class="total-label">Remise</div><div class="total-value" id="total-remise">0,00 &#8364;</div></div>
-  <div class="total-item"><div class="total-label">Total HT net</div><div class="total-value" id="total-net">0,00 &#8364;</div></div>
-  <div class="total-item" id="franco-bar-item" style="display:none"><div class="total-label">Franco</div><div class="total-value" id="franco-bar-val" style="font-size:13px"></div></div>
-  <div style="display:flex;gap:10px">
-    <button class="btn btn-outline" onclick="doPrint()">&#128424; PDF</button>
-    <button class="btn btn-outline" onclick="exportExcel()" style="border-color:rgba(80,200,120,.5);color:#a0f0b0">&#128202; Excel</button>
-    <button class="btn btn-gold"    onclick="openModal()">&#128231; Envoyer</button>
+
+  <!-- Métriques -->
+  <div style="display:flex;align-items:center;gap:20px;flex:1">
+    <div class="total-item">
+      <div class="total-label">R&eacute;f.</div>
+      <div class="total-value" id="nb-refs">0</div>
+    </div>
+    <div class="totals-sep"></div>
+    <div class="total-item">
+      <div class="total-label">Colis</div>
+      <div class="total-value" id="nb-colis">0</div>
+    </div>
+    <div class="totals-sep"></div>
+    <div class="total-item">
+      <div class="total-label">Total HT brut</div>
+      <div class="total-value" id="total-brut">0,00&nbsp;&euro;</div>
+    </div>
+    <div class="totals-sep"></div>
+    <div class="total-item">
+      <div class="total-label">Remise</div>
+      <div class="total-value" id="total-remise">0,00&nbsp;&euro;</div>
+    </div>
+    <div class="totals-sep"></div>
+    <div class="total-item">
+      <div class="total-label">Total HT net</div>
+      <div class="total-value accent" id="total-net">0,00&nbsp;&euro;</div>
+    </div>
+    <div class="total-item" id="franco-bar-item" style="display:none">
+      <div class="totals-sep"></div>
+      <div class="total-label">Franco</div>
+      <div class="total-value" id="franco-bar-val" style="font-size:12px;font-family:'Inter',sans-serif;font-weight:300"></div>
+    </div>
   </div>
+
+  <!-- Actions -->
+  <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+    <button onclick="doPrint()" style="padding:7px 14px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:11px;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap;transition:background .15s" onmouseover="this.style.background='var(--bg-beige)'" onmouseout="this.style.background='var(--bg)'">PDF</button>
+    <button onclick="exportExcel()" style="padding:7px 14px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--accent);font-size:11px;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap;transition:background .15s" onmouseover="this.style.background='var(--accent-light)'" onmouseout="this.style.background='var(--bg)'">Excel</button>
+    <button onclick="openModal()" style="padding:7px 18px;border-radius:6px;border:none;background:var(--accent);color:#fff;font-size:12px;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap;transition:background .15s" onmouseover="this.style.background='var(--accent-hover)'" onmouseout="this.style.background='var(--accent)'">Envoyer la commande</button>
+  </div>
+
 </div>
 
 

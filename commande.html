@@ -464,6 +464,37 @@ tbody tr.has-qty td.td-qty input{background:#ffe0b2;border-color:var(--terra)}
 .nc-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:8px}
 .btn-nc-cancel{background:#f0e4da;color:var(--brown);border:none;padding:9px 18px;border-radius:7px;font-family:'Inter',sans-serif;font-weight:600;cursor:pointer;font-size:13px}
 .btn-nc-save{background:var(--terra);color:#fff;border:none;padding:9px 18px;border-radius:7px;font-family:'Inter',sans-serif;font-weight:600;cursor:pointer;font-size:13px}
+
+/* ── SIDEBAR ── */
+.mdm-layout{display:flex;min-height:calc(100vh - 56px)}
+.mdm-sidebar{width:220px;flex-shrink:0;background:var(--bg-card);border-right:1px solid var(--border);display:flex;flex-direction:column;position:sticky;top:56px;height:calc(100vh - 56px);overflow-y:auto;z-index:50;transition:transform .25s}
+.mdm-sidebar::-webkit-scrollbar{width:3px}.mdm-sidebar::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.mdm-sidebar-header{padding:20px 16px 12px;border-bottom:1px solid var(--border-light)}
+.mdm-sidebar-user{font-size:13px;font-weight:500;color:var(--text);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mdm-sidebar-role{font-size:10px;font-weight:300;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px}
+.mdm-sidebar-nav{padding:10px 8px;flex:1}
+.mdm-nav-section{font-size:9px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.8px;padding:12px 10px 5px}
+.mdm-nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:7px;font-size:12px;font-weight:300;color:var(--text-secondary);cursor:pointer;text-decoration:none;transition:all .13s;margin-bottom:2px;border:1px solid transparent;position:relative}
+.mdm-nav-item:hover{background:var(--bg);color:var(--text);border-color:var(--border-light)}
+.mdm-nav-item.active{background:var(--bg-beige);color:var(--text);border-color:var(--border);font-weight:500}
+.mdm-nav-item.active::before{content:'';position:absolute;left:-8px;top:50%;transform:translateY(-50%);width:3px;height:20px;background:var(--accent);border-radius:2px}
+.mdm-nav-icon{font-size:15px;width:20px;text-align:center;flex-shrink:0}
+.mdm-nav-label{flex:1}
+.mdm-nav-badge{background:var(--accent);color:#fff;font-size:9px;font-weight:600;padding:2px 6px;border-radius:10px;min-width:16px;text-align:center}
+.mdm-nav-badge.red{background:var(--danger)}
+.mdm-sidebar-footer{padding:12px 16px;border-top:1px solid var(--border-light)}
+.mdm-nav-logout{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:7px;font-size:12px;font-weight:300;color:var(--text-muted);cursor:pointer;transition:all .13s;border:1px solid transparent;text-decoration:none}
+.mdm-nav-logout:hover{background:var(--danger-light);color:var(--danger);border-color:#f5c0b8}
+.mdm-main-content{flex:1;overflow-x:hidden;min-width:0}
+.mdm-menu-toggle{display:none;background:none;border:none;cursor:pointer;padding:6px;color:var(--text);font-size:18px;margin-right:8px}
+.mdm-sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:49}
+@media(max-width:768px){
+  .mdm-menu-toggle{display:flex;align-items:center}
+  .mdm-sidebar{position:fixed;top:56px;left:0;bottom:0;transform:translateX(-100%);z-index:99}
+  .mdm-sidebar.open{transform:translateX(0)}
+  .mdm-sidebar-overlay.open{display:block}
+}
+
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
@@ -502,6 +533,49 @@ tbody tr.has-qty td.td-qty input{background:#ffe0b2;border-color:var(--terra)}
     <button class="no-print" onclick="logout()" style="font-size:11px;font-weight:300;padding:6px 11px;border-radius:6px;border:1px solid var(--border);background:var(--bg-card);color:var(--text-muted);cursor:pointer;font-family:inherit">&#x23FB;</button>
   </div>
 </header>
+<div class="mdm-layout">
+
+<nav class="mdm-sidebar" id="mdm-sidebar">
+  <div class="mdm-sidebar-header">
+    <div class="mdm-sidebar-user" id="sidebar-user-name">Chargement&hellip;</div>
+    <div class="mdm-sidebar-role" id="sidebar-user-role"></div>
+  </div>
+  <div class="mdm-sidebar-nav">
+    <div class="mdm-nav-section">Navigation</div>
+    <a class="mdm-nav-item active" id="nav-commande" href="commande.html">
+      <span class="mdm-nav-icon">&#128221;</span>
+      <span class="mdm-nav-label">Bon de commande</span>
+    </a>
+    <a class="mdm-nav-item" id="nav-dashboard" href="dashboard.html">
+      <span class="mdm-nav-icon">&#127968;</span>
+      <span class="mdm-nav-label">Tableau de bord</span>
+    </a>
+    <div class="mdm-nav-section">Outils</div>
+    <a class="mdm-nav-item" id="nav-historique" href="#" onclick="openHistoryModal();return false">
+      <span class="mdm-nav-icon">&#128203;</span>
+      <span class="mdm-nav-label">Historique</span>
+    </a>
+    <a class="mdm-nav-item" id="nav-chat" href="#" onclick="chatToggle();return false">
+      <span class="mdm-nav-icon">&#128172;</span>
+      <span class="mdm-nav-label">Messagerie</span>
+      <span class="mdm-nav-badge red" id="sidebar-chat-badge" style="display:none"></span>
+    </a>
+    <a class="mdm-nav-item" id="nav-profil" href="#" onclick="showProfilModal();return false">
+      <span class="mdm-nav-icon">&#128100;</span>
+      <span class="mdm-nav-label">Mon profil</span>
+    </a>
+  </div>
+  <div class="mdm-sidebar-footer">
+    <a class="mdm-nav-logout" onclick="logout();return false" href="#">
+      <span class="mdm-nav-icon">&#x23FB;</span>
+      <span>D&eacute;connexion</span>
+    </a>
+  </div>
+</nav>
+<div class="mdm-sidebar-overlay" id="mdm-overlay" onclick="closeSidebar()"></div>
+
+<div class="mdm-main-content">
+
 
   <div id="franco-bandeau"></div>
 
@@ -2648,6 +2722,60 @@ function _chatNotify(){
 
 function _escH(s){
   return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+}
+
+</script>
+
+</div>
+</div>
+<script>
+
+// ── SIDEBAR ─────────────────────────────────────────
+function openSidebar(){
+  document.getElementById('mdm-sidebar').classList.add('open');
+  document.getElementById('mdm-overlay').classList.add('open');
+}
+function closeSidebar(){
+  document.getElementById('mdm-sidebar').classList.remove('open');
+  document.getElementById('mdm-overlay').classList.remove('open');
+}
+function _setSidebarUser(data){
+  var n=document.getElementById('sidebar-user-name');
+  var r=document.getElementById('sidebar-user-role');
+  if(n) n.textContent=data.nom||data.login||'';
+  if(r) r.textContent=data.role==='user'?'Commercial':'Client';
+}
+function _syncSidebarBadge(count){
+  var sb=document.getElementById('sidebar-chat-badge');
+  if(!sb) return;
+  if(count>0){sb.textContent=count>9?'9+':count;sb.style.display='flex';}
+  else{sb.style.display='none';}
+}
+function showProfilModal(){
+  var data=window._userData||{};
+  var html='<table style="width:100%;font-size:12px;border-collapse:collapse">';
+  [['Login',data.login||'—'],['Email',data.email||'—'],
+   ['Téléphone',data.tel||'—'],['Groupement',data.groupement||'—'],
+   ['N° client',data.numclient||'—'],['Remise',(data.remise>0?data.remise+'%':'—')],
+   ['Franco',(data.franco>0?data.franco+' € HT':'—')],
+   ['Commercial',data.commercial||'—']
+  ].forEach(function(r){
+    html+='<tr style="border-bottom:1px solid var(--border-light)">'
+      +'<td style="padding:8px 0;font-weight:400;color:var(--text-muted);width:110px">'+r[0]+'</td>'
+      +'<td style="padding:8px 0;font-weight:300;color:var(--text)">'+r[1]+'</td></tr>';
+  });
+  html+='</table>';
+  var bg=document.createElement('div');
+  bg.style.cssText='position:fixed;inset:0;background:rgba(92,74,56,.35);z-index:300;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(2px)';
+  bg.onclick=function(e){if(e.target===bg)document.body.removeChild(bg);};
+  var modal=document.createElement('div');
+  modal.style.cssText='background:var(--bg-card);border-radius:12px;padding:24px 28px;max-width:400px;width:94%;border:1px solid var(--border)';
+  modal.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border)">'
+    +'<span style="font-family:Fraunces,serif;font-size:18px;font-weight:200;color:var(--text)">Mon profil</span>'
+    +'<button onclick="document.body.removeChild(this.closest(\'[style*=position:fixed]\'))" style="background:none;border:none;cursor:pointer;font-size:18px;color:var(--text-muted)">&#10005;</button>'
+    +'</div>'+html;
+  bg.appendChild(modal);document.body.appendChild(bg);
+  closeSidebar();
 }
 
 </script>

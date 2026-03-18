@@ -681,6 +681,14 @@ tbody tr.has-qty td.td-qty input{background:#ffe0b2;border-color:var(--terra)}
       <span class="mdm-nav-icon">&#128203;</span>
       <span class="mdm-nav-label">Historique</span>
     </a>
+    <a class="mdm-nav-item no-print" href="#" onclick="draftSave(true);closeSidebar();return false">
+      <span class="mdm-nav-icon">&#128190;</span>
+      <span class="mdm-nav-label">Sauvegarder brouillon</span>
+    </a>
+    <a class="mdm-nav-item no-print" href="#" onclick="draftClear();closeSidebar();return false">
+      <span class="mdm-nav-icon">&#128465;</span>
+      <span class="mdm-nav-label">Effacer brouillon</span>
+    </a>
     <a class="mdm-nav-item no-print" href="#" onclick="doPrint();return false">
       <span class="mdm-nav-icon">&#128424;</span>
       <span class="mdm-nav-label">Exporter PDF</span>

@@ -637,6 +637,7 @@ footer a{color:inherit;text-decoration:none;opacity:.7}footer a:hover{opacity:1}
 
 
 
+
 var FIREBASE_CONFIG = {
   apiKey:            "AIzaSyB000QDa4c-vMjO1Xuimw58iiRvwgbF1zc",
   authDomain:        "mdm-bdc26.firebaseapp.com",
@@ -1611,15 +1612,16 @@ function chatLoadAllUnread(){
 }
 
 function _updateBadge(count){
-  _syncSidebarBadge(count);
   _chatUnread = count;
   var badge = document.getElementById('chat-badge');
-  if(!badge) return;
-  if(count > 0){
-    badge.textContent = count > 9 ? '9+' : count;
-    badge.style.display = 'block';
-  } else {
-    badge.style.display = 'none';
+  if(badge){
+    badge.textContent = count > 0 ? (count > 9 ? '9+' : String(count)) : '';
+    badge.style.display = count > 0 ? 'flex' : 'none';
+  }
+  var sb = document.getElementById('sidebar-chat-badge');
+  if(sb){
+    sb.textContent = count > 0 ? (count > 9 ? '9+' : String(count)) : '';
+    sb.style.display = count > 0 ? 'flex' : 'none';
   }
 }
 
@@ -1675,7 +1677,11 @@ function presenceInit(login){
     function heartbeat(){
       ref.set({login:login, online:true,
         lastSeen: firebase.firestore.FieldValue.serverTimestamp()
-      },{merge:true}).catch(function(){});
+      },{merge:true}).then(function(){
+        console.log('[Presence] heartbeat OK pour', login);
+      }).catch(function(e){
+        console.warn('[Presence] heartbeat ERREUR:', e.code, e.message);
+      });
     }
     heartbeat();
     setInterval(heartbeat, 2 * 60 * 1000);
@@ -1684,7 +1690,9 @@ function presenceInit(login){
         lastSeen: firebase.firestore.FieldValue.serverTimestamp()
       },{merge:true}).catch(function(){});
     });
-  }).catch(function(){});
+  }).catch(function(e){
+    console.warn('[Presence] initFirebase ERREUR:', e.message);
+  });
 }
 
 function _parsePresence(doc){
@@ -1700,13 +1708,21 @@ function _parsePresence(doc){
 
 function presenceWatch(login, cb){
   initFirebase().then(function(db){
+    console.log('[Presence] watch démarré pour', login);
     var unsub = db.collection('presence').doc(login)
       .onSnapshot(function(doc){
         var p = _parsePresence(doc);
+        console.log('[Presence]', login, '→', p.status, doc.exists ? '(doc existe)' : '(doc absent)');
         cb(p.status, p.lastSeen);
-      }, function(){ cb('offline', null); });
+      }, function(e){
+        console.warn('[Presence] onSnapshot ERREUR pour', login, ':', e.code, e.message);
+        cb('offline', null);
+      });
     _presenceWatchers[login] = unsub;
-  }).catch(function(){ cb('offline', null); });
+  }).catch(function(e){
+    console.warn('[Presence] Firebase ERREUR pour', login, ':', e.message);
+    cb('offline', null);
+  });
 }
 
 function presenceUnwatch(login){
@@ -1806,6 +1822,7 @@ function showProfil(){
   document.body.appendChild(bg);
   closeSidebar();
 }
+
 
 </script>
 </body>

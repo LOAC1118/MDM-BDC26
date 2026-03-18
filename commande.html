@@ -2814,5 +2814,59 @@ function showProfilModal(){
 }
 
 </script>
+<script>
+
+// ── RÉCEPTION IMPORT PDF ──────────────────────────────────────
+(function(){
+  var params = new URLSearchParams(window.location.search);
+  if(params.get('import') !== 'pdf') return;
+  var raw = sessionStorage.getItem('mdm_pdf_import');
+  if(!raw) return;
+  sessionStorage.removeItem('mdm_pdf_import');
+  var toImport;
+  try{ toImport = JSON.parse(raw); } catch(e){ return; }
+  // Attendre que les produits soient chargés
+  function applyImport(){
+    var products = window.PRODUCTS || [];
+    if(!products.length){ setTimeout(applyImport, 300); return; }
+    var applied = 0, notFound = 0;
+    toImport.forEach(function(item){
+      var prod = products[item.idx];
+      if(!prod){ notFound++; return; }
+      // Trouver le champ quantité du produit
+      var code = prod.code || prod.ref || '';
+      var input = document.querySelector('input[data-code="'+code+'"]')
+        || document.querySelector('input.qty-input[data-idx="'+item.idx+'"]')
+        || document.getElementById('qty-'+code)
+        || document.getElementById('qty-'+item.idx);
+      if(input){
+        input.value = item.qty;
+        input.dispatchEvent(new Event('input', {bubbles:true}));
+        input.dispatchEvent(new Event('change', {bubbles:true}));
+        applied++;
+      } else { notFound++; }
+    });
+    // Afficher un récap
+    var msg = '\u2705 ' + applied + ' produit'+(applied>1?'s':'')+ ' import\u00e9'+(applied>1?'s':'');
+    if(notFound > 0) msg += ' \u00b7 ' + notFound + ' non trouv\u00e9'+(notFound>1?'s':'');
+    // Créer une notification en haut de page
+    var banner = document.createElement('div');
+    banner.style.cssText = 'position:fixed;top:64px;left:50%;transform:translateX(-50%);'
+      +'background:var(--text);color:#fff;padding:10px 20px;border-radius:8px;'
+      +'font-family:\'Inter\',sans-serif;font-size:13px;font-weight:400;'
+      +'z-index:999;box-shadow:0 4px 20px rgba(0,0,0,.2);white-space:nowrap;';
+    banner.textContent = msg;
+    document.body.appendChild(banner);
+    setTimeout(function(){ banner.style.opacity='0'; banner.style.transition='opacity .5s'; setTimeout(function(){banner.remove();},500); }, 4000);
+    // Scroller vers le premier produit importé
+    var firstInput = document.querySelector('input.qty-input');
+    if(firstInput) firstInput.closest('tr') && firstInput.closest('tr').scrollIntoView({behavior:'smooth', block:'center'});
+  }
+  // Lancer après chargement DOM complet
+  if(document.readyState === 'complete') applyImport();
+  else window.addEventListener('load', applyImport);
+})();
+
+</script>
 </body>
 </html>

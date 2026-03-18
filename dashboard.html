@@ -509,6 +509,44 @@ footer a{color:inherit;text-decoration:none;opacity:.7}footer a:hover{opacity:1}
 @media(max-width:480px){.chat-modal{width:calc(100vw - 16px);right:8px;bottom:80px}.chat-fab{bottom:16px;right:16px}}
 
 
+
+/* ── IMPORT PDF ── */
+.import-pdf-card{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:16px}
+.import-pdf-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border-light);background:var(--bg)}
+.import-pdf-title{font-size:13px;font-weight:500;color:var(--text);display:flex;align-items:center;gap:8px}
+.import-pdf-body{padding:16px}
+.pdf-drop-zone{border:2px dashed var(--border);border-radius:8px;padding:28px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg)}
+.pdf-drop-zone:hover,.pdf-drop-zone.drag-over{border-color:var(--accent);background:var(--accent-light)}
+.pdf-drop-zone-icon{font-size:32px;margin-bottom:8px}
+.pdf-drop-zone-label{font-size:13px;font-weight:400;color:var(--text);margin-bottom:4px}
+.pdf-drop-zone-sub{font-size:11px;font-weight:300;color:var(--text-muted)}
+.pdf-progress{padding:16px;text-align:center}
+.pdf-progress-bar-wrap{height:4px;background:var(--border);border-radius:4px;overflow:hidden;margin:10px 0}
+.pdf-progress-bar{height:100%;background:var(--accent);border-radius:4px;transition:width .4s}
+.pdf-progress-label{font-size:12px;font-weight:300;color:var(--text-muted)}
+.pdf-results{padding:0}
+.pdf-result-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--bg-beige);border-bottom:1px solid var(--border)}
+.pdf-result-stats{display:flex;gap:16px}
+.pdf-stat{text-align:center}
+.pdf-stat-val{font-family:'Fraunces',serif;font-size:20px;font-weight:200;color:var(--text);line-height:1}
+.pdf-stat-lbl{font-size:10px;font-weight:300;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px}
+.pdf-stat-val.green{color:var(--accent)}
+.pdf-stat-val.amber{color:#b8860b}
+.pdf-stat-val.red{color:var(--danger)}
+.pdf-result-table{width:100%;border-collapse:collapse;font-size:12px}
+.pdf-result-table th{padding:8px 12px;background:var(--bg);font-size:10px;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--border);text-align:left}
+.pdf-result-table td{padding:9px 12px;border-bottom:1px solid var(--border-light);font-weight:300;vertical-align:middle}
+.pdf-result-table tr:last-child td{border-bottom:none}
+.pdf-match-exact{color:var(--accent);font-size:10px;font-weight:600;background:var(--accent-light);padding:2px 7px;border-radius:4px}
+.pdf-match-approx{color:#92400e;font-size:10px;font-weight:600;background:#fef3c7;padding:2px 7px;border-radius:4px}
+.pdf-match-none{color:var(--danger);font-size:10px;font-weight:600;background:var(--danger-light);padding:2px 7px;border-radius:4px}
+.pdf-qty-input{width:60px;padding:4px 8px;border:1px solid var(--border);border-radius:5px;font-family:'Inter',sans-serif;font-size:12px;text-align:center;color:var(--text)}
+.pdf-import-btn{width:100%;padding:11px;background:var(--accent);color:#fff;border:none;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:background .15s;margin-top:14px}
+.pdf-import-btn:hover{background:var(--accent-hover)}
+.pdf-import-btn:disabled{opacity:.45;cursor:not-allowed}
+.pdf-reset-btn{background:none;border:none;font-size:12px;font-weight:300;color:var(--text-muted);cursor:pointer;font-family:'Inter',sans-serif;padding:4px 8px;transition:color .15s}
+.pdf-reset-btn:hover{color:var(--text)}
+
 </style>
 </head>
 <body>
@@ -554,6 +592,10 @@ footer a{color:inherit;text-decoration:none;opacity:.7}footer a:hover{opacity:1}
     <a class="mdm-nav-item" href="#" onclick="scrollToHistory();return false">
       <span class="mdm-nav-icon">&#128203;</span>
       <span class="mdm-nav-label">Historique</span>
+    </a>
+    <a class="mdm-nav-item" href="#" onclick="showImportPDF();return false">
+      <span class="mdm-nav-icon">&#128196;</span>
+      <span class="mdm-nav-label">Importer un PDF</span>
     </a>
     <a class="mdm-nav-item" href="#" onclick="exportDashExcel();return false">
       <span class="mdm-nav-icon">&#128202;</span>
@@ -2113,6 +2155,272 @@ function showProfil(){
   bg.appendChild(box);
   document.body.appendChild(bg);
   closeSidebar();
+}
+
+</script>
+<script>
+
+// ════════════════════════════════════════════════════════════
+// IMPORT PDF → BON DE COMMANDE
+// Utilise l'API Claude pour extraire produits/quantités
+// ════════════════════════════════════════════════════════════
+
+var _pdfResults = [];
+
+function showImportPDF(){
+  var content = document.getElementById('dash-content');
+  if(!content) return;
+  // Créer ou afficher la section import
+  var existing = document.getElementById('import-pdf-section');
+  if(existing){
+    existing.scrollIntoView({behavior:'smooth'});
+    return;
+  }
+  var section = document.createElement('div');
+  section.id = 'import-pdf-section';
+  section.innerHTML = _buildImportPDFHTML();
+  content.insertBefore(section, content.firstChild);
+  section.scrollIntoView({behavior:'smooth'});
+  _initDropZone();
+}
+
+function _buildImportPDFHTML(){
+  return '<div class="import-pdf-card">'
+    +'<div class="import-pdf-header">'
+    +'<span class="import-pdf-title">&#128196; Importer un bon de commande PDF</span>'
+    +'<button class="pdf-reset-btn" onclick="closeImportPDF()">&#10005; Fermer</button>'
+    +'</div>'
+    +'<div class="import-pdf-body" id="pdf-body">'
+    +'<div class="pdf-drop-zone" id="pdf-drop-zone" onclick="document.getElementById(\'pdf-file-input\').click()">'
+    +'<div class="pdf-drop-zone-icon">&#128196;</div>'
+    +'<div class="pdf-drop-zone-label">D&eacute;posez votre bon de commande PDF ici</div>'
+    +'<div class="pdf-drop-zone-sub">ou cliquez pour s&eacute;lectionner un fichier &middot; PDF uniquement &middot; max 10 Mo</div>'
+    +'</div>'
+    +'<input type="file" id="pdf-file-input" accept=".pdf,application/pdf" style="display:none" onchange="handlePDFFile(this.files[0])">'
+    +'</div>'
+    +'</div>';
+}
+
+function closeImportPDF(){
+  var s = document.getElementById('import-pdf-section');
+  if(s) s.remove();
+}
+
+function _initDropZone(){
+  var zone = document.getElementById('pdf-drop-zone');
+  if(!zone) return;
+  zone.addEventListener('dragover', function(e){
+    e.preventDefault();
+    zone.classList.add('drag-over');
+  });
+  zone.addEventListener('dragleave', function(){
+    zone.classList.remove('drag-over');
+  });
+  zone.addEventListener('drop', function(e){
+    e.preventDefault();
+    zone.classList.remove('drag-over');
+    var file = e.dataTransfer.files[0];
+    if(file && file.type === 'application/pdf') handlePDFFile(file);
+    else showToast('\u26a0 Veuillez d\u00e9poser un fichier PDF');
+  });
+}
+
+function handlePDFFile(file){
+  if(!file) return;
+  if(file.size > 10 * 1024 * 1024){ showToast('\u26a0 Fichier trop lourd (max 10 Mo)'); return; }
+  _showPDFProgress('Lecture du PDF\u2026', 20);
+  var reader = new FileReader();
+  reader.onload = function(e){
+    var b64 = e.target.result.split(',')[1];
+    _showPDFProgress('Analyse par Claude\u2026', 50);
+    _extractWithClaude(b64);
+  };
+  reader.readAsDataURL(file);
+}
+
+function _showPDFProgress(label, pct){
+  var body = document.getElementById('pdf-body');
+  if(!body) return;
+  body.innerHTML = '<div class="pdf-progress">'
+    +'<div style="font-size:14px;margin-bottom:6px">&#129302;</div>'
+    +'<div class="pdf-progress-label">'+label+'</div>'
+    +'<div class="pdf-progress-bar-wrap"><div class="pdf-progress-bar" id="pdf-pbar" style="width:'+pct+'%"></div></div>'
+    +'<div style="font-size:11px;font-weight:300;color:var(--text-muted);margin-top:6px">Cela peut prendre quelques secondes\u2026</div>'
+    +'</div>';
+}
+
+function _getProductsIndex(){
+  // Construire un index des produits du catalogue pour la correspondance
+  var products = window.PRODUCTS || [];
+  return products.map(function(p){
+    return {
+      code: (p.code||p.ref||'').toUpperCase(),
+      designation: (p.designation||p.des||p.nom||'').toLowerCase(),
+      pcb: p.pcb||p.colis||1,
+      prix: p.prixHT||p.prix||0,
+      idx: products.indexOf(p)
+    };
+  });
+}
+
+function _extractWithClaude(pdfB64){
+  var productsIndex = _getProductsIndex();
+  // Construire un extrait du catalogue pour le prompt
+  var catalogSample = productsIndex.slice(0, 200).map(function(p){
+    return p.code + ' | ' + p.designation;
+  }).join('\n');
+
+  var prompt = 'Tu es un assistant qui analyse des bons de commande.\n\n'
+    + 'Voici un extrait du catalogue MDM (code | désignation) :\n'
+    + catalogSample + '\n\n'
+    + 'Analyse ce bon de commande PDF et extrais TOUS les produits commandés.\n'
+    + 'Pour chaque produit trouvé, essaie de le faire correspondre au catalogue MDM '
+    + 'en utilisant le code article ET la désignation.\n\n'
+    + 'Réponds UNIQUEMENT en JSON valide, sans markdown, format exact :\n'
+    + '{"produits":[{"designation_source":"texte original du PDF","quantite":nombre,'
+    + '"code_mdm":"CODE ou null","designation_mdm":"nom MDM ou null",'
+    + '"confiance":"exact|approx|aucun","note":""}]}';
+
+  fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 4000,
+      messages: [{
+        role: 'user',
+        content: [
+          {type:'document', source:{type:'base64', media_type:'application/pdf', data:pdfB64}},
+          {type:'text', text:prompt}
+        ]
+      }]
+    })
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data){
+    _showPDFProgress('Correspondance catalogue\u2026', 85);
+    var text = (data.content||[]).map(function(b){ return b.text||''; }).join('');
+    // Nettoyer le JSON
+    text = text.replace(/```json|```/g,'').trim();
+    var parsed;
+    try{ parsed = JSON.parse(text); }
+    catch(e){ throw new Error('R\u00e9ponse non parsable: '+text.substring(0,200)); }
+    _pdfResults = parsed.produits || [];
+    // Enrichir avec les données catalogue
+    _enrichResults(_pdfResults, productsIndex);
+    _renderPDFResults(_pdfResults);
+  })
+  .catch(function(e){
+    var body = document.getElementById('pdf-body');
+    if(body) body.innerHTML = '<div style="padding:20px;text-align:center;color:var(--danger)">'
+      +'<div style="font-size:24px;margin-bottom:8px">&#9888;</div>'
+      +'<div style="font-size:13px;font-weight:400">Erreur lors de l\'analyse</div>'
+      +'<div style="font-size:11px;font-weight:300;color:var(--text-muted);margin-top:4px">'+e.message+'</div>'
+      +'<button onclick="closeImportPDF()" class="pdf-reset-btn" style="margin-top:12px;font-size:12px;color:var(--accent)">Fermer</button>'
+      +'</div>';
+  });
+}
+
+function _enrichResults(results, index){
+  results.forEach(function(r){
+    if(r.code_mdm && r.confiance === 'exact'){
+      // Chercher par code
+      var found = index.find(function(p){ return p.code === r.code_mdm.toUpperCase(); });
+      if(found){ r._productIdx = found.idx; r._pcb = found.pcb; }
+    }
+    if(!r._productIdx && r.designation_mdm){
+      // Chercher par désignation (fuzzy)
+      var dl = r.designation_mdm.toLowerCase();
+      var best = null, bestScore = 0;
+      index.forEach(function(p){
+        var words = dl.split(' ').filter(function(w){ return w.length>3; });
+        var score = words.filter(function(w){ return p.designation.indexOf(w)>=0; }).length / Math.max(words.length,1);
+        if(score > bestScore){ bestScore=score; best=p; }
+      });
+      if(best && bestScore > 0.5){ r._productIdx = best.idx; r._pcb = best.pcb; if(bestScore<0.85) r.confiance='approx'; }
+    }
+  });
+}
+
+function _renderPDFResults(results){
+  var body = document.getElementById('pdf-body');
+  if(!body) return;
+  var exact = results.filter(function(r){ return r.confiance==='exact'; }).length;
+  var approx = results.filter(function(r){ return r.confiance==='approx'; }).length;
+  var none = results.filter(function(r){ return r.confiance==='aucun'||!r.code_mdm; }).length;
+
+  var html = '<div class="pdf-results">'
+    +'<div class="pdf-result-header">'
+    +'<div class="pdf-result-stats">'
+    +'<div class="pdf-stat"><div class="pdf-stat-val">'+(exact+approx+none)+'</div><div class="pdf-stat-lbl">Produits</div></div>'
+    +'<div class="pdf-stat"><div class="pdf-stat-val green">'+exact+'</div><div class="pdf-stat-lbl">Exacts</div></div>'
+    +'<div class="pdf-stat"><div class="pdf-stat-val amber">'+approx+'</div><div class="pdf-stat-lbl">Approx.</div></div>'
+    +'<div class="pdf-stat"><div class="pdf-stat-val red">'+none+'</div><div class="pdf-stat-lbl">Non trouv\u00e9s</div></div>'
+    +'</div>'
+    +'<button class="pdf-reset-btn" onclick="resetImportPDF()">&#8635; Nouveau PDF</button>'
+    +'</div>';
+
+  html += '<div style="overflow-x:auto">'
+    +'<table class="pdf-result-table">'
+    +'<thead><tr>'
+    +'<th>Produit dans le PDF</th>'
+    +'<th>Correspondance MDM</th>'
+    +'<th style="text-align:center">Statut</th>'
+    +'<th style="text-align:center">Qté colis</th>'
+    +'</tr></thead><tbody>';
+
+  results.forEach(function(r, i){
+    var statusCls = r.confiance==='exact' ? 'pdf-match-exact' : r.confiance==='approx' ? 'pdf-match-approx' : 'pdf-match-none';
+    var statusTxt = r.confiance==='exact' ? 'Exact' : r.confiance==='approx' ? 'Approx.' : 'Non trouv\u00e9';
+    var matchTxt  = r.designation_mdm || (r.code_mdm ? r.code_mdm : '\u2014');
+    var qty = r.quantite || 1;
+    var disabled = (!r._productIdx && r._productIdx !== 0) ? 'style="opacity:.4" disabled' : '';
+    html += '<tr>'
+      +'<td style="color:var(--text)">'+escH(r.designation_source||'')+'</td>'
+      +'<td style="color:var(--text-muted)">'+escH(matchTxt)+(r.code_mdm?'<br><span style="font-size:10px;color:var(--accent);font-weight:500">'+escH(r.code_mdm)+'</span>':'')+'</td>'
+      +'<td style="text-align:center"><span class="'+statusCls+'">'+statusTxt+'</span></td>'
+      +'<td style="text-align:center"><input type="number" class="pdf-qty-input" id="pdf-qty-'+i+'" value="'+qty+'" min="0" step="1" '+disabled+'></td>'
+      +'</tr>';
+  });
+
+  html += '</tbody></table></div>';
+  html += '<div style="padding:14px 16px;border-top:1px solid var(--border-light)">'
+    +'<div style="font-size:11px;font-weight:300;color:var(--text-muted);margin-bottom:10px">Seuls les produits \u00abExact\u00bb et \u00abApprox.\u00bb correspondants seront import\u00e9s. V\u00e9rifiez les quantit\u00e9s avant import.</div>'
+    +'<button class="pdf-import-btn" onclick="importPDFToCommande()" '+(exact+approx===0?'disabled':'')+'>'
+    +'&#128221; Importer dans le bon de commande ('+( exact+approx)+' produit'+(exact+approx>1?'s':'')+')'
+    +'</button>'
+    +'</div></div>';
+
+  body.innerHTML = html;
+}
+
+function resetImportPDF(){
+  _pdfResults = [];
+  var body = document.getElementById('pdf-body');
+  if(!body) return;
+  body.innerHTML = '<div class="pdf-drop-zone" id="pdf-drop-zone" onclick="document.getElementById(\'pdf-file-input\').click()">'
+    +'<div class="pdf-drop-zone-icon">&#128196;</div>'
+    +'<div class="pdf-drop-zone-label">D&eacute;posez votre bon de commande PDF ici</div>'
+    +'<div class="pdf-drop-zone-sub">ou cliquez pour s&eacute;lectionner un fichier &middot; PDF uniquement &middot; max 10 Mo</div>'
+    +'</div>'
+    +'<input type="file" id="pdf-file-input" accept=".pdf,application/pdf" style="display:none" onchange="handlePDFFile(this.files[0])">';
+  _initDropZone();
+}
+
+function importPDFToCommande(){
+  var toImport = [];
+  _pdfResults.forEach(function(r, i){
+    if((r._productIdx === 0 || r._productIdx) && r.confiance !== 'aucun'){
+      var qtyEl = document.getElementById('pdf-qty-'+i);
+      var qty = qtyEl ? parseInt(qtyEl.value)||0 : (r.quantite||1);
+      if(qty > 0) toImport.push({idx: r._productIdx, qty: qty});
+    }
+  });
+  if(!toImport.length){ showToast('\u26a0 Aucun produit \u00e0 importer'); return; }
+  // Stocker dans sessionStorage pour récupération dans commande.html
+  sessionStorage.setItem('mdm_pdf_import', JSON.stringify(toImport));
+  showToast('\u2705 Import pr\u00eat \u2014 redirection\u2026');
+  setTimeout(function(){ window.location.href = 'commande.html?import=pdf'; }, 1200);
 }
 
 </script>

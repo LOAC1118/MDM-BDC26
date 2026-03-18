@@ -535,6 +535,23 @@ tbody td{padding:9px 12px;font-size:12px;font-weight:300;color:var(--text)}
 footer{text-align:center;padding:12px;font-size:11px;font-weight:300;color:var(--text-muted);border-top:1px solid var(--border)}
 footer a{color:inherit;text-decoration:none;opacity:.7}footer a:hover{opacity:1}
 
+
+.actu-type-btn{transition:all .15s}
+.actu-type-active{background:var(--accent) !important;color:#fff !important;border-color:var(--accent) !important}
+.actu-card-n{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:10px;transition:box-shadow .15s}
+.actu-card-n:hover{box-shadow:0 2px 12px var(--shadow)}
+.actu-card-n.off{opacity:.55}
+.actu-card-n-top{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--border-light);background:var(--bg)}
+.actu-card-n-body{padding:12px 14px;font-size:12px;font-weight:300;color:var(--text-secondary);line-height:1.7;white-space:pre-wrap}
+.actu-card-n-foot{display:flex;gap:7px;padding:8px 14px;border-top:1px solid var(--border-light);background:var(--bg)}
+.actu-tb{padding:2px 9px;border-radius:4px;font-size:10px;font-weight:600}
+.actu-tb.info{background:#e8f4ed;color:#2d6a4a}
+.actu-tb.promo{background:#fef3c7;color:#92400e}
+.actu-tb.alerte{background:#fee2e2;color:#991b1b}
+.actu-sp{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:500}
+.actu-sp.on{background:var(--accent-light);color:var(--accent)}
+.actu-sp.off{background:var(--bg-beige);color:var(--text-muted)}
+
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -726,27 +743,67 @@ footer a{color:inherit;text-decoration:none;opacity:.7}footer a:hover{opacity:1}
 
     <!-- PAGE : ACTUALITES -->
     <div class="page" id="page-actualites">
-      <div class="page-title">Actualit&#233;s &amp; Messages</div>
-      <div class="page-sub">Ces messages s&#8217;affichent en bandeau sur la page de commande pour tous les utilisateurs connect&#233;s</div>
-      <div class="actu-form" id="actu-form">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-          <span style="font-size:13px;font-weight:700;color:var(--brown)" id="actu-form-title">&#43; Nouveau message</span>
-          <button onclick="cancelActu()" style="background:none;border:none;font-size:12px;color:#a08070;cursor:pointer;font-family:Outfit,sans-serif;display:none" id="actu-cancel-btn">Annuler</button>
+    <div class="page-title">Actualit&eacute;s</div>
+    <div class="page-sub">Messages affich&eacute;s sur le tableau de bord des clients</div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start">
+
+      <!-- FORMULAIRE -->
+      <div class="section-card">
+        <div class="section-card-title">
+          <span id="actu-form-title">&#43;&nbsp;Nouvelle actualit&eacute;</span>
+          <button onclick="cancelActu()" id="actu-cancel-btn" style="display:none;background:none;border:none;font-size:12px;color:var(--text-muted);cursor:pointer;font-family:'Inter',sans-serif">Annuler</button>
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-          <div class="fg"><label>Type de message</label><select id="actu-type" onchange="onActuTypeChange()"><option value="info">&#128226; Information</option><option value="promo">&#127381; Promotion</option><option value="alerte">&#9888;&#65039; Alerte urgente</option><option value="lien">&#128279; Lien / Document</option></select></div>
-          <div class="fg"><label>Titre</label><input type="text" id="actu-titre" placeholder="ex: Nouveaut&#233;s printemps 2026&#8230;"></div>
+        <div class="fg" style="margin-bottom:14px">
+          <label>Type</label>
+          <div style="display:flex;gap:7px;margin-top:6px">
+            <button type="button" onclick="setActuType('info',this)" class="actu-type-btn actu-type-active" data-type="info" style="padding:5px 13px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;border:1px solid var(--accent);background:var(--accent);color:#fff;font-family:'Inter',sans-serif">&#128226; Info</button>
+            <button type="button" onclick="setActuType('promo',this)" class="actu-type-btn" data-type="promo" style="padding:5px 13px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:var(--bg);color:var(--text);font-family:'Inter',sans-serif">&#127381; Promo</button>
+            <button type="button" onclick="setActuType('alerte',this)" class="actu-type-btn" data-type="alerte" style="padding:5px 13px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:var(--bg);color:var(--text);font-family:'Inter',sans-serif">&#9888; Alerte</button>
+          </div>
+          <input type="hidden" id="actu-type" value="info">
         </div>
-        <div class="fg"><label>Contenu du message</label><textarea id="actu-contenu" placeholder="R&#233;digez votre message ici. Il sera visible par tous les utilisateurs connect&#233;s sur leur page de commande."></textarea></div>
-        <div class="fg" id="actu-lien-bloc" style="display:none"><label>URL du lien (optionnel)</label><input type="url" id="actu-lien" placeholder="https://exemple.com/document.pdf"></div>
-        <div style="display:flex;align-items:center;gap:12px">
-          <button onclick="saveActu()" style="padding:9px 22px;background:var(--brown);color:#fff;border:none;border-radius:7px;font-family:Outfit,sans-serif;font-size:13px;font-weight:600;cursor:pointer" id="actu-save-btn">&#10003; Publier le message</button>
-          <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--brown);cursor:pointer;font-weight:500"><input type="checkbox" id="actu-actif" checked style="width:15px;height:15px;accent-color:var(--green)"> Actif (visible sur commande.html)</label>
+        <div class="fg" style="margin-bottom:14px">
+          <label>Titre <span style="color:var(--danger)">*</span></label>
+          <input type="text" id="actu-titre" placeholder="ex : Nouveaut&eacute;s printemps 2026&hellip;" oninput="updateActuPreview()">
         </div>
+        <div class="fg" style="margin-bottom:16px">
+          <label>Contenu <span style="color:var(--danger)">*</span></label>
+          <textarea id="actu-contenu" rows="4" placeholder="R&eacute;digez votre message ici&hellip;" oninput="updateActuPreview()" style="resize:vertical;min-height:90px;line-height:1.6"></textarea>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:18px">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;font-weight:400;color:var(--text);margin-bottom:0">
+            <input type="checkbox" id="actu-actif" checked style="width:15px;height:15px;accent-color:var(--accent)">
+            Publier imm&eacute;diatement
+          </label>
+        </div>
+        <button onclick="saveActuNew()" id="actu-save-btn" style="width:100%;padding:10px;background:var(--accent);color:#fff;border:none;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:500;cursor:pointer">&#10003;&nbsp;Publier l&apos;actualit&eacute;</button>
       </div>
-      <div id="actu-list"></div>
+
+      <!-- PRÉVISUALISATION -->
+      <div>
+        <div style="font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.7px;color:var(--text-muted);margin-bottom:10px">Pr&eacute;visualisation client</div>
+        <div id="actu-preview-card" style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;overflow:hidden">
+          <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--border-light);background:var(--bg)">
+            <span id="actu-preview-badge" style="padding:2px 9px;border-radius:4px;font-size:10px;font-weight:600;background:#e8f4ed;color:#2d6a4a">Info</span>
+            <span id="actu-preview-titre" style="font-size:13px;font-weight:500;color:var(--text);flex:1">Titre de l&apos;actualit&eacute;</span>
+            <span id="actu-preview-date" style="font-size:10px;font-weight:300;color:var(--text-muted)"></span>
+            <span style="color:var(--text-muted);font-size:14px">&#10005;</span>
+          </div>
+          <div id="actu-preview-body" style="padding:12px 14px;font-size:12px;font-weight:300;color:var(--text-secondary);line-height:1.7;white-space:pre-wrap">Le contenu de votre message s&apos;affichera ici.</div>
+        </div>
+        <div style="font-size:11px;font-weight:300;color:var(--text-muted);margin-top:8px;text-align:center">Aper&ccedil;u tel qu&apos;affich&eacute; sur le tableau de bord client</div>
+      </div>
     </div>
 
+    <!-- LISTE -->
+    <div style="margin-top:24px">
+      <div style="font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.7px;color:var(--text-muted);margin-bottom:12px">Publi&eacute;es</div>
+      <div id="actu-list"></div>
+    </div>
+  </div>
+
+    <!-- PAGE : HISTORIQUE -->
     <!-- PAGE : HISTORIQUE -->
     <div class="page" id="page-historique">
       <div class="page-title">Historique des commandes</div>
@@ -1868,14 +1925,79 @@ function saveActus(){
 }
 function updateActusBadge(){var nb=actus.filter(function(a){return a.actif;}).length;var badge=document.getElementById('badge-actus');if(badge){badge.textContent=nb;badge.style.display=nb>0?'inline-flex':'none';}}
 var actuEditIndex=-1;
-function saveActu(){var type=document.getElementById('actu-type').value,titre=document.getElementById('actu-titre').value.trim(),contenu=document.getElementById('actu-contenu').value.trim(),lien=document.getElementById('actu-lien').value.trim(),actif=document.getElementById('actu-actif').checked;if(!titre||!contenu){showToast('\u26a0 Titre et contenu obligatoires.');return;}var obj={id:Date.now(),type:type,titre:titre,contenu:contenu,lien:lien,actif:actif,date:new Date().toLocaleDateString('fr-FR')};if(actuEditIndex>=0){obj.id=actus[actuEditIndex].id;obj.date=actus[actuEditIndex].date;actus[actuEditIndex]=obj;}else{actus.unshift(obj);}saveActus();resetActuForm();renderActus();showToast('\u2705 Message '+(actuEditIndex>=0?'mis \u00e0 jour':'publi\u00e9')+'!');actuEditIndex=-1;}
+function saveActuOld(){var type=document.getElementById('actu-type').value,titre=document.getElementById('actu-titre').value.trim(),contenu=document.getElementById('actu-contenu').value.trim(),lien=document.getElementById('actu-lien').value.trim(),actif=document.getElementById('actu-actif').checked;if(!titre||!contenu){showToast('\u26a0 Titre et contenu obligatoires.');return;}var obj={id:Date.now(),type:type,titre:titre,contenu:contenu,lien:lien,actif:actif,date:new Date().toLocaleDateString('fr-FR')};if(actuEditIndex>=0){obj.id=actus[actuEditIndex].id;obj.date=actus[actuEditIndex].date;actus[actuEditIndex]=obj;}else{actus.unshift(obj);}saveActus();resetActuForm();renderActus();showToast('\u2705 Message '+(actuEditIndex>=0?'mis \u00e0 jour':'publi\u00e9')+'!');actuEditIndex=-1;}
 function editActu(idx){actuEditIndex=idx;var a=actus[idx];document.getElementById('actu-type').value=a.type;document.getElementById('actu-titre').value=a.titre;document.getElementById('actu-contenu').value=a.contenu;document.getElementById('actu-lien').value=a.lien||'';document.getElementById('actu-actif').checked=a.actif;document.getElementById('actu-form-title').textContent='\u270f\ufe0f Modifier le message';document.getElementById('actu-save-btn').textContent='\u2713 Mettre \u00e0 jour';document.getElementById('actu-cancel-btn').style.display='inline';onActuTypeChange();document.getElementById('actu-form').scrollIntoView({behavior:'smooth',block:'start'});}
 function delActu(idx){if(!confirm('Supprimer ce message ?'))return;actus.splice(idx,1);saveActus();renderActus();showToast('&#128465; Message supprim\u00e9');}
 function toggleActuActif(idx){actus[idx].actif=!actus[idx].actif;saveActus();renderActus();}
 function cancelActu(){actuEditIndex=-1;resetActuForm();}
 function resetActuForm(){document.getElementById('actu-type').value='info';document.getElementById('actu-titre').value='';document.getElementById('actu-contenu').value='';document.getElementById('actu-lien').value='';document.getElementById('actu-actif').checked=true;document.getElementById('actu-form-title').textContent='+ Nouveau message';document.getElementById('actu-save-btn').textContent='\u2713 Publier le message';document.getElementById('actu-cancel-btn').style.display='none';document.getElementById('actu-lien-bloc').style.display='none';}
 function onActuTypeChange(){var t=document.getElementById('actu-type').value;var lb=document.getElementById('actu-lien-bloc');if(lb)lb.style.display=t==='lien'?'block':'none';}
-function renderActus(){var container=document.getElementById('actu-list');if(!container)return;updateActusBadge();if(!actus.length){container.innerHTML='<div class="empty-state"><div class="icon">&#128226;</div><p>Aucun message publi\u00e9.<br>Cr\u00e9ez votre premier message ci-dessus.</p></div>';return;}var TC={info:{label:'Information',bg:'#e3f2fd',color:'#1565c0',icon:'&#128226;'},promo:{label:'Promotion',bg:'#fff3e0',color:'#e65100',icon:'&#127381;'},alerte:{label:'Alerte',bg:'#fdecea',color:'#c62828',icon:'&#9888;&#65039;'},lien:{label:'Lien',bg:'#f3e5f5',color:'#6a1b9a',icon:'&#128279;'}};var html='';actus.forEach(function(a,idx){var tc=TC[a.type]||TC.info;html+='<div class="actu-card" style="opacity:'+(a.actif?'1':'0.55')+'">';html+='<div class="actu-card-header"><span class="actu-type-badge" style="background:'+tc.bg+';color:'+tc.color+'">'+tc.icon+' '+tc.label+'</span><span style="font-weight:700;color:var(--brown);flex:1;margin-left:10px">'+escH(a.titre)+'</span><span style="font-size:11px;color:#aaa;margin-right:10px">'+a.date+'</span>';html+=a.actif?'<span style="display:inline-flex;align-items:center;gap:4px;padding:2px 8px;background:#e8f5e9;color:var(--green);border-radius:10px;font-size:10px;font-weight:700">&#9679; Actif</span>':'<span style="display:inline-flex;align-items:center;gap:4px;padding:2px 8px;background:#f5f5f5;color:#aaa;border-radius:10px;font-size:10px;font-weight:700">&#9675; Inactif</span>';html+='</div><div class="actu-card-body"><div class="actu-preview">'+escH(a.contenu)+'</div>';if(a.lien)html+='<div style="margin-bottom:10px"><a href="'+escH(a.lien)+'" target="_blank" style="color:var(--terra);font-size:12px;text-decoration:none">&#128279; '+escH(a.lien)+'</a></div>';html+='<div class="actu-actions"><button class="btn-actu-edit" onclick="editActu('+idx+')">&#9998; Modifier</button><button class="btn-actu-toggle" style="background:'+(a.actif?'#fff3e0':'#e8f5e9')+';color:'+(a.actif?'#e65100':'var(--green)')+'" onclick="toggleActuActif('+idx+')">'+(a.actif?'&#128274; D\u00e9sactiver':'&#127758; Activer')+'</button><button class="btn-actu-del" onclick="delActu('+idx+')">&#128465; Supprimer</button></div></div></div>';});container.innerHTML=html;}
+
+function setActuType(type,btn){
+  document.getElementById('actu-type').value=type;
+  document.querySelectorAll('.actu-type-btn').forEach(function(b){
+    b.style.background='var(--bg)';b.style.color='var(--text)';b.style.borderColor='var(--border)';
+  });
+  btn.style.background='var(--accent)';btn.style.color='#fff';btn.style.borderColor='var(--accent)';
+  updateActuPreview();
+}
+function updateActuPreview(){
+  var type=document.getElementById('actu-type').value||'info';
+  var titre=(document.getElementById('actu-titre').value||'Titre de l\u2019actualit\u00e9').trim();
+  var contenu=(document.getElementById('actu-contenu').value||'Le contenu s\u2019affichera ici.').trim();
+  var B={info:{label:'Info',bg:'#e8f4ed',color:'#2d6a4a'},promo:{label:'Promo',bg:'#fef3c7',color:'#92400e'},alerte:{label:'Alerte',bg:'#fee2e2',color:'#991b1b'}};
+  var b=B[type]||B.info;
+  var el=document.getElementById('actu-preview-badge');
+  if(el){el.textContent=b.label;el.style.background=b.bg;el.style.color=b.color;}
+  var t=document.getElementById('actu-preview-titre'); if(t) t.textContent=titre;
+  var c=document.getElementById('actu-preview-body'); if(c) c.textContent=contenu;
+  var d=document.getElementById('actu-preview-date'); if(d) d.textContent=new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'});
+}
+function saveActuNew(){
+  var titre=(document.getElementById('actu-titre').value||''). trim();
+  var contenu=(document.getElementById('actu-contenu').value||''). trim();
+  var type=document.getElementById('actu-type').value||'info';
+  var actif=document.getElementById('actu-actif').checked;
+  if(!titre||!contenu){showToast('\u26a0 Titre et contenu obligatoires');return;}
+  var dateStr=new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'});
+  if(actuEditIndex>=0){
+    actus[actuEditIndex]=Object.assign(actus[actuEditIndex],{titre:titre,contenu:contenu,type:type,actif:actif});
+    showToast('\u2705 Actualit\u00e9 mise \u00e0 jour');
+  } else {
+    actus.unshift({titre:titre,contenu:contenu,type:type,actif:actif,date:dateStr});
+    showToast('\u2705 Actualit\u00e9 publi\u00e9e');
+  }
+  saveActus();renderActus();cancelActu();
+}
+function renderActus(){
+  var container=document.getElementById('actu-list');
+  if(!container) return;
+  updateActusBadge();
+  if(!actus.length){
+    container.innerHTML='<div class="empty-state"><p>Aucune actualité publiée.</p></div>';
+    return;
+  }
+  var TYPES={info:{label:'Info',cls:'info'},promo:{label:'Promo',cls:'promo'},alerte:{label:'Alerte',cls:'alerte'}};
+  var html='';
+  actus.forEach(function(ac,idx){
+    var tc=TYPES[ac.type]||TYPES.info;
+    var isOn=ac.actif!==false;
+    html+='<div class="actu-card-n'+(isOn?'':' off')+'">'
+      +'<div class="actu-card-n-top">'
+      +'<span class="actu-tb '+tc.cls+'">'+tc.label+'</span>'
+      +'<span style="font-size:13px;font-weight:500;color:var(--text);flex:1">'+escH(ac.titre)+'</span>'
+      +'<span style="font-size:10px;font-weight:300;color:var(--text-muted);margin-right:8px">'+( ac.date||'')+'</span>'
+      +'<span class="actu-sp '+(isOn?'on':'off')+'">'+( isOn?'● En ligne':'○ Hors ligne')+'</span>'
+      +'</div>'
+      +'<div class="actu-card-n-body">'+escH(ac.contenu)+'</div>'
+      +'<div class="actu-card-n-foot">'
+      +'<button class="btn-actu-edit" onclick="editActu('+idx+')">Modifier</button>'
+      +'<button class="btn-actu-toggle" onclick="toggleActuActif('+idx+')" style="background:'+(isOn?'var(--bg-beige)':'var(--accent-light)')+';color:'+(isOn?'var(--text-muted)':'var(--accent)')+'">'+( isOn?'Désactiver':'Activer')+'</button>'
+      +'<button class="btn-actu-del" onclick="delActu('+idx+')">Supprimer</button>'
+      +'</div></div>';
+  });
+  container.innerHTML=html;
+}
 function renderHistorique(){
   var container=document.getElementById('historique-list');
   if(!container)return;

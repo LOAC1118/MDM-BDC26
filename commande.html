@@ -822,6 +822,11 @@ tbody tr.has-qty td.td-qty input{background:#ffe0b2;border-color:var(--terra)}
     </div>
     <div class="totals-sep"></div>
     <div class="total-item">
+      <div class="total-label">UVC</div>
+      <div class="total-value" id="nb-uvc">0</div>
+    </div>
+    <div class="totals-sep"></div>
+    <div class="total-item">
       <div class="total-label">Total HT brut</div>
       <div class="total-value" id="total-brut">0,00&nbsp;&euro;</div>
     </div>
@@ -1377,14 +1382,20 @@ function onQty(input){
 }
 
 function updateTotals(){
-  var nbRefs=0,nbColis=0,tBrut=0,tNet=0;
+  var nbRefs=0,nbColis=0,nbUVC=0,tBrut=0,tNet=0;
   for(var i=0;i<PRODUCTS.length;i++){
     var p=PRODUCTS[i];
     var q=qtys[p.code]||0;
-    if(q>0){var pcb=parseFloat(p.pcb)||1;nbRefs++;nbColis+=q;tBrut+=p.pu_ht*q*pcb;tNet+=p.pu_ht*(1-remise/100)*q*pcb;}
+    if(q>0){
+      var pcb=parseFloat(p.pcb)||1;
+      nbRefs++; nbColis+=q; nbUVC+=q*pcb;
+      tBrut+=p.pu_ht*q*pcb; tNet+=p.pu_ht*(1-remise/100)*q*pcb;
+    }
   }
   document.getElementById("nb-refs").textContent=nbRefs;
   document.getElementById("nb-colis").textContent=nbColis;
+  var uvcEl=document.getElementById("nb-uvc");
+  if(uvcEl) uvcEl.textContent=nbUVC;
   document.getElementById("total-brut").textContent=fmt2(tBrut);
   document.getElementById("total-remise").textContent=fmt2(tBrut-tNet);
   document.getElementById("total-net").textContent=fmt2(tNet);

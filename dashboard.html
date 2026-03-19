@@ -803,34 +803,19 @@ function fbLoadHistory(login) {
 // Écoute temps réel des commandes client
 function fbWatchHistory(login, franco, callback) {
   initFirebase().then(function(db) {
+    // Annuler l'écoute précédente si elle existe
     if(window._historyUnsub) window._historyUnsub();
-    var ref = db.collection('historique')
+    window._historyUnsub = db.collection('historique')
       .doc(login)
       .collection('commandes')
       .orderBy('id', 'desc')
-      .limit(50);
-
-    // Essayer onSnapshot (temps réel)
-    window._historyUnsub = ref.onSnapshot(function(snap) {
-      var orders = snap.docs.map(function(dd) { return dd.data(); });
-      callback(orders);
-    }, function(e) {
-      console.warn('fbWatchHistory onSnapshot error:', e.code, e.message);
-      // Fallback : lecture simple si onSnapshot échoue (ex: index manquant)
-      ref.get().then(function(snap) {
-        var orders = snap.docs.map(function(dd) { return dd.data(); });
+      .limit(50)
+      .onSnapshot(function(snap) {
+        var orders = snap.docs.map(function(d) { return d.data(); });
         callback(orders);
-      }).catch(function(e2) {
-        console.warn('fbWatchHistory get fallback error:', e2.message);
-        // Dernier recours : sans orderBy
-        db.collection('historique').doc(login).collection('commandes')
-          .limit(50).get().then(function(snap) {
-            var orders = snap.docs.map(function(dd){ return dd.data(); });
-            orders.sort(function(a,b){return (b.id||0)-(a.id||0);});
-            callback(orders);
-          }).catch(function(){});
+      }, function(e) {
+        console.warn('fbWatchHistory error:', e);
       });
-    });
   }).catch(function(){});
 }
 
@@ -1216,15 +1201,42 @@ function renderAdmin(data){
     return;
   }
 
-  var promises = logins.map(function(lg){
-    return fbLoadHistory(lg).then(function(orders){
-      return (orders||[]).map(function(o){return Object.assign({},o,{_login:lg});});
-    }).catch(function(){
-      var local=[];
-      try{local=JSON.parse(localStorage.getItem('mdm_history_'+lg)||'[]');}catch(e){}
-      return local.map(function(o){return Object.assign({},o,{_login:lg});});
-    });
+  var logins_map = {};
+  if(window._comHistoryUnsubs) window._comHistoryUnsubs.forEach(function(u){u();});
+  window._comHistoryUnsubs = [];
+  // Affichage local immédiat
+  logins.forEach(function(lg){
+    try{ logins_map[lg]=JSON.parse(localStorage.getItem('mdm_history_'+lg)||'[]'); }catch(e){}
   });
+  function _renderCom(){
+    var all=[];
+    Object.keys(logins_map).forEach(function(lg){
+      (logins_map[lg]||[]).forEach(function(o){ all.push(Object.assign({},o,{_login:lg})); });
+    });
+    var ids={}; all=all.filter(function(o){if(ids[o.id])return false;ids[o.id]=true;return true;});
+    all.sort(function(a,b){return (b.id||0)-(a.id||0);});
+    var nb=all.length, ca=all.reduce(function(s,o){return s+(o.totalNet||0);},0);
+    setKPI('kpi-orders',nb,'enregistrées');
+    setKPI('kpi-ca',fmtCA(ca),'cumul clients');
+    setKPI('kpi-avg',fmtCA(nb>0?ca/nb:0),'par commande');
+    var content=document.getElementById('dash-content'); if(!content) return;
+    if(!all.length){ content.innerHTML='<div class="dash-section"><div class="empty-state">Aucune commande enregistrée.</div></div>'; return; }
+    var html='<div class="dash-section"><div class="dash-section-header"><span class="dash-section-title">&#9203; Dernières commandes de mes clients</span><span class="dash-section-badge">'+nb+' commande'+(nb>1?'s':'')+'</span></div>';
+    all.forEach(function(o){ var cl=clients.find(function(co){return co.login.replace(/[^a-zA-Z0-9_-]/g,'_')===o._login;}); html+=orderRow(o,cl?cl.nom:o._login,true); });
+    html+='</div>'; content.innerHTML=html;
+  }
+  if(Object.keys(logins_map).length) _renderCom();
+  initFirebase().then(function(db){
+    logins.forEach(function(lg){
+      var unsub=db.collection('historique').doc(lg).collection('commandes')
+        .orderBy('id','desc').limit(50)
+        .onSnapshot(function(snap){ logins_map[lg]=snap.docs.map(function(dd){return dd.data();}); _renderCom(); },function(){
+          db.collection('historique').doc(lg).collection('commandes').limit(50).get()
+            .then(function(snap){ logins_map[lg]=snap.docs.map(function(dd){return dd.data();}); _renderCom(); }).catch(function(){});
+        });
+      window._comHistoryUnsubs.push(unsub);
+    });
+  }).catch(function(){});
 
   Promise.all(promises).then(function(arrays){
     var all=[].concat.apply([],arrays);

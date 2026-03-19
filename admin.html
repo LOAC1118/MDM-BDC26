@@ -1613,9 +1613,17 @@ function saveComptes(){
 function showPage(id, el){
   document.querySelectorAll(".page").forEach(function(p){ p.classList.remove("active"); });
   document.querySelectorAll(".nav-item").forEach(function(n){ n.classList.remove("active"); });
-  document.getElementById("page-"+id).classList.add("active");
+  var page = document.getElementById("page-"+id);
+  if(!page){ console.warn("page-"+id+" introuvable"); return; }
+  page.classList.add("active");
   if(el) el.classList.add("active");
-  if(id === "comptes" || id === "dashboard") renderComptes();
+  // Rendre le contenu selon la page
+  if(id === "dashboard") { renderComptes(); updateStats(); }
+  else if(id === "comptes") { renderComptes(); }
+  else if(id === "actualites") { renderActus(); }
+  else if(id === "inscriptions") { renderInscrip(); }
+  else if(id === "historique") { renderHistorique(); }
+  else if(id === "groupements") { renderGroupements(); }
 }
 
 // ============================================
@@ -1627,12 +1635,13 @@ function roleBadge(role){
 }
 
 function renderComptes(){
-  // Stats dashboard
-  document.getElementById("stat-comptes").textContent = comptes.length;
-  document.getElementById("stat-clients").textContent = comptes.filter(function(c){return c.role==="client";}).length;
-  document.getElementById("stat-commerciaux").textContent = comptes.filter(function(c){return c.role==="user";}).length;
-  document.getElementById("nb-comptes").textContent = comptes.length;
-  document.getElementById("badge-comptes").textContent = comptes.length;
+  // Stats — utiliser setEl pour éviter les crashs si IDs absents
+  function setEl(id,val){var e=document.getElementById(id);if(e)e.textContent=val;}
+  setEl("stat-comptes", comptes.length);
+  setEl("stat-clients", comptes.filter(function(c){return c.role==="client";}).length);
+  setEl("stat-commerciaux", comptes.filter(function(c){return c.role==="user";}).length);
+  setEl("nb-comptes", comptes.length);
+  setEl("badge-comptes", comptes.length);
 
   function buildRows(limit){
     var rows = "";

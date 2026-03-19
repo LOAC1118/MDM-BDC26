@@ -658,29 +658,43 @@ tbody tr.has-qty td.td-qty input{background:#ffe0b2;border-color:var(--terra)}
 <div class="mdm-layout">
 
 <nav class="mdm-sidebar" id="mdm-sidebar">
-  <div class="mdm-sidebar-header">
+  <!-- User -->
+  <div class="mdm-sidebar-user-block">
     <div class="mdm-sidebar-user" id="sidebar-user-name"></div>
     <div class="mdm-sidebar-role" id="sidebar-user-role"></div>
   </div>
-  <div class="mdm-sidebar-nav">
+
+  <div class="mdm-sidebar-scroll">
+
+    <!-- COMPTE -->
+    <div class="mdm-nav-section">Compte</div>
+    <a class="mdm-nav-item" href="#" onclick="showProfilModal();return false">
+      <span class="mdm-nav-icon">&#128100;</span>
+      <span class="mdm-nav-label">Mon profil</span>
+    </a>
+    <a class="mdm-nav-item" id="nav-chat" href="#" onclick="chatToggle();return false">
+      <span class="mdm-nav-icon">&#128172;</span>
+      <span class="mdm-nav-label">Messagerie</span>
+      <span class="mdm-nav-badge red" id="sidebar-chat-badge"></span>
+    </a>
+
+    <!-- NAVIGATION -->
     <div class="mdm-nav-section">Navigation</div>
+    <a class="mdm-nav-item" href="dashboard.html">
+      <span class="mdm-nav-icon">&#127968;</span>
+      <span class="mdm-nav-label">Tableau de bord</span>
+    </a>
     <a class="mdm-nav-item active" id="nav-commande" href="commande.html">
       <span class="mdm-nav-icon">&#128221;</span>
       <span class="mdm-nav-label">Bon de commande</span>
     </a>
-    <a class="mdm-nav-item" id="nav-dashboard" href="dashboard.html">
-      <span class="mdm-nav-icon">&#127968;</span>
-      <span class="mdm-nav-label">Tableau de bord</span>
-    </a>
-    <a class="mdm-nav-item" href="tutoriel.html">
-      <span class="mdm-nav-icon">&#128218;</span>
-      <span class="mdm-nav-label">Guide d&apos;utilisation</span>
-    </a>
-    <div class="mdm-nav-section">Actions</div>
     <a class="mdm-nav-item no-print" href="#" onclick="openHistoryModal();return false">
       <span class="mdm-nav-icon">&#128203;</span>
       <span class="mdm-nav-label">Historique</span>
     </a>
+
+    <!-- COMMANDE -->
+    <div class="mdm-nav-section">Commande</div>
     <a class="mdm-nav-item no-print" href="#" onclick="draftSave(true);closeSidebar();return false">
       <span class="mdm-nav-icon">&#128190;</span>
       <span class="mdm-nav-label">Sauvegarder brouillon</span>
@@ -693,30 +707,28 @@ tbody tr.has-qty td.td-qty input{background:#ffe0b2;border-color:var(--terra)}
       <span class="mdm-nav-icon">&#128424;</span>
       <span class="mdm-nav-label">Exporter PDF</span>
     </a>
-    <a class="mdm-nav-item no-print" href="#" onclick="saveDraft(true);return false" id="nav-save-draft">
-      <span class="mdm-nav-icon">&#128190;</span>
-      <span class="mdm-nav-label">Sauvegarder</span>
-    </a>
     <a class="mdm-nav-item no-print" href="#" onclick="exportExcel();return false">
       <span class="mdm-nav-icon">&#128202;</span>
       <span class="mdm-nav-label">Exporter Excel</span>
     </a>
-    <div class="mdm-nav-section">Compte</div>
-    <a class="mdm-nav-item" id="nav-chat" href="#" onclick="chatToggle();return false">
-      <span class="mdm-nav-icon">&#128172;</span>
-      <span class="mdm-nav-label">Messagerie</span>
-      <span class="mdm-nav-badge red" id="sidebar-chat-badge"></span>
+
+    <!-- AIDE -->
+    <div class="mdm-nav-section">Aide</div>
+    <a class="mdm-nav-item" href="tutoriel.html">
+      <span class="mdm-nav-icon">&#128218;</span>
+      <span class="mdm-nav-label">Guide d&apos;utilisation</span>
     </a>
-    <a class="mdm-nav-item" href="#" onclick="showProfilModal();return false">
-      <span class="mdm-nav-icon">&#128100;</span>
-      <span class="mdm-nav-label">Mon profil</span>
-    </a>
+
+  </div>
+
+  <!-- DÉCONNEXION en bas -->
+  <div class="mdm-sidebar-footer">
     <a class="mdm-nav-item no-print" href="#" onclick="logout();return false">
       <span class="mdm-nav-icon">&#x23FB;</span>
       <span class="mdm-nav-label">D&eacute;connexion</span>
     </a>
   </div>
-  <div class="mdm-sidebar-footer"></div>
+
 </nav>
 <div class="mdm-sidebar-overlay" id="mdm-overlay" onclick="closeSidebar()"></div>
 

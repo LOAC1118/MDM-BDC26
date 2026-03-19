@@ -692,7 +692,13 @@ footer a{color:inherit;text-decoration:none;opacity:.7}footer a:hover{opacity:1}
         </div>
         <div class="table-wrap" id="dash-comptes-table"></div>
       </div>
-    </div>
+    
+      <!-- Dernières commandes -->
+      <div class="section-card" style="margin-top:16px">
+        <div class="section-card-title">Derni&egrave;res commandes</div>
+        <div id="dashboard-orders"><div class="empty-state">Chargement&hellip;</div></div>
+      </div>
+</div>
 
     <!-- PAGE : COMPTES -->
     <div class="page" id="page-comptes">
@@ -1840,6 +1846,477 @@ function _applyCompte(login, password){
   }
   window._editPasswordHash='';
   saveComptes(); renderComptes(); closeModal();
+}
+
+// ══════════════════════════════════════════════════════════════
+// ACTUALITÉS
+// ══════════════════════════════════════════════════════════════
+var actus = [];
+var actuEditIndex = -1;
+
+function loadActus(){
+  fbLoadActus().then(function(data){
+    if(data&&data.length){ actus=data; }
+    else{ try{var s=localStorage.getItem('mdm_actus');if(s)actus=JSON.parse(s);}catch(e){} }
+    updateActusBadge();
+  }).catch(function(){
+    try{var s=localStorage.getItem('mdm_actus');if(s)actus=JSON.parse(s);}catch(e){}
+    updateActusBadge();
+  });
+}
+
+function saveActus(){
+  localStorage.setItem('mdm_actus',JSON.stringify(actus));
+  fbSaveActus(actus).catch(function(e){ console.warn('FB saveActus:',e); });
+  updateActusBadge();
+}
+
+function updateActusBadge(){
+  var b=document.getElementById('badge-actus');
+  if(!b) return;
+  var n=actus.filter(function(a){return a.actif!==false;}).length;
+  b.textContent=n; b.style.display=n>0?'inline-block':'none';
+}
+
+function cancelActu(){
+  actuEditIndex=-1;
+  ['actu-titre','actu-contenu'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
+  var t=document.getElementById('actu-form-title');if(t)t.textContent='+ Nouvelle actualité';
+  var s=document.getElementById('actu-save-btn');if(s)s.textContent='✓ Publier l\'actualité';
+  var c=document.getElementById('actu-cancel-btn');if(c)c.style.display='none';
+  document.querySelectorAll('.actu-type-btn').forEach(function(b,i){
+    b.style.background=i===0?'var(--accent)':'var(--bg)';
+    b.style.color=i===0?'#fff':'var(--text)';
+    b.style.borderColor=i===0?'var(--accent)':'var(--border)';
+  });
+  document.getElementById('actu-type').value='info';
+  var chk=document.getElementById('actu-actif'); if(chk) chk.checked=true;
+  updateActuPreview();
+}
+
+function editActu(idx){
+  actuEditIndex=idx;
+  var ac=actus[idx];
+  document.getElementById('actu-type').value=ac.type||'info';
+  document.getElementById('actu-titre').value=ac.titre||'';
+  document.getElementById('actu-contenu').value=ac.contenu||'';
+  var chk=document.getElementById('actu-actif'); if(chk) chk.checked=ac.actif!==false;
+  var t=document.getElementById('actu-form-title');if(t)t.textContent='✏️ Modifier';
+  var s=document.getElementById('actu-save-btn');if(s)s.textContent='✓ Mettre à jour';
+  var c=document.getElementById('actu-cancel-btn');if(c)c.style.display='inline';
+  setActuType(ac.type||'info', document.querySelector('.actu-type-btn[data-type="'+(ac.type||'info')+'"]')||document.querySelector('.actu-type-btn'));
+  updateActuPreview();
+  var form=document.getElementById('actu-form-title');
+  if(form) form.closest('.section-card').scrollIntoView({behavior:'smooth'});
+}
+
+function delActu(idx){
+  if(!confirm('Supprimer cette actualité ?')) return;
+  actus.splice(idx,1);
+  saveActus(); renderActus();
+}
+
+function toggleActuActif(idx){
+  actus[idx].actif=!actus[idx].actif;
+  saveActus(); renderActus();
+}
+
+// ══════════════════════════════════════════════════════════════
+// INSCRIPTIONS
+// ══════════════════════════════════════════════════════════════
+var inscriptions = [];
+
+function loadInscriptions(){
+  fbLoadInscriptions().then(function(data){
+    if(data&&data.length) inscriptions=data;
+    updateInscriptionsBadge();
+  }).catch(function(){});
+}
+
+function updateInscriptionsBadge(){
+  var b=document.getElementById('badge-inscriptions');
+  if(!b) return;
+  var n=inscriptions.filter(function(i){return i.statut==='en_attente';}).length;
+  b.textContent=n; b.style.display=n>0?'inline-block':'none';
+}
+
+function renderInscrip(){
+  var container=document.getElementById('inscriptions-list');
+  if(!container) return;
+  if(!inscriptions.length){
+    container.innerHTML='<div class="empty-state"><p>Aucune demande d\'inscription.</p></div>';
+    return;
+  }
+  var html='';
+  inscriptions.forEach(function(insc,idx){
+    var isPending=insc.statut==='en_attente'||!insc.statut;
+    html+='<div class="inscr-card'+(isPending?' pending':'')+'">';
+    html+='<div class="inscr-card-header">';
+    html+='<div>';
+    html+='<div style="font-size:13px;font-weight:500;color:var(--text)">'+escH(insc.magasin||insc.nom||'—')+'</div>';
+    html+='<div style="font-size:11px;font-weight:300;color:var(--text-muted)">'+escH(insc.email||'')+(insc.tel?' · '+escH(insc.tel):'')+'</div>';
+    html+='</div>';
+    html+='<span class="inscr-status '+(isPending?'pending':'done')+'">'+(isPending?'En attente':'Traité')+'</span>';
+    html+='</div>';
+    html+='<div style="padding:10px 14px;font-size:12px;font-weight:300;color:var(--text-secondary);line-height:1.6">';
+    if(insc.ville||insc.cp) html+='📍 '+escH((insc.cp||'')+' '+(insc.ville||''))+'<br>';
+    if(insc.message) html+='💬 '+escH(insc.message);
+    html+='</div>';
+    html+='<div style="padding:8px 14px;border-top:1px solid var(--border-light);display:flex;gap:8px">';
+    if(isPending){
+      html+='<button onclick="approuverInscription('+idx+')" style="padding:6px 12px;background:var(--accent);color:#fff;border:none;border-radius:5px;font-family:Inter,sans-serif;font-size:11px;cursor:pointer">✓ Approuver</button>';
+      html+='<button onclick="rejeterInscription('+idx+')" style="padding:6px 12px;background:var(--bg);color:var(--danger);border:1px solid var(--border);border-radius:5px;font-family:Inter,sans-serif;font-size:11px;cursor:pointer">Rejeter</button>';
+    }
+    html+='<button onclick="supprimerInscription('+idx+')" style="padding:6px 12px;background:var(--bg);color:var(--text-muted);border:1px solid var(--border);border-radius:5px;font-family:Inter,sans-serif;font-size:11px;cursor:pointer;margin-left:auto">🗑</button>';
+    html+='</div>';
+    html+='</div>';
+  });
+  container.innerHTML=html;
+}
+
+function approuverInscription(idx){
+  var insc=inscriptions[idx];
+  inscriptions[idx].statut='approuve';
+  fbUpdateInscription(insc.id||idx,{statut:'approuve'}).catch(function(){});
+  updateInscriptionsBadge(); renderInscrip();
+  showToast('✅ Inscription approuvée');
+}
+
+function rejeterInscription(idx){
+  inscriptions[idx].statut='rejete';
+  fbUpdateInscription(inscriptions[idx].id||idx,{statut:'rejete'}).catch(function(){});
+  updateInscriptionsBadge(); renderInscrip();
+  showToast('Inscription rejetée');
+}
+
+function supprimerInscription(idx){
+  if(!confirm('Supprimer cette inscription ?')) return;
+  var id=inscriptions[idx].id||idx;
+  inscriptions.splice(idx,1);
+  fbDeleteInscription(id).catch(function(){});
+  updateInscriptionsBadge(); renderInscrip();
+}
+
+// ══════════════════════════════════════════════════════════════
+// HISTORIQUE COMMANDES
+// ══════════════════════════════════════════════════════════════
+function renderHistorique(){
+  var container=document.getElementById('historique-list');
+  if(!container) return;
+  container.innerHTML='<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:12px">Chargement…</div>';
+  fbLoadAllHistory().then(function(orders){
+    if(!orders||!orders.length){
+      container.innerHTML='<div class="empty-state"><p>Aucune commande enregistrée.</p></div>';
+      return;
+    }
+    var html='<table style="width:100%;border-collapse:collapse;font-size:12px">';
+    html+='<thead><tr style="background:var(--bg)">';
+    html+='<th style="padding:9px 12px;text-align:left;font-weight:500;color:var(--text-muted);border-bottom:1px solid var(--border)">Client</th>';
+    html+='<th style="padding:9px 12px;text-align:left;font-weight:500;color:var(--text-muted);border-bottom:1px solid var(--border)">Date</th>';
+    html+='<th style="padding:9px 12px;text-align:left;font-weight:500;color:var(--text-muted);border-bottom:1px solid var(--border)">Magasin</th>';
+    html+='<th style="padding:9px 12px;text-align:right;font-weight:500;color:var(--text-muted);border-bottom:1px solid var(--border)">Réf.</th>';
+    html+='<th style="padding:9px 12px;text-align:right;font-weight:500;color:var(--text-muted);border-bottom:1px solid var(--border)">Total HT</th>';
+    html+='</tr></thead><tbody>';
+    orders.forEach(function(o){
+      html+='<tr style="border-bottom:1px solid var(--border-light)">';
+      html+='<td style="padding:9px 12px;color:var(--accent);font-weight:500">'+escH(o._login||o.login||'—')+'</td>';
+      html+='<td style="padding:9px 12px;color:var(--text-muted);font-weight:300">'+escH(String(o.date||'').split(' ')[0])+'</td>';
+      html+='<td style="padding:9px 12px;color:var(--text)">'+escH(o.magasin||'—')+'</td>';
+      html+='<td style="padding:9px 12px;text-align:right;color:var(--text-muted)">'+( o.nbRefs||0)+'</td>';
+      html+='<td style="padding:9px 12px;text-align:right;font-family:Fraunces,serif;font-weight:200;color:var(--accent)">'+fmt2(o.totalNet||0)+' €</td>';
+      html+='</tr>';
+    });
+    html+='</tbody></table>';
+    container.innerHTML=html;
+  }).catch(function(){
+    container.innerHTML='<div class="empty-state"><p>Erreur de chargement.</p></div>';
+  });
+}
+
+function fmt2(n){ return parseFloat(n||0).toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
+// ══════════════════════════════════════════════════════════════
+// TABLEAU DE BORD ADMIN
+// ══════════════════════════════════════════════════════════════
+function renderDashboard(){
+  updateStats();
+}
+
+
+function renderDashboardOrders(orders){
+  var container=document.getElementById('dashboard-orders');
+  if(!container) return;
+  if(!orders||!orders.length){
+    container.innerHTML='<div class="empty-state">Aucune commande enregistrée.</div>';
+    return;
+  }
+  var recent=orders.slice(0,20);
+  var html='<table style="width:100%;border-collapse:collapse;font-size:12px">'
+    +'<thead><tr style="border-bottom:1px solid var(--border)">'
+    +'<th style="padding:8px 10px;text-align:left;font-weight:500;color:var(--text-muted);font-size:10px;text-transform:uppercase">Magasin</th>'
+    +'<th style="padding:8px 10px;text-align:left;font-weight:500;color:var(--text-muted);font-size:10px;text-transform:uppercase">Date</th>'
+    +'<th style="padding:8px 10px;text-align:left;font-weight:500;color:var(--text-muted);font-size:10px;text-transform:uppercase">Compte</th>'
+    +'<th style="padding:8px 10px;text-align:right;font-weight:500;color:var(--text-muted);font-size:10px;text-transform:uppercase">Total HT</th>'
+    +'<th style="padding:8px 10px;text-align:right;font-weight:500;color:var(--text-muted);font-size:10px;text-transform:uppercase">Réf.</th>'
+    +'</tr></thead><tbody>';
+  recent.forEach(function(o){
+    var client=comptes.find(function(c){return c.login===o._login||c.login===(o._login||'').replace(/_/g,'');});
+    var nomClient=client?client.nom:(o._login||o.magasin||'—');
+    html+='<tr style="border-bottom:1px solid var(--border-light)">'
+      +'<td style="padding:8px 10px;font-weight:400;color:var(--text)">'+escH(o.magasin||'—')+'</td>'
+      +'<td style="padding:8px 10px;font-weight:300;color:var(--text-secondary)">'+escH(String(o.date||'').split(' ')[0]||'—')+'</td>'
+      +'<td style="padding:8px 10px;font-weight:300;color:var(--text-muted)">'+escH(nomClient)+'</td>'
+      +'<td style="padding:8px 10px;text-align:right;font-weight:400;color:var(--accent)">'+fmt2(o.totalNet||0)+' €</td>'
+      +'<td style="padding:8px 10px;text-align:right;font-weight:300;color:var(--text-muted)">'+(o.nbRefs||0)+'</td>'
+      +'</tr>';
+  });
+  html+='</tbody></table>';
+  container.innerHTML=html;
+}
+
+function updateStats(){
+  var nbClients=comptes.filter(function(c){return c.role==='client';}).length;
+  var nbCommerciaux=comptes.filter(function(c){return c.role==='user';}).length;
+  var nbActifsActu=actus.filter(function(a){return a.actif!==false;}).length;
+  var nbInscPending=inscriptions.filter(function(i){return i.statut==='en_attente'||!i.statut;}).length;
+
+  function setEl(id,val){ var e=document.getElementById(id); if(e) e.textContent=val; }
+  setEl('stat-clients', nbClients);
+  setEl('stat-commerciaux', nbCommerciaux);
+  setEl('stat-actus', nbActifsActu);
+  setEl('stat-inscrip', nbInscPending);
+
+  // Charger les stats commandes depuis Firebase
+  fbLoadAllHistory().then(function(orders){
+    var nbCmd=orders.length;
+    var caTotal=orders.reduce(function(s,o){return s+(o.totalNet||0);},0);
+    setEl('stat-nb-commandes', nbCmd);
+    setEl('stat-commandes', nbCmd);
+    setEl('stat-ca-total', fmt2(caTotal)+' €');
+    setEl('stat-ca', fmt2(caTotal)+' €');
+    // Tableau des dernières commandes
+    renderDashboardOrders(orders);
+  }).catch(function(e){ console.warn('updateStats Firebase:', e); });
+}
+
+// ══════════════════════════════════════════════════════════════
+// GROUPEMENTS
+// ══════════════════════════════════════════════════════════════
+var _groupements = [];
+
+function loadGroupements(){
+  try{
+    var s=localStorage.getItem('mdm_groupements');
+    if(s) _groupements=JSON.parse(s);
+  }catch(e){}
+  renderGroupements();
+}
+
+function saveGroupements(){
+  localStorage.setItem('mdm_groupements',JSON.stringify(_groupements));
+}
+
+function renderGroupements(){
+  var container=document.getElementById('groupements-list');
+  if(!container) return;
+  if(!_groupements.length){
+    container.innerHTML='<div class="empty-state"><p>Aucun groupement créé.</p></div>';
+    return;
+  }
+  var html='';
+  _groupements.forEach(function(g,idx){
+    html+='<div class="section-card" style="margin-bottom:10px">';
+    html+='<div style="display:flex;align-items:center;justify-content:space-between">';
+    html+='<span style="font-size:13px;font-weight:500;color:var(--text)">'+escH(g.nom||'—')+'</span>';
+    html+='<div style="display:flex;gap:6px">';
+    html+='<button onclick="editGroupement('+idx+')" style="padding:4px 10px;background:var(--bg);border:1px solid var(--border);border-radius:5px;font-family:Inter,sans-serif;font-size:11px;cursor:pointer;color:var(--text)">Modifier</button>';
+    html+='<button onclick="delGroupement('+idx+')" style="padding:4px 10px;background:var(--bg);border:1px solid var(--border);border-radius:5px;font-family:Inter,sans-serif;font-size:11px;cursor:pointer;color:var(--danger)">🗑</button>';
+    html+='</div></div>';
+    var nb=(g.remises_produits||[]).length;
+    html+='<div style="font-size:11px;font-weight:300;color:var(--text-muted);margin-top:4px">'+nb+' remise'+(nb>1?'s':'')+' configurée'+(nb>1?'s':'')+'</div>';
+    html+='</div>';
+  });
+  var btn=document.getElementById('groupements-list');
+  if(btn) btn.innerHTML=html;
+}
+
+function addGroupement(){
+  var nom=prompt('Nom du groupement :');
+  if(!nom||!nom.trim()) return;
+  _groupements.push({nom:nom.trim(),remises_produits:[]});
+  saveGroupements(); renderGroupements();
+  updateGroupementsBadge();
+}
+
+function editGroupement(idx){ alert('Modification groupement '+_groupements[idx].nom+' — fonctionnalité à venir'); }
+function delGroupement(idx){
+  if(!confirm('Supprimer ce groupement ?')) return;
+  _groupements.splice(idx,1);
+  saveGroupements(); renderGroupements(); updateGroupementsBadge();
+}
+
+function updateGroupementsBadge(){
+  var b=document.getElementById('badge-groupements');
+  if(!b) return;
+  b.textContent=_groupements.length;
+  b.style.display=_groupements.length>0?'inline-block':'none';
+}
+
+function refreshGroupementSelect(){
+  var sel=document.getElementById('f-groupement');
+  if(!sel) return;
+  var cur=sel.value;
+  sel.innerHTML='<option value="">— Aucun —</option>';
+  _groupements.forEach(function(g){
+    var o=document.createElement('option');
+    o.value=g.nom; o.textContent=g.nom;
+    sel.appendChild(o);
+  });
+  sel.value=cur;
+}
+
+// ══════════════════════════════════════════════════════════════
+// PARAMÈTRES
+// ══════════════════════════════════════════════════════════════
+function renderParametres(){
+  // Déjà dans le HTML statique
+}
+
+// ══════════════════════════════════════════════════════════════
+// UTILITAIRES
+// ══════════════════════════════════════════════════════════════
+function showToast(msg){
+  var t=document.getElementById('toast');
+  if(!t){
+    t=document.createElement('div');
+    t.id='toast';
+    t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);'
+      +'background:var(--text);color:#fff;padding:10px 20px;border-radius:8px;'
+      +'font-family:Inter,sans-serif;font-size:13px;z-index:9999;'
+      +'box-shadow:0 4px 20px rgba(0,0,0,.2);opacity:0;transition:opacity .3s;white-space:nowrap';
+    document.body.appendChild(t);
+  }
+  t.textContent=msg; t.style.opacity='1';
+  clearTimeout(t._timer);
+  t._timer=setTimeout(function(){t.style.opacity='0';},3000);
+}
+
+function logout(){
+  sessionStorage.removeItem('mdm_token');
+  window.location.href='index.html';
+}
+
+function goCommande(){
+  window.location.href='commande.html';
+}
+
+function onRoleChange(){
+  var role=document.getElementById('f-role').value;
+  var coDiv=document.getElementById('commercial-field');
+  if(coDiv) coDiv.style.display=role==='client'?'block':'none';
+  if(role==='client') populateCommercialSelect();
+}
+
+function sendAccess(idx){
+  var co=comptes[idx];
+  if(!co||!co.email){ showToast('⚠ Pas d\'email pour ce compte'); return; }
+  var btn=document.getElementById('btn-send-access');
+  var origHTML=btn?btn.innerHTML:'';
+  if(btn){ btn.disabled=true; btn.innerHTML='Envoi…'; }
+  var fd=new FormData();
+  fd.append('_subject','Accès Espace Commandes MDM — '+co.nom);
+  fd.append('_captcha','false');
+  fd.append('message','Bonjour '+co.nom+',\n\nVoici vos accès à l\'Espace Commandes Moulin des Moines :\n\nURL : https://loac1118.github.io/MDM-BDC26/\nLogin : '+co.login+'\nMot de passe : (celui que vous avez défini)\n\nCordialement,\nMoulin des Moines');
+  fetch('https://formsubmit.co/'+encodeURIComponent(co.email),{method:'POST',body:fd})
+    .then(function(res){
+      if(res.ok||res.status===200){
+        showToast('✅ Accès envoyés à '+co.email);
+        if(btn){ btn.disabled=false; btn.innerHTML='✅ Envoyé'; }
+        setTimeout(function(){if(btn){btn.disabled=false;btn.innerHTML=origHTML;}},3000);
+      } else { throw new Error('HTTP '+res.status); }
+    }).catch(function(e){
+      showToast('⚠ '+( e.message||'Erreur réseau'));
+      if(btn){ btn.disabled=false; btn.innerHTML=origHTML; }
+    });
+}
+
+function initThemeSection(c){}
+function updateRemiseChips(r){}
+function switchModalTab(tab,el){
+  document.querySelectorAll('.modal-tab').forEach(function(t){t.classList.remove('active');});
+  if(el) el.classList.add('active');
+  document.querySelectorAll('.modal-tab-content').forEach(function(t){t.style.display='none';});
+  var content=document.getElementById('tab-content-'+tab);
+  if(content) content.style.display='block';
+}
+
+var _rpData=[];
+
+// ══════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════
+(function(){
+  var token=sessionStorage.getItem('mdm_token');
+  var valid=false;
+  try{
+    if(token){
+      var data=JSON.parse(_safeB64Decode(token));
+      if(data.exp&&Date.now()<data.exp&&data.role==='admin') valid=true;
+    }
+  }catch(e){}
+  if(!valid){ window.location.href='index.html'; return; }
+  var _tokenData=JSON.parse(_safeB64Decode(token));
+  document.getElementById('admin-name') && (document.getElementById('admin-name').textContent=_tokenData.nom||'Admin');
+  var sn=document.getElementById('sidebar-name'),sa=document.getElementById('sidebar-avatar');
+  if(sn) sn.textContent=_tokenData.nom||_tokenData.login||'Admin';
+  if(sa) sa.textContent=(_tokenData.nom||_tokenData.login||'A').charAt(0).toUpperCase();
+})();
+
+window.addEventListener('DOMContentLoaded',function(){
+  loadComptes();
+  loadActus();
+  loadInscriptions();
+  loadGroupements();
+  showPage('dashboard', document.querySelector('.nav-item.active'));
+});
+
+function setActuType(type,btn){
+  document.getElementById('actu-type').value=type;
+  document.querySelectorAll('.actu-type-btn').forEach(function(b){
+    b.style.background='var(--bg)';b.style.color='var(--text)';b.style.borderColor='var(--border)';
+  });
+  if(btn){btn.style.background='var(--accent)';btn.style.color='#fff';btn.style.borderColor='var(--accent)';}
+  updateActuPreview();
+}
+
+function updateActuPreview(){
+  var type=document.getElementById('actu-type').value||'info';
+  var titre=(document.getElementById('actu-titre').value||'Titre de l\'actualité').trim();
+  var contenu=(document.getElementById('actu-contenu').value||'Le contenu s\'affichera ici.').trim();
+  var B={info:{label:'Info',bg:'#e8f4ed',color:'#2d6a4a'},promo:{label:'Promo',bg:'#fef3c7',color:'#92400e'},alerte:{label:'Alerte',bg:'#fee2e2',color:'#991b1b'}};
+  var b=B[type]||B.info;
+  var el=document.getElementById('actu-preview-badge');
+  if(el){el.textContent=b.label;el.style.background=b.bg;el.style.color=b.color;}
+  var t=document.getElementById('actu-preview-titre'); if(t) t.textContent=titre;
+  var c=document.getElementById('actu-preview-body'); if(c) c.textContent=contenu;
+  var d=document.getElementById('actu-preview-date'); if(d) d.textContent=new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'});
+}
+
+function saveActuNew(){
+  var titre=(document.getElementById('actu-titre').value||'').trim();
+  var contenu=(document.getElementById('actu-contenu').value||'').trim();
+  var type=document.getElementById('actu-type').value||'info';
+  var actif=document.getElementById('actu-actif').checked;
+  if(!titre||!contenu){showToast('\u26a0 Titre et contenu obligatoires');return;}
+  var dateStr=new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'});
+  if(actuEditIndex>=0){
+    actus[actuEditIndex]=Object.assign(actus[actuEditIndex],{titre:titre,contenu:contenu,type:type,actif:actif});
+    showToast('\u2705 Actualité mise à jour');
+  } else {
+    actus.unshift({titre:titre,contenu:contenu,type:type,actif:actif,date:dateStr});
+    showToast('\u2705 Actualité publiée');
+  }
+  saveActus(); renderActus(); cancelActu();
 }
 </script>
 

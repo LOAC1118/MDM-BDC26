@@ -708,6 +708,7 @@ footer a{color:inherit;text-decoration:none;opacity:.7}footer a:hover{opacity:1}
 
 
 
+
 var FIREBASE_CONFIG = {
   apiKey:            "AIzaSyB000QDa4c-vMjO1Xuimw58iiRvwgbF1zc",
   authDomain:        "mdm-bdc26.firebaseapp.com",
@@ -802,19 +803,34 @@ function fbLoadHistory(login) {
 // Écoute temps réel des commandes client
 function fbWatchHistory(login, franco, callback) {
   initFirebase().then(function(db) {
-    // Annuler l'écoute précédente si elle existe
     if(window._historyUnsub) window._historyUnsub();
-    window._historyUnsub = db.collection('historique')
+    var ref = db.collection('historique')
       .doc(login)
       .collection('commandes')
       .orderBy('id', 'desc')
-      .limit(50)
-      .onSnapshot(function(snap) {
-        var orders = snap.docs.map(function(d) { return d.data(); });
+      .limit(50);
+
+    // Essayer onSnapshot (temps réel)
+    window._historyUnsub = ref.onSnapshot(function(snap) {
+      var orders = snap.docs.map(function(dd) { return dd.data(); });
+      callback(orders);
+    }, function(e) {
+      console.warn('fbWatchHistory onSnapshot error:', e.code, e.message);
+      // Fallback : lecture simple si onSnapshot échoue (ex: index manquant)
+      ref.get().then(function(snap) {
+        var orders = snap.docs.map(function(dd) { return dd.data(); });
         callback(orders);
-      }, function(e) {
-        console.warn('fbWatchHistory error:', e);
+      }).catch(function(e2) {
+        console.warn('fbWatchHistory get fallback error:', e2.message);
+        // Dernier recours : sans orderBy
+        db.collection('historique').doc(login).collection('commandes')
+          .limit(50).get().then(function(snap) {
+            var orders = snap.docs.map(function(dd){ return dd.data(); });
+            orders.sort(function(a,b){return (b.id||0)-(a.id||0);});
+            callback(orders);
+          }).catch(function(){});
       });
+    });
   }).catch(function(){});
 }
 
@@ -1943,6 +1959,7 @@ function showProfil(){
   document.body.appendChild(bg);
   closeSidebar();
 }
+
 
 
 

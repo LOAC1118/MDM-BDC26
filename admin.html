@@ -1158,6 +1158,7 @@ footer a{color:inherit;text-decoration:none;opacity:.7}footer a:hover{opacity:1}
 
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 
+
 // SHA-256 via Web Crypto API
 // SHA-256 robuste (crypto.subtle + fallback pure JS)
 function sha256(str){
@@ -1584,6 +1585,8 @@ var comptes = [];
 var editIndex = -1;
 var _rpData = [];
 
+
+function setEl(id,val){var e=document.getElementById(id);if(e)e.textContent=val;}
 function loadComptes(){
   fbLoadComptes().then(function(data){
     if(data && data.length){ comptes=data; }
@@ -1635,8 +1638,6 @@ function roleBadge(role){
 }
 
 function renderComptes(){
-  // Stats — utiliser setEl pour éviter les crashs si IDs absents
-  function setEl(id,val){var e=document.getElementById(id);if(e)e.textContent=val;}
   setEl("stat-comptes", comptes.length);
   setEl("stat-clients", comptes.filter(function(c){return c.role==="client";}).length);
   setEl("stat-commerciaux", comptes.filter(function(c){return c.role==="user";}).length);
@@ -2048,6 +2049,7 @@ function fmt2(n){ return parseFloat(n||0).toLocaleString('fr-FR',{minimumFractio
 // TABLEAU DE BORD ADMIN
 // ══════════════════════════════════════════════════════════════
 function renderDashboard(){
+  renderComptes();
   updateStats();
 }
 
@@ -2089,7 +2091,7 @@ function updateStats(){
   var nbActifsActu=actus.filter(function(a){return a.actif!==false;}).length;
   var nbInscPending=inscriptions.filter(function(i){return i.statut==='en_attente'||!i.statut;}).length;
 
-  function setEl(id,val){ var e=document.getElementById(id); if(e) e.textContent=val; }
+  // setEl est défini globalement
   setEl('stat-clients', nbClients);
   setEl('stat-commerciaux', nbCommerciaux);
   setEl('stat-actus', nbActifsActu);
@@ -2327,6 +2329,7 @@ function saveActuNew(){
   }
   saveActus(); renderActus(); cancelActu();
 }
+
 </script>
 
 <!-- Footer mentions légales -->

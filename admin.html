@@ -1654,7 +1654,6 @@ function renderComptes(){
   _sortKey=key;
 
   var filtered=comptes.filter(function(c,i){
-    c._idx=i;
     if(_filtreRole && c.role!==_filtreRole) return false;
     if(search){
       var s=search.toLowerCase();
@@ -1684,7 +1683,7 @@ function renderComptes(){
   }
 
   tbody.innerHTML=filtered.map(function(c){
-    var i=c._idx;
+    var i=comptes.indexOf(c); // index réel dans comptes[]
     return "<tr>"
       +"<td><code style='font-size:11px;font-weight:700;color:var(--brown)'>"+escH(c.login)+"</code></td>"
       +"<td>"+escH(c.nom)+"</td>"

@@ -7,7 +7,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,200;0,400;1,200&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 
@@ -658,7 +657,7 @@ footer a{color:inherit;text-decoration:none;opacity:.7}footer a:hover{opacity:1}
 
     <!-- AIDE -->
     <div class="mdm-nav-section">Notes</div>
-    <a class="mdm-nav-item" href="#" onclick="showNotes();return false">
+    <a class="mdm-nav-item" href="notes.html">
       <span class="mdm-nav-icon">&#128203;</span>
       <span class="mdm-nav-label">Mes notes</span>
     </a>
@@ -2749,24 +2748,12 @@ function deleteDraftDash(login){
       <button onclick="closeNotes()" style="background:none;border:none;cursor:pointer;font-size:12px;font-weight:300;color:var(--text-muted);font-family:'Inter',sans-serif;padding:4px 8px;border-radius:4px" onmouseover="this.style.background='var(--bg-beige)'" onmouseout="this.style.background='none'">&#10005; Fermer</button>
     </div>
     <div class="notes-body">
-      <!-- Formulaire de saisie -->
       <div class="notes-compose">
         <textarea id="note-text-input" placeholder="Écrivez votre note ici…"></textarea>
-        <div class="notes-attachments-preview" id="note-attachments-preview"></div>
-        <div id="note-upload-progress" style="display:none">
-          <div style="font-size:11px;color:var(--text-muted);margin-bottom:3px" id="note-upload-label">Envoi en cours…</div>
-          <div class="notes-upload-progress"><div class="notes-upload-progress-bar" id="note-upload-bar" style="width:0%"></div></div>
-        </div>
         <div class="notes-compose-footer">
-          <button class="notes-attach-btn" onclick="document.getElementById('note-file-input').click()">
-            &#128206;&nbsp;Joindre un fichier
-          </button>
-          <input type="file" id="note-file-input" multiple accept=".pdf,.xlsx,.xls,.txt,.csv,.png,.jpg,.jpeg,.gif,.webp" style="display:none" onchange="handleNoteFiles(this.files)">
-          <span style="font-size:10px;font-weight:300;color:var(--text-muted)">PDF · Excel · Image · TXT</span>
           <button class="notes-send-btn" id="note-send-btn" onclick="saveNote()">&#128203;&nbsp;Enregistrer</button>
         </div>
       </div>
-      <!-- Liste des notes -->
       <div class="notes-list" id="notes-list">
         <div class="notes-loading">Chargement des notes…</div>
       </div>
@@ -2777,20 +2764,11 @@ function deleteDraftDash(login){
 <script>
 
 // ════════════════════════════════════════════════════════════
-// MODULE NOTES — Firebase Firestore + Storage
+// MODULE NOTES — Firestore (texte uniquement)
 // Collection : notes/{login}/items/{id}
-// Storage    : notes/{login}/{filename}
 // ════════════════════════════════════════════════════════════
-
-var _notesPendingFiles = []; // fichiers en attente d'upload
 var _notesUnsub = null;
 
-function initStorage(){
-  if(!firebase.apps||!firebase.apps.length) initFirebase();
-  return firebase.storage();
-}
-
-// ── Afficher / masquer ────────────────────────────────────────
 function showNotes(){
   var s=document.getElementById('notes-section');
   if(!s) return;
@@ -2798,44 +2776,33 @@ function showNotes(){
   s.scrollIntoView({behavior:'smooth'});
   _notesListen();
 }
+
 function closeNotes(){
   var s=document.getElementById('notes-section');
   if(s) s.style.display='none';
   if(_notesUnsub){ _notesUnsub(); _notesUnsub=null; }
 }
 
-// ── Écoute temps réel ─────────────────────────────────────────
 function _notesListen(){
   var login=window._currentData&&window._currentData.login;
   if(!login) return;
   if(_notesUnsub) _notesUnsub();
   initFirebase().then(function(db){
     _notesUnsub=db.collection('notes').doc(login).collection('items')
-      .orderBy('createdAt','desc').limit(50)
+      .orderBy('createdAt','desc').limit(100)
       .onSnapshot(function(snap){
         _renderNotes(snap.docs.map(function(d){return Object.assign({_id:d.id},d.data());}));
       },function(e){
-        console.warn('Notes error:',e);
         document.getElementById('notes-list').innerHTML='<div class="notes-empty">Erreur de chargement.</div>';
       });
   });
-}
-
-// ── Rendu ────────────────────────────────────────────────────
-function _noteFileIcon(name){
-  var ext=(name||'').split('.').pop().toLowerCase();
-  if(['pdf'].includes(ext)) return '\uD83D\uDCC4';
-  if(['xlsx','xls'].includes(ext)) return '\uD83D\uDCCA';
-  if(['png','jpg','jpeg','gif','webp'].includes(ext)) return '\uD83D\uDDBC';
-  if(['txt','csv'].includes(ext)) return '\uD83D\uDCDD';
-  return '\uD83D\uDCC1';
 }
 
 function _renderNotes(notes){
   var list=document.getElementById('notes-list');
   if(!list) return;
   if(!notes.length){
-    list.innerHTML='<div class="notes-empty">Aucune note. \u00C9crivez votre premi\u00E8re note ci-dessus.</div>';
+    list.innerHTML='<div class="notes-empty">Aucune note. \u00c9crivez votre premi\u00e8re note ci-dessus.</div>';
     return;
   }
   list.innerHTML=notes.map(function(n){
@@ -2843,123 +2810,40 @@ function _renderNotes(notes){
     if(n.createdAt&&n.createdAt.toDate){
       date=n.createdAt.toDate().toLocaleString('fr-FR',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
     }
-    var filesHtml='';
-    if(n.files&&n.files.length){
-      filesHtml='<div class="note-item-files">'
-        +n.files.map(function(f){
-          return '<a href="'+f.url+'" target="_blank" class="note-file-link">'
-            +'<span class="note-file-icon">'+_noteFileIcon(f.name)+'</span>'
-            +_escHtml(f.name)+'</a>';
-        }).join('')
-        +'</div>';
-    }
     return '<div class="note-item">'
       +'<div class="note-item-header">'
       +'<span class="note-item-date">'+date+'</span>'
       +'<button class="note-item-del" onclick="deleteNote(\''+n._id+'\')" title="Supprimer">&#10005;</button>'
       +'</div>'
-      +(n.text?'<div class="note-item-text">'+_escHtml(n.text)+'</div>':'')
-      +filesHtml
+      +'<div class="note-item-text">'+_escNoteHtml(n.text||'')+'</div>'
       +'</div>';
   }).join('');
 }
 
-function _escHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function _escNoteHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-// ── Gestion des fichiers en attente ──────────────────────────
-function handleNoteFiles(files){
-  Array.from(files).forEach(function(file){
-    var maxMb=10;
-    if(file.size>maxMb*1024*1024){ showToast('\u26a0 '+file.name+' trop lourd (max '+maxMb+' Mo)'); return; }
-    _notesPendingFiles.push(file);
-  });
-  _renderPendingFiles();
-  document.getElementById('note-file-input').value='';
-}
-
-function _renderPendingFiles(){
-  var preview=document.getElementById('note-attachments-preview');
-  if(!preview) return;
-  preview.innerHTML=_notesPendingFiles.map(function(f,i){
-    return '<div class="note-attach-chip">'
-      +_noteFileIcon(f.name)+'&nbsp;'
-      +_escHtml(f.name.length>25?f.name.substring(0,22)+'…':f.name)
-      +' <button onclick="removePendingFile('+i+')" title="Retirer">&#10005;</button>'
-      +'</div>';
-  }).join('');
-}
-
-function removePendingFile(i){
-  _notesPendingFiles.splice(i,1);
-  _renderPendingFiles();
-}
-
-// ── Sauvegarder une note ─────────────────────────────────────
 function saveNote(){
   var login=window._currentData&&window._currentData.login;
   if(!login){ showToast('\u26a0 Non connect\u00e9'); return; }
   var text=(document.getElementById('note-text-input').value||'').trim();
-  if(!text&&!_notesPendingFiles.length){ showToast('\u26a0 \u00C9crivez une note ou joignez un fichier'); return; }
-
+  if(!text){ showToast('\u26a0 \u00c9crivez une note'); return; }
   var btn=document.getElementById('note-send-btn');
   if(btn) btn.disabled=true;
-
-  // Uploader les fichiers d'abord
-  var filePromises=_notesPendingFiles.map(function(file){
-    return _uploadNoteFile(login,file);
-  });
-
-  Promise.all(filePromises).then(function(uploadedFiles){
-    return initFirebase().then(function(db){
-      return db.collection('notes').doc(login).collection('items').add({
-        text: text,
-        files: uploadedFiles,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-      });
+  initFirebase().then(function(db){
+    return db.collection('notes').doc(login).collection('items').add({
+      text:text,
+      createdAt:firebase.firestore.FieldValue.serverTimestamp()
     });
   }).then(function(){
-    // Reset formulaire
     document.getElementById('note-text-input').value='';
-    _notesPendingFiles=[];
-    _renderPendingFiles();
-    document.getElementById('note-upload-progress').style.display='none';
     if(btn) btn.disabled=false;
     showToast('\u2705 Note enregistr\u00e9e');
   }).catch(function(e){
     if(btn) btn.disabled=false;
     showToast('\u26a0 Erreur : '+e.message);
-    console.error('saveNote error:',e);
   });
 }
 
-// ── Upload fichier vers Firebase Storage ─────────────────────
-function _uploadNoteFile(login,file){
-  return new Promise(function(resolve,reject){
-    var storage=initStorage();
-    var safeName=Date.now()+'_'+file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
-    var ref=storage.ref('notes/'+login+'/'+safeName);
-    var progress=document.getElementById('note-upload-progress');
-    var bar=document.getElementById('note-upload-bar');
-    var label=document.getElementById('note-upload-label');
-    if(progress) progress.style.display='block';
-    if(label) label.textContent='Upload : '+file.name+'\u2026';
-    var task=ref.put(file);
-    task.on('state_changed',
-      function(snap){
-        var pct=Math.round(snap.bytesTransferred/snap.totalBytes*100);
-        if(bar) bar.style.width=pct+'%';
-      },
-      function(err){ reject(err); },
-      function(){
-        task.snapshot.ref.getDownloadURL().then(function(url){
-          resolve({name:file.name,url:url,size:file.size,type:file.type});
-        }).catch(reject);
-      }
-    );
-  });
-}
-
-// ── Supprimer une note ────────────────────────────────────────
 function deleteNote(noteId){
   var login=window._currentData&&window._currentData.login;
   if(!login||!confirm('Supprimer cette note ?')) return;
@@ -2968,7 +2852,7 @@ function deleteNote(noteId){
   }).then(function(){
     showToast('Note supprim\u00e9e');
   }).catch(function(e){
-    showToast('\u26a0 Erreur : '+e.message);
+    showToast('\u26a0 '+e.message);
   });
 }
 

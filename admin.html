@@ -1649,40 +1649,81 @@ function renderComptes(){
   setEl("nb-comptes", comptes.length);
   setEl("badge-comptes", comptes.length);
 
-  function buildRows(limit){
-    var rows = "";
-    var list = limit ? comptes.slice(0,limit) : comptes;
-    list.forEach(function(c,i){
-      var realIdx = limit ? i : i;
-      rows += "<tr>";
-      rows += "<td><code style='font-size:11px;font-weight:700;color:var(--brown)'>"+escH(c.login)+"</code></td>";
-      rows += "<td>"+escH(c.nom)+"</td>";
-      rows += "<td>"+roleBadge(c.role)+"</td>";
-      rows += "<td>"+(c.remise>0?"<span class='remise-pill'>-"+c.remise+"%</span>":"<span style='color:#ccc'>—</span>")+"</td>";
-      rows += "<td><span style='font-family:monospace;font-size:11px;color:#888'>"+"••••••</td>";
-      if(!limit){
-        rows += "<td style='white-space:nowrap;display:flex;gap:5px'>";
-        rows += "<button class='btn-action btn-edit' onclick='editCompte("+i+")'>&#9998; Modifier</button>";
-        if(c.role !== "admin" || comptes.filter(function(x){return x.role==="admin";}).length > 1){
-          rows += "<button class='btn-action btn-del' onclick='delCompte("+i+")'>&#128465; Suppr.</button>";
-        }
-        rows += "</td>";
-      }
-      rows += "</tr>";
-    });
-    return rows;
+  var search=(document.getElementById('comptes-search')||{}).value||'';
+  var key=(document.getElementById('sort-key')||{}).value||_sortKey;
+  _sortKey=key;
+
+  var filtered=comptes.filter(function(c,i){
+    c._idx=i;
+    if(_filtreRole && c.role!==_filtreRole) return false;
+    if(search){
+      var s=search.toLowerCase();
+      return (c.login||'').toLowerCase().includes(s)
+        ||(c.nom||'').toLowerCase().includes(s)
+        ||(c.email||'').toLowerCase().includes(s)
+        ||(c.groupement||'').toLowerCase().includes(s)
+        ||(c.ville||'').toLowerCase().includes(s);
+    }
+    return true;
+  });
+
+  filtered.sort(function(a,b){
+    var av=String(a[key]||'').toLowerCase(), bv=String(b[key]||'').toLowerCase();
+    if(av<bv) return -_sortDir;
+    if(av>bv) return _sortDir;
+    return 0;
+  });
+
+  var tbody=document.getElementById("comptes-tbody");
+  if(!tbody) return;
+
+  if(!filtered.length){
+    tbody.innerHTML='<tr><td colspan="13" style="text-align:center;padding:20px;color:#a08070">Aucun compte trouvé</td></tr>';
+    renderDashboardMiniTable();
+    return;
   }
 
-  // Table page comptes
-  var tbody = document.getElementById("comptes-tbody");
-  if(tbody) tbody.innerHTML = buildRows(null);
+  tbody.innerHTML=filtered.map(function(c){
+    var i=c._idx;
+    return "<tr>"
+      +"<td><code style='font-size:11px;font-weight:700;color:var(--brown)'>"+escH(c.login)+"</code></td>"
+      +"<td>"+escH(c.nom)+"</td>"
+      +"<td>"+roleBadge(c.role)+"</td>"
+      +"<td>"+(c.remise>0?"<span class='remise-pill'>-"+c.remise+"%</span>":"<span style='color:#ccc'>—</span>")+"</td>"
+      +"<td style='font-size:11px;color:#888'>"+escH(c.email||'')+"</td>"
+      +"<td style='font-size:11px;color:#888'>"+escH(c.tel||'')+"</td>"
+      +"<td style='font-size:11px;color:#888'>"+escH((c.cp||'')+(c.ville?' '+c.ville:''))+"</td>"
+      +"<td style='font-size:11px;color:#888'>"+escH(c.region||'')+"</td>"
+      +"<td style='font-size:11px'>"+escH(c.groupement||'')+"</td>"
+      +"<td style='font-size:11px;color:#888'>"+escH(c.commercial||'')+"</td>"
+      +"<td style='font-family:monospace;font-size:11px'>"+escH(c.numclient||'')+"</td>"
+      +"<td style='color:#ccc;font-size:11px'>••••••</td>"
+      +"<td style='white-space:nowrap'>"
+      +"<div style='display:flex;gap:4px'>"
+      +"<button class='btn-action btn-edit' onclick='editCompte("+i+")'>&#9998; Modifier</button>"
+      +(c.role!=='admin'||comptes.filter(function(x){return x.role==='admin';}).length>1
+        ?"<button class='btn-action btn-del' onclick='delCompte("+i+")'>&#128465;</button>":'')
+      +"</div>"
+      +"</td>"
+      +"</tr>";
+  }).join('');
 
-  // Mini table dashboard
-  var dashTable = document.getElementById("dash-comptes-table");
-  if(dashTable){
-    dashTable.innerHTML = "<table><thead><tr><th>Login</th><th>Nom</th><th>R\u00f4le</th><th>Remise</th></tr></thead><tbody>"+buildRows(5)+"</tbody></table>";
-  }
+  renderDashboardMiniTable();
 }
+
+function renderDashboardMiniTable(){
+  var dashTable=document.getElementById("dash-comptes-table");
+  if(!dashTable) return;
+  var rows=comptes.slice(0,5).map(function(c,i){
+    return "<tr>"
+      +"<td><code style='font-size:10px;color:var(--brown)'>"+escH(c.login)+"</code></td>"
+      +"<td>"+escH(c.nom)+"</td><td>"+roleBadge(c.role)+"</td>"
+      +"<td>"+(c.remise>0?"<span class='remise-pill' style='font-size:9px'>-"+c.remise+"%</span>":"—")+"</td>"
+      +"</tr>";
+  }).join('');
+  dashTable.innerHTML="<table><thead><tr><th>Login</th><th>Nom</th><th>Rôle</th><th>Remise</th></tr></thead><tbody>"+rows+"</tbody></table>";
+}
+
 
 function escH(s){
   return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
@@ -2634,6 +2675,41 @@ function renderDashboardActus(){
   }).join('');
 }
 
+
+// ── Filtre et tri des comptes ────────────────────────────────
+var _filtreRole = '';
+var _sortKey    = 'login';
+var _sortDir    = 1; // 1=asc, -1=desc
+
+function setFiltreRole(btn, role){
+  _filtreRole = role;
+  document.querySelectorAll('.filtre-role').forEach(function(b){ b.classList.remove('active'); });
+  if(btn) btn.classList.add('active');
+  renderComptes();
+}
+
+function toggleSortDir(){
+  _sortDir = -_sortDir;
+  var btn = document.getElementById('sort-dir-btn');
+  if(btn) btn.innerHTML = _sortDir===1 ? '&#8593;' : '&#8595;';
+  renderComptes();
+}
+
+function exportComptes(){
+  if(typeof XLSX === 'undefined'){ showToast('⚠ XLSX non chargé'); return; }
+  var rows = [['Login','Nom','Rôle','Email','Tél','Ville','CP','Région','Groupement','Commercial','N° client','Remise','Franco']];
+  comptes.forEach(function(c){
+    rows.push([c.login||'',c.nom||'',c.role||'',c.email||'',c.tel||'',
+      c.ville||'',c.cp||'',c.region||'',c.groupement||'',c.commercial||'',
+      c.numclient||'',c.remise||0,c.franco||0]);
+  });
+  var ws = XLSX.utils.aoa_to_sheet(rows);
+  var wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Comptes');
+  XLSX.writeFile(wb, 'comptes_mdm.xlsx');
+  showToast('✅ Export Excel téléchargé');
+}
+
 window.addEventListener('DOMContentLoaded',function(){
   loadComptes();
   loadActus();
@@ -2683,35 +2759,9 @@ function saveActuNew(){
 }
 
 
-function updateActuPreview(){
-  var type=document.getElementById('actu-type').value||'info';
-  var titre=(document.getElementById('actu-titre').value||'Titre de l\'actualité').trim();
-  var contenu=(document.getElementById('actu-contenu').value||'Le contenu s\'affichera ici.').trim();
-  var B={info:{label:'Info',bg:'#e8f4ed',color:'#2d6a4a'},promo:{label:'Promo',bg:'#fef3c7',color:'#92400e'},alerte:{label:'Alerte',bg:'#fee2e2',color:'#991b1b'}};
-  var b=B[type]||B.info;
-  var el=document.getElementById('actu-preview-badge');
-  if(el){el.textContent=b.label;el.style.background=b.bg;el.style.color=b.color;}
-  var t=document.getElementById('actu-preview-titre'); if(t) t.textContent=titre;
-  var c=document.getElementById('actu-preview-body'); if(c) c.textContent=contenu;
-  var d=document.getElementById('actu-preview-date'); if(d) d.textContent=new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'});
-}
 
-function saveActuNew(){
-  var titre=(document.getElementById('actu-titre').value||'').trim();
-  var contenu=(document.getElementById('actu-contenu').value||'').trim();
-  var type=document.getElementById('actu-type').value||'info';
-  var actif=document.getElementById('actu-actif').checked;
-  if(!titre||!contenu){showToast('\u26a0 Titre et contenu obligatoires');return;}
-  var dateStr=new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'});
-  if(actuEditIndex>=0){
-    actus[actuEditIndex]=Object.assign(actus[actuEditIndex],{titre:titre,contenu:contenu,type:type,actif:actif});
-    showToast('\u2705 Actualité mise à jour');
-  } else {
-    actus.unshift({titre:titre,contenu:contenu,type:type,actif:actif,date:dateStr});
-    showToast('\u2705 Actualité publiée');
-  }
-  saveActus(); renderActus(); cancelActu();
-}
+
+
 
 </script>
 </body>

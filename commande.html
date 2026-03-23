@@ -1529,7 +1529,6 @@ function buildOrderText(){
   return lines.join("\n");
 }
 
-function escHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 async function sendOrder(){
   var mag=document.getElementById("m-magasin").value.trim();
   var mail=document.getElementById("m-email").value.trim();

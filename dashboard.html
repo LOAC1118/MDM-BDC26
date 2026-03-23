@@ -7,6 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,200;0,400;1,200&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 
@@ -547,6 +548,41 @@ footer a{color:inherit;text-decoration:none;opacity:.7}footer a:hover{opacity:1}
 .pdf-reset-btn{background:none;border:none;font-size:12px;font-weight:300;color:var(--text-muted);cursor:pointer;font-family:'Inter',sans-serif;padding:4px 8px;transition:color .15s}
 .pdf-reset-btn:hover{color:var(--text)}
 
+
+/* ── MODULE NOTES ── */
+.notes-card{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:16px}
+.notes-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border-light);background:var(--bg)}
+.notes-title{font-size:13px;font-weight:500;color:var(--text);display:flex;align-items:center;gap:8px}
+.notes-body{padding:16px}
+.notes-compose{display:flex;flex-direction:column;gap:10px;margin-bottom:16px;background:var(--bg-beige);border-radius:8px;padding:12px}
+.notes-compose textarea{width:100%;min-height:80px;padding:10px;border:1px solid var(--border);border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:300;color:var(--text);background:var(--bg-card);resize:vertical;line-height:1.6;box-sizing:border-box}
+.notes-compose textarea:focus{outline:none;border-color:var(--accent)}
+.notes-compose-footer{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.notes-attach-btn{padding:6px 12px;border-radius:5px;border:1px solid var(--border);background:var(--bg-card);color:var(--text-secondary);font-size:11px;font-weight:400;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;display:flex;align-items:center;gap:5px}
+.notes-attach-btn:hover{border-color:var(--accent);color:var(--accent)}
+.notes-send-btn{padding:7px 16px;border-radius:6px;border:none;background:var(--accent);color:#fff;font-size:12px;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif;margin-left:auto;transition:background .15s}
+.notes-send-btn:hover{background:var(--accent-hover)}
+.notes-send-btn:disabled{opacity:.5;cursor:not-allowed}
+.notes-attachments-preview{display:flex;flex-wrap:wrap;gap:6px}
+.note-attach-chip{display:flex;align-items:center;gap:5px;padding:3px 8px;background:var(--bg-card);border:1px solid var(--border);border-radius:4px;font-size:11px;color:var(--text-secondary)}
+.note-attach-chip button{background:none;border:none;cursor:pointer;color:var(--danger);font-size:12px;padding:0;line-height:1}
+.notes-list{display:flex;flex-direction:column;gap:10px}
+.note-item{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px 14px;transition:box-shadow .15s}
+.note-item:hover{box-shadow:0 2px 8px var(--shadow)}
+.note-item-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.note-item-date{font-size:10px;font-weight:300;color:var(--text-muted)}
+.note-item-del{background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:13px;padding:2px 5px;border-radius:4px;transition:color .15s}
+.note-item-del:hover{color:var(--danger)}
+.note-item-text{font-size:13px;font-weight:300;color:var(--text);line-height:1.7;white-space:pre-wrap;margin-bottom:8px}
+.note-item-files{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.note-file-link{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;background:var(--bg-beige);border:1px solid var(--border);border-radius:5px;font-size:11px;color:var(--accent);text-decoration:none;font-weight:400;transition:background .15s}
+.note-file-link:hover{background:var(--accent-light)}
+.note-file-icon{font-size:13px}
+.notes-empty{text-align:center;padding:30px;color:var(--text-muted);font-size:13px;font-weight:300}
+.notes-loading{text-align:center;padding:20px;color:var(--text-muted);font-size:12px}
+.notes-upload-progress{height:3px;background:var(--border);border-radius:3px;overflow:hidden;margin-top:4px}
+.notes-upload-progress-bar{height:100%;background:var(--accent);border-radius:3px;transition:width .3s}
+
 </style>
 </head>
 <body>
@@ -621,6 +657,11 @@ footer a{color:inherit;text-decoration:none;opacity:.7}footer a:hover{opacity:1}
     </a>
 
     <!-- AIDE -->
+    <div class="mdm-nav-section">Notes</div>
+    <a class="mdm-nav-item" href="#" onclick="showNotes();return false">
+      <span class="mdm-nav-icon">&#128203;</span>
+      <span class="mdm-nav-label">Mes notes</span>
+    </a>
     <div class="mdm-nav-section">Aide</div>
     <a class="mdm-nav-item" href="tutoriel.html">
       <span class="mdm-nav-icon">&#128218;</span>
@@ -2697,6 +2738,239 @@ function deleteDraftDash(login){
   }).catch(function(){});
 }
 
+
+</script>
+
+<!-- ── MODULE NOTES ── -->
+<div id="notes-section" style="display:none">
+  <div class="notes-card">
+    <div class="notes-header">
+      <span class="notes-title">&#128203;&nbsp;Mes notes</span>
+      <button onclick="closeNotes()" style="background:none;border:none;cursor:pointer;font-size:12px;font-weight:300;color:var(--text-muted);font-family:'Inter',sans-serif;padding:4px 8px;border-radius:4px" onmouseover="this.style.background='var(--bg-beige)'" onmouseout="this.style.background='none'">&#10005; Fermer</button>
+    </div>
+    <div class="notes-body">
+      <!-- Formulaire de saisie -->
+      <div class="notes-compose">
+        <textarea id="note-text-input" placeholder="Écrivez votre note ici…"></textarea>
+        <div class="notes-attachments-preview" id="note-attachments-preview"></div>
+        <div id="note-upload-progress" style="display:none">
+          <div style="font-size:11px;color:var(--text-muted);margin-bottom:3px" id="note-upload-label">Envoi en cours…</div>
+          <div class="notes-upload-progress"><div class="notes-upload-progress-bar" id="note-upload-bar" style="width:0%"></div></div>
+        </div>
+        <div class="notes-compose-footer">
+          <button class="notes-attach-btn" onclick="document.getElementById('note-file-input').click()">
+            &#128206;&nbsp;Joindre un fichier
+          </button>
+          <input type="file" id="note-file-input" multiple accept=".pdf,.xlsx,.xls,.txt,.csv,.png,.jpg,.jpeg,.gif,.webp" style="display:none" onchange="handleNoteFiles(this.files)">
+          <span style="font-size:10px;font-weight:300;color:var(--text-muted)">PDF · Excel · Image · TXT</span>
+          <button class="notes-send-btn" id="note-send-btn" onclick="saveNote()">&#128203;&nbsp;Enregistrer</button>
+        </div>
+      </div>
+      <!-- Liste des notes -->
+      <div class="notes-list" id="notes-list">
+        <div class="notes-loading">Chargement des notes…</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+
+// ════════════════════════════════════════════════════════════
+// MODULE NOTES — Firebase Firestore + Storage
+// Collection : notes/{login}/items/{id}
+// Storage    : notes/{login}/{filename}
+// ════════════════════════════════════════════════════════════
+
+var _notesPendingFiles = []; // fichiers en attente d'upload
+var _notesUnsub = null;
+
+function initStorage(){
+  if(!firebase.apps||!firebase.apps.length) initFirebase();
+  return firebase.storage();
+}
+
+// ── Afficher / masquer ────────────────────────────────────────
+function showNotes(){
+  var s=document.getElementById('notes-section');
+  if(!s) return;
+  s.style.display='block';
+  s.scrollIntoView({behavior:'smooth'});
+  _notesListen();
+}
+function closeNotes(){
+  var s=document.getElementById('notes-section');
+  if(s) s.style.display='none';
+  if(_notesUnsub){ _notesUnsub(); _notesUnsub=null; }
+}
+
+// ── Écoute temps réel ─────────────────────────────────────────
+function _notesListen(){
+  var login=window._currentData&&window._currentData.login;
+  if(!login) return;
+  if(_notesUnsub) _notesUnsub();
+  initFirebase().then(function(db){
+    _notesUnsub=db.collection('notes').doc(login).collection('items')
+      .orderBy('createdAt','desc').limit(50)
+      .onSnapshot(function(snap){
+        _renderNotes(snap.docs.map(function(d){return Object.assign({_id:d.id},d.data());}));
+      },function(e){
+        console.warn('Notes error:',e);
+        document.getElementById('notes-list').innerHTML='<div class="notes-empty">Erreur de chargement.</div>';
+      });
+  });
+}
+
+// ── Rendu ────────────────────────────────────────────────────
+function _noteFileIcon(name){
+  var ext=(name||'').split('.').pop().toLowerCase();
+  if(['pdf'].includes(ext)) return '\uD83D\uDCC4';
+  if(['xlsx','xls'].includes(ext)) return '\uD83D\uDCCA';
+  if(['png','jpg','jpeg','gif','webp'].includes(ext)) return '\uD83D\uDDBC';
+  if(['txt','csv'].includes(ext)) return '\uD83D\uDCDD';
+  return '\uD83D\uDCC1';
+}
+
+function _renderNotes(notes){
+  var list=document.getElementById('notes-list');
+  if(!list) return;
+  if(!notes.length){
+    list.innerHTML='<div class="notes-empty">Aucune note. \u00C9crivez votre premi\u00E8re note ci-dessus.</div>';
+    return;
+  }
+  list.innerHTML=notes.map(function(n){
+    var date='';
+    if(n.createdAt&&n.createdAt.toDate){
+      date=n.createdAt.toDate().toLocaleString('fr-FR',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    }
+    var filesHtml='';
+    if(n.files&&n.files.length){
+      filesHtml='<div class="note-item-files">'
+        +n.files.map(function(f){
+          return '<a href="'+f.url+'" target="_blank" class="note-file-link">'
+            +'<span class="note-file-icon">'+_noteFileIcon(f.name)+'</span>'
+            +_escHtml(f.name)+'</a>';
+        }).join('')
+        +'</div>';
+    }
+    return '<div class="note-item">'
+      +'<div class="note-item-header">'
+      +'<span class="note-item-date">'+date+'</span>'
+      +'<button class="note-item-del" onclick="deleteNote(\''+n._id+'\')" title="Supprimer">&#10005;</button>'
+      +'</div>'
+      +(n.text?'<div class="note-item-text">'+_escHtml(n.text)+'</div>':'')
+      +filesHtml
+      +'</div>';
+  }).join('');
+}
+
+function _escHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ── Gestion des fichiers en attente ──────────────────────────
+function handleNoteFiles(files){
+  Array.from(files).forEach(function(file){
+    var maxMb=10;
+    if(file.size>maxMb*1024*1024){ showToast('\u26a0 '+file.name+' trop lourd (max '+maxMb+' Mo)'); return; }
+    _notesPendingFiles.push(file);
+  });
+  _renderPendingFiles();
+  document.getElementById('note-file-input').value='';
+}
+
+function _renderPendingFiles(){
+  var preview=document.getElementById('note-attachments-preview');
+  if(!preview) return;
+  preview.innerHTML=_notesPendingFiles.map(function(f,i){
+    return '<div class="note-attach-chip">'
+      +_noteFileIcon(f.name)+'&nbsp;'
+      +_escHtml(f.name.length>25?f.name.substring(0,22)+'…':f.name)
+      +' <button onclick="removePendingFile('+i+')" title="Retirer">&#10005;</button>'
+      +'</div>';
+  }).join('');
+}
+
+function removePendingFile(i){
+  _notesPendingFiles.splice(i,1);
+  _renderPendingFiles();
+}
+
+// ── Sauvegarder une note ─────────────────────────────────────
+function saveNote(){
+  var login=window._currentData&&window._currentData.login;
+  if(!login){ showToast('\u26a0 Non connect\u00e9'); return; }
+  var text=(document.getElementById('note-text-input').value||'').trim();
+  if(!text&&!_notesPendingFiles.length){ showToast('\u26a0 \u00C9crivez une note ou joignez un fichier'); return; }
+
+  var btn=document.getElementById('note-send-btn');
+  if(btn) btn.disabled=true;
+
+  // Uploader les fichiers d'abord
+  var filePromises=_notesPendingFiles.map(function(file){
+    return _uploadNoteFile(login,file);
+  });
+
+  Promise.all(filePromises).then(function(uploadedFiles){
+    return initFirebase().then(function(db){
+      return db.collection('notes').doc(login).collection('items').add({
+        text: text,
+        files: uploadedFiles,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    });
+  }).then(function(){
+    // Reset formulaire
+    document.getElementById('note-text-input').value='';
+    _notesPendingFiles=[];
+    _renderPendingFiles();
+    document.getElementById('note-upload-progress').style.display='none';
+    if(btn) btn.disabled=false;
+    showToast('\u2705 Note enregistr\u00e9e');
+  }).catch(function(e){
+    if(btn) btn.disabled=false;
+    showToast('\u26a0 Erreur : '+e.message);
+    console.error('saveNote error:',e);
+  });
+}
+
+// ── Upload fichier vers Firebase Storage ─────────────────────
+function _uploadNoteFile(login,file){
+  return new Promise(function(resolve,reject){
+    var storage=initStorage();
+    var safeName=Date.now()+'_'+file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
+    var ref=storage.ref('notes/'+login+'/'+safeName);
+    var progress=document.getElementById('note-upload-progress');
+    var bar=document.getElementById('note-upload-bar');
+    var label=document.getElementById('note-upload-label');
+    if(progress) progress.style.display='block';
+    if(label) label.textContent='Upload : '+file.name+'\u2026';
+    var task=ref.put(file);
+    task.on('state_changed',
+      function(snap){
+        var pct=Math.round(snap.bytesTransferred/snap.totalBytes*100);
+        if(bar) bar.style.width=pct+'%';
+      },
+      function(err){ reject(err); },
+      function(){
+        task.snapshot.ref.getDownloadURL().then(function(url){
+          resolve({name:file.name,url:url,size:file.size,type:file.type});
+        }).catch(reject);
+      }
+    );
+  });
+}
+
+// ── Supprimer une note ────────────────────────────────────────
+function deleteNote(noteId){
+  var login=window._currentData&&window._currentData.login;
+  if(!login||!confirm('Supprimer cette note ?')) return;
+  initFirebase().then(function(db){
+    return db.collection('notes').doc(login).collection('items').doc(noteId).delete();
+  }).then(function(){
+    showToast('Note supprim\u00e9e');
+  }).catch(function(e){
+    showToast('\u26a0 Erreur : '+e.message);
+  });
+}
 
 </script>
 </body>

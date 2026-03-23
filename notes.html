@@ -77,6 +77,18 @@ body{font-family:'Inter',sans-serif;font-weight:300;background:var(--bg);color:v
   <div class="pt">&#128203; Mes notes</div>
   <div class="ps">Notes priv&#233;es &#8212; visibles uniquement par vous</div>
   <div class="ub" id="user-badge">&#128100; Chargement&#8230;</div>
+  <!-- Sélecteur de compte (commercial uniquement) -->
+  <div id="client-selector-wrap" style="display:none;margin-bottom:14px">
+    <label style="font-size:11px;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px">
+      &#128101; Enregistrer une note pour :
+    </label>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <select id="note-target-select" style="flex:1;min-width:200px;padding:8px 12px;border:1.5px solid var(--border);border-radius:7px;font-family:'Inter',sans-serif;font-size:12px;background:var(--bg-card);color:var(--text);outline:none;cursor:pointer">
+        <option value="">&#128100; Mes propres notes</option>
+      </select>
+      <span id="note-target-badge" style="font-size:10px;font-weight:300;color:var(--text-muted)"></span>
+    </div>
+  </div>
   <div class="notes-compose">
     <textarea id="note-text-input" placeholder="R&#233;digez votre note&#8230;"></textarea>
     <div class="cc" id="note-char-count">0 / 2000</div>
@@ -91,6 +103,7 @@ body{font-family:'Inter',sans-serif;font-weight:300;background:var(--bg);color:v
   </div>
 </div>
 <script>
+
 
 
 // SHA-256 robuste
@@ -271,6 +284,8 @@ window.addEventListener('DOMContentLoaded',function(){
   if(!login){window.location.href='index.html';return;}
   var bb=document.getElementById('back-btn');
   if(bb) bb.href=_getReturnPage();
+
+  // Compteur caractères
   var ta=document.getElementById('note-text-input');
   if(ta){ta.addEventListener('input',function(){
     var n=ta.value.length;
@@ -278,8 +293,76 @@ window.addEventListener('DOMContentLoaded',function(){
     if(cc) cc.textContent=n+' / 2000';
     if(n>2000) ta.value=ta.value.substring(0,2000);
   });}
+
+  // Détecter le rôle depuis le token
+  var role='client';
+  try{
+    var data=JSON.parse(_safeB64Decode(sessionStorage.getItem('mdm_token')));
+    role=data.role||'client';
+  }catch(e){}
+
+  // Si commercial → charger ses clients et afficher le sélecteur
+  if(role==='user'||role==='admin'){
+    _loadClientsForSelector(login,role);
+  }
+
+  // Watcher notes (cible = propres notes par défaut)
   _notesListen(login);
+
+  // Quand le sélecteur change → recharger les notes du compte cible
+  var sel=document.getElementById('note-target-select');
+  if(sel){
+    sel.addEventListener('change',function(){
+      var target=sel.value||login;
+      var badge=document.getElementById('note-target-badge');
+      if(badge) badge.textContent=sel.value?'Notes de '+sel.options[sel.selectedIndex].text:'Vos notes personnelles';
+      _notesListen(target);
+    });
+  }
 });
+
+// Charger les clients du commercial dans le sélecteur
+function _loadClientsForSelector(login,role){
+  var wrap=document.getElementById('client-selector-wrap');
+  if(wrap) wrap.style.display='block';
+  var sel=document.getElementById('note-target-select');
+  if(!sel) return;
+  // Charger depuis localStorage (déjà synchronisé par dashboard)
+  var allComptes=[];
+  try{allComptes=JSON.parse(localStorage.getItem('mdm_comptes')||'[]');}catch(e){}
+  var clients=[];
+  if(role==='admin'){
+    // Admin voit tous les comptes
+    clients=allComptes.filter(function(c){return c.role==='client'||c.role==='user';});
+  } else {
+    // Commercial voit seulement ses clients assignés
+    clients=allComptes.filter(function(c){return c.role==='client'&&c.commercial===login;});
+  }
+  if(!clients.length){
+    // Essayer Firebase
+    initFirebase().then(function(db){
+      return db.collection('comptes').get();
+    }).then(function(snap){
+      var all=snap.docs.map(function(d){return d.data();});
+      var list=role==='admin'?all.filter(function(c){return c.role==='client'||c.role==='user';}):all.filter(function(c){return c.role==='client'&&c.commercial===login;});
+      _populateClientSelect(sel,list);
+    }).catch(function(){});
+    return;
+  }
+  _populateClientSelect(sel,clients);
+}
+
+function _populateClientSelect(sel,clients){
+  // Garder l'option "mes notes"
+  sel.innerHTML='<option value="">&#128100; Mes propres notes</option>';
+  clients.sort(function(a,b){return (a.nom||a.login).localeCompare(b.nom||b.login);});
+  clients.forEach(function(c){
+    var opt=document.createElement('option');
+    opt.value=c.login;
+    opt.textContent=(c.nom||c.login)+(c.ville?' — '+c.ville:'');
+    sel.appendChild(opt);
+  });
+}
 function _notesListen(login){
   if(_notesUnsub){_notesUnsub();_notesUnsub=null;}
   initFirebase().then(function(db){
@@ -334,6 +417,7 @@ function deleteNote(noteId){
   }).then(function(){showToast('Note supprimee');})
   .catch(function(e){showToast('Erreur : '+e.message);});
 }
+
 </script>
 </body>
 </html>

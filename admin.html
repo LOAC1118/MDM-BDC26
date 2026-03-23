@@ -552,6 +552,14 @@ footer a{color:inherit;text-decoration:none;opacity:.7}footer a:hover{opacity:1}
 .actu-sp.on{background:var(--accent-light);color:var(--accent)}
 .actu-sp.off{background:var(--bg-beige);color:var(--text-muted)}
 
+
+.tranche-row{display:grid;grid-template-columns:120px 120px 120px 28px;gap:8px;align-items:center}
+.tranche-row input{padding:5px 8px;border:1px solid var(--border);border-radius:5px;font-family:'Inter',sans-serif;font-size:12px;width:100%}
+.tranche-row label{font-size:10px;color:var(--text-muted);margin-bottom:2px}
+.tranche-del{background:none;border:none;cursor:pointer;color:var(--danger);font-size:15px;padding:0;line-height:1}
+.tranche-header{display:grid;grid-template-columns:120px 120px 120px 28px;gap:8px;margin-bottom:2px}
+.tranche-header span{font-size:10px;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px}
+
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -941,21 +949,45 @@ footer a{color:inherit;text-decoration:none;opacity:.7}footer a:hover{opacity:1}
           <span style="font-size:13px;font-weight:700;color:var(--brown)" id="grp-form-title">&#43; Nouveau groupement</span>
           <button onclick="cancelGrp()" id="grp-cancel-btn" style="display:none;background:none;border:none;font-size:12px;color:#a08070;cursor:pointer;font-family:Outfit,sans-serif">Annuler</button>
         </div>
-        <div style="display:grid;grid-template-columns:1fr 120px 120px auto;gap:12px;align-items:end">
-          <div class="fg" style="margin:0"><label>Nom du groupement <span style="color:var(--terra)">*</span></label>
-            <input type="text" id="grp-nom" placeholder="ex&#160;: Biocoop, Naturalia&#8230;"></div>
-          <div class="fg" style="margin:0"><label>Remise (%)</label>
-            <input type="number" id="grp-remise" placeholder="0" min="0" max="99" step="0.5" value="0"></div>
-          <div class="fg" style="margin:0"><label>Franco (€ HT)</label>
-            <input type="number" id="grp-franco" placeholder="0" min="0" step="10" value="0"></div>
-          <button onclick="saveGrp()" style="padding:9px 18px;background:var(--terra);color:#fff;border:none;border-radius:7px;font-family:Outfit,sans-serif;font-size:13px;font-weight:600;cursor:pointer">&#10003; Enregistrer</button>
+
+        <!-- Nom -->
+        <div class="fg" style="margin-bottom:14px">
+          <label>Nom du groupement <span style="color:var(--terra)">*</span></label>
+          <input type="text" id="grp-nom" placeholder="ex&#160;: Biocoop, Naturalia&#8230;" style="max-width:400px">
         </div>
+
+        <!-- Tranches de remise -->
+        <div class="fg" style="margin-bottom:14px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+            <label style="margin:0">Tranches de remise (%)</label>
+            <button type="button" onclick="addRemiseTranche()" style="padding:3px 10px;background:var(--accent-light);color:var(--accent);border:1px solid var(--accent);border-radius:5px;font-size:11px;cursor:pointer;font-family:Inter,sans-serif">&#43; Tranche</button>
+          </div>
+          <div id="grp-remises-list" style="display:flex;flex-direction:column;gap:6px">
+            <!-- Tranches injectées dynamiquement -->
+          </div>
+          <div style="font-size:10px;color:var(--text-muted);margin-top:5px">Ex&#160;: 0–500&#160;€ = 5%, 500–1000&#160;€ = 8%, 1000&#160;€+ = 12%</div>
+        </div>
+
+        <!-- Tranches de franco -->
+        <div class="fg" style="margin-bottom:16px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+            <label style="margin:0">Tranches de franco (&#8364;&#160;HT minimum)</label>
+            <button type="button" onclick="addFrancoTranche()" style="padding:3px 10px;background:var(--accent-light);color:var(--accent);border:1px solid var(--accent);border-radius:5px;font-size:11px;cursor:pointer;font-family:Inter,sans-serif">&#43; Tranche</button>
+          </div>
+          <div id="grp-francos-list" style="display:flex;flex-direction:column;gap:6px">
+            <!-- Tranches injectées dynamiquement -->
+          </div>
+          <div style="font-size:10px;color:var(--text-muted);margin-top:5px">Ex&#160;: &lt;300&#160;€ = 15&#160;€ de port, &#8805;300&#160;€ = gratuit</div>
+        </div>
+
+        <button onclick="saveGrp()" style="padding:9px 22px;background:var(--terra);color:#fff;border:none;border-radius:7px;font-family:Outfit,sans-serif;font-size:13px;font-weight:600;cursor:pointer" id="grp-save-btn">&#10003; Enregistrer</button>
         <div id="grp-alert" style="display:none;margin-top:10px;padding:8px 12px;border-radius:6px;font-size:12px"></div>
+      </div>
       </div>
       <div style="background:#fff;border-radius:10px;box-shadow:0 2px 10px var(--shadow);overflow:hidden">
         <table class="grp-table"><thead><tr>
-          <th>Nom du groupement</th><th style="text-align:center">Remise</th>
-          <th style="text-align:center">Franco HT</th>
+          <th>Nom du groupement</th><th style="text-align:center">Remises</th>
+          <th style="text-align:center">Francos</th>
           <th style="text-align:center">Nb clients</th><th style="text-align:right">Actions</th>
         </tr></thead><tbody id="grp-tbody"></tbody></table>
         <div id="grp-empty" style="display:none;text-align:center;padding:40px;color:#b09080;font-size:13px">Aucun groupement. Ajoutez-en un ci-dessus.</div>
@@ -1119,46 +1151,10 @@ footer a{color:inherit;text-decoration:none;opacity:.7}footer a:hover{opacity:1}
       </div>
       <div class="fg">
         <label>Commercial assign&#233; <span style="font-size:10px;color:#b09080;font-weight:400;text-transform:none">(optionnel)</span></label>
-        <select id="f-commercial" style="width:100%;padding:9px 12px;border:1.5px solid #e0d0c4;border-radius:7px;font-family:Outfit,sans-serif;font-size:13px;background:var(--cream);color:#3a2a20;outline:none">
-          <option value="">— Aucun commercial assign&#233; —</option>
-        </select>
-        
-      </div>
-    </div>
-    <!-- ── Section notes ── -->
-    <div class="modal-section">
-      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.9px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px">
-        &#128203; Notes internes
-        <span style="flex:1;height:1px;background:var(--border);display:block"></span>
-      </div>
-      <div class="fg"><textarea id="f-notes" placeholder="Informations compl&#233;mentaires&#8230;"></textarea></div>
-    </div>
-
-    </div><!-- /modal-pane-infos -->
-
-    <div id="modal-pane-commandes" class="modal-pane">
-      <div id="modal-orders-list" style="max-height:360px;overflow-y:auto">
-        <div style="text-align:center;padding:30px;color:#b09080;font-size:13px">Chargement...</div>
-      </div>
-    </div>
-
-    <div class="modal-alert" id="modal-alert"></div>
-    <div class="modal-actions" style="display:flex;gap:8px;justify-content:space-between;align-items:center;padding-top:16px;border-top:1px solid var(--border);margin-top:4px">
-      <button class="btn-cancel" onclick="closeModal()">Annuler</button>
-      <div style="display:flex;gap:8px">
-        <button class="btn-cancel" id="btn-send-access" onclick="sendAccessEmail()" style="background:var(--accent-light);color:var(--accent);border:1px solid var(--accent-light);display:none" title="Envoyer login et mot de passe par email">&#128231; Envoyer les acc&#232;s</button>
-        <button class="btn-save" onclick="saveCompte()" style="padding:9px 24px;font-size:14px">&#10003; Enregistrer le compte</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ══ TOAST ══ -->
-<div class="toast" id="toast"></div>
-
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+        <select id="f-commercial" style="wi
 
 
+<script>
 // SHA-256 via Web Crypto API
 // SHA-256 robuste (crypto.subtle + fallback pure JS)
 function sha256(str){
@@ -2263,37 +2259,7 @@ function saveGroupements(){
 }
 
 // ── Affichage tableau ─────────────────────────────────────────
-function renderGroupements(){
-  var tbody=document.getElementById('grp-tbody');
-  var empty=document.getElementById('grp-empty');
-  if(!tbody) return;
-  if(!_groupements.length){
-    tbody.innerHTML='';
-    if(empty) empty.style.display='block';
-    updateGroupementsBadge();
-    return;
-  }
-  if(empty) empty.style.display='none';
-  var nbClients={};
-  comptes.forEach(function(c){ if(c.groupement) nbClients[c.groupement]=(nbClients[c.groupement]||0)+1; });
-  tbody.innerHTML=_groupements.map(function(g,idx){
-    var nb=nbClients[g.nom]||0;
-    var remise=g.remise>0?'-'+g.remise+'%':'—';
-    var franco=g.franco>0?g.franco+' €':'—';
-    var nbRp=(g.remises_produits||[]).length;
-    return '<tr>'
-      +'<td style="font-weight:500;color:var(--brown)">'+escH(g.nom||'—')+'</td>'
-      +'<td style="text-align:center">'+(g.remise>0?'<span class="remise-pill">'+remise+'</span>':remise)+'</td>'
-      +'<td style="text-align:center;color:var(--text-secondary)">'+franco+'</td>'
-      +'<td style="text-align:center;color:var(--text-secondary)">'+nb+'</td>'
-      +'<td style="text-align:right;white-space:nowrap;display:flex;gap:5px;justify-content:flex-end">'
-      +'<button class="btn-action btn-edit" onclick="editGrp('+idx+')">&#9998; Modifier</button>'
-      +'<button class="btn-action" onclick="openGrpRpPanel('+idx+')" style="background:#f0f7f0;color:var(--green)">&#127991; Remises</button>'
-      +'<button class="btn-action btn-del" onclick="delGrp('+idx+')">&#128465;</button>'
-      +'</td>'
-      +'</tr>';
-  }).join('');
-}
+
 
 function updateGroupementsBadge(){
   var b=document.getElementById('badge-groupements');
@@ -2316,71 +2282,11 @@ function refreshGroupementSelect(){
 }
 
 // ── Formulaire ajout/édition ──────────────────────────────────
-function saveGrp(){
-  var nom=(document.getElementById('grp-nom').value||'').trim();
-  var remise=parseFloat(document.getElementById('grp-remise').value)||0;
-  var franco=parseFloat(document.getElementById('grp-franco').value)||0;
-  var alertEl=document.getElementById('grp-alert');
-  if(!nom){
-    alertEl.textContent='Le nom est obligatoire.';
-    alertEl.style.display='block';
-    alertEl.style.background='#fdecea'; alertEl.style.color='#c62828';
-    return;
-  }
-  alertEl.style.display='none';
-  if(_grpEditIdx>=0){
-    var g=_groupements[_grpEditIdx];
-    var oldNom=g.nom;
-    g.nom=nom; g.remise=remise; g.franco=franco;
-    // Mettre à jour les comptes qui avaient cet ancien groupement
-    if(oldNom!==nom){
-      comptes.forEach(function(c){ if(c.groupement===oldNom) c.groupement=nom; });
-      saveComptes();
-    }
-    fbSaveGroupement(g).then(function(id){ g._id=id; saveGroupements(); })
-      .catch(function(){ saveGroupements(); });
-    showToast('✅ Groupement mis à jour : '+nom);
-  } else {
-    var exists=_groupements.some(function(g){ return g.nom===nom; });
-    if(exists){
-      alertEl.textContent='Un groupement avec ce nom existe déjà.';
-      alertEl.style.display='block';
-      alertEl.style.background='#fdecea'; alertEl.style.color='#c62828';
-      return;
-    }
-    var newGrp={nom:nom,remise:remise,franco:franco,remises_produits:[]};
-    _groupements.push(newGrp);
-    fbSaveGroupement(newGrp).then(function(id){ newGrp._id=id; saveGroupements(); })
-      .catch(function(){ saveGroupements(); });
-    showToast('✅ Groupement créé : '+nom);
-  }
-  cancelGrp();
-  renderGroupements();
-  updateGroupementsBadge();
-  refreshGroupementSelect();
-}
 
-function editGrp(idx){
-  _grpEditIdx=idx;
-  var g=_groupements[idx];
-  document.getElementById('grp-nom').value=g.nom||'';
-  document.getElementById('grp-remise').value=g.remise||0;
-  document.getElementById('grp-franco').value=g.franco||0;
-  document.getElementById('grp-form-title').textContent='✏️ Modifier : '+g.nom;
-  document.getElementById('grp-cancel-btn').style.display='inline';
-  document.getElementById('grp-nom').focus();
-  document.querySelector('.grp-form').scrollIntoView({behavior:'smooth'});
-}
 
-function cancelGrp(){
-  _grpEditIdx=-1;
-  document.getElementById('grp-nom').value='';
-  document.getElementById('grp-remise').value=0;
-  document.getElementById('grp-franco').value=0;
-  document.getElementById('grp-form-title').textContent='+ Nouveau groupement';
-  document.getElementById('grp-cancel-btn').style.display='none';
-  document.getElementById('grp-alert').style.display='none';
-}
+
+
+
 
 function delGrp(idx){
   var g=_groupements[idx];
@@ -2479,11 +2385,231 @@ function handleGrpRpFile(file){
   reader.readAsArrayBuffer(file);
 }
 
+
+// ── Tranches de remise ────────────────────────────────────────
+function addRemiseTranche(data){
+  var list=document.getElementById('grp-remises-list');
+  if(!list) return;
+  var d=data||{minCA:0,maxCA:'',remise:0};
+  var row=document.createElement('div');
+  row.className='tranche-row';
+  if(!list.children.length){
+    var hdr=document.createElement('div');
+    hdr.className='tranche-header';
+    hdr.innerHTML='<span>CA min (&#8364;)</span><span>CA max (&#8364;, vide=illimit&#233;)</span><span>Remise (%)</span><span></span>';
+    list.appendChild(hdr);
+  }
+  row.innerHTML='<input type="number" min="0" step="10" placeholder="0" value="'+(d.minCA||0)+'" class="grp-tr-min">'
+    +'<input type="number" min="0" step="10" placeholder="illimit&#233;" value="'+(d.maxCA||'')+'" class="grp-tr-max">'
+    +'<input type="number" min="0" max="99" step="0.5" placeholder="%" value="'+(d.remise||0)+'" class="grp-tr-rem">'
+    +'<button type="button" class="tranche-del" onclick="this.parentNode.remove()">&#10005;</button>';
+  list.appendChild(row);
+}
+
+function addFrancoTranche(data){
+  var list=document.getElementById('grp-francos-list');
+  if(!list) return;
+  var d=data||{minCA:0,maxCA:'',franco:0,fraisPort:0};
+  var row=document.createElement('div');
+  row.className='tranche-row';
+  if(!list.children.length){
+    var hdr=document.createElement('div');
+    hdr.className='tranche-header';
+    hdr.innerHTML='<span>Commande min (&#8364;)</span><span>Commande max (&#8364;)</span><span>Franco HT (0=gratuit)</span><span></span>';
+    list.appendChild(hdr);
+  }
+  row.innerHTML='<input type="number" min="0" step="10" placeholder="0" value="'+(d.minCA||0)+'" class="grp-fr-min">'
+    +'<input type="number" min="0" step="10" placeholder="illimit&#233;" value="'+(d.maxCA||'')+'" class="grp-fr-max">'
+    +'<input type="number" min="0" step="5" placeholder="0" value="'+(d.franco||0)+'" class="grp-fr-val">'
+    +'<button type="button" class="tranche-del" onclick="this.parentNode.remove()">&#10005;</button>';
+  list.appendChild(row);
+}
+
+function _collectTranches(){
+  var remises=[];
+  document.querySelectorAll('#grp-remises-list .tranche-row').forEach(function(row){
+    var min=parseFloat(row.querySelector('.grp-tr-min').value)||0;
+    var maxVal=row.querySelector('.grp-tr-max').value;
+    var max=maxVal===''?null:parseFloat(maxVal)||null;
+    var rem=parseFloat(row.querySelector('.grp-tr-rem').value)||0;
+    if(rem>0) remises.push({minCA:min,maxCA:max,remise:rem});
+  });
+  var francos=[];
+  document.querySelectorAll('#grp-francos-list .tranche-row').forEach(function(row){
+    var min=parseFloat(row.querySelector('.grp-fr-min').value)||0;
+    var maxVal=row.querySelector('.grp-fr-max').value;
+    var max=maxVal===''?null:parseFloat(maxVal)||null;
+    var val=parseFloat(row.querySelector('.grp-fr-val').value)||0;
+    francos.push({minCA:min,maxCA:max,franco:val});
+  });
+  return {remises:remises,francos:francos};
+}
+
+function _renderTranchesInForm(g){
+  // Reset
+  document.getElementById('grp-remises-list').innerHTML='';
+  document.getElementById('grp-francos-list').innerHTML='';
+  var remises=g.remises_tranches||[];
+  var francos=g.franco_tranches||[];
+  // Rétro-compat : anciens groupements avec remise/franco simples
+  if(!remises.length && g.remise>0) remises=[{minCA:0,maxCA:null,remise:g.remise}];
+  if(!francos.length && g.franco>0) francos=[{minCA:0,maxCA:null,franco:g.franco}];
+  if(!remises.length) remises=[{minCA:0,maxCA:null,remise:0}];
+  if(!francos.length) francos=[{minCA:0,maxCA:null,franco:0}];
+  remises.forEach(function(r){ addRemiseTranche(r); });
+  francos.forEach(function(f){ addFrancoTranche(f); });
+}
+
+// ── saveGrp ───────────────────────────────────────────────────
+function saveGrp(){
+  var nom=(document.getElementById('grp-nom').value||'').trim();
+  var alertEl=document.getElementById('grp-alert');
+  if(!nom){
+    alertEl.textContent='Le nom est obligatoire.';
+    alertEl.style.display='block';
+    alertEl.style.background='#fdecea'; alertEl.style.color='#c62828';
+    return;
+  }
+  alertEl.style.display='none';
+  var t=_collectTranches();
+  // Compatibilité : stocker aussi la remise/franco de base (première tranche)
+  var remise=(t.remises[0]&&t.remises[0].remise)||0;
+  var franco=(t.francos[0]&&t.francos[0].franco)||0;
+
+  if(_grpEditIdx>=0){
+    var g=_groupements[_grpEditIdx];
+    var oldNom=g.nom;
+    g.nom=nom; g.remise=remise; g.franco=franco;
+    g.remises_tranches=t.remises;
+    g.franco_tranches=t.francos;
+    if(oldNom!==nom){
+      comptes.forEach(function(c){ if(c.groupement===oldNom) c.groupement=nom; });
+      saveComptes();
+    }
+    fbSaveGroupement(g).then(function(id){g._id=id;saveGroupements();}).catch(function(){saveGroupements();});
+    showToast('✅ Groupement mis à jour : '+nom);
+  } else {
+    if(_groupements.some(function(g){ return g.nom===nom; })){
+      alertEl.textContent='Un groupement avec ce nom existe déjà.';
+      alertEl.style.display='block'; alertEl.style.background='#fdecea'; alertEl.style.color='#c62828';
+      return;
+    }
+    var newGrp={nom:nom,remise:remise,franco:franco,
+      remises_tranches:t.remises,franco_tranches:t.francos,remises_produits:[]};
+    _groupements.push(newGrp);
+    fbSaveGroupement(newGrp).then(function(id){newGrp._id=id;saveGroupements();}).catch(function(){saveGroupements();});
+    showToast('✅ Groupement créé : '+nom);
+  }
+  cancelGrp(); renderGroupements(); updateGroupementsBadge(); refreshGroupementSelect();
+}
+
+// ── editGrp ───────────────────────────────────────────────────
+function editGrp(idx){
+  _grpEditIdx=idx;
+  var g=_groupements[idx];
+  document.getElementById('grp-nom').value=g.nom||'';
+  document.getElementById('grp-form-title').textContent='✏️ Modifier : '+g.nom;
+  document.getElementById('grp-cancel-btn').style.display='inline';
+  _renderTranchesInForm(g);
+  document.getElementById('grp-nom').focus();
+  document.querySelector('.grp-form').scrollIntoView({behavior:'smooth'});
+}
+
+// ── cancelGrp ─────────────────────────────────────────────────
+function cancelGrp(){
+  _grpEditIdx=-1;
+  document.getElementById('grp-nom').value='';
+  document.getElementById('grp-remises-list').innerHTML='';
+  document.getElementById('grp-francos-list').innerHTML='';
+  addRemiseTranche({minCA:0,maxCA:null,remise:0});
+  addFrancoTranche({minCA:0,maxCA:null,franco:0});
+  document.getElementById('grp-form-title').textContent='+ Nouveau groupement';
+  document.getElementById('grp-cancel-btn').style.display='none';
+  document.getElementById('grp-alert').style.display='none';
+}
+
+// ── renderGroupements ─────────────────────────────────────────
+function renderGroupements(){
+  var tbody=document.getElementById('grp-tbody');
+  var empty=document.getElementById('grp-empty');
+  if(!tbody) return;
+  if(!_groupements.length){
+    tbody.innerHTML=''; if(empty) empty.style.display='block';
+    updateGroupementsBadge(); return;
+  }
+  if(empty) empty.style.display='none';
+  var nbClients={};
+  comptes.forEach(function(c){ if(c.groupement) nbClients[c.groupement]=(nbClients[c.groupement]||0)+1; });
+  tbody.innerHTML=_groupements.map(function(g,idx){
+    var nb=nbClients[g.nom]||0;
+    // Résumé remises
+    var tr=g.remises_tranches||[];
+    if(!tr.length&&g.remise>0) tr=[{minCA:0,maxCA:null,remise:g.remise}];
+    var remiseTxt=tr.length?tr.map(function(t){
+      var range=t.maxCA?t.minCA+'–'+t.maxCA+' €':t.minCA+' €+';
+      return '<span class="remise-pill" style="font-size:9px;margin:1px">'+range+' = −'+t.remise+'%</span>';
+    }).join(' '):'<span style="color:var(--text-muted)">—</span>';
+    // Résumé francos
+    var tf=g.franco_tranches||[];
+    if(!tf.length&&g.franco>0) tf=[{minCA:0,maxCA:null,franco:g.franco}];
+    var francoTxt=tf.length?tf.map(function(f){
+      var range=f.maxCA?'<'+f.maxCA+' €':'≥'+f.minCA+' €';
+      var val=f.franco>0?f.franco+' €':'Gratuit';
+      return '<span style="font-size:10px;background:#f0f7f0;color:var(--green);padding:1px 6px;border-radius:4px;margin:1px;display:inline-block">'+range+' → '+val+'</span>';
+    }).join(' '):'<span style="color:var(--text-muted)">—</span>';
+
+    return '<tr>'
+      +'<td style="font-weight:500;color:var(--brown)">'+escH(g.nom||'—')+'</td>'
+      +'<td style="text-align:center">'+remiseTxt+'</td>'
+      +'<td style="text-align:center">'+francoTxt+'</td>'
+      +'<td style="text-align:center;color:var(--text-secondary)">'+nb+'</td>'
+      +'<td style="text-align:right;white-space:nowrap;display:flex;gap:5px;justify-content:flex-end">'
+      +'<button class="btn-action btn-edit" onclick="editGrp('+idx+')">&#9998; Modifier</button>'
+      +'<button class="btn-action" onclick="openGrpRpPanel('+idx+')" style="background:#f0f7f0;color:var(--green)">&#127991; Remises</button>'
+      +'<button class="btn-action btn-del" onclick="delGrp('+idx+')">&#128465;</button>'
+      +'</td>'
+      +'</tr>';
+  }).join('');
+}
+
+
+function renderActus(){
+  var container=document.getElementById('actu-list');
+  if(!container) return;
+  updateActusBadge();
+  if(!actus.length){
+    container.innerHTML='<div class="empty-state"><p>Aucune actualit\u00e9 publi\u00e9e.</p></div>';
+    return;
+  }
+  var TYPES={info:{label:'Info',cls:'info'},promo:{label:'Promo',cls:'promo'},alerte:{label:'Alerte',cls:'alerte'}};
+  var html='';
+  actus.forEach(function(ac,idx){
+    var tc=TYPES[ac.type]||TYPES.info;
+    var isOn=ac.actif!==false;
+    html+='<div class="actu-card-n'+(isOn?'':' off')+'">';
+    html+='<div class="actu-card-n-top">';
+    html+='<span class="actu-tb '+tc.cls+'">'+tc.label+'</span>';
+    html+='<span style="font-size:13px;font-weight:500;color:var(--text);flex:1">'+escH(ac.titre)+'</span>';
+    html+='<span style="font-size:10px;font-weight:300;color:var(--text-muted);margin-right:8px">'+(ac.date||'')+'</span>';
+    html+='<span class="actu-sp '+(isOn?'on':'off')+'">'+(isOn?'\u25cf En ligne':'\u25cb Hors ligne')+'</span>';
+    html+='</div>';
+    html+='<div class="actu-card-n-body">'+escH(ac.contenu)+'</div>';
+    html+='<div class="actu-card-n-foot">';
+    html+='<button class="btn-actu-edit" onclick="editActu('+idx+')">Modifier</button>';
+    html+='<button class="btn-actu-toggle" onclick="toggleActuActif('+idx+')" style="background:'+(isOn?'var(--bg-beige)':'var(--accent-light)')+';color:'+(isOn?'var(--text-muted)':'var(--accent)')+';">'+(isOn?'D\u00e9sactiver':'Activer')+'</button>';
+    html+='<button class="btn-actu-del" onclick="delActu('+idx+')">Supprimer</button>';
+    html+='</div></div>';
+  });
+  container.innerHTML=html;
+}
+
 window.addEventListener('DOMContentLoaded',function(){
   loadComptes();
   loadActus();
   loadInscriptions();
   loadGroupements();
+  // Init tranches vides dans le formulaire
+  setTimeout(function(){ cancelGrp(); },100);
   showPage('dashboard', document.querySelector('.nav-item.active'));
 });
 
@@ -2495,6 +2621,37 @@ function setActuType(type,btn){
   if(btn){btn.style.background='var(--accent)';btn.style.color='#fff';btn.style.borderColor='var(--accent)';}
   updateActuPreview();
 }
+
+function updateActuPreview(){
+  var type=document.getElementById('actu-type').value||'info';
+  var titre=(document.getElementById('actu-titre').value||'Titre de l\'actualité').trim();
+  var contenu=(document.getElementById('actu-contenu').value||'Le contenu s\'affichera ici.').trim();
+  var B={info:{label:'Info',bg:'#e8f4ed',color:'#2d6a4a'},promo:{label:'Promo',bg:'#fef3c7',color:'#92400e'},alerte:{label:'Alerte',bg:'#fee2e2',color:'#991b1b'}};
+  var b=B[type]||B.info;
+  var el=document.getElementById('actu-preview-badge');
+  if(el){el.textContent=b.label;el.style.background=b.bg;el.style.color=b.color;}
+  var t=document.getElementById('actu-preview-titre'); if(t) t.textContent=titre;
+  var c=document.getElementById('actu-preview-body'); if(c) c.textContent=contenu;
+  var d=document.getElementById('actu-preview-date'); if(d) d.textContent=new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'});
+}
+
+function saveActuNew(){
+  var titre=(document.getElementById('actu-titre').value||'').trim();
+  var contenu=(document.getElementById('actu-contenu').value||'').trim();
+  var type=document.getElementById('actu-type').value||'info';
+  var actif=document.getElementById('actu-actif').checked;
+  if(!titre||!contenu){showToast('\u26a0 Titre et contenu obligatoires');return;}
+  var dateStr=new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'});
+  if(actuEditIndex>=0){
+    actus[actuEditIndex]=Object.assign(actus[actuEditIndex],{titre:titre,contenu:contenu,type:type,actif:actif});
+    showToast('\u2705 Actualité mise à jour');
+  } else {
+    actus.unshift({titre:titre,contenu:contenu,type:type,actif:actif,date:dateStr});
+    showToast('\u2705 Actualité publiée');
+  }
+  saveActus(); renderActus(); cancelActu();
+}
+
 
 function updateActuPreview(){
   var type=document.getElementById('actu-type').value||'info';

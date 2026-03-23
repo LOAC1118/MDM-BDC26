@@ -2113,79 +2113,6 @@ function updateStats(){
 // ══════════════════════════════════════════════════════════════
 // GROUPEMENTS
 // ══════════════════════════════════════════════════════════════
-var _groupements = [];
-
-function loadGroupements(){
-  try{
-    var s=localStorage.getItem('mdm_groupements');
-    if(s) _groupements=JSON.parse(s);
-  }catch(e){}
-  renderGroupements();
-}
-
-function saveGroupements(){
-  localStorage.setItem('mdm_groupements',JSON.stringify(_groupements));
-}
-
-function renderGroupements(){
-  var container=document.getElementById('groupements-list');
-  if(!container) return;
-  if(!_groupements.length){
-    container.innerHTML='<div class="empty-state"><p>Aucun groupement créé.</p></div>';
-    return;
-  }
-  var html='';
-  _groupements.forEach(function(g,idx){
-    html+='<div class="section-card" style="margin-bottom:10px">';
-    html+='<div style="display:flex;align-items:center;justify-content:space-between">';
-    html+='<span style="font-size:13px;font-weight:500;color:var(--text)">'+escH(g.nom||'—')+'</span>';
-    html+='<div style="display:flex;gap:6px">';
-    html+='<button onclick="editGroupement('+idx+')" style="padding:4px 10px;background:var(--bg);border:1px solid var(--border);border-radius:5px;font-family:Inter,sans-serif;font-size:11px;cursor:pointer;color:var(--text)">Modifier</button>';
-    html+='<button onclick="delGroupement('+idx+')" style="padding:4px 10px;background:var(--bg);border:1px solid var(--border);border-radius:5px;font-family:Inter,sans-serif;font-size:11px;cursor:pointer;color:var(--danger)">🗑</button>';
-    html+='</div></div>';
-    var nb=(g.remises_produits||[]).length;
-    html+='<div style="font-size:11px;font-weight:300;color:var(--text-muted);margin-top:4px">'+nb+' remise'+(nb>1?'s':'')+' configurée'+(nb>1?'s':'')+'</div>';
-    html+='</div>';
-  });
-  var btn=document.getElementById('groupements-list');
-  if(btn) btn.innerHTML=html;
-}
-
-function addGroupement(){
-  var nom=prompt('Nom du groupement :');
-  if(!nom||!nom.trim()) return;
-  _groupements.push({nom:nom.trim(),remises_produits:[]});
-  saveGroupements(); renderGroupements();
-  updateGroupementsBadge();
-}
-
-function editGroupement(idx){ alert('Modification groupement '+_groupements[idx].nom+' — fonctionnalité à venir'); }
-function delGroupement(idx){
-  if(!confirm('Supprimer ce groupement ?')) return;
-  _groupements.splice(idx,1);
-  saveGroupements(); renderGroupements(); updateGroupementsBadge();
-}
-
-function updateGroupementsBadge(){
-  var b=document.getElementById('badge-groupements');
-  if(!b) return;
-  b.textContent=_groupements.length;
-  b.style.display=_groupements.length>0?'inline-block':'none';
-}
-
-function refreshGroupementSelect(){
-  var sel=document.getElementById('f-groupement');
-  if(!sel) return;
-  var cur=sel.value;
-  sel.innerHTML='<option value="">— Aucun —</option>';
-  _groupements.forEach(function(g){
-    var o=document.createElement('option');
-    o.value=g.nom; o.textContent=g.nom;
-    sel.appendChild(o);
-  });
-  sel.value=cur;
-}
-
 // ══════════════════════════════════════════════════════════════
 // PARAMÈTRES
 // ══════════════════════════════════════════════════════════════
@@ -2282,6 +2209,275 @@ var _rpData=[];
   if(sn) sn.textContent=_tokenData.nom||_tokenData.login||'Admin';
   if(sa) sa.textContent=(_tokenData.nom||_tokenData.login||'A').charAt(0).toUpperCase();
 })();
+
+
+// ══════════════════════════════════════════════════════════════
+// GROUPEMENTS — Firebase + interface complète
+// ══════════════════════════════════════════════════════════════
+var _groupements = [];
+var _grpEditIdx  = -1;
+var _grpRpIdx    = -1; // index du groupement en cours d'édition remises
+
+// ── Firebase ──────────────────────────────────────────────────
+function fbLoadGroupements(){
+  return initFirebase().then(function(db){
+    return db.collection('groupements').get().then(function(snap){
+      return snap.docs.map(function(d){ return Object.assign({_id:d.id},d.data()); });
+    });
+  });
+}
+function fbSaveGroupement(grp){
+  return initFirebase().then(function(db){
+    var id = grp._id || grp.nom.replace(/[^a-zA-Z0-9]/g,'_');
+    return db.collection('groupements').doc(id).set(
+      Object.assign({},grp,{_id:undefined}),{merge:true}
+    ).then(function(){ return id; });
+  });
+}
+function fbDeleteGroupement(id){
+  return initFirebase().then(function(db){
+    return db.collection('groupements').doc(id).delete();
+  });
+}
+
+// ── Chargement ────────────────────────────────────────────────
+function loadGroupements(){
+  fbLoadGroupements().then(function(data){
+    if(data&&data.length){
+      _groupements=data;
+      localStorage.setItem('mdm_groupements',JSON.stringify(_groupements));
+    } else {
+      try{ var s=localStorage.getItem('mdm_groupements'); if(s) _groupements=JSON.parse(s); }catch(e){}
+    }
+    renderGroupements();
+    updateGroupementsBadge();
+  }).catch(function(){
+    try{ var s=localStorage.getItem('mdm_groupements'); if(s) _groupements=JSON.parse(s); }catch(e){}
+    renderGroupements();
+    updateGroupementsBadge();
+  });
+}
+
+function saveGroupements(){
+  localStorage.setItem('mdm_groupements',JSON.stringify(_groupements));
+}
+
+// ── Affichage tableau ─────────────────────────────────────────
+function renderGroupements(){
+  var tbody=document.getElementById('grp-tbody');
+  var empty=document.getElementById('grp-empty');
+  if(!tbody) return;
+  if(!_groupements.length){
+    tbody.innerHTML='';
+    if(empty) empty.style.display='block';
+    updateGroupementsBadge();
+    return;
+  }
+  if(empty) empty.style.display='none';
+  var nbClients={};
+  comptes.forEach(function(c){ if(c.groupement) nbClients[c.groupement]=(nbClients[c.groupement]||0)+1; });
+  tbody.innerHTML=_groupements.map(function(g,idx){
+    var nb=nbClients[g.nom]||0;
+    var remise=g.remise>0?'-'+g.remise+'%':'—';
+    var franco=g.franco>0?g.franco+' €':'—';
+    var nbRp=(g.remises_produits||[]).length;
+    return '<tr>'
+      +'<td style="font-weight:500;color:var(--brown)">'+escH(g.nom||'—')+'</td>'
+      +'<td style="text-align:center">'+(g.remise>0?'<span class="remise-pill">'+remise+'</span>':remise)+'</td>'
+      +'<td style="text-align:center;color:var(--text-secondary)">'+franco+'</td>'
+      +'<td style="text-align:center;color:var(--text-secondary)">'+nb+'</td>'
+      +'<td style="text-align:right;white-space:nowrap;display:flex;gap:5px;justify-content:flex-end">'
+      +'<button class="btn-action btn-edit" onclick="editGrp('+idx+')">&#9998; Modifier</button>'
+      +'<button class="btn-action" onclick="openGrpRpPanel('+idx+')" style="background:#f0f7f0;color:var(--green)">&#127991; Remises</button>'
+      +'<button class="btn-action btn-del" onclick="delGrp('+idx+')">&#128465;</button>'
+      +'</td>'
+      +'</tr>';
+  }).join('');
+}
+
+function updateGroupementsBadge(){
+  var b=document.getElementById('badge-groupements');
+  if(!b) return;
+  b.textContent=_groupements.length;
+  b.style.display=_groupements.length>0?'inline-block':'none';
+}
+
+function refreshGroupementSelect(){
+  var sel=document.getElementById('f-groupement');
+  if(!sel) return;
+  var cur=sel.value;
+  sel.innerHTML='<option value="">— Aucun —</option>';
+  _groupements.forEach(function(g){
+    var o=document.createElement('option');
+    o.value=g.nom; o.textContent=g.nom;
+    sel.appendChild(o);
+  });
+  sel.value=cur;
+}
+
+// ── Formulaire ajout/édition ──────────────────────────────────
+function saveGrp(){
+  var nom=(document.getElementById('grp-nom').value||'').trim();
+  var remise=parseFloat(document.getElementById('grp-remise').value)||0;
+  var franco=parseFloat(document.getElementById('grp-franco').value)||0;
+  var alertEl=document.getElementById('grp-alert');
+  if(!nom){
+    alertEl.textContent='Le nom est obligatoire.';
+    alertEl.style.display='block';
+    alertEl.style.background='#fdecea'; alertEl.style.color='#c62828';
+    return;
+  }
+  alertEl.style.display='none';
+  if(_grpEditIdx>=0){
+    var g=_groupements[_grpEditIdx];
+    var oldNom=g.nom;
+    g.nom=nom; g.remise=remise; g.franco=franco;
+    // Mettre à jour les comptes qui avaient cet ancien groupement
+    if(oldNom!==nom){
+      comptes.forEach(function(c){ if(c.groupement===oldNom) c.groupement=nom; });
+      saveComptes();
+    }
+    fbSaveGroupement(g).then(function(id){ g._id=id; saveGroupements(); })
+      .catch(function(){ saveGroupements(); });
+    showToast('✅ Groupement mis à jour : '+nom);
+  } else {
+    var exists=_groupements.some(function(g){ return g.nom===nom; });
+    if(exists){
+      alertEl.textContent='Un groupement avec ce nom existe déjà.';
+      alertEl.style.display='block';
+      alertEl.style.background='#fdecea'; alertEl.style.color='#c62828';
+      return;
+    }
+    var newGrp={nom:nom,remise:remise,franco:franco,remises_produits:[]};
+    _groupements.push(newGrp);
+    fbSaveGroupement(newGrp).then(function(id){ newGrp._id=id; saveGroupements(); })
+      .catch(function(){ saveGroupements(); });
+    showToast('✅ Groupement créé : '+nom);
+  }
+  cancelGrp();
+  renderGroupements();
+  updateGroupementsBadge();
+  refreshGroupementSelect();
+}
+
+function editGrp(idx){
+  _grpEditIdx=idx;
+  var g=_groupements[idx];
+  document.getElementById('grp-nom').value=g.nom||'';
+  document.getElementById('grp-remise').value=g.remise||0;
+  document.getElementById('grp-franco').value=g.franco||0;
+  document.getElementById('grp-form-title').textContent='✏️ Modifier : '+g.nom;
+  document.getElementById('grp-cancel-btn').style.display='inline';
+  document.getElementById('grp-nom').focus();
+  document.querySelector('.grp-form').scrollIntoView({behavior:'smooth'});
+}
+
+function cancelGrp(){
+  _grpEditIdx=-1;
+  document.getElementById('grp-nom').value='';
+  document.getElementById('grp-remise').value=0;
+  document.getElementById('grp-franco').value=0;
+  document.getElementById('grp-form-title').textContent='+ Nouveau groupement';
+  document.getElementById('grp-cancel-btn').style.display='none';
+  document.getElementById('grp-alert').style.display='none';
+}
+
+function delGrp(idx){
+  var g=_groupements[idx];
+  if(!confirm('Supprimer le groupement "'+g.nom+'" ?')) return;
+  if(g._id) fbDeleteGroupement(g._id).catch(function(){});
+  _groupements.splice(idx,1);
+  saveGroupements(); renderGroupements(); updateGroupementsBadge();
+  refreshGroupementSelect();
+  showToast('Groupement supprimé');
+}
+
+// ── Panel remises produits ────────────────────────────────────
+function openGrpRpPanel(idx){
+  _grpRpIdx=idx;
+  var g=_groupements[idx];
+  document.getElementById('grp-rp-panel').style.display='block';
+  document.getElementById('grp-rp-panel-nom').textContent=g.nom;
+  renderGrpRpTable(g.remises_produits||[]);
+  document.getElementById('grp-rp-panel').scrollIntoView({behavior:'smooth'});
+}
+
+function closeGrpRpPanel(){
+  _grpRpIdx=-1;
+  document.getElementById('grp-rp-panel').style.display='none';
+}
+
+function renderGrpRpTable(rp){
+  var tbody=document.getElementById('grp-rp-tbody');
+  var wrap=document.getElementById('grp-rp-table-wrap');
+  var count=document.getElementById('grp-rp-count');
+  if(count) count.textContent=rp.length+' produit(s)';
+  if(!rp.length){ if(wrap) wrap.style.display='none'; return; }
+  if(wrap) wrap.style.display='block';
+  tbody.innerHTML=rp.map(function(r,i){
+    return '<tr>'
+      +'<td style="font-family:monospace;font-size:11px">'+escH(r.code||r.valeur||'')+'</td>'
+      +'<td>'+escH(r.libelle||'')+'</td>'
+      +'<td>'+escH(r.categorie||'')+'</td>'
+      +'<td style="text-align:center">'+(r.remise?r.remise+'%':'—')+'</td>'
+      +'<td style="text-align:center">'+(r.prixHT?r.prixHT+' €':'—')+'</td>'
+      +'<td style="font-family:monospace;font-size:10px">'+escH(r.ean||'')+'</td>'
+      +'<td style="text-align:center"><button onclick="delGrpRpRow('+i+')" style="background:none;border:none;cursor:pointer;color:var(--danger);font-size:13px">🗑</button></td>'
+      +'</tr>';
+  }).join('');
+}
+
+function delGrpRpRow(i){
+  if(_grpRpIdx<0) return;
+  _groupements[_grpRpIdx].remises_produits.splice(i,1);
+  renderGrpRpTable(_groupements[_grpRpIdx].remises_produits||[]);
+}
+
+function clearGrpRp(){
+  if(_grpRpIdx<0||!confirm('Effacer toutes les remises produits ?')) return;
+  _groupements[_grpRpIdx].remises_produits=[];
+  renderGrpRpTable([]);
+}
+
+function saveGrpRp(){
+  if(_grpRpIdx<0) return;
+  var g=_groupements[_grpRpIdx];
+  fbSaveGroupement(g).then(function(id){ g._id=id; saveGroupements(); })
+    .catch(function(){ saveGroupements(); });
+  var msg=document.getElementById('grp-rp-saved-msg');
+  if(msg){ msg.style.display='inline'; setTimeout(function(){msg.style.display='none';},2500); }
+  showToast('✅ Remises produits sauvegardées');
+  renderGroupements();
+}
+
+function handleGrpRpFile(file){
+  if(!file) return;
+  if(typeof XLSX==='undefined'){ showToast('⚠ Bibliothèque Excel non disponible'); return; }
+  var reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      var wb=XLSX.read(e.target.result,{type:'array'});
+      var ws=wb.Sheets[wb.SheetNames[0]];
+      var rows=XLSX.utils.sheet_to_json(ws,{defval:''});
+      var rp=[];
+      rows.forEach(function(row){
+        var code=String(row['Code']||row['code']||row['CODE']||'').trim();
+        var libelle=String(row['Libelle']||row['libelle']||row['Libellé']||row['LIBELLE']||'').trim();
+        var cat=String(row['Categorie']||row['categorie']||row['Catégorie']||'').trim();
+        var remise=parseFloat(row['Remise']||row['remise']||row['REMISE']||0)||0;
+        var prix=parseFloat(row['Prix HT']||row['prix_ht']||row['PrixHT']||0)||0;
+        var ean=String(row['EAN']||row['ean']||'').trim();
+        if(!code) return;
+        if(!remise&&!prix) return;
+        rp.push({code:code,libelle:libelle,categorie:cat,remise:remise,prixHT:prix,ean:ean});
+      });
+      if(_grpRpIdx>=0) _groupements[_grpRpIdx].remises_produits=rp;
+      renderGrpRpTable(rp);
+      showToast('✅ '+rp.length+' remise(s) chargée(s)');
+    }catch(err){ showToast('⚠ Erreur lecture Excel : '+err.message); }
+  };
+  reader.readAsArrayBuffer(file);
+}
 
 window.addEventListener('DOMContentLoaded',function(){
   loadComptes();

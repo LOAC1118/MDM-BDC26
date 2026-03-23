@@ -2518,18 +2518,25 @@ function editGrp(idx){
 // ── cancelGrp ─────────────────────────────────────────────────
 function cancelGrp(){
   _grpEditIdx=-1;
-  document.getElementById('grp-nom').value='';
-  document.getElementById('grp-remises-list').innerHTML='';
-  document.getElementById('grp-francos-list').innerHTML='';
-  addRemiseTranche({minCA:0,maxCA:null,remise:0});
-  addFrancoTranche({minCA:0,maxCA:null,franco:0});
-  document.getElementById('grp-form-title').textContent='+ Nouveau groupement';
-  document.getElementById('grp-cancel-btn').style.display='none';
-  document.getElementById('grp-alert').style.display='none';
+  function _s(id,prop,val){var e=document.getElementById(id);if(e)e[prop]=val;}
+  _s('grp-nom','value','');
+  _s('grp-remises-list','innerHTML','');
+  _s('grp-francos-list','innerHTML','');
+  // N'ajouter les tranches que si les conteneurs existent
+  if(document.getElementById('grp-remises-list')) addRemiseTranche({minCA:0,maxCA:null,remise:0});
+  if(document.getElementById('grp-francos-list')) addFrancoTranche({minCA:0,maxCA:null,franco:0});
+  _s('grp-form-title','textContent','+ Nouveau groupement');
+  _s('grp-cancel-btn','style.display','none');
+  _s('grp-alert','style.display','none');
 }
 
 // ── renderGroupements ─────────────────────────────────────────
 function renderGroupements(){
+  // Init formulaire si vierge
+  var rl=document.getElementById('grp-remises-list');
+  if(rl&&!rl.children.length) addRemiseTranche({minCA:0,maxCA:null,remise:0});
+  var fl=document.getElementById('grp-francos-list');
+  if(fl&&!fl.children.length) addFrancoTranche({minCA:0,maxCA:null,franco:0});
   var tbody=document.getElementById('grp-tbody');
   var empty=document.getElementById('grp-empty');
   if(!tbody) return;
@@ -2608,8 +2615,7 @@ window.addEventListener('DOMContentLoaded',function(){
   loadActus();
   loadInscriptions();
   loadGroupements();
-  // Init tranches vides dans le formulaire
-  setTimeout(function(){ cancelGrp(); },100);
+  // Les tranches seront initialisées à l'ouverture de la page groupements
   showPage('dashboard', document.querySelector('.nav-item.active'));
 });
 

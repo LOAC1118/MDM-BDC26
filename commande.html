@@ -613,6 +613,9 @@ tbody tr.has-qty td.td-qty input{background:#ffe0b2;border-color:var(--terra)}
 .draft-btn.discard:hover{background:var(--danger-light)}
 @media(max-width:768px){.draft-bar{left:0}}
 
+
+.td-uvc{text-align:center;font-variant-numeric:tabular-nums}
+
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
@@ -796,6 +799,7 @@ tbody tr.has-qty td.td-qty input{background:#ffe0b2;border-color:var(--terra)}
           <th>Votre prix HT</th>
           <th class="no-print th-stock">Stock</th>
           <th class="no-print">Qt&#233; (colis)</th>
+          <th class="no-print">UVC</th>
           <th>Total HT</th>
         </tr>
       </thead>
@@ -1358,7 +1362,9 @@ function buildTable(){
       stkHtml = '<span class="stock-ok">' + stk + '</span>';
     }
     rows += '<td class="td-stock no-print">' + stkHtml + '</td>';
-    rows += '<td class="td-qty no-print"><input type="number" min="0" step="1" value="' + (qty||"") + '" placeholder="0" data-code="' + dCode + '" oninput="onQty(this)" onchange="onQty(this)"></td>';
+    rows += '<td class="td-qty no-print"><input type="number" min="0" step="1" value="' + (qty||"") + '" placeholder="0" data-code="' + dCode + '" data-pcb="' + (p.pcb||1) + '" oninput="onQty(this)" onchange="onQty(this)"></td>';
+    var uvcVal = qty > 0 ? qty * (p.pcb||1) : '';
+    rows += '<td class="td-uvc no-print" id="uvc-' + dCode + '" style="font-size:12px;font-weight:300;color:var(--text-secondary);text-align:center">' + (uvcVal||'—') + '</td>';
     rows += '<td class="td-total" id="t-' + dCode + '">' + totalStr + "</td>";
     rows += "</tr>";
   }
@@ -1369,6 +1375,10 @@ function buildTable(){
 function onQty(input){
   var code = input.dataset.code;
   var val = parseInt(input.value) || 0;
+  // Mettre à jour l'UVC en temps réel
+  var pcb = parseFloat(input.dataset.pcb) || 1;
+  var uvcEl = document.getElementById('uvc-' + code);
+  if(uvcEl) uvcEl.textContent = val > 0 ? (val * pcb) : '—';
   if(val > 0) qtys[code] = val; else delete qtys[code];
   var tr = input.closest("tr");
   tr.className = tr.className.replace(" has-qty","") + (val>0?" has-qty":"");

@@ -1634,7 +1634,6 @@ function roleBadge(role){
 }
 
 function renderComptes(){
-  setEl("stat-comptes", comptes.length);
   setEl("stat-clients", comptes.filter(function(c){return c.role==="client";}).length);
   setEl("stat-commerciaux", comptes.filter(function(c){return c.role==="user";}).length);
   setEl("nb-comptes", comptes.length);
@@ -2086,24 +2085,20 @@ function updateStats(){
   var nbCommerciaux=comptes.filter(function(c){return c.role==='user';}).length;
   var nbActifsActu=actus.filter(function(a){return a.actif!==false;}).length;
   var nbInscPending=inscriptions.filter(function(i){return i.statut==='en_attente'||!i.statut;}).length;
-
-  // setEl est défini globalement
-  setEl('stat-clients', nbClients);
-  setEl('stat-commerciaux', nbCommerciaux);
-  setEl('stat-actus', nbActifsActu);
-  setEl('stat-inscrip', nbInscPending);
-
+  // Mettre à jour les stats dashboard avec les bons IDs HTML
+  setEl('stat-clients',nbClients);
+  setEl('stat-commerciaux',nbCommerciaux);
+  setEl('stat-nb-commandes','—');
+  setEl('stat-ca-total','—');
+  // Mettre à jour le résumé actus et inscriptions dans le dashboard
+  renderDashboardActus();
   // Charger les stats commandes depuis Firebase
   fbLoadAllHistory().then(function(orders){
-    var nbCmd=orders.length;
-    var caTotal=orders.reduce(function(s,o){return s+(o.totalNet||0);},0);
-    setEl('stat-nb-commandes', nbCmd);
-    setEl('stat-commandes', nbCmd);
-    setEl('stat-ca-total', fmt2(caTotal)+' €');
-    setEl('stat-ca', fmt2(caTotal)+' €');
-    // Tableau des dernières commandes
+    setEl('stat-nb-commandes',orders.length);
+    var ca=orders.reduce(function(s,o){return s+(o.totalNet||0);},0);
+    setEl('stat-ca-total',fmt2(ca)+' €');
     renderDashboardOrders(orders);
-  }).catch(function(e){ console.warn('updateStats Firebase:', e); });
+  }).catch(function(e){ console.warn('updateStats:',e); });
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -2608,6 +2603,25 @@ function renderActus(){
     html+='</div></div>';
   });
   container.innerHTML=html;
+}
+
+
+function renderDashboardActus(){
+  var el=document.getElementById('dash-actus');
+  if(!el) return;
+  var active=actus.filter(function(a){return a.actif!==false;});
+  if(!active.length){
+    el.innerHTML='<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:12px">Aucune actualité active</div>';
+    return;
+  }
+  el.innerHTML=active.slice(0,3).map(function(ac){
+    var TYPES={info:{label:'Info',cls:'info'},promo:{label:'Promo',cls:'promo'},alerte:{label:'Alerte',cls:'alerte'}};
+    var tc=TYPES[ac.type]||TYPES.info;
+    return '<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border-light)">'
+      +'<span class="actu-tb '+tc.cls+'" style="flex-shrink:0">'+tc.label+'</span>'
+      +'<span style="font-size:12px;color:var(--text);font-weight:400">'+escH(ac.titre)+'</span>'
+      +'</div>';
+  }).join('');
 }
 
 window.addEventListener('DOMContentLoaded',function(){

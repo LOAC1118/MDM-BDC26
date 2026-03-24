@@ -109,6 +109,7 @@ body{font-family:'Inter',sans-serif;font-weight:300;background:var(--bg);color:v
 </div>
 <script>
 
+
 var _fbReady=false,_db=null;
 var _allClients=[];
 var _clientOrders={};
@@ -119,11 +120,17 @@ function _safeB64Decode(str){
   try{return decodeURIComponent(escape(atob(str)));}
   catch(e){try{return decodeURIComponent(atob(str));}catch(e2){return atob(str);}}
 }
+var _fbReady=false,_fbDb=null;
 function initFirebase(){
-  if(_fbDb2) return Promise.resolve(_fbDb2);
-  if(!_fbApp2) _fbApp2=firebase.initializeApp(FIREBASE_CONFIG,'login');
-  _fbDb2=firebase.firestore(_fbApp2);
-  return Promise.resolve(_fbDb2);
+  if(_fbReady) return Promise.resolve(_fbDb);
+  return new Promise(function(resolve,reject){
+    try{
+      if(!firebase.apps||!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+      _fbDb=firebase.firestore();
+      _fbReady=true;
+      resolve(_fbDb);
+    }catch(e){reject(e);}
+  });
 }
 function _getLogin(){try{var t=sessionStorage.getItem('mdm_token');if(!t)return null;var d=JSON.parse(_safeB64Decode(t));return {login:d.login,nom:d.nom,role:d.role||'user'};}catch(e){return null;}}
 function fmt2(n){ return typeof n==='number' ? n.toFixed(2).replace('.',',')+'\u00a0\u20ac' : '\u2014'; }
@@ -321,6 +328,7 @@ window.addEventListener('DOMContentLoaded',function(){
   document.getElementById('page-sub').textContent='Vos clients assignés — '+(user.nom||user.login);
   loadMyClients(user.login, user.role);
 });
+
 
 </script>
 </body>

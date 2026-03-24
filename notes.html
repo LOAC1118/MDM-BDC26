@@ -5,18 +5,10 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Mes notes — Moulin des Moines</title>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,200;0,400;1,200&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js">
-function showToast(msg,dur){
-  var t=document.getElementById('_toast');
-  if(!t){t=document.createElement('div');t.id='_toast';
-    t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--text);color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.2);opacity:0;transition:opacity .3s;white-space:nowrap;pointer-events:none;font-family:Inter,sans-serif';
-    document.body.appendChild(t);}
-  t.textContent=msg;t.style.opacity='1';
-  clearTimeout(t._t);t._t=setTimeout(function(){t.style.opacity='0';},dur||3000);
-}
-</script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <style>
+
 :root{--bg:#faf8f5;--bg-card:#fff;--bg-beige:#f0ebe3;--bg-beige-dark:#e8dfd4;--text:#5c4a38;--text-secondary:#a89080;--text-muted:#c0b0a0;--accent:#4a7c59;--accent-light:#eef4f0;--accent-hover:#3d6b4a;--terra:#a0522d;--brown:#78503c;--border:#e8e0d6;--border-light:#f0e8e0;--shadow:rgba(92,74,56,.08);--danger:#c0392b;--danger-light:#fdecea;}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Inter',sans-serif;font-weight:300;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
@@ -66,6 +58,7 @@ body{font-family:'Inter',sans-serif;font-weight:300;background:var(--bg);color:v
 
 
 .notes-compose textarea{min-height:120px;font-size:14px}.note-item-text{font-size:13px;line-height:1.8}
+
 </style>
 </head>
 <body>
@@ -102,258 +95,83 @@ body{font-family:'Inter',sans-serif;font-weight:300;background:var(--bg);color:v
     <div class="notes-list" id="notes-list"><div class="notes-loading">Chargement&#8230;</div></div>
   </div>
 </div>
+
+
 <script>
 
-
-
-
-
-
-
-
-// SHA-256 robuste
-function sha256(str){
-  if(window.crypto&&window.crypto.subtle){
-    return window.crypto.subtle.digest('SHA-256',new TextEncoder().encode(str))
-      .then(function(buf){return Array.from(new Uint8Array(buf)).map(function(b){return b.toString(16).padStart(2,'0');}).join('');});
-  }
-  return Promise.resolve(_sha256Pure(str));
-}
-function _sha256Pure(s){
-  function n(x){return('00000000'+x.toString(16)).slice(-8)}
-  var K=[0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
-  var H=[0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];
-  function rr(x,n){return(x>>>n)|(x<<(32-n));}
-  var b=[],i,j;
-  for(i=0;i<s.length;i++){var c=s.charCodeAt(i);if(c<128)b.push(c);else if(c<2048)b.push((c>>6)|192,(c&63)|128);else b.push((c>>12)|224,((c>>6)&63)|128,(c&63)|128);}
-  var len=b.length;b.push(128);while(b.length%64!==56)b.push(0);
-  var bits=len*8;b.push(0,0,0,0,(bits>>>24)&255,(bits>>>16)&255,(bits>>>8)&255,bits&255);
-  for(i=0;i<b.length;i+=64){
-    var w=[];for(j=0;j<16;j++)w.push((b[i+j*4]<<24)|(b[i+j*4+1]<<16)|(b[i+j*4+2]<<8)|b[i+j*4+3]);
-    for(j=16;j<64;j++){var s0=rr(w[j-15],7)^rr(w[j-15],18)^(w[j-15]>>>3);var s1=rr(w[j-2],17)^rr(w[j-2],19)^(w[j-2]>>>10);w.push((w[j-16]+s0+w[j-7]+s1)>>>0);}
-    var aa=H[0],bb=H[1],cc=H[2],dd=H[3],ee=H[4],ff=H[5],gg=H[6],hh=H[7];
-    for(j=0;j<64;j++){var S1=rr(ee,6)^rr(ee,11)^rr(ee,25);var ch=(ee&ff)^(~ee&gg);var t1=(hh+S1+ch+K[j]+w[j])>>>0;var S0=rr(aa,2)^rr(aa,13)^rr(aa,22);var maj=(aa&bb)^(aa&cc)^(bb&cc);var t2=(S0+maj)>>>0;hh=gg;gg=ff;ff=ee;ee=(dd+t1)>>>0;dd=cc;cc=bb;bb=aa;aa=(t1+t2)>>>0;}
-    H[0]=(H[0]+aa)>>>0;H[1]=(H[1]+bb)>>>0;H[2]=(H[2]+cc)>>>0;H[3]=(H[3]+dd)>>>0;H[4]=(H[4]+ee)>>>0;H[5]=(H[5]+ff)>>>0;H[6]=(H[6]+gg)>>>0;H[7]=(H[7]+hh)>>>0;
-  }
-  return H.map(n).join('');
-}
-function _safeB64Encode(str){
-  try{return btoa(unescape(encodeURIComponent(str)));}
-  catch(e){return btoa(encodeURIComponent(str));}
-}
-function _safeB64Decode(str){
-  try{return decodeURIComponent(escape(atob(str)));}
-  catch(e){try{return decodeURIComponent(atob(str));}catch(e2){return atob(str);}}
-}
-
-// Token check
-// Auth check simplifié — redirection auto supprimée)();
-
-// Comptes Firebase
-var FIREBASE_CONFIG={apiKey:"AIzaSyB000QDa4c-vMjO1Xuimw58iiRvwgbF1zc",authDomain:"mdm-bdc26.firebaseapp.com",projectId:"mdm-bdc26",storageBucket:"mdm-bdc26.firebasestorage.app",messagingSenderId:"52658530893",appId:"1:52658530893:web:166626ae4d681465ddca04"};
-var _fbApp2=null,_fbDb2=null;
-function initFirebase(){
-  if(_fbDb2) return Promise.resolve(_fbDb2);
-  if(!_fbApp2) _fbApp2=firebase.initializeApp(FIREBASE_CONFIG,'login');
-  _fbDb2=firebase.firestore(_fbApp2);
-  return Promise.resolve(_fbDb2);
-}
-
-var COMPTES=[
-  {login:"admin",password:"mdm2026",nom:"Administrateur",role:"admin",remise:0,email:"cspoto@moulindesmoines.com"},
-  {login:"commercial",password:"mdm-ventes",nom:"Commercial MDM",role:"user",remise:0,email:"cspoto@moulindesmoines.com"}
-];
-
-(function(){
-  initFirebase().then(function(db){
-    return db.collection('comptes').get();
-  }).then(function(snap){
-    if(snap&&snap.docs&&snap.docs.length){
-      COMPTES.length=0;
-      snap.docs.forEach(function(d){COMPTES.push(Object.assign({_id:d.id},d.data()));});
-    } else {
-      try{var s=localStorage.getItem('mdm_comptes');if(s){var l=JSON.parse(s);COMPTES.length=0;l.forEach(function(c){COMPTES.push(c);});}}catch(e){}
-    }
-    window._comptesLoaded=true;
-  }).catch(function(){
-    try{var s=localStorage.getItem('mdm_comptes');if(s){var l=JSON.parse(s);COMPTES.length=0;l.forEach(function(c){COMPTES.push(c);});}}catch(e){}
-    window._comptesLoaded=true;
-  });
-})();
-
-function doLogin(){
-  var login=document.getElementById('login').value.trim();
-  var password=document.getElementById('password').value;
-  var btn=document.getElementById('btn-login');
-  var spinner=document.getElementById('spinner');
-  var label=document.getElementById('btn-label');
-  document.getElementById('error-msg').style.display='none';
-  if(!login||!password){showError('Veuillez remplir tous les champs.');return;}
-  btn.disabled=true;spinner.style.display='inline-block';label.textContent='V\u00e9rification...';
-
-  sha256(password).then(function(hashedPwd){
-    
-    if(window._comptesLoaded){ tryLogin(hashedPwd); }
-    else {
-      label.textContent='Chargement...';
-      var waited=0;
-      var iv=setInterval(function(){
-        waited+=200;
-        if(window._comptesLoaded||waited>=4000){
-          clearInterval(iv);
-          if(!window._comptesLoaded){try{var s=localStorage.getItem('mdm_comptes');if(s){var l=JSON.parse(s);COMPTES.length=0;l.forEach(function(c){COMPTES.push(c);});}}catch(e){}}
-          label.textContent='V\u00e9rification...';tryLogin(hashedPwd);
-        }
-      },200);
-    }
-  }).catch(function(){
-    btn.disabled=false;spinner.style.display='none';label.textContent='Se connecter';
-    showError('Erreur technique. R\u00e9essayez.');
-  });
-}
-
-function showError(msg){
-  var el=document.getElementById('error-msg');
-  el.textContent=msg;el.style.display='block';
-  el.style.animation='none';el.offsetHeight;el.style.animation='shake .3s ease';
-}
-function togglePw(){
-  var i=document.getElementById('password');
-  i.type=i.type==='password'?'text':'password';
-}
-
-
-var FIREBASE_CONFIG = {
-  apiKey:            "AIzaSyB000QDa4c-vMjO1Xuimw58iiRvwgbF1zc",
-  authDomain:        "mdm-bdc26.firebaseapp.com",
-  projectId:         "mdm-bdc26",
-  storageBucket:     "mdm-bdc26.firebasestorage.app",
-  messagingSenderId: "52658530893",
-  appId:             "1:52658530893:web:166626ae4d681465ddca04"
-};
-function initFirebase() {
-  if (_fbReady) return Promise.resolve(_db);
-  return new Promise(function(resolve, reject) {
-    if (typeof firebase === 'undefined') {
-      reject(new Error('Firebase SDK non chargé'));
-      return;
-    }
-    if (!firebase.apps || !firebase.apps.length) {
-      firebase.initializeApp(FIREBASE_CONFIG);
-    }
-    _db = firebase.firestore();
-    _fbReady = true;
-    resolve(_db);
-  });
-}
-
-(function(){
-  var token=sessionStorage.getItem('mdm_token');
-  if(!token){window.location.href='index.html';return;}
-  try{
-    var data=JSON.parse(_safeB64Decode(token));
-    if(!data.login){window.location.href='index.html';return;}
-    var badge=document.getElementById("user-badge");
-    if(badge) badge.textContent=(data.nom||data.login);
-  }catch(e){window.location.href="index.html";}
-})();
-function _getLogin(){try{return JSON.parse(_safeB64Decode(sessionStorage.getItem('mdm_token'))).login||null;}catch(e){return null;}}
-function _getReturnPage(){var r=document.referrer;if(r&&r.indexOf('commande.html')>=0)return 'commande.html';if(r&&r.indexOf('admin.html')>=0)return 'admin.html';return 'dashboard.html';}
+// ── Variables globales ───────────────────────────────────────
+var _fbApp=null, _fbDb=null;
 var _notesUnsub=null;
-var _currentTarget=null; // login cible (client ou propre login)
-window.addEventListener('DOMContentLoaded',function(){
-  var login=_getLogin();
-  if(!login){window.location.href='index.html';return;}
-  var bb=document.getElementById('back-btn');
-  if(bb) bb.href=_getReturnPage();
+var _currentTarget=null;
 
-  // Compteur caractères
-  var ta=document.getElementById('note-text-input');
-  if(ta){ta.addEventListener('input',function(){
-    var n=ta.value.length;
-    var cc=document.getElementById('note-char-count');
-    if(cc) cc.textContent=n+' / 2000';
-    if(n>2000) ta.value=ta.value.substring(0,2000);
-  });}
+// ── Firebase ─────────────────────────────────────────────────
+var FIREBASE_CONFIG={apiKey:"AIzaSyB000QDa4c-vMjO1Xuimw58iiRvwgbF1zc",authDomain:"mdm-bdc26.firebaseapp.com",projectId:"mdm-bdc26",storageBucket:"mdm-bdc26.firebasestorage.app",messagingSenderId:"52658530893",appId:"1:52658530893:web:166626ae4d681465ddca04"};
 
-  // Détecter le rôle depuis le token
-  var role='client';
+function _initFB(){
+  if(_fbDb) return Promise.resolve(_fbDb);
   try{
-    var data=JSON.parse(_safeB64Decode(sessionStorage.getItem('mdm_token')));
-    role=data.role||'client';
-  }catch(e){}
-
-  // Si commercial → charger ses clients et afficher le sélecteur
-  if(role==='user'||role==='admin'){
-    _loadClientsForSelector(login,role);
+    _fbApp=firebase.apps.length?firebase.apps[0]:firebase.initializeApp(FIREBASE_CONFIG);
+  }catch(e){
+    _fbApp=firebase.app();
   }
+  _fbDb=firebase.firestore(_fbApp);
+  return Promise.resolve(_fbDb);
+}
 
-  // Cible par défaut = propres notes
-  _currentTarget=login;
-  _notesListen(login);
+// ── Auth ─────────────────────────────────────────────────────
+function _safeB64Decode(s){
+  try{return atob(s.replace(/-/g,'+').replace(/_/g,'/'));}catch(e){return '{}';}
+}
+function _getLogin(){
+  try{
+    var t=sessionStorage.getItem('mdm_token');
+    if(!t) return null;
+    var d=JSON.parse(_safeB64Decode(t));
+    return d.login||null;
+  }catch(e){return null;}
+}
+function _getRole(){
+  try{
+    var t=sessionStorage.getItem('mdm_token');
+    if(!t) return 'client';
+    return JSON.parse(_safeB64Decode(t)).role||'client';
+  }catch(e){return 'client';}
+}
+function _getNom(){
+  try{
+    var t=sessionStorage.getItem('mdm_token');
+    if(!t) return '';
+    var d=JSON.parse(_safeB64Decode(t));
+    return d.nom||d.login||'';
+  }catch(e){return '';}
+}
+function _getReturnPage(){
+  var r=document.referrer;
+  if(r&&r.indexOf('commande.html')>=0) return 'commande.html';
+  if(r&&r.indexOf('admin.html')>=0) return 'admin.html';
+  return 'dashboard.html';
+}
 
-  // Quand le sélecteur change → recharger les notes du compte cible
-  var sel=document.getElementById('note-target-select');
-  if(sel){
-    sel.addEventListener('change',function(){
-      _currentTarget=sel.value||login;
-      var badge=document.getElementById('note-target-badge');
-      if(badge) badge.textContent=sel.value?'Notes de '+sel.options[sel.selectedIndex].text:'Vos notes personnelles';
-      // Mettre à jour le titre
-      var sub=document.querySelector('.ps');
-      if(sub) sub.textContent=sel.value&&sel.selectedIndex>=0?'Notes pour : '+sel.options[sel.selectedIndex].text:'Notes privées — visibles uniquement par vous';
-      _notesListen(_currentTarget);
-    });
+// ── Toast ─────────────────────────────────────────────────────
+function showToast(msg,dur){
+  var t=document.getElementById('_toast');
+  if(!t){
+    t=document.createElement('div');t.id='_toast';
+    t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#5c4a38;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.2);opacity:0;transition:opacity .3s;white-space:nowrap;pointer-events:none;font-family:Inter,sans-serif';
+    document.body.appendChild(t);
   }
+  t.textContent=msg;t.style.opacity='1';
+  clearTimeout(t._t);t._t=setTimeout(function(){t.style.opacity='0';},dur||3000);
+}
 
-  // Présélectionner le client si paramètre ?client= dans l'URL
-  var urlParams=new URLSearchParams(window.location.search);
-  var clientParam=urlParams.get('client');
-  if(clientParam){
-    // Attendre que le sélecteur soit rempli (après _loadClientsForSelector)
-    var _preselectTimer=setInterval(function(){
-      var selEl=document.getElementById('note-target-select');
-      if(!selEl) return;
-      // Chercher l'option correspondante
-      var found=false;
-      for(var i=0;i<selEl.options.length;i++){
-        if(selEl.options[i].value===clientParam){
-          selEl.value=clientParam;
-          found=true;
-          break;
-        }
-      }
-      if(found||selEl.options.length>1){
-        clearInterval(_preselectTimer);
-        if(found){
-          // Déclencher le changement
-          selEl.dispatchEvent(new Event('change'));
-          // Mettre à jour le badge
-          var badge=document.getElementById('note-target-badge');
-          if(badge&&selEl.selectedIndex>=0){
-            badge.textContent='Notes de '+selEl.options[selEl.selectedIndex].text;
-          }
-          // Mettre à jour le titre
-          var sub=document.querySelector('.ps');
-          if(sub&&selEl.selectedIndex>=0){
-            sub.textContent='Notes pour : '+selEl.options[selEl.selectedIndex].text;
-          }
-        }
-      }
-    },200);
-    // Arrêter après 5 secondes max
-    setTimeout(function(){clearInterval(_preselectTimer);},5000);
-  }
-});
-
-// Charger les clients du commercial dans le sélecteur
-function _loadClientsForSelector(login,role){
+// ── Sélecteur clients (commercial/admin) ─────────────────────
+function _loadClients(login,role){
   var wrap=document.getElementById('client-selector-wrap');
   if(wrap) wrap.style.display='block';
   var sel=document.getElementById('note-target-select');
   if(!sel) return;
-  // Toujours charger depuis Firebase (localStorage vide sur notes.html)
-  initFirebase().then(function(db){
+  sel.innerHTML='<option value="">\u{1F464} Mes propres notes</option><option disabled>Chargement...</option>';
+  _initFB().then(function(db){
     return db.collection('comptes').get();
   }).then(function(snap){
     var all=snap.docs.map(function(d){return d.data();});
@@ -363,89 +181,176 @@ function _loadClientsForSelector(login,role){
     } else {
       list=all.filter(function(c){return c.role==='client'&&c.commercial===login;});
     }
-    _populateClientSelect(sel,list);
+    sel.innerHTML='<option value="">\u{1F464} Mes propres notes</option>';
+    list.sort(function(a,b){return (a.nom||a.login).localeCompare(b.nom||b.login);});
+    list.forEach(function(c){
+      var o=document.createElement('option');
+      o.value=c.login;
+      o.textContent=(c.nom||c.login)+(c.ville?' — '+c.ville:'');
+      sel.appendChild(o);
+    });
+    // Présélection via URL ?client=
+    var urlParams=new URLSearchParams(window.location.search);
+    var cp=urlParams.get('client');
+    if(cp){
+      for(var i=0;i<sel.options.length;i++){
+        if(sel.options[i].value===cp){
+          sel.value=cp;
+          _currentTarget=cp;
+          _updateSubtitle(sel);
+          _notesListen(cp);
+          break;
+        }
+      }
+    }
   }).catch(function(e){
-    console.warn('Erreur chargement clients:',e);
-    showToast('⚠ Impossible de charger la liste des clients');
+    sel.innerHTML='<option value="">\u{1F464} Mes propres notes</option>';
+    showToast('\u26a0 Impossible de charger les clients');
+    console.error(e);
   });
 }
 
-function _populateClientSelect(sel,clients){
-  // Garder l'option "mes notes"
-  sel.innerHTML='<option value="">&#128100; Mes propres notes</option>';
-  clients.sort(function(a,b){return (a.nom||a.login).localeCompare(b.nom||b.login);});
-  clients.forEach(function(c){
-    var opt=document.createElement('option');
-    opt.value=c.login;
-    opt.textContent=(c.nom||c.login)+(c.ville?' — '+c.ville:'');
-    sel.appendChild(opt);
-  });
+function _updateSubtitle(sel){
+  var sub=document.querySelector('.ps');
+  if(!sub) return;
+  if(sel&&sel.value&&sel.selectedIndex>=0){
+    sub.textContent='Notes pour\u00a0: '+sel.options[sel.selectedIndex].text;
+  } else {
+    sub.textContent='Notes priv\u00e9es \u2014 visibles uniquement par vous';
+  }
 }
+
+// ── Notes Firestore ───────────────────────────────────────────
 function _notesListen(login){
   if(_notesUnsub){_notesUnsub();_notesUnsub=null;}
-  initFirebase().then(function(db){
+  var list=document.getElementById('notes-list');
+  if(list) list.innerHTML='<div class="notes-loading">Chargement\u2026</div>';
+  _initFB().then(function(db){
     _notesUnsub=db.collection('notes').doc(login).collection('items')
       .orderBy('createdAt','desc').limit(100)
       .onSnapshot(function(snap){
-        _renderNotes(snap.docs.map(function(doc){return Object.assign({_id:doc.id},doc.data());}));
-      },function(){
-        document.getElementById('notes-list').innerHTML='<div class="notes-empty">Erreur.</div>';
+        _renderNotes(snap.docs.map(function(d){return Object.assign({_id:d.id},d.data());}));
+      },function(e){
+        console.error('Notes listen error:',e);
+        if(list) list.innerHTML='<div class="notes-empty">\u26a0 Erreur : '+e.code+'</div>';
       });
+  }).catch(function(e){
+    console.error('initFB error:',e);
+    if(list) list.innerHTML='<div class="notes-empty">\u26a0 Firebase non disponible</div>';
   });
 }
+
 function _renderNotes(notes){
   var list=document.getElementById('notes-list');
   if(!list) return;
-  if(!notes.length){list.innerHTML='<div class="notes-empty">Aucune note encore.</div>';return;}
+  if(!notes.length){
+    list.innerHTML='<div class="notes-empty">Aucune note. R\u00e9digez votre premi\u00e8re note ci-dessus.</div>';
+    return;
+  }
   list.innerHTML=notes.map(function(n){
     var date='';
     if(n.createdAt&&n.createdAt.toDate)
       date=n.createdAt.toDate().toLocaleString('fr-FR',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
-    var id=n._id.replace(/'/g,"\\'");
-    return '<div class="note-item"><div class="note-item-header"><span class="note-item-date">'+date+'</span>'
-      +'<button class="note-item-del" onclick="deleteNote(\''+id+'\')">×</button></div>'
-      +'<div class="note-item-text">'+_esc(n.text||'')+'</div></div>';
+    var auteur=n.auteur&&n.auteur!==_getLogin()?'<span style="font-size:10px;color:var(--accent);margin-left:8px">par '+_esc(n.auteur)+'</span>':'';
+    return '<div class="note-item">'
+      +'<div class="note-item-header">'
+      +'<span class="note-item-date">'+date+'</span>'
+      +auteur
+      +'<button class="note-item-del" onclick="deleteNote(this)" data-id="'+n._id+'">&#10005;</button>'
+      +'</div>'
+      +'<div class="note-item-text">'+_esc(n.text||'')+'</div>'
+      +'</div>';
   }).join('');
 }
+
 function _esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
 function saveNote(){
   var myLogin=_getLogin();
-  if(!myLogin){showToast('Non connecte');return;}
-  var target=_currentTarget||myLogin; // compte cible (client ou soi-même)
+  if(!myLogin){showToast('\u26a0 Non connect\u00e9');return;}
+  var target=_currentTarget||myLogin;
   var ta=document.getElementById('note-text-input');
   var text=(ta?ta.value:'').trim();
-  if(!text){showToast('Ecrivez une note');return;}
+  if(!text){showToast('\u26a0 \u00c9crivez une note');return;}
   var btn=document.getElementById('note-send-btn');
-  if(btn) btn.disabled=true;
-  initFirebase().then(function(db){
+  if(btn){btn.disabled=true;btn.textContent='Envoi...';}
+  _initFB().then(function(db){
     return db.collection('notes').doc(target).collection('items').add({
       text:text,
-      auteur:myLogin, // qui a écrit la note
+      auteur:myLogin,
       createdAt:firebase.firestore.FieldValue.serverTimestamp()
     });
   }).then(function(){
     if(ta) ta.value='';
-    var cc=document.getElementById('note-char-count');if(cc) cc.textContent='0 / 2000';
-    if(btn) btn.disabled=false;
+    var cc=document.getElementById('note-char-count');
+    if(cc) cc.textContent='0 / 2000';
+    if(btn){btn.disabled=false;btn.innerHTML='&#128203;&nbsp;Enregistrer';}
     var sel=document.getElementById('note-target-select');
     var nom=sel&&sel.value&&sel.selectedIndex>=0?sel.options[sel.selectedIndex].text:'';
-    showToast('Note enregistree'+(nom?' pour '+nom:''));
-  }).catch(function(e){if(btn)btn.disabled=false;showToast('Erreur : '+e.message);});
+    showToast('\u2705 Note enregistr\u00e9e'+(nom?' pour '+nom:''));
+  }).catch(function(e){
+    console.error('saveNote error:',e);
+    if(btn){btn.disabled=false;btn.innerHTML='&#128203;&nbsp;Enregistrer';}
+    showToast('\u26a0 Erreur : '+e.message);
+  });
 }
-function deleteNote(noteId){
+
+function deleteNote(btnEl){
+  var noteId=btnEl.getAttribute('data-id');
   var myLogin=_getLogin();
-  if(!myLogin||!confirm('Supprimer cette note ?')) return;
+  if(!myLogin||!noteId) return;
+  if(!confirm('Supprimer cette note ?')) return;
   var target=_currentTarget||myLogin;
-  initFirebase().then(function(db){
+  _initFB().then(function(db){
     return db.collection('notes').doc(target).collection('items').doc(noteId).delete();
-  }).then(function(){showToast('Note supprimee');})
-  .catch(function(e){showToast('Erreur : '+e.message);});
+  }).then(function(){showToast('Note supprim\u00e9e');})
+  .catch(function(e){showToast('\u26a0 '+e.message);});
 }
 
+// ── Init ─────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded',function(){
+  var login=_getLogin();
+  if(!login){window.location.href='index.html';return;}
+  var role=_getRole();
 
+  // Bouton retour
+  var bb=document.getElementById('back-btn');
+  if(bb) bb.href=_getReturnPage();
 
+  // Badge utilisateur
+  var badge=document.getElementById('user-badge');
+  if(badge) badge.textContent=_getNom()||login;
 
+  // Compteur caractères
+  var ta=document.getElementById('note-text-input');
+  if(ta){
+    ta.addEventListener('input',function(){
+      var len=ta.value.length;
+      var cc=document.getElementById('note-char-count');
+      if(cc) cc.textContent=len+' / 2000';
+      if(len>2000) ta.value=ta.value.substring(0,2000);
+    });
+  }
 
+  // Cible par défaut
+  _currentTarget=login;
+  _notesListen(login);
+
+  // Commercial / admin → charger sélecteur clients
+  if(role==='user'||role==='admin'){
+    _loadClients(login,role);
+  }
+
+  // Changement de sélecteur
+  var sel=document.getElementById('note-target-select');
+  if(sel){
+    sel.addEventListener('change',function(){
+      _currentTarget=sel.value||login;
+      _updateSubtitle(sel);
+      _notesListen(_currentTarget);
+    });
+  }
+});
 
 </script>
 </body>

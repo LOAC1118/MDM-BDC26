@@ -3190,10 +3190,19 @@ function _generatePromoHTML(){
   if(minHT>0) conditionsText.push('montant minimum\u00a0: '+minHT.toFixed(0)+'\u00a0\u20ac HT');
   if(debut||fin) conditionsText.push('valable '+(debut&&fin?'du '+debut+' au '+fin:debut?'d\u00e8s le '+debut:'jusqu\'au '+fin));
 
+  var cond='';
+  if(minColis>0) cond+='\nif(totalColis>0&&totalColis<'+minColis+'){alert("Minimum\u00a0: '+minColis+' colis.");return;}';
+  if(minHT>0) cond+='\nif(totalHT>0&&totalHT<'+minHT+'){alert("Montant minimum\u00a0: '+minHT+'\u00a0\u20ac HT.");return;}';
+
+  // Injecter la config Firebase dans le HTML généré
+  var fbCfgStr=JSON.stringify(FIREBASE_CONFIG);
+
   var HTML='<!DOCTYPE html>\n<html lang="fr">\n<head>\n'
     +'<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">\n'
     +'<title>'+escH(nom)+' \u2014 Moulin des Moines</title>\n'
     +'<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,200;0,400;1,200&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">\n'
+    +'<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"><\/script>\n'
+    +'<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"><\/script>\n'
     +'<style>\n'
     +':root{--terra:#a0522d;--brown:#78503c;--bg:#faf8f5;--border:#e8e0d6;--accent:#4a7c59}\n'
     +'*{box-sizing:border-box;margin:0;padding:0}\n'
@@ -3211,8 +3220,8 @@ function _generatePromoHTML(){
     +'tr:hover{background:#fdf8f5}\n'
     +'.totals{background:#fff;border:2px solid var(--terra);border-radius:8px;padding:14px 18px;display:flex;gap:20px;align-items:center;flex-wrap:wrap;margin-bottom:20px}\n'
     +'.total-item{text-align:center}.total-val{font-family:\'Fraunces\',serif;font-size:20px;font-weight:200;color:var(--brown)}.total-lbl{font-size:10px;color:#a89080;text-transform:uppercase;letter-spacing:.4px}\n'
-    +'.send-btn{padding:12px 28px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;font-family:\'Inter\',sans-serif}\n'
-    +'.send-btn:hover{background:#3d6b4a}\n'
+    +'.send-btn{padding:12px 28px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;font-family:\'Inter\',sans-serif;transition:background .15s}\n'
+    +'.send-btn:hover{background:#3d6b4a}.send-btn:disabled{opacity:.6;cursor:not-allowed}\n'
     +'.form-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}\n'
     +'.fg label{font-size:11px;color:#a89080;display:block;margin-bottom:4px}\n'
     +'.fg input{width:100%;padding:8px 10px;border:1px solid #e0d0c4;border-radius:6px;font-family:\'Inter\',sans-serif;font-size:12px}\n'
@@ -3230,15 +3239,13 @@ function _generatePromoHTML(){
   if(message) HTML+='<div class="promo-msg">'+escH(message)+'</div>\n';
   HTML+='</div>\n';
 
-  // Champs client
   HTML+='<div class="form-fields no-print">\n'
     +'<div class="fg"><label>Nom du magasin *</label><input type="text" id="f-magasin" placeholder="Votre magasin"></div>\n'
-    +'<div class="fg"><label>Email *</label><input type="email" id="f-email" placeholder="commande@magasin.fr"></div>\n'
+    +'<div class="fg"><label>Email</label><input type="email" id="f-email" placeholder="commande@magasin.fr"></div>\n'
     +'<div class="fg"><label>T\u00e9l\u00e9phone</label><input type="tel" id="f-tel" placeholder="06..."></div>\n'
     +'<div class="fg"><label>Ville</label><input type="text" id="f-ville" placeholder="Lyon"></div>\n'
     +'</div>\n';
 
-  // Tableau produits
   HTML+='<table>\n<thead><tr>\n'
     +'<th>Code</th><th>D\u00e9signation</th><th>EAN</th><th>Origine</th><th style="text-align:center">PCB</th>'
     +'<th style="text-align:right">Prix HT</th><th style="text-align:center">TVA</th>'
@@ -3246,24 +3253,31 @@ function _generatePromoHTML(){
     +'<th style="text-align:right">Total HT</th>'
     +'</tr></thead>\n<tbody>\n'+rows+'\n</tbody>\n</table>\n';
 
-  // Totaux
   HTML+='<div class="totals">\n'
     +'<div class="total-item"><div class="total-val" id="tot-refs">0</div><div class="total-lbl">R\u00e9f.</div></div>\n'
     +'<div class="total-item"><div class="total-val" id="tot-colis">0</div><div class="total-lbl">Colis</div></div>\n'
     +'<div class="total-item"><div class="total-val" id="tot-ht">0,00\u00a0\u20ac</div><div class="total-lbl">Total HT</div></div>\n';
   if(remise>0) HTML+='<div class="total-item"><div class="total-val" style="color:var(--terra)">-'+remise+'%</div><div class="total-lbl">Remise</div></div>\n';
-  HTML+='<div style="margin-left:auto" class="no-print"><button class="send-btn" onclick="sendOrder()">&#9993; Envoyer la commande</button></div>\n</div>\n';
+  HTML+='<div style="margin-left:auto" class="no-print"><button class="send-btn" id="send-btn" onclick="sendOrder()">&#9993; Envoyer la commande</button></div>\n</div>\n';
 
-  // JS inline
-  var cond='';
-  if(minColis>0) cond+='\nif(totalColis>0&&totalColis<'+minColis+'){alert("Minimum de commande\u00a0: '+minColis+' colis.");return;}';
-  if(minHT>0) cond+='\nif(totalHT>0&&totalHT<'+minHT+'){alert("Montant minimum\u00a0: '+minHT+'\u00a0\u20ac HT.");return;}';
-
-  // Email destinataire
-  var mailto='cspoto@moulindesmoines.com';
-
+  // Script inline dans le bon généré
   HTML+='<script>\n'
-    +'function fmt2(n){return n.toFixed(2).replace(".",",")+"\\u00a0\\u20ac";}\n'
+    +'var _FBCFG='+fbCfgStr+';\n'
+    +'var _fbDb3=null;\n'
+    +'function _initFB3(){\n'
+    +'  if(_fbDb3) return Promise.resolve(_fbDb3);\n'
+    +'  try{if(!firebase.apps||!firebase.apps.length)firebase.initializeApp(_FBCFG);}\n'
+    +'  catch(e){try{firebase.app();}catch(e2){}}\n'
+    +'  _fbDb3=firebase.firestore();\n'
+    +'  return Promise.resolve(_fbDb3);\n'
+    +'}\n'
+    +'function _getTokenData(){\n'
+    +'  try{var t=sessionStorage.getItem("mdm_token");if(!t)return null;\n'
+    +'    var d=JSON.parse(atob(t.replace(/-/g,"+").replace(/_/g,"/")));\n'
+    +'    return {login:d.login||"",nom:d.nom||"",commercial:d.commercial||null};\n'
+    +'  }catch(e){return null;}\n'
+    +'}\n'
+    +'function fmt2(n){return n.toFixed(2).replace(".",",")+"\u00a0\u20ac";}\n'
     +'function updateTotaux(){\n'
     +'  var refs=0,colis=0,ht=0;\n'
     +'  document.querySelectorAll("input[data-code]").forEach(function(inp){\n'
@@ -3273,32 +3287,65 @@ function _generatePromoHTML(){
     +'    var tc=document.getElementById("tot-"+inp.dataset.code);\n'
     +'    if(tc)tc.textContent=fmt2(pu*q*pcb);\n'
     +'  });\n'
-    +'  var el=document.getElementById("tot-refs");if(el)el.textContent=refs;\n'
-    +'  var el2=document.getElementById("tot-colis");if(el2)el2.textContent=colis;\n'
-    +'  var el3=document.getElementById("tot-ht");if(el3)el3.textContent=fmt2(ht);\n'
+    +'  var e1=document.getElementById("tot-refs");if(e1)e1.textContent=refs;\n'
+    +'  var e2=document.getElementById("tot-colis");if(e2)e2.textContent=colis;\n'
+    +'  var e3=document.getElementById("tot-ht");if(e3)e3.textContent=fmt2(ht);\n'
     +'}\n'
-    +'function sendOrder(){\n'
+    +'async function sendOrder(){\n'
     +'  var mag=(document.getElementById("f-magasin")||{value:""}).value.trim();\n'
-    +'  var email=(document.getElementById("f-email")||{value:""}).value.trim();\n'
-    +'  if(!mag||!email){alert("Veuillez remplir le nom du magasin et l\'email.");return;}\n'
+    +'  if(!mag){alert("Veuillez remplir le nom du magasin.");return;}\n'
+    +'  var clientEmail=(document.getElementById("f-email")||{value:""}).value.trim();\n'
+    +'  var tel=(document.getElementById("f-tel")||{value:""}).value.trim();\n'
+    +'  var ville=(document.getElementById("f-ville")||{value:""}).value.trim();\n'
     +'  var lines=[],refs=0,colis=0,ht=0;\n'
     +'  document.querySelectorAll("input[data-code]").forEach(function(inp){\n'
     +'    var q=parseInt(inp.value)||0;if(!q)return;\n'
     +'    var pu=parseFloat(inp.dataset.pu)||0;var pcb=parseFloat(inp.dataset.pcb)||1;\n'
     +'    refs++;colis+=q;ht+=pu*q*pcb;\n'
-    +'    lines.push(inp.dataset.code+"  x"+q+" colis = "+fmt2(pu*q*pcb));\n'
+    +'    lines.push("  "+inp.dataset.code+"  \u00d7"+q+" colis  "+fmt2(pu*q*pcb));\n'
     +'  });\n'
-    +'  if(!refs){alert("Votre panier est vide.");return;}'
+    +'  if(!refs){alert("Votre panier est vide.");return;}\n'
     +cond+'\n'
-    +'  var body="BON DE COMMANDE PROMOTIONNEL\\n'+escH(nom)+'\\n\\n"\n'
-    +'    +"Magasin : "+mag+"\\nEmail : "+email+"\\n\\nPRODUITS :\\n"+lines.join("\\n")\n'
-    +'    +"\\n\\nR\u00e9f\u00e9rences : "+refs+" | Colis : "+colis+" | Total HT : "+fmt2(ht);\n'
-    +'  window.location.href="mailto:'+mailto+'?subject="+encodeURIComponent("BDC Promo '+escH(nom)+' - "+mag)+"&body="+encodeURIComponent(body);\n'
+    +'  var btn=document.getElementById("send-btn");\n'
+    +'  if(btn){btn.disabled=true;btn.textContent="Recherche du commercial\u2026";}\n'
+    +'  var tokenData=_getTokenData();\n'
+    +'  var commercialEmail="cspoto@moulindesmoines.com";\n'
+    +'  var ccEmail=null;\n'
+    +'  try{\n'
+    +'    var comLogin=tokenData?tokenData.commercial:null;\n'
+    +'    if(comLogin){\n'
+    +'      var db=await _initFB3();\n'
+    +'      var snap=await db.collection("comptes").where("login","==",comLogin).limit(1).get();\n'
+    +'      if(!snap.empty){\n'
+    +'        var comData=snap.docs[0].data();\n'
+    +'        if(comData.email){commercialEmail=comData.email;ccEmail="cspoto@moulindesmoines.com";}\n'
+    +'      }\n'
+    +'    }\n'
+    +'  }catch(e){console.warn("Lookup commercial:",e);}\n'
+    +'  var body="\\u2550\\u2550 BON DE COMMANDE PROMOTIONNEL \\u2550\\u2550\\n"\n'
+    +'    +"'+escH(nom)+'\\n"\n'
+    +'    +"\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\n"\n'
+    +'    +"Magasin       : "+mag+"\\n"\n'
+    +'    +(clientEmail?"Email client  : "+clientEmail+"\\n":"")\n'
+    +'    +(tel?"T\\u00e9l          : "+tel+"\\n":"")\n'
+    +'    +(ville?"Ville         : "+ville+"\\n":"")\n'
+    +'    +(tokenData&&tokenData.login?"Compte MDM    : "+tokenData.login+"\\n":"")\n'
+    +'    +"\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\n"\n'
+    +'    +"PRODUITS :\\n"+lines.join("\\n")\n'
+    +'    +"\\n\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\n"\n'
+    +'    +"R\\u00e9f. : "+refs+" | Colis : "+colis+" | Total HT : "+fmt2(ht);\n'
+    +'  var subj=encodeURIComponent("BDC Promo '+escH(nom)+' \\u2014 "+mag);\n'
+    +'  var url="mailto:"+commercialEmail\n'
+    +'    +(ccEmail?"?cc="+encodeURIComponent(ccEmail)+"&":"?")\n'
+    +'    +"subject="+subj+"&body="+encodeURIComponent(body);\n'
+    +'  if(btn){btn.disabled=false;btn.innerHTML="\\u2709 Envoyer la commande";}\n'
+    +'  window.location.href=url;\n'
     +'}\n'
     +'<\/script>\n</body>\n</html>';
 
   return HTML;
 }
+
 
 // ── Publication GitHub ────────────────────────────────────────
 async function publishPromo(){

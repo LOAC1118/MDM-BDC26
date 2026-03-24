@@ -108,6 +108,7 @@ body{font-family:'Inter',sans-serif;font-weight:300;background:var(--bg);color:v
   </div>
 </div>
 <script>
+
 var _fbReady=false,_db=null;
 var _allClients=[];
 var _clientOrders={};
@@ -124,7 +125,7 @@ function initFirebase(){
   _fbDb2=firebase.firestore(_fbApp2);
   return Promise.resolve(_fbDb2);
 }
-function _getLogin(){try{var t=sessionStorage.getItem('mdm_token');if(!t)return null;var d=JSON.parse(_safeB64D(t));return {login:d.login,nom:d.nom,role:d.role||'user'};}catch(e){return null;}}
+function _getLogin(){try{var t=sessionStorage.getItem('mdm_token');if(!t)return null;var d=JSON.parse(_safeB64Decode(t));return {login:d.login,nom:d.nom,role:d.role||'user'};}catch(e){return null;}}
 function fmt2(n){ return typeof n==='number' ? n.toFixed(2).replace('.',',')+'\u00a0\u20ac' : '\u2014'; }
 function fmtCA(n){
   if(!n) return '0\u00a0\u20ac';
@@ -320,6 +321,7 @@ window.addEventListener('DOMContentLoaded',function(){
   document.getElementById('page-sub').textContent='Vos clients assignés — '+(user.nom||user.login);
   loadMyClients(user.login, user.role);
 });
+
 </script>
 </body>
 </html>

@@ -395,7 +395,7 @@ function _safeB64Decode(str){
   try{
     var data=JSON.parse(_safeB64Decode(token));
     if(data&&data.exp&&Date.now()<data.exp){
-      window.location.href=data.role==='admin'?'admin.html':'commande.html';
+      window.location.href=data.role==='admin'?'admin.html':'dashboard.html';
     } else { sessionStorage.removeItem('mdm_token'); }
   }catch(e){ sessionStorage.removeItem('mdm_token'); }
 })();
@@ -453,7 +453,7 @@ function doLogin(){
         var td={login:compte.login,nom:compte.nom,role:compte.role,remise:compte.remise||0,email:compte.email||'cspoto@moulindesmoines.com',tel:compte.tel||'',numclient:compte.numclient||'',groupement:compte.groupement||'',ville:compte.ville||'',cp:compte.cp||'',commercial:compte.commercial||'',franco:compte.franco||0,remises_produits:compte.remises_produits||[],grp_remises:compte.grp_remises||[],exp:Date.now()+8*60*60*1000};
         sessionStorage.setItem('mdm_token',_safeB64Encode(JSON.stringify(td)));
         label.textContent='Connexion...';
-        window.location.href=compte.role==='admin'?'admin.html':'commande.html';
+        window.location.href=compte.role==='admin'?'admin.html':'dashboard.html';
       } else {
         btn.disabled=false;spinner.style.display='none';label.textContent='Se connecter';
         showError('Identifiant ou mot de passe incorrect.');

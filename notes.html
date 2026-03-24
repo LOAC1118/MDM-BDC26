@@ -109,6 +109,7 @@ body{font-family:'Inter',sans-serif;font-weight:300;background:var(--bg);color:v
 
 
 
+
 // SHA-256 robuste
 function sha256(str){
   if(window.crypto&&window.crypto.subtle){
@@ -298,6 +299,45 @@ window.addEventListener('DOMContentLoaded',function(){
       _notesListen(target);
     });
   }
+
+  // Présélectionner le client si paramètre ?client= dans l'URL
+  var urlParams=new URLSearchParams(window.location.search);
+  var clientParam=urlParams.get('client');
+  if(clientParam){
+    // Attendre que le sélecteur soit rempli (après _loadClientsForSelector)
+    var _preselectTimer=setInterval(function(){
+      var selEl=document.getElementById('note-target-select');
+      if(!selEl) return;
+      // Chercher l'option correspondante
+      var found=false;
+      for(var i=0;i<selEl.options.length;i++){
+        if(selEl.options[i].value===clientParam){
+          selEl.value=clientParam;
+          found=true;
+          break;
+        }
+      }
+      if(found||selEl.options.length>1){
+        clearInterval(_preselectTimer);
+        if(found){
+          // Déclencher le changement
+          selEl.dispatchEvent(new Event('change'));
+          // Mettre à jour le badge
+          var badge=document.getElementById('note-target-badge');
+          if(badge&&selEl.selectedIndex>=0){
+            badge.textContent='Notes de '+selEl.options[selEl.selectedIndex].text;
+          }
+          // Mettre à jour le titre
+          var sub=document.querySelector('.ps');
+          if(sub&&selEl.selectedIndex>=0){
+            sub.textContent='Notes pour : '+selEl.options[selEl.selectedIndex].text;
+          }
+        }
+      }
+    },200);
+    // Arrêter après 5 secondes max
+    setTimeout(function(){clearInterval(_preselectTimer);},5000);
+  }
 });
 
 // Charger les clients du commercial dans le sélecteur
@@ -396,6 +436,7 @@ function deleteNote(noteId){
   }).then(function(){showToast('Note supprimee');})
   .catch(function(e){showToast('Erreur : '+e.message);});
 }
+
 
 
 

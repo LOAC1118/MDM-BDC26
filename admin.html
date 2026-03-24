@@ -3517,6 +3517,192 @@ function viewPromoOrders(id){
   showToast('Commandes promo "'+p.nom+'" : '+( p.nbCommandes||0)+' re\u00e7ue'+(p.nbCommandes>1?'s':''));
 }
 
+
+// ══════════════════════════════════════════════════════════════
+// GESTION DES STOCKS
+// ══════════════════════════════════════════════════════════════
+
+var _stockData = {}; // { code: qty }
+
+function stockLog(msg, type) {
+  var el = document.getElementById('stock-log');
+  if (!el) return;
+  el.style.display = 'block';
+  var color = type==='ok' ? '#a8ff78' : type==='err' ? '#ff6b6b' : '#ffd93d';
+  el.innerHTML += '<span style="color:'+color+'">' + (type==='ok'?'\u2705 ':type==='err'?'\u274c ':'\u{1F4E2} ') + escH(msg) + '</span>\n';
+  el.scrollTop = el.scrollHeight;
+}
+
+function stockStatus(msg, type) {
+  var el = document.getElementById('stock-status');
+  if (!el) return;
+  var icons = {ok:'\u2705', err:'\u274c', loading:'\u23F3'};
+  el.style.color = type==='ok' ? '#2e7d32' : type==='err' ? '#c62828' : '#b45309';
+  el.textContent = (icons[type]||'') + ' ' + msg;
+}
+
+function handleStockFile(file) {
+  if (!file) return;
+  if (typeof XLSX === 'undefined') { showToast('\u26a0 Biblioth\u00e8que Excel non disponible'); return; }
+
+  // Reset log
+  var logEl = document.getElementById('stock-log');
+  if (logEl) { logEl.style.display='none'; logEl.innerHTML=''; }
+  var resEl = document.getElementById('stock-result');
+  if (resEl) resEl.style.display='none';
+
+  var dropZone = document.getElementById('stock-drop-zone');
+  if (dropZone) dropZone.style.borderColor = 'var(--accent)';
+
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var wb = XLSX.read(e.target.result, {type:'array'});
+      var ws = wb.Sheets[wb.SheetNames[0]];
+      var rows = XLSX.utils.sheet_to_json(ws, {defval:''});
+
+      _stockData = {};
+      var found = 0;
+
+      rows.forEach(function(row) {
+        // Chercher colonne code (insensible à la casse)
+        var code = '';
+        var qty = null;
+        for (var k in row) {
+          var kl = String(k).toLowerCase().replace(/\s+/g,'');
+          if (kl === 'code' || kl === 'ref' || kl === 'reference' || kl === 'codearticle') {
+            code = String(row[k]||'').trim();
+          }
+          if (kl === 'stock' || kl === 'quantite' || kl === 'qty' || kl === 'qte' || kl === 'stockdisponible' || kl === 'dispo') {
+            var v = parseFloat(String(row[k]||'0').replace(',','.'));
+            if (!isNaN(v)) qty = v;
+          }
+        }
+        if (code && qty !== null) {
+          _stockData[code] = qty;
+          found++;
+        }
+      });
+
+      if (dropZone) dropZone.style.borderColor = '#d0c0b0';
+
+      // Afficher résultat
+      var resText = document.getElementById('stock-result-text');
+      if (resText) {
+        resText.innerHTML = '\u2705 <strong>'+found+' produits</strong> charg\u00e9s depuis '+escH(file.name)
+          +'<br>\u{1F4CB} Colonnes d\u00e9tect\u00e9es\u00a0: Code + Stock'
+          +'<br>\u26a0 Cliquez sur \u00ab Mettre \u00e0 jour \u00bb pour publier sur GitHub.';
+      }
+      if (resEl) resEl.style.display = 'block';
+
+      // Activer le bouton de push
+      var btn = document.getElementById('stock-push-btn');
+      if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
+
+      showToast('\u2705 ' + found + ' stocks charg\u00e9s depuis ' + file.name);
+    } catch(err) {
+      if (dropZone) dropZone.style.borderColor = 'var(--danger)';
+      showToast('\u26a0 Erreur lecture Excel\u00a0: ' + err.message);
+      stockLog('Erreur\u00a0: ' + err.message, 'err');
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+async function pushStockToGithub() {
+  if (!Object.keys(_stockData).length) { showToast('\u26a0 Chargez d\'abord un fichier stock'); return; }
+
+  saveGhConfig();
+  var cfg = ghConfig();
+  // Le stock va dans commande.html (pas index.html)
+  var stockFile = cfg.user + '/' + cfg.repo + '/contents/commande.html';
+  var logEl = document.getElementById('stock-log');
+  if (logEl) { logEl.style.display='block'; logEl.innerHTML=''; }
+
+  stockStatus('Lecture de commande.html...', 'loading');
+  stockLog('Connexion GitHub...');
+
+  try {
+    // 1. Lire commande.html sur GitHub
+    var res = await fetch(
+      'https://api.github.com/repos/'+cfg.user+'/'+cfg.repo+'/contents/commande.html?ref='+cfg.branch+'&t='+Date.now(),
+      {headers:{'Authorization':'token '+cfg.token,'Accept':'application/vnd.github.v3+json'},cache:'no-store'}
+    );
+    if (res.status === 401) throw new Error('Token invalide (401)');
+    if (res.status === 404) throw new Error('commande.html introuvable sur '+cfg.user+'/'+cfg.repo);
+    if (res.status !== 200) throw new Error('Lecture GitHub HTTP ' + res.status);
+
+    var sd = await res.json();
+    var sha = sd.sha;
+    stockLog('commande.html lu (SHA\u00a0: '+sha.substring(0,8)+'...)', 'ok');
+
+    // 2. D\u00e9coder le HTML
+    var html = decodeURIComponent(escape(atob(sd.content.replace(/\n/g,''))));
+
+    // 3. Injecter les stocks dans le tableau PRODUCTS
+    // Pattern : {"code":"XXX",...,"stock":N} ou {"code":"XXX",...,"stock":null}
+    var updated = 0;
+    var notFound = 0;
+    var newHtml = html.replace(/"code"\s*:\s*"([^"]+)"([^}]*)"stock"\s*:\s*([^,}\]]+)/g, function(match, code, middle, oldStock) {
+      if (_stockData.hasOwnProperty(code)) {
+        updated++;
+        return '"code":"'+code+'"'+middle+'"stock":'+_stockData[code];
+      }
+      notFound++;
+      return match;
+    });
+
+    if (updated === 0) {
+      // Essayer l'autre ordre (stock avant d'autres champs)
+      newHtml = html.replace(/"stock"\s*:\s*([^,}\]]+)([^}]*)"code"\s*:\s*"([^"]+)"/g, function(match, oldStock, middle, code) {
+        if (_stockData.hasOwnProperty(code)) {
+          updated++;
+          return '"stock":'+_stockData[code]+middle+'"code":"'+code+'"';
+        }
+        return match;
+      });
+    }
+
+    stockLog(updated+' stocks mis \u00e0 jour, '+notFound+' codes non trouv\u00e9s dans commande.html', updated>0?'ok':'loading');
+
+    if (updated === 0) throw new Error('Aucun code produit correspondant trouv\u00e9 dans commande.html');
+
+    // 4. Re-encoder et pusher
+    var newB64 = btoa(unescape(encodeURIComponent(newHtml)));
+    var today = new Date().toLocaleString('fr-FR');
+    stockLog('Push sur GitHub...');
+
+    var put = await fetch(
+      'https://api.github.com/repos/'+cfg.user+'/'+cfg.repo+'/contents/commande.html',
+      {
+        method: 'PUT',
+        headers: {'Authorization':'token '+cfg.token,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},
+        body: JSON.stringify({
+          message: 'MAJ stocks MDM \u2014 '+today+' ['+updated+' produits]',
+          content: newB64,
+          sha: sha,
+          branch: cfg.branch
+        })
+      }
+    );
+
+    if (put.status===200 || put.status===201) {
+      stockStatus('Publi\u00e9 \u2014 '+updated+' stocks mis \u00e0 jour', 'ok');
+      stockLog('commande.html publi\u00e9 sur GitHub Pages', 'ok');
+      stockLog('\u{1F310} Actif dans ~1 minute', 'ok');
+      showToast('\u2705 '+updated+' stocks publi\u00e9s sur GitHub');
+    } else {
+      var ed = await put.json();
+      throw new Error(ed.message || 'PUT HTTP ' + put.status);
+    }
+
+  } catch(e) {
+    stockStatus('Erreur', 'err');
+    stockLog(e.message, 'err');
+    showToast('\u274c Stock\u00a0: ' + e.message);
+  }
+}
+
 window.addEventListener('DOMContentLoaded',function(){
   loadComptes();
   loadActus();

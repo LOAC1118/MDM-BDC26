@@ -110,6 +110,7 @@ body{font-family:'Inter',sans-serif;font-weight:300;background:var(--bg);color:v
 
 
 
+
 // SHA-256 robuste
 function sha256(str){
   if(window.crypto&&window.crypto.subtle){
@@ -259,6 +260,7 @@ function initFirebase() {
 function _getLogin(){try{return JSON.parse(_safeB64Decode(sessionStorage.getItem('mdm_token'))).login||null;}catch(e){return null;}}
 function _getReturnPage(){var r=document.referrer;if(r&&r.indexOf('commande.html')>=0)return 'commande.html';if(r&&r.indexOf('admin.html')>=0)return 'admin.html';return 'dashboard.html';}
 var _notesUnsub=null;
+var _currentTarget=null; // login cible (client ou propre login)
 window.addEventListener('DOMContentLoaded',function(){
   var login=_getLogin();
   if(!login){window.location.href='index.html';return;}
@@ -286,17 +288,21 @@ window.addEventListener('DOMContentLoaded',function(){
     _loadClientsForSelector(login,role);
   }
 
-  // Watcher notes (cible = propres notes par défaut)
+  // Cible par défaut = propres notes
+  _currentTarget=login;
   _notesListen(login);
 
   // Quand le sélecteur change → recharger les notes du compte cible
   var sel=document.getElementById('note-target-select');
   if(sel){
     sel.addEventListener('change',function(){
-      var target=sel.value||login;
+      _currentTarget=sel.value||login;
       var badge=document.getElementById('note-target-badge');
       if(badge) badge.textContent=sel.value?'Notes de '+sel.options[sel.selectedIndex].text:'Vos notes personnelles';
-      _notesListen(target);
+      // Mettre à jour le titre
+      var sub=document.querySelector('.ps');
+      if(sub) sub.textContent=sel.value&&sel.selectedIndex>=0?'Notes pour : '+sel.options[sel.selectedIndex].text:'Notes privées — visibles uniquement par vous';
+      _notesListen(_currentTarget);
     });
   }
 
@@ -346,29 +352,22 @@ function _loadClientsForSelector(login,role){
   if(wrap) wrap.style.display='block';
   var sel=document.getElementById('note-target-select');
   if(!sel) return;
-  // Charger depuis localStorage (déjà synchronisé par dashboard)
-  var allComptes=[];
-  try{allComptes=JSON.parse(localStorage.getItem('mdm_comptes')||'[]');}catch(e){}
-  var clients=[];
-  if(role==='admin'){
-    // Admin voit tous les comptes
-    clients=allComptes.filter(function(c){return c.role==='client'||c.role==='user';});
-  } else {
-    // Commercial voit seulement ses clients assignés
-    clients=allComptes.filter(function(c){return c.role==='client'&&c.commercial===login;});
-  }
-  if(!clients.length){
-    // Essayer Firebase
-    initFirebase().then(function(db){
-      return db.collection('comptes').get();
-    }).then(function(snap){
-      var all=snap.docs.map(function(d){return d.data();});
-      var list=role==='admin'?all.filter(function(c){return c.role==='client'||c.role==='user';}):all.filter(function(c){return c.role==='client'&&c.commercial===login;});
-      _populateClientSelect(sel,list);
-    }).catch(function(){});
-    return;
-  }
-  _populateClientSelect(sel,clients);
+  // Toujours charger depuis Firebase (localStorage vide sur notes.html)
+  initFirebase().then(function(db){
+    return db.collection('comptes').get();
+  }).then(function(snap){
+    var all=snap.docs.map(function(d){return d.data();});
+    var list;
+    if(role==='admin'){
+      list=all.filter(function(c){return c.role==='client'||c.role==='user';});
+    } else {
+      list=all.filter(function(c){return c.role==='client'&&c.commercial===login;});
+    }
+    _populateClientSelect(sel,list);
+  }).catch(function(e){
+    console.warn('Erreur chargement clients:',e);
+    showToast('⚠ Impossible de charger la liste des clients');
+  });
 }
 
 function _populateClientSelect(sel,clients){
@@ -410,32 +409,39 @@ function _renderNotes(notes){
 }
 function _esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function saveNote(){
-  var login=_getLogin();
-  if(!login){showToast('Non connecte');return;}
+  var myLogin=_getLogin();
+  if(!myLogin){showToast('Non connecte');return;}
+  var target=_currentTarget||myLogin; // compte cible (client ou soi-même)
   var ta=document.getElementById('note-text-input');
   var text=(ta?ta.value:'').trim();
   if(!text){showToast('Ecrivez une note');return;}
   var btn=document.getElementById('note-send-btn');
   if(btn) btn.disabled=true;
   initFirebase().then(function(db){
-    return db.collection('notes').doc(login).collection('items').add({
-      text:text,createdAt:firebase.firestore.FieldValue.serverTimestamp()
+    return db.collection('notes').doc(target).collection('items').add({
+      text:text,
+      auteur:myLogin, // qui a écrit la note
+      createdAt:firebase.firestore.FieldValue.serverTimestamp()
     });
   }).then(function(){
     if(ta) ta.value='';
     var cc=document.getElementById('note-char-count');if(cc) cc.textContent='0 / 2000';
     if(btn) btn.disabled=false;
-    showToast('Note enregistree');
+    var sel=document.getElementById('note-target-select');
+    var nom=sel&&sel.value&&sel.selectedIndex>=0?sel.options[sel.selectedIndex].text:'';
+    showToast('Note enregistree'+(nom?' pour '+nom:''));
   }).catch(function(e){if(btn)btn.disabled=false;showToast('Erreur : '+e.message);});
 }
 function deleteNote(noteId){
-  var login=_getLogin();
-  if(!login||!confirm('Supprimer cette note ?')) return;
+  var myLogin=_getLogin();
+  if(!myLogin||!confirm('Supprimer cette note ?')) return;
+  var target=_currentTarget||myLogin;
   initFirebase().then(function(db){
-    return db.collection('notes').doc(login).collection('items').doc(noteId).delete();
+    return db.collection('notes').doc(target).collection('items').doc(noteId).delete();
   }).then(function(){showToast('Note supprimee');})
   .catch(function(e){showToast('Erreur : '+e.message);});
 }
+
 
 
 

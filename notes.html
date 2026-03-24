@@ -106,6 +106,9 @@ body{font-family:'Inter',sans-serif;font-weight:300;background:var(--bg);color:v
 
 
 
+
+
+
 // SHA-256 robuste
 function sha256(str){
   if(window.crypto&&window.crypto.subtle){
@@ -142,16 +145,7 @@ function _safeB64Decode(str){
 }
 
 // Token check
-(function(){
-  var token=sessionStorage.getItem('mdm_token');
-  if(!token) return;
-  try{
-    var data=JSON.parse(_safeB64Decode(token));
-    if(data&&data.exp&&Date.now()<data.exp){
-      window.location.href=data.role==='admin'?'admin.html':'commande.html';
-    } else { sessionStorage.removeItem('mdm_token'); }
-  }catch(e){ sessionStorage.removeItem('mdm_token'); }
-})();
+// Auth check simplifié — redirection auto supprimée)();
 
 // Comptes Firebase
 var FIREBASE_CONFIG={apiKey:"AIzaSyB000QDa4c-vMjO1Xuimw58iiRvwgbF1zc",authDomain:"mdm-bdc26.firebaseapp.com",projectId:"mdm-bdc26",storageBucket:"mdm-bdc26.firebasestorage.app",messagingSenderId:"52658530893",appId:"1:52658530893:web:166626ae4d681465ddca04"};
@@ -196,22 +190,7 @@ function doLogin(){
   btn.disabled=true;spinner.style.display='inline-block';label.textContent='V\u00e9rification...';
 
   sha256(password).then(function(hashedPwd){
-    function tryLogin(h){
-      var compte=null;
-      for(var i=0;i<COMPTES.length;i++){
-        var sp=COMPTES[i].password||'';
-        if(COMPTES[i].login===login&&(sp===h||sp===password)){compte=COMPTES[i];break;}
-      }
-      if(compte){
-        var td={login:compte.login,nom:compte.nom,role:compte.role,remise:compte.remise||0,email:compte.email||'cspoto@moulindesmoines.com',tel:compte.tel||'',numclient:compte.numclient||'',groupement:compte.groupement||'',ville:compte.ville||'',cp:compte.cp||'',commercial:compte.commercial||'',franco:compte.franco||0,remises_produits:compte.remises_produits||[],grp_remises:compte.grp_remises||[],exp:Date.now()+8*60*60*1000};
-        sessionStorage.setItem('mdm_token',_safeB64Encode(JSON.stringify(td)));
-        label.textContent='Connexion...';
-        window.location.href=compte.role==='admin'?'admin.html':'commande.html';
-      } else {
-        btn.disabled=false;spinner.style.display='none';label.textContent='Se connecter';
-        showError('Identifiant ou mot de passe incorrect.');
-      }
-    }
+    
     if(window._comptesLoaded){ tryLogin(hashedPwd); }
     else {
       label.textContent='Chargement...';
@@ -417,6 +396,9 @@ function deleteNote(noteId){
   }).then(function(){showToast('Note supprimee');})
   .catch(function(e){showToast('Erreur : '+e.message);});
 }
+
+
+
 
 </script>
 </body>

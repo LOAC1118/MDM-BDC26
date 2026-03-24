@@ -582,6 +582,105 @@ footer a{color:inherit;text-decoration:none;opacity:.7}footer a:hover{opacity:1}
 .notes-upload-progress{height:3px;background:var(--border);border-radius:3px;overflow:hidden;margin-top:4px}
 .notes-upload-progress-bar{height:100%;background:var(--accent);border-radius:3px;transition:width .3s}
 
+
+/* ── DASHBOARD REDESIGN ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:20px}
+.kpi-card{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:14px 16px}
+.kpi-card:hover{box-shadow:0 3px 12px var(--shadow)}
+.kpi-label{font-size:10px;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}
+.kpi-val{font-size:22px;font-weight:200;font-family:'Fraunces',serif;color:var(--brown);line-height:1}
+.kpi-sub{font-size:10px;font-weight:300;color:var(--text-muted);margin-top:4px}
+.kpi-card.c-accent .kpi-val{color:var(--accent)}
+
+.draft-banner{background:#fffbeb;border:1px solid #f59e0b;border-radius:10px;padding:14px 18px;margin-bottom:18px;display:flex;align-items:center;gap:14px}
+.draft-banner-icon{font-size:22px;flex-shrink:0}
+.draft-banner-body{flex:1}
+.draft-banner-title{font-size:13px;font-weight:500;color:#92400e}
+.draft-banner-sub{font-size:11px;font-weight:300;color:#b45309;margin-top:2px}
+.draft-banner-btn{padding:7px 16px;background:#f59e0b;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap}
+.draft-banner-btn:hover{background:#d97706}
+
+.quick-actions{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.quick-btn{display:flex;align-items:center;gap:7px;padding:9px 14px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;font-size:12px;font-weight:400;color:var(--text);cursor:pointer;text-decoration:none;transition:all .15s;font-family:'Inter',sans-serif}
+.quick-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-light)}
+.quick-btn-icon{font-size:15px}
+
+.dsw{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:14px}
+.dsh{display:flex;align-items:center;justify-content:space-between;padding:13px 18px;cursor:pointer;user-select:none;transition:background .15s;border-bottom:1px solid var(--border-light)}
+.dsh:hover{background:var(--bg-beige)}
+.dsh-left{display:flex;align-items:center;gap:9px}
+.dsh-icon{font-size:15px}
+.dsh-title{font-size:13px;font-weight:500;color:var(--text)}
+.dsh-badge{background:var(--accent-light);color:var(--accent);font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px}
+.dsh-badge.warn{background:#fef3c7;color:#92400e}
+.dsh-chevron{font-size:11px;color:var(--text-muted);transition:transform .2s}
+.dsh-chevron.open{transform:rotate(180deg)}
+.dsb{padding:0}
+.dsb.hidden{display:none}
+
+.last-order-summary{padding:14px 18px;background:var(--bg-beige);border-bottom:1px solid var(--border-light)}
+.los-total{font-size:24px;font-weight:200;font-family:'Fraunces',serif;color:var(--brown)}
+.los-date{font-size:11px;font-weight:300;color:var(--text-muted);margin-bottom:6px}
+.los-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.los-chip{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;background:var(--bg-card);border:1px solid var(--border);border-radius:4px;font-size:11px;font-weight:300;color:var(--text-secondary)}
+.los-articles{padding:10px 18px;max-height:220px;overflow-y:auto}
+.los-articles table{width:100%;border-collapse:collapse;font-size:12px}
+.los-articles th{padding:6px 8px;font-size:10px;font-weight:500;color:var(--text-muted);text-transform:uppercase;border-bottom:1px solid var(--border);text-align:left}
+.los-articles td{padding:7px 8px;border-bottom:1px solid var(--border-light);font-weight:300;color:var(--text)}
+.reorder-btn{margin:10px 18px 14px;padding:8px 18px;background:var(--accent);color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif;transition:background .15s}
+.reorder-btn:hover{background:var(--accent-hover)}
+
+.ohi-list{padding:4px 0}
+.ohi{border-bottom:1px solid var(--border-light)}
+.ohi:last-child{border-bottom:none}
+.ohi-row{display:flex;align-items:center;gap:10px;padding:10px 18px;cursor:pointer;transition:background .15s}
+.ohi-row:hover{background:var(--bg-beige)}
+.ohi-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0}
+.ohi-date{font-size:11px;font-weight:300;color:var(--text-muted);min-width:72px}
+.ohi-mag{font-size:12px;font-weight:400;color:var(--text);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ohi-meta{font-size:11px;font-weight:300;color:var(--text-secondary);min-width:80px;text-align:right}
+.ohi-total{font-size:13px;font-weight:500;color:var(--brown);min-width:70px;text-align:right}
+.ohi-chev{font-size:10px;color:var(--text-muted);transition:transform .2s;margin-left:2px}
+.ohi-chev.open{transform:rotate(180deg)}
+.ohi-detail{display:none;padding:0 18px 12px 46px;background:var(--bg)}
+.ohi-detail.open{display:block}
+.ohi-detail table{width:100%;border-collapse:collapse;font-size:11px}
+.ohi-detail th{padding:5px 6px;font-size:10px;font-weight:500;color:var(--text-muted);text-transform:uppercase;border-bottom:1px solid var(--border);text-align:left}
+.ohi-detail td{padding:5px 6px;border-bottom:1px solid var(--border-light);color:var(--text);font-weight:300}
+.ohi-empty{padding:20px;text-align:center;font-size:12px;font-weight:300;color:var(--text-muted)}
+
+.actu-feed-v2{padding:10px 14px;display:flex;flex-direction:column;gap:8px}
+.actu-v2{border-left:3px solid var(--border);padding:10px 14px;border-radius:0 6px 6px 0;background:var(--bg)}
+.actu-v2.promo{border-color:#f59e0b;background:#fffbeb}
+.actu-v2.alerte{border-color:var(--danger);background:var(--danger-light)}
+.actu-v2.info{border-color:var(--accent);background:var(--accent-light)}
+.actu-v2-top{display:flex;align-items:center;gap:7px;margin-bottom:4px}
+.actu-v2-badge{font-size:9px;font-weight:700;text-transform:uppercase;padding:2px 7px;border-radius:3px;letter-spacing:.4px}
+.actu-v2-badge.promo{background:#f59e0b;color:#fff}
+.actu-v2-badge.alerte{background:var(--danger);color:#fff}
+.actu-v2-badge.info{background:var(--accent);color:#fff}
+.actu-v2-title{font-size:12px;font-weight:500;color:var(--text);flex:1}
+.actu-v2-date{font-size:10px;font-weight:300;color:var(--text-muted)}
+.actu-v2-body{font-size:12px;font-weight:300;color:var(--text-secondary);line-height:1.6}
+.actu-close-v2{background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:12px;padding:0;margin-left:auto}
+.actu-close-v2:hover{color:var(--danger)}
+
+.cli-block{border-bottom:1px solid var(--border-light)}
+.cli-block:last-child{border-bottom:none}
+.cli-head{display:flex;align-items:center;gap:10px;padding:11px 18px;cursor:pointer;transition:background .15s}
+.cli-head:hover{background:var(--bg-beige)}
+.cli-av{width:28px;height:28px;border-radius:50%;background:var(--accent-light);color:var(--accent);font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.cli-name{font-size:13px;font-weight:400;color:var(--text);flex:1}
+.cli-last{font-size:10px;font-weight:300;color:var(--text-muted)}
+.cli-total{font-size:12px;font-weight:500;color:var(--brown)}
+.cli-chev{font-size:10px;color:var(--text-muted);transition:transform .2s}
+.cli-chev.open{transform:rotate(180deg)}
+.cli-orders{display:none;padding:4px 18px 8px 56px;background:var(--bg)}
+.cli-orders.open{display:block}
+
+.dash-empty-v2{padding:28px;text-align:center;color:var(--text-muted)}
+.dash-empty-v2-icon{font-size:28px;margin-bottom:8px}
+.dash-empty-v2-text{font-size:12px;font-weight:300}
 </style>
 </head>
 <body>
@@ -686,6 +785,16 @@ footer a{color:inherit;text-decoration:none;opacity:.7}footer a:hover{opacity:1}
       <div class="dash-title" id="dash-page-title">Tableau de bord</div>
       <div class="dash-sub" id="dash-page-sub">Chargement&hellip;</div>
       <div class="kpi-grid" id="kpi-grid"></div>
+      <div id="draft-banner-container"></div>
+      <div id="quick-actions-bar" class="quick-actions"></div>
+      <!-- Actualités -->
+      <div class="dsw" id="actu-section-wrap" style="display:none">
+        <div class="dsh" onclick="toggleSection(this)">
+          <div class="dsh-left"><span class="dsh-icon">&#128241;</span><span class="dsh-title">Actualités Moulin des Moines</span><span class="dsh-badge" id="actu-count-badge">0</span></div>
+          <span class="dsh-chevron open">&#9660;</span>
+        </div>
+        <div class="dsb" id="actu-feed-container"></div>
+      </div>
       <div id="dash-content"></div>
     </div>
     <footer style="text-align:center;padding:16px;font-size:11px;font-weight:300;color:var(--text-muted);border-top:1px solid var(--border)">
@@ -762,6 +871,13 @@ window.PRODUCTS = [{"code":"ABRCOU200","libelle":"Abricots secs coupés bio - 20
 
 </script>
 <script>
+
+
+
+
+
+
+
 
 
 
@@ -1016,34 +1132,7 @@ function fbLoadActus(){
   }).catch(function(){return[];});
 }
 
-function renderActusClient(actus){
-  var el=document.getElementById('actu-feed-container');
-  if(!el) return;
-  if(!actus||!actus.length){
-    el.innerHTML='<div class="actu-empty">Aucune actualit\u00e9 pour le moment.</div>';
-    return;
-  }
-  var html='<div class="actu-feed">';
-  actus.forEach(function(a){
-    var type=(a.type||'info').toLowerCase();
-    var label=type==='promo'?'Promotion':type==='alerte'?'Alerte':'Info';
-    var date='';
-    if(a.date){
-      try{date=new Date(a.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'});}catch(e){}
-    }
-    html+='<div class="actu-card" id="actu-'+a._id+'">'
-      +'<div class="actu-card-top">'
-      +'<span class="actu-badge '+type+'">'+label+'</span>'
-      +'<span class="actu-card-title">'+escH(a.titre||a.title||'')+'</span>'
-      +(date?'<span class="actu-card-date">'+date+'</span>':'')
-      +'<button class="actu-close" onclick="closeActu(\''+a._id+'\')" title="Fermer">&#10005;</button>'
-      +'</div>'
-      +'<div class="actu-body">'+escH(a.contenu||a.content||'')+'</div>'
-      +'</div>';
-  });
-  html+='</div>';
-  el.innerHTML=html;
-}
+function renderActusClient(actus){_renderActusDash(actus);}
 
 function closeActu(id){
   _readActus[id]=true;
@@ -1059,46 +1148,57 @@ function closeActu(id){
   }
 }
 
+
 function renderClient(data){
-  window._currentData = data;
+  window._currentData=data;
   _setSidebarUser(data);
-  var _allCd=[];try{_allCd=JSON.parse(localStorage.getItem("mdm_comptes")||"[]");}catch(e){}
-  chatInit(data.login,data.nom||data.login,data.role,data.commercial||"",_allCd);
-  document.getElementById('dash-page-title').textContent = 'Bonjour, '+escH(data.nom||data.login)+' \u2728';
-  document.getElementById('dash-page-sub').textContent   = 'Retrouvez ici l\u2019historique de vos commandes.';
+  var _allCd=[];try{_allCd=JSON.parse(localStorage.getItem('mdm_comptes')||'[]');}catch(e){}
+  chatInit(data.login,data.nom||data.login,data.role,data.commercial||'',_allCd);
 
-  var login = (data.login||'guest').replace(/[^a-zA-Z0-9_-]/g,'_');
-  var franco= parseFloat(data.franco)||0;
+  var login=(data.login||'guest').replace(/[^a-zA-Z0-9_-]/g,'_');
+  var franco=parseFloat(data.franco)||0;
 
-  // KPI placeholders
-  var kpis = makeKPI('kpi-orders','Commandes','\u2014','passées')
-    + makeKPI('kpi-ca','Total HT','\u2014','cumul commandes')
-    + makeKPI('kpi-last','Dernière commande','\u2014','date')
-    + (franco>0 ? makeKPI('kpi-franco','Franco de port',franco.toFixed(0)+'\u00a0\u20ac','minimum HT') : '');
-  document.getElementById('kpi-grid').innerHTML = kpis;
+  // Salutation
+  var h=new Date().getHours();
+  var greet=h<12?'Bonjour':h<18?'Bon après-midi':'Bonsoir';
+  document.getElementById('dash-page-title').textContent=greet+', '+(data.nom||data.login)+' ✨';
+  document.getElementById('dash-page-sub').textContent='Votre espace commande Moulin des Moines';
 
-  // Charger historique local d'abord (affichage immédiat)
+  // KPIs
+  document.getElementById('kpi-grid').innerHTML=
+    makeKPI('kpi-orders','Commandes','—','passées')
+    +makeKPI('kpi-ca','Total HT','—','cumul')
+    +makeKPI('kpi-last','Dernière commande','—','date')
+    +(franco>0?makeKPI('kpi-franco','Franco de port',fmtCA(franco),'minimum HT'):'');
+
+  // Actions rapides
+  _renderQuickActions(data.role);
+
+  // Brouillon
+  fbLoadDraftNew(login);
+
+  // Historique
   var local=[];
   try{local=JSON.parse(localStorage.getItem('mdm_history_'+login)||'[]');}catch(e){}
-  if(local.length) renderClientOrders(local, franco);
+  if(local.length) _renderClientDash(local,franco);
 
-  // Écoute temps réel Firebase
-  fbWatchHistory(login, franco, function(fbOrders){
+  fbWatchHistory(login,franco,function(fbOrders){
     if(!fbOrders) return;
-    // Fusionner local + Firebase
-    var ids={}; var merged=[];
-    fbOrders.forEach(function(o){ids[o.id]=true; merged.push(o);});
+    var ids={};var merged=[];
+    fbOrders.forEach(function(o){ids[o.id]=true;merged.push(o);});
     local.forEach(function(o){if(!ids[o.id]){merged.push(o);ids[o.id]=true;}});
     merged.sort(function(a,b){return (b.id||0)-(a.id||0);});
     if(merged.length>50) merged=merged.slice(0,50);
     localStorage.setItem('mdm_history_'+login,JSON.stringify(merged));
-    renderClientOrders(merged, franco);
+    _renderClientDash(merged,franco);
   });
-  // Charger les actualités
-  fbLoadActus().then(renderActusClient).catch(function(){});
-  // Charger le brouillon
-  fbLoadDraft(login);
+
+  // Actualités
+  fbLoadActus().then(function(actus){
+    _renderActusDash(actus);
+  }).catch(function(){});
 }
+
 
 function renderClientOrders(orders, franco){
   var nb  = orders.length;
@@ -1158,87 +1258,124 @@ function fbWatchAllHistory(callback){
   }).catch(function(){});
 }
 
-function renderCommercial(data){
-  window._currentData = data;
-  _setSidebarUser(data);
-  var _allCd=[];try{_allCd=JSON.parse(localStorage.getItem("mdm_comptes")||"[]");}catch(e){}
-  chatInit(data.login,data.nom||data.login,data.role,data.commercial||"",_allCd);
-  document.getElementById('dash-page-title').textContent = 'Bonjour, '+escH(data.nom||data.login)+' \u2728';
-  document.getElementById('dash-page-sub').textContent   = 'Activité de vos clients assignés.';
 
-  var login = data.login||'';
+function renderCommercial(data){
+  window._currentData=data;
+  _setSidebarUser(data);
+  var _allCd=[];try{_allCd=JSON.parse(localStorage.getItem('mdm_comptes')||'[]');}catch(e){}
+  chatInit(data.login,data.nom||data.login,data.role,data.commercial||'',_allCd);
+
+  var login=data.login||'';
+  var h=new Date().getHours();
+  var greet=h<12?'Bonjour':h<18?'Bon après-midi':'Bonsoir';
+  document.getElementById('dash-page-title').textContent=greet+', '+(data.nom||data.login)+' ✨';
+  document.getElementById('dash-page-sub').textContent='Activité de vos clients assignés';
+
   var allComptes=[];
   try{allComptes=JSON.parse(localStorage.getItem('mdm_comptes')||'[]');}catch(e){}
-  var clients = allComptes.filter(function(co){return co.role==='client'&&co.commercial===login;});
+  var clients=allComptes.filter(function(co){return co.role==='client'&&co.commercial===login;});
 
-  var kpis = makeKPI('kpi-clients','Mes clients',clients.length,'assignés')
-    + makeKPI('kpi-orders','Commandes','\u2014','enregistrées')
-    + makeKPI('kpi-ca','CA total HT','\u2014','cumul clients')
-    + makeKPI('kpi-avg','Commande moy.','\u2014','par commande');
-  document.getElementById('kpi-grid').innerHTML = kpis;
+  document.getElementById('kpi-grid').innerHTML=
+    makeKPI('kpi-clients','Clients',clients.length,'assignés')
+    +makeKPI('kpi-orders','Commandes','—','enregistrées')
+    +makeKPI('kpi-ca','CA total HT','—','cumul')
+    +makeKPI('kpi-avg','Moy. commande','—','par commande');
+
+  _renderQuickActions('user');
+
+  var content=document.getElementById('dash-content');
+  if(!content) return;
 
   if(!clients.length){
-    document.getElementById('dash-content').innerHTML = '<div class="dash-section"><div class="empty-state">Aucun client assigné.</div></div>';
+    content.innerHTML='<div class="dsw"><div class="dash-empty-v2"><div class="dash-empty-v2-icon">&#128101;</div><div class="dash-empty-v2-text">Aucun client assigné.<br>Créez un compte client depuis le bon de commande.</div></div></div>';
     return;
   }
 
-  var logins = clients.map(function(co){return co.login.replace(/[^a-zA-Z0-9_-]/g,'_');});
-  // Écoute temps réel — un onSnapshot par client
+  var logins=clients.map(function(co){return co.login.replace(/[^a-zA-Z0-9_-]/g,'_');});
   if(window._comHistoryUnsubs) window._comHistoryUnsubs.forEach(function(u){u();});
-  window._comHistoryUnsubs = [];
-  var allOrdersMap = {}; // login → orders[]
+  window._comHistoryUnsubs=[];
+  var allOrdersMap={};
 
-  function _renderComOrders(){
-    var all = [];
+  function _render(){
+    var all=[];
     Object.keys(allOrdersMap).forEach(function(lg){
-      allOrdersMap[lg].forEach(function(o){ all.push(Object.assign({},o,{_login:lg})); });
+      allOrdersMap[lg].forEach(function(o){all.push(Object.assign({},o,{_login:lg}));});
     });
-    var ids={}; all=all.filter(function(o){if(ids[o.id])return false;ids[o.id]=true;return true;});
+    var ids={};all=all.filter(function(o){if(ids[o.id])return false;ids[o.id]=true;return true;});
     all.sort(function(a,b){return (b.id||0)-(a.id||0);});
-    var nb=all.length, ca=all.reduce(function(s,o){return s+(o.totalNet||0);},0);
-    var avg=nb>0?ca/nb:0;
-    setKPI('kpi-orders',nb,'enregistrées');
-    setKPI('kpi-ca',fmtCA(ca),'cumul clients');
-    setKPI('kpi-avg',fmtCA(avg),'par commande');
-    var content=document.getElementById('dash-content');
-    if(!content) return;
-    if(!all.length){
-      content.innerHTML='<div class="dash-section"><div class="empty-state">Aucune commande enregistrée.</div></div>';
-      return;
+    var nb=all.length,ca=all.reduce(function(s,o){return s+(o.totalNet||0);},0);
+    setKPI('kpi-orders',nb,nb+' commande'+(nb>1?'s':''));
+    setKPI('kpi-ca',fmtCA(ca),'cumul HT');
+    setKPI('kpi-avg',fmtCA(nb>0?ca/nb:0),'par commande');
+
+    // Grouper par client
+    var html='<div class="dsw"><div class="dsh" onclick="toggleSection(this)"><div class="dsh-left"><span class="dsh-icon">&#128101;</span><span class="dsh-title">Commandes de mes clients</span><span class="dsh-badge">'+nb+'</span></div><span class="dsh-chevron open">&#9660;</span></div><div class="dsb">';
+    if(!nb){
+      html+='<div class="ohi-empty">Aucune commande enregistrée.</div>';
+    } else {
+      clients.forEach(function(cli){
+        var cliLogin=cli.login.replace(/[^a-zA-Z0-9_-]/g,'_');
+        var cliOrders=(allOrdersMap[cliLogin]||[]).slice().sort(function(a,b){return (b.id||0)-(a.id||0);});
+        var cliCA=cliOrders.reduce(function(s,o){return s+(o.totalNet||0);},0);
+        var lastDate=cliOrders[0]?String(cliOrders[0].date||'').split(' ')[0]:'Aucune commande';
+        var initials=(cli.nom||cli.login).charAt(0).toUpperCase();
+        var uid='cli_'+cliLogin;
+        html+='<div class="cli-block"><div class="cli-head" onclick="toggleCliOrders(this.nextElementSibling.id)">'; 
+        html+='<div class="cli-av">'+initials+'</div>';
+        html+='<div style="flex:1"><div class="cli-name">'+escH(cli.nom||cli.login)+'</div>';
+        html+='<div class="cli-last">Dernière : '+lastDate+'</div></div>';
+        html+='<div class="cli-total">'+fmtCA(cliCA)+'</div>';
+        html+='<span class="cli-chev">&#9660;</span></div>';
+        html+='<div class="cli-orders" id="'+uid+'">';
+        if(!cliOrders.length){
+          html+='<div style="font-size:11px;color:var(--text-muted);padding:8px 0">Aucune commande</div>';
+        } else {
+          cliOrders.forEach(function(o,i){
+            var date=o.date?String(o.date).split(' ')[0]:'?';
+            var iid='co_'+cliLogin+'_'+i;
+            html+='<div class="ohi" id="'+iid+'"><div class="ohi-row" onclick="toggleOrderItem(this.closest(\'.ohi\').id)">';
+            html+='<span class="ohi-dot"></span>';
+            html+='<span class="ohi-date">'+date+'</span>';
+            html+='<span class="ohi-mag">'+escH(o.magasin||cli.nom||'?')+'</span>';
+            html+='<span class="ohi-meta">'+(o.nbRefs||'?')+' réf.</span>';
+            html+='<span class="ohi-total">'+fmt2(o.totalNet)+'</span>';
+            html+='<span class="ohi-chev">&#9660;</span></div>';
+            html+='<div class="ohi-detail">';
+            if(o.articles&&o.articles.length){
+              html+='<table><thead><tr><th>Code</th><th>Désignation</th><th style="text-align:center">Qté</th><th style="text-align:right">Total HT</th></tr></thead><tbody>';
+              o.articles.forEach(function(a){
+                html+='<tr><td style="font-family:monospace;font-size:10px;color:var(--brown)">'+escH(a.code||'')+'</td>'
+                  +'<td>'+escH(a.libelle||'')+'</td><td style="text-align:center">'+a.qty+'</td>'
+                  +'<td style="text-align:right;color:var(--terra)">'+fmt2(a.totalHT)+'</td></tr>';
+              });
+              html+='</tbody></table>';
+            }
+            html+='</div></div>';
+          });
+        }
+        html+='</div></div>';
+      });
     }
-    var html='<div class="dash-section"><div class="dash-section-header">'
-      +'<span class="dash-section-title">&#9203; Dernières commandes de mes clients</span>'
-      +'<span class="dash-section-badge">'+nb+' commande'+(nb>1?'s':'')+'</span>'
-      +'</div>';
-    all.forEach(function(o){
-      var client=clients.find(function(co){return co.login.replace(/[^a-zA-Z0-9_-]/g,'_')===o._login;});
-      html+=orderRow(o,client?client.nom:o._login,true);
-    });
-    html+='</div>';
+    html+='</div></div>';
     content.innerHTML=html;
   }
 
-  // Initialiser avec localStorage pour affichage immédiat
   logins.forEach(function(lg){
-    var local=[];
-    try{local=JSON.parse(localStorage.getItem('mdm_history_'+lg)||'[]');}catch(e){}
+    var local=[];try{local=JSON.parse(localStorage.getItem('mdm_history_'+lg)||'[]');}catch(e){}
     if(local.length) allOrdersMap[lg]=local;
   });
-  if(Object.keys(allOrdersMap).length) _renderComOrders();
+  if(Object.keys(allOrdersMap).length) _render();
 
-  // Démarrer les watchers Firebase
   initFirebase().then(function(db){
     logins.forEach(function(lg){
       var unsub=db.collection('historique').doc(lg).collection('commandes')
         .orderBy('id','desc').limit(50)
-        .onSnapshot(function(snap){
-          allOrdersMap[lg]=snap.docs.map(function(dd){return dd.data();});
-          _renderComOrders();
-        },function(){});
+        .onSnapshot(function(snap){allOrdersMap[lg]=snap.docs.map(function(dd){return dd.data();});_render();},function(){});
       window._comHistoryUnsubs.push(unsub);
     });
   }).catch(function(){});
 }
+
 
 // ── DASHBOARD ADMIN ───────────────────────────────────────────
 function renderAdmin(data){
@@ -2032,6 +2169,219 @@ function showProfil(){
   bg.appendChild(box);
   document.body.appendChild(bg);
   closeSidebar();
+}
+
+
+
+
+
+
+
+
+function _renderClientDash(orders,franco){
+  var nb=orders.length;
+  var ca=orders.reduce(function(s,o){return s+(o.totalNet||0);},0);
+  var last=orders[0];
+
+  setKPI('kpi-orders',nb,nb===0?'aucune':nb+' commande'+(nb>1?'s':''));
+  setKPI('kpi-ca',fmtCA(ca),'cumul HT');
+  if(last){
+    var lastDate=last.date?String(last.date).split(' ')[0]:'?';
+    setKPI('kpi-last',lastDate,'dernière commande');
+  }
+
+  var content=document.getElementById('dash-content');
+  if(!content) return;
+  var html='';
+
+  // ── Dernière commande ──────────────────────────────────────
+  if(last){
+    var d=last.date?String(last.date).split(' ')[0]:'?';
+    var isRecent=(Date.now()-(last.id||0))<7*24*3600*1000;
+    html+='<div class="dsw">';
+    html+='<div class="dsh" onclick="toggleSection(this)">';
+    html+='<div class="dsh-left"><span class="dsh-icon">&#128221;</span><span class="dsh-title">Dernière commande</span>';
+    if(isRecent) html+='<span class="dsh-badge warn">Récente</span>';
+    html+='</div><span class="dsh-chevron open">&#9660;</span></div>';
+    html+='<div class="dsb">';
+    // Résumé
+    html+='<div class="last-order-summary">';
+    html+='<div class="los-date">'+d+'</div>';
+    html+='<div class="los-total">'+fmt2(last.totalNet)+'&nbsp;<span style="font-size:13px;font-weight:300;color:var(--text-muted)">HT</span></div>';
+    html+='<div class="los-chips">';
+    html+='<span class="los-chip">&#128203; '+(last.nbRefs||'?')+' réf.</span>';
+    html+='<span class="los-chip">&#128230; '+(last.nbColis||'?')+' colis</span>';
+    html+='<span class="los-chip">&#128202; '+(last.nbUVC||'?')+' UVC</span>';
+    if(last.magasin) html+='<span class="los-chip">&#127978; '+escH(last.magasin)+'</span>';
+    html+='</div></div>';
+    // Articles
+    if(last.articles&&last.articles.length){
+      html+='<div class="los-articles"><table><thead><tr><th>Code</th><th>Désignation</th><th style="text-align:center">Colis</th><th style="text-align:right">Total HT</th></tr></thead><tbody>';
+      last.articles.forEach(function(a){
+        html+='<tr>'
+          +'<td style="font-family:monospace;color:var(--brown);font-size:11px">'+escH(a.code||'')+'</td>'
+          +'<td>'+escH(a.libelle||'')+'</td>'
+          +'<td style="text-align:center">'+a.qty+'</td>'
+          +'<td style="text-align:right;font-weight:500;color:var(--terra)">'+fmt2(a.totalHT)+'</td>'
+          +'</tr>';
+      });
+      html+='</tbody></table></div>';
+    }
+    html+='<button class="reorder-btn" onclick="location.href=\'commande.html?import=last\'">&#128257;&nbsp;Récommander</button>';
+    html+='</div></div>';
+  }
+
+  // ── Historique ─────────────────────────────────────────────
+  html+='<div class="dsw">';
+  html+='<div class="dsh" onclick="toggleSection(this)">';
+  html+='<div class="dsh-left"><span class="dsh-icon">&#128203;</span><span class="dsh-title">Historique des commandes</span>';
+  html+='<span class="dsh-badge">'+nb+'</span>';
+  html+='</div><span class="dsh-chevron">&#9660;</span></div>';
+  html+='<div class="dsb hidden">';
+  if(!nb){
+    html+='<div class="ohi-empty">Aucune commande pour le moment.</div>';
+  } else {
+    html+='<div class="ohi-list">';
+    orders.forEach(function(o,i){
+      var date=o.date?String(o.date).split(' ')[0]:'?';
+      var refs=o.nbRefs||(o.articles?o.articles.length:'?');
+      var cols=o.nbColis||'?';
+      var uid='oh_'+i;
+      html+='<div class="ohi" id="'+uid+'">';
+      html+='<div class="ohi-row" onclick="toggleOrderItem(this.parentNode.id)">';
+      html+='<span class="ohi-dot"></span>';
+      html+='<span class="ohi-date">'+date+'</span>';
+      html+='<span class="ohi-mag">'+escH(o.magasin||'Commande')+'</span>';
+      html+='<span class="ohi-meta">'+refs+' réf. &middot; '+cols+' colis</span>';
+      html+='<span class="ohi-total">'+fmt2(o.totalNet)+'</span>';
+      html+='<span class="ohi-chev">&#9660;</span>';
+      html+='</div>';
+      // Détail
+      html+='<div class="ohi-detail">';
+      if(o.articles&&o.articles.length){
+        html+='<table><thead><tr><th>Code</th><th>Désignation</th><th style="text-align:center">Qté</th><th style="text-align:right">Total HT</th></tr></thead><tbody>';
+        o.articles.forEach(function(a){
+          html+='<tr><td style="font-family:monospace;font-size:10px;color:var(--brown)">'+escH(a.code||'')+'</td>'
+            +'<td>'+escH(a.libelle||'')+'</td>'
+            +'<td style="text-align:center">'+a.qty+'</td>'
+            +'<td style="text-align:right;color:var(--terra)">'+fmt2(a.totalHT)+'</td></tr>';
+        });
+        html+='</tbody></table>';
+      } else {
+        html+='<div style="color:var(--text-muted);font-size:11px;padding:6px 0">Détail non disponible</div>';
+      }
+      html+='</div>';
+      html+='</div>';
+    });
+    html+='</div>';
+  }
+  html+='</div></div>';
+
+  content.innerHTML=html;
+}
+
+
+
+// ── Actions rapides ──────────────────────────────────────────
+function _renderQuickActions(role){
+  var qa=document.getElementById('quick-actions-bar');
+  if(!qa) return;
+  var btns='';
+  btns+='<a class="quick-btn" href="commande.html"><span class="quick-btn-icon">&#128221;</span>Bon de commande</a>';
+  btns+='<a class="quick-btn" href="notes.html"><span class="quick-btn-icon">&#128203;</span>Mes notes</a>';
+  if(role==='user'||role==='admin'){
+    btns+='<button class="quick-btn" onclick="showImportSection()"><span class="quick-btn-icon">&#128196;</span>Importer un PDF</button>';
+  }
+  qa.innerHTML=btns;
+}
+
+function showImportSection(){
+  var s=document.getElementById('import-pdf-section');
+  if(s){s.style.display='block';s.scrollIntoView({behavior:'smooth'});}
+  else if(typeof showImportPDF==='function') showImportPDF();
+}
+
+// ── Actualités nouvelle version ──────────────────────────────
+function _renderActusDash(actus){
+  var container=document.getElementById('actu-feed-container');
+  if(!container) return;
+  actus=actus?actus.filter(function(a){return a.actif!==false;}):[];
+  if(!actus.length){ container.style.display='none'; return; }
+  container.style.display='block';
+  var dsh=container.previousElementSibling;
+  if(dsh&&dsh.querySelector('.dsh-badge')) dsh.querySelector('.dsh-badge').textContent=actus.length;
+  var html='<div class="actu-feed-v2">';
+  actus.forEach(function(a){
+    var type=(a.type||'info').toLowerCase();
+    var label=type==='promo'?'Promotion':type==='alerte'?'Alerte':'Info';
+    var date='';
+    try{if(a.date) date=new Date(a.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'short'});}catch(e){}
+    html+='<div class="actu-v2 '+type+'" id="actu_'+a._id+'">';
+    html+='<div class="actu-v2-top">';
+    html+='<span class="actu-v2-badge '+type+'">'+label+'</span>';
+    html+='<span class="actu-v2-title">'+escH(a.titre||'')+'</span>';
+    if(date) html+='<span class="actu-v2-date">'+date+'</span>';
+    html+='<button class="actu-close-v2" onclick="this.closest(\x27.actu-v2\x27).remove()" title="Fermer">&#10005;</button>';
+    html+='</div><div class="actu-v2-body">'+escH(a.contenu||'')+'</div>';
+    html+='</div>';
+  });
+  html+='</div>';
+  container.innerHTML=html;
+}
+
+function closeActu2(id){
+  var el=document.getElementById('actu_'+id);
+  if(el){el.style.opacity='0';el.style.height=el.offsetHeight+'px';setTimeout(function(){el.remove();},250);}
+}
+
+// ── Brouillon nouvelle version ───────────────────────────────
+function fbLoadDraftNew(login){
+  var container=document.getElementById('draft-banner-container');
+  initFirebase().then(function(db){
+    db.collection('brouillons').doc(login).get().then(function(doc){
+      if(!doc.exists||!container) return;
+      var data=doc.data();
+      if(!data||!data.articles||!data.articles.length) return;
+      var nb=data.articles.length;
+      var total=data.total||0;
+      var dateStr='';
+      if(data.savedAt&&data.savedAt.toDate) dateStr=data.savedAt.toDate().toLocaleString('fr-FR',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+      container.innerHTML='<div class="draft-banner">'
+        +'<div class="draft-banner-icon">&#128190;</div>'
+        +'<div class="draft-banner-body">'
+        +'<div class="draft-banner-title">Brouillon en cours &mdash; '+nb+' référence'+(nb>1?'s':'')+' &middot; '+fmt2(total)+' HT</div>'
+        +'<div class="draft-banner-sub">Sauvegardé le '+dateStr+'</div>'
+        +'</div>'
+        +'<button class="draft-banner-btn" onclick="location.href=\'commande.html?draft=restore\'">Reprendre &#8594;</button>'
+        +'</div>';
+    }).catch(function(){});
+  }).catch(function(){});
+}
+
+// ── Toggles sections / commandes ─────────────────────────────
+function toggleSection(head){
+  var body=head.nextElementSibling;
+  var chev=head.querySelector('.dsh-chevron');
+  if(!body) return;
+  var isOpen=!body.classList.contains('hidden');
+  body.classList.toggle('hidden',isOpen);
+  if(chev) chev.classList.toggle('open',!isOpen);
+}
+
+function toggleOrderItem(uid){
+  var el=document.getElementById(uid);
+  if(!el) return;
+  var detail=el.querySelector('.ohi-detail');
+  var chev=el.querySelector('.ohi-chev');
+  if(detail){ detail.classList.toggle('open'); }
+  if(chev){ chev.classList.toggle('open'); }
+}
+
+function toggleCliOrders(uid){
+  var el=document.getElementById(uid);
+  var chev=el?el.parentNode.querySelector('.cli-chev'):null;
+  if(el){ el.classList.toggle('open'); }
+  if(chev){ chev.classList.toggle('open'); }
 }
 
 

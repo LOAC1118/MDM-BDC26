@@ -560,6 +560,37 @@ footer a{color:inherit;text-decoration:none;opacity:.7}footer a:hover{opacity:1}
 .tranche-header{display:grid;grid-template-columns:120px 120px 120px 28px;gap:8px;margin-bottom:2px}
 .tranche-header span{font-size:10px;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px}
 
+
+/* ── BONS DE COMMANDE PROMOTIONNELS ── */
+.promo-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.promo-drop-zone{border:2px dashed #d0c0b0;border-radius:10px;padding:28px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg)}
+.promo-drop-zone:hover,.promo-drop-zone.drag-over{border-color:var(--terra);background:#fdf5f0}
+.promo-table{width:100%;border-collapse:collapse;font-size:11px}
+.promo-table th{padding:7px 10px;background:var(--bg);font-size:10px;font-weight:500;color:var(--text-muted);text-transform:uppercase;border-bottom:1px solid var(--border);text-align:left}
+.promo-table td{padding:7px 10px;border-bottom:1px solid var(--border-light);font-weight:300;color:var(--text)}
+.promo-conditions-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px}
+.promo-clients-grid{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.promo-client-check{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--border);border-radius:6px;cursor:pointer;transition:background .15s}
+.promo-client-check:hover{background:var(--bg-beige)}
+.promo-client-check input{accent-color:var(--terra)}
+.promo-card{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:14px}
+.promo-card-icon{font-size:24px;flex-shrink:0}
+.promo-card-body{flex:1}
+.promo-card-title{font-size:13px;font-weight:500;color:var(--brown);margin-bottom:3px}
+.promo-card-meta{font-size:11px;font-weight:300;color:var(--text-muted)}
+.promo-card-actions{display:flex;gap:6px;flex-shrink:0}
+.promo-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600}
+.promo-badge.active{background:var(--accent-light);color:var(--accent)}
+.promo-badge.expired{background:var(--bg-beige-dark);color:var(--text-muted)}
+.promo-step{display:flex;align-items:flex-start;gap:12px;margin-bottom:20px}
+.promo-step-num{width:26px;height:26px;border-radius:50%;background:var(--terra);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.promo-step-body{flex:1}
+.promo-step-title{font-size:12px;font-weight:600;color:var(--brown);margin-bottom:8px;text-transform:uppercase;letter-spacing:.4px}
+.promo-log{background:#1a1a2e;color:#a8ff78;border-radius:8px;padding:12px 14px;font-family:monospace;font-size:11px;line-height:1.8;max-height:160px;overflow-y:auto;white-space:pre-wrap;margin-bottom:14px;display:none}
+.promo-stat-bar{display:flex;gap:10px;margin-bottom:16px}
+.promo-stat{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:10px 14px;text-align:center;flex:1}
+.promo-stat-val{font-family:'Fraunces',serif;font-weight:200;font-size:20px;color:var(--brown)}
+.promo-stat-lbl{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;margin-top:2px}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -854,90 +885,156 @@ footer a{color:inherit;text-decoration:none;opacity:.7}footer a:hover{opacity:1}
 
     <!-- PAGE : PROMOS -->
     <div class="page" id="page-promos">
-      <div class="page-title">Bons de commande promotionnels</div>
-      <div class="page-sub">Cr&#233;ez et publiez des bons de commande pour des occasions sp&#233;cifiques (P&#226;ques, No&#235;l, &#201;t&#233;&#8230;)</div>
+    <div class="page-title">Bons de commande promotionnels</div>
+    <div class="page-sub">Cr&eacute;ez, publiez et suivez vos bons de commande th&eacute;matiques</div>
 
-      <!-- Formulaire de cr&#233;ation -->
-      <div class="actu-form" id="promo-form-section">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-          <span style="font-size:13px;font-weight:700;color:var(--brown)" id="promo-form-title">&#127381; Nouveau bon de commande promo</span>
-          <button onclick="cancelPromo()" id="promo-cancel-btn" style="display:none;background:none;border:none;font-size:12px;color:#a08070;cursor:pointer;font-family:Outfit,sans-serif">Annuler</button>
+    <!-- Statistiques -->
+    <div class="promo-stat-bar" id="promo-stats-bar" style="display:none">
+      <div class="promo-stat"><div class="promo-stat-val" id="ps-total">0</div><div class="promo-stat-lbl">Promos</div></div>
+      <div class="promo-stat"><div class="promo-stat-val c-green" id="ps-actives">0</div><div class="promo-stat-lbl">Actives</div></div>
+      <div class="promo-stat"><div class="promo-stat-val" id="ps-commandes">0</div><div class="promo-stat-lbl">Commandes re&ccedil;ues</div></div>
+    </div>
+
+    <!-- Bouton nouveau -->
+    <div style="margin-bottom:16px">
+      <button onclick="openNewPromo()" class="btn-add" id="promo-new-btn">&#127381; Nouvelle promo</button>
+    </div>
+
+    <!-- Formulaire (masqué par défaut) -->
+    <div id="promo-form-wrap" style="display:none">
+    <div class="section-card" style="margin-bottom:20px">
+      <div class="section-card-title">
+        <span id="promo-form-title">&#127381; Nouvelle promotion</span>
+        <button onclick="cancelPromo()" style="background:none;border:none;font-size:12px;color:#a08070;cursor:pointer;font-family:Outfit,sans-serif">Annuler</button>
+      </div>
+
+      <!-- &Eacute;tape 1 : Infos g&eacute;n&eacute;rales -->
+      <div class="promo-step">
+        <div class="promo-step-num">1</div>
+        <div class="promo-step-body">
+          <div class="promo-step-title">Informations g&eacute;n&eacute;rales</div>
+          <div class="promo-form-grid">
+            <div class="fg" style="margin:0">
+              <label>Nom de la promotion <span style="color:var(--terra)">*</span></label>
+              <input type="text" id="promo-nom" placeholder="ex&#160;: Chocolats de P&#226;ques 2026">
+            </div>
+            <div class="fg" style="margin:0">
+              <label>Slug URL <span style="color:var(--terra)">*</span></label>
+              <input type="text" id="promo-slug" placeholder="ex&#160;: paques2026" oninput="this.value=this.value.toLowerCase().replace(/[^a-z0-9-]/g,'')">
+              <div class="hint">Fichier g&eacute;n&eacute;r&eacute;&#160;: <code id="promo-slug-preview">promo-[slug].html</code></div>
+            </div>
+            <div class="fg" style="margin:0">
+              <label>Date de d&eacute;but</label>
+              <input type="date" id="promo-debut">
+            </div>
+            <div class="fg" style="margin:0">
+              <label>Date de fin</label>
+              <input type="date" id="promo-fin">
+            </div>
+          </div>
         </div>
+      </div>
 
-        <!-- Infos de l'occasion -->
-        <div class="promo-form-grid">
-          <div class="fg">
-            <label>Nom de l&#8217;occasion <span style="color:var(--terra)">*</span></label>
-            <input type="text" id="promo-nom" placeholder="ex&#160;: Chocolats de P&#226;ques 2026">
+      <!-- &Eacute;tape 2 : Conditions commerciales -->
+      <div class="promo-step">
+        <div class="promo-step-num">2</div>
+        <div class="promo-step-body">
+          <div class="promo-step-title">Conditions commerciales</div>
+          <div class="promo-conditions-grid">
+            <div class="fg" style="margin:0">
+              <label>Remise (%)</label>
+              <input type="number" id="promo-remise" min="0" max="99" step="0.5" value="0" placeholder="0">
+            </div>
+            <div class="fg" style="margin:0">
+              <label>Minimum de commande (colis)</label>
+              <input type="number" id="promo-min-colis" min="0" step="1" value="0" placeholder="0">
+            </div>
+            <div class="fg" style="margin:0">
+              <label>Minimum de commande (&euro; HT)</label>
+              <input type="number" id="promo-min-ht" min="0" step="10" value="0" placeholder="0">
+            </div>
           </div>
-          <div class="fg">
-            <label>Nom du fichier HTML (slug) <span style="color:var(--terra)">*</span></label>
-            <input type="text" id="promo-slug" placeholder="ex&#160;: paques2026" oninput="this.value=this.value.toLowerCase().replace(/[^a-z0-9-]/g,'')">
-            <div class="hint" style="font-size:10px;color:#b09080;margin-top:3px">Minuscules, sans espace &#8594; fichier&#160;: promo-[slug].html</div>
-          </div>
-          <div class="fg">
-            <label>Date de d&#233;but (optionnel)</label>
-            <input type="date" id="promo-debut">
-          </div>
-          <div class="fg">
-            <label>Date de fin (optionnel)</label>
-            <input type="date" id="promo-fin">
+          <div class="fg" style="margin:0">
+            <label>Message promotionnel (affich&eacute; en t&ecirc;te du bon)</label>
+            <textarea id="promo-message" rows="2" placeholder="ex&#160;: Profitez de -15% sur notre s&eacute;lection Chocolate P&#226;ques 2026 — offre valable jusqu'au 31 mars." style="width:100%;padding:9px;border:1.5px solid #e0d0c4;border-radius:7px;font-family:Outfit,sans-serif;font-size:13px;resize:vertical"></textarea>
           </div>
         </div>
+      </div>
 
-        <!-- Upload Excel -->
-        <div class="fg" style="margin-bottom:14px">
-          <label>Catalogue produits (fichier Excel) <span style="color:var(--terra)">*</span></label>
+      <!-- &Eacute;tape 3 : Catalogue produits -->
+      <div class="promo-step">
+        <div class="promo-step-num">3</div>
+        <div class="promo-step-body">
+          <div class="promo-step-title">Catalogue produits (Excel)</div>
           <div class="promo-drop-zone" id="promo-drop-zone"
             onclick="document.getElementById('promo-file-input').click()"
-            ondragover="event.preventDefault();this.style.borderColor='var(--terra)'"
-            ondragleave="this.style.borderColor='#d0c0b0'"
-            ondrop="event.preventDefault();this.style.borderColor='#d0c0b0';handlePromoFile(event.dataTransfer.files[0])">
-            <div style="font-size:32px;margin-bottom:8px">&#128196;</div>
-            <div style="font-size:14px;font-weight:600;color:var(--brown);margin-bottom:4px">Glissez votre fichier Excel ici</div>
-            <div style="font-size:12px;color:#b09080">Colonnes attendues&#160;: Code&#160;|&#160;D&#233;signation&#160;|&#160;PU HT&#160;|&#160;PCB&#160;|&#160;TVA — EAN, Origine, Certif, Poids optionnels</div>
+            ondragover="event.preventDefault();this.classList.add('drag-over')"
+            ondragleave="this.classList.remove('drag-over')"
+            ondrop="event.preventDefault();this.classList.remove('drag-over');handlePromoFile(event.dataTransfer.files[0])">
+            <div style="font-size:28px;margin-bottom:8px">&#128196;</div>
+            <div style="font-size:13px;font-weight:500;color:var(--brown);margin-bottom:4px">Glissez votre fichier Excel ici</div>
+            <div style="font-size:11px;color:#b09080">Colonnes&#160;: Code &middot; D&eacute;signation &middot; PU HT &middot; PCB &middot; TVA (EAN, Origine, Certif optionnels)</div>
             <input type="file" id="promo-file-input" accept=".xlsx,.xls" style="display:none" onchange="handlePromoFile(this.files[0])">
           </div>
-        </div>
-
-        <!-- Aperçu du catalogue parsé -->
-        <div id="promo-preview" style="display:none;margin-bottom:14px">
-          <div style="font-size:11px;font-weight:600;color:var(--brown);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">
-            &#128269; Aper&#231;u du catalogue (<span id="promo-nb-produits">0</span> produits)
+          <div id="promo-preview" style="display:none;margin-top:12px">
+            <div style="font-size:11px;font-weight:600;color:var(--brown);margin-bottom:6px">
+              &#128269; <span id="promo-nb-produits">0</span> produits charg&eacute;s
+            </div>
+            <div style="max-height:220px;overflow-y:auto;border:1.5px solid #e0d0c4;border-radius:8px">
+              <table class="promo-table">
+                <thead><tr><th>Code</th><th>D&eacute;signation</th><th>PCB</th><th>PU HT</th><th>Remis&eacute;</th><th>TVA</th></tr></thead>
+                <tbody id="promo-preview-tbody"></tbody>
+              </table>
+            </div>
           </div>
-          <div style="max-height:260px;overflow-y:auto;border:1.5px solid #e0d0c4;border-radius:8px">
-            <table class="promo-table">
-              <thead><tr>
-                <th>Code</th><th>D&#233;signation</th><th>PCB</th><th>PU HT</th><th>TVA</th><th>Origine</th>
-              </tr></thead>
-              <tbody id="promo-preview-tbody"></tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Log de publication -->
-        <div id="promo-log" style="display:none;background:#1e1e1e;color:#a8ff78;border-radius:8px;padding:12px 14px;font-family:monospace;font-size:11px;line-height:1.8;max-height:140px;overflow-y:auto;white-space:pre-wrap;margin-bottom:14px"></div>
-
-        <!-- Boutons -->
-        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-          <button id="promo-publish-btn" onclick="publishPromo()" disabled
-            style="padding:9px 20px;background:var(--terra);color:#fff;border:none;border-radius:7px;font-family:Outfit,sans-serif;font-size:13px;font-weight:600;cursor:pointer;opacity:.5">
-            &#128229; G&#233;n&#233;rer et publier sur GitHub
-          </button>
-          <button id="promo-download-btn" onclick="downloadPromo()" disabled
-            style="padding:9px 20px;background:var(--brown);color:#fff;border:none;border-radius:7px;font-family:Outfit,sans-serif;font-size:13px;font-weight:600;cursor:pointer;opacity:.5">
-            &#11015; T&#233;l&#233;charger le fichier HTML
-          </button>
-          <span id="promo-status"></span>
         </div>
       </div>
 
-      <!-- Liste des promos publiées -->
-      <div style="margin-top:8px">
-        <div style="font-size:11px;font-weight:600;color:var(--brown);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Bons de commande publi&#233;s</div>
-        <div id="promo-list"></div>
+      <!-- &Eacute;tape 4 : Destinataires -->
+      <div class="promo-step">
+        <div class="promo-step-num">4</div>
+        <div class="promo-step-body">
+          <div class="promo-step-title">Destinataires</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+            <button class="filtre-role active" onclick="setPromoDestinataires('tous',this)">&#127968; Tous les clients</button>
+            <button class="filtre-role" onclick="setPromoDestinataires('groupement',this)">&#127991; Par groupement</button>
+            <button class="filtre-role" onclick="setPromoDestinataires('selection',this)">&#9998; S&eacute;lection manuelle</button>
+          </div>
+          <div id="promo-dest-groupement" style="display:none;margin-bottom:10px">
+            <label style="font-size:11px;color:var(--text-muted)">Groupement</label>
+            <select id="promo-dest-grp-select" style="width:100%;max-width:300px;padding:8px;border:1.5px solid #e0d0c4;border-radius:6px;font-family:Outfit,sans-serif;font-size:12px"></select>
+          </div>
+          <div id="promo-dest-selection" style="display:none">
+            <div id="promo-clients-list" class="promo-clients-grid"></div>
+          </div>
+          <div id="promo-dest-info" style="font-size:11px;color:var(--text-muted);margin-top:6px"></div>
+        </div>
+      </div>
+
+      <!-- Log -->
+      <div id="promo-log" class="promo-log"></div>
+
+      <!-- Boutons d'action -->
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding-top:4px">
+        <button id="promo-publish-btn" onclick="publishPromo()" disabled
+          style="padding:9px 20px;background:var(--terra);color:#fff;border:none;border-radius:7px;font-family:Outfit,sans-serif;font-size:13px;font-weight:600;cursor:pointer;opacity:.5">
+          &#128229; G&eacute;n&eacute;rer &amp; publier
+        </button>
+        <button id="promo-download-btn" onclick="downloadPromo()" disabled
+          style="padding:9px 20px;background:var(--brown);color:#fff;border:none;border-radius:7px;font-family:Outfit,sans-serif;font-size:13px;font-weight:600;cursor:pointer;opacity:.5">
+          &#11015; T&eacute;l&eacute;charger HTML
+        </button>
+        <span id="promo-status" style="font-size:12px;color:var(--text-muted)"></span>
       </div>
     </div>
+    </div><!-- /promo-form-wrap -->
+
+    <!-- Liste des promos -->
+    <div id="promo-list-section">
+      <div style="font-size:11px;font-weight:600;color:var(--brown);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Promotions cr&eacute;&eacute;es</div>
+      <div id="promo-list"><div class="empty-state">Aucune promotion cr&eacute;&eacute;e.</div></div>
+    </div>
+  </div>
 
 
     <!-- PAGE : GROUPEMENTS -->
@@ -1645,6 +1742,7 @@ function showPage(id, el){
   else if(id === "inscriptions") { renderInscrip(); }
   else if(id === "historique") { renderHistorique(); }
   else if(id === "groupements") { renderGroupements(); }
+  else if(id === "promos") { renderPromos(); }
 }
 
 // ============================================
@@ -2728,11 +2826,568 @@ function exportComptes(){
   showToast('✅ Export Excel téléchargé');
 }
 
+
+// ══════════════════════════════════════════════════════════════
+// BONS DE COMMANDE PROMOTIONNELS
+// ══════════════════════════════════════════════════════════════
+
+var _promos = [];           // promos sauvegardées en Firestore
+var _promoProducts = [];    // produits chargés depuis Excel
+var _promoDestinataires = 'tous';
+var _promoEditId = null;    // ID si édition
+var _promoHtmlGenerated = null; // dernier HTML généré
+
+// ── Firebase promos ───────────────────────────────────────────
+function fbLoadPromos(){
+  return initFirebase().then(function(db){
+    return db.collection('promos').orderBy('createdAt','desc').get()
+      .then(function(snap){
+        return snap.docs.map(function(d){return Object.assign({_id:d.id},d.data());});
+      });
+  }).catch(function(){return[];});
+}
+function fbSavePromo(promo){
+  return initFirebase().then(function(db){
+    var id=promo._id||('promo_'+Date.now());
+    return db.collection('promos').doc(id).set(
+      Object.assign({},promo,{_id:undefined}),{merge:true}
+    ).then(function(){return id;});
+  });
+}
+function fbDeletePromo(id){
+  return initFirebase().then(function(db){
+    return db.collection('promos').doc(id).delete();
+  });
+}
+
+// ── Chargement ────────────────────────────────────────────────
+function loadPromos(){
+  fbLoadPromos().then(function(data){
+    _promos=data;
+    renderPromos();
+    updatePromoStats();
+  }).catch(function(){renderPromos();});
+}
+
+function updatePromoStats(){
+  var bar=document.getElementById('promo-stats-bar');
+  if(!bar) return;
+  var now=Date.now();
+  var actives=_promos.filter(function(p){
+    if(p.fin){var d=new Date(p.fin); return d.getTime()>=now;}
+    return true;
+  }).length;
+  var totalCmds=_promos.reduce(function(s,p){return s+(p.nbCommandes||0);},0);
+  bar.style.display=_promos.length?'flex':'none';
+  setEl('ps-total',_promos.length);
+  setEl('ps-actives',actives);
+  setEl('ps-commandes',totalCmds);
+}
+
+// ── Affichage liste ───────────────────────────────────────────
+function renderPromos(){
+  var el=document.getElementById('promo-list');
+  if(!el) return;
+  if(!_promos.length){
+    el.innerHTML='<div class="empty-state">Aucune promotion cr\u00e9\u00e9e. Cliquez sur \u00ab Nouvelle promo \u00bb pour commencer.</div>';
+    return;
+  }
+  var now=Date.now();
+  el.innerHTML=_promos.map(function(p){
+    var isActive=!p.fin||(new Date(p.fin).getTime()>=now);
+    var url='https://loac1118.github.io/MDM-BDC26/promo-'+escH(p.slug||'')+'.html';
+    var nbCmd=p.nbCommandes||0;
+    var remise=p.remise>0?'-'+p.remise+'%':'';
+    var minColis=p.minColis>0?'min '+p.minColis+' colis':'';
+    var meta=[remise,minColis,p.debut&&p.fin?(p.debut+' \u2192 '+p.fin):''].filter(Boolean).join(' \u00b7 ');
+    return '<div class="promo-card">'
+      +'<div class="promo-card-icon">&#127381;</div>'
+      +'<div class="promo-card-body">'
+      +'<div class="promo-card-title">'+escH(p.nom||'Sans titre')
+      +' <span class="promo-badge '+(isActive?'active':'expired')+'">'+(isActive?'Active':'Expir\u00e9e')+'</span></div>'
+      +'<div class="promo-card-meta">'+(meta||'Aucune condition')
+      +' \u00b7 <span style="color:var(--accent)">'+nbCmd+' commande'+(nbCmd>1?'s':'')+'</span></div>'
+      +(p.slug?'<div class="promo-card-meta" style="margin-top:3px">'
+        +'<a href="'+url+'" target="_blank" style="color:var(--accent);font-size:10px">'+url+'</a>'
+        +'</div>':'')
+      +'</div>'
+      +'<div class="promo-card-actions">'
+      +'<button class="btn-action" onclick="viewPromoOrders(\''+p._id+'\')" title="Commandes">&#128203;</button>'
+      +'<button class="btn-action btn-edit" onclick="editPromo(\''+p._id+'\')" title="Modifier">&#9998;</button>'
+      +'<button class="btn-action btn-del" onclick="delPromo(\''+p._id+'\')" title="Supprimer">&#128465;</button>'
+      +'</div>'
+      +'</div>';
+  }).join('');
+}
+
+// ── Formulaire ────────────────────────────────────────────────
+function openNewPromo(){
+  _promoEditId=null; _promoProducts=[]; _promoHtmlGenerated=null;
+  document.getElementById('promo-nom').value='';
+  document.getElementById('promo-slug').value='';
+  document.getElementById('promo-slug-preview').textContent='promo-[slug].html';
+  document.getElementById('promo-debut').value='';
+  document.getElementById('promo-fin').value='';
+  document.getElementById('promo-remise').value=0;
+  document.getElementById('promo-min-colis').value=0;
+  document.getElementById('promo-min-ht').value=0;
+  document.getElementById('promo-message').value='';
+  document.getElementById('promo-preview').style.display='none';
+  document.getElementById('promo-log').style.display='none';
+  document.getElementById('promo-log').textContent='';
+  document.getElementById('promo-form-title').textContent='\u{1F381} Nouvelle promotion';
+  _setPromoBtn('promo-publish-btn',false);
+  _setPromoBtn('promo-download-btn',false);
+  setPromoDestinataires('tous',document.querySelector('.filtre-role'));
+  _fillPromoGroupements();
+  _fillPromoClients();
+  document.getElementById('promo-form-wrap').style.display='block';
+  document.getElementById('promo-form-wrap').scrollIntoView({behavior:'smooth'});
+  // Slug auto depuis le nom
+  document.getElementById('promo-nom').addEventListener('input',function(){
+    var slug=this.value.toLowerCase()
+      .replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'').replace(/-+/g,'-');
+    document.getElementById('promo-slug').value=slug;
+    document.getElementById('promo-slug-preview').textContent='promo-'+slug+'.html';
+  },{once:false});
+}
+
+function cancelPromo(){
+  document.getElementById('promo-form-wrap').style.display='none';
+  _promoEditId=null; _promoProducts=[]; _promoHtmlGenerated=null;
+}
+
+function editPromo(id){
+  var p=_promos.find(function(x){return x._id===id;});
+  if(!p) return;
+  _promoEditId=id;
+  openNewPromo();
+  document.getElementById('promo-nom').value=p.nom||'';
+  document.getElementById('promo-slug').value=p.slug||'';
+  document.getElementById('promo-slug-preview').textContent='promo-'+(p.slug||'')+'.html';
+  document.getElementById('promo-debut').value=p.debut||'';
+  document.getElementById('promo-fin').value=p.fin||'';
+  document.getElementById('promo-remise').value=p.remise||0;
+  document.getElementById('promo-min-colis').value=p.minColis||0;
+  document.getElementById('promo-min-ht').value=p.minHT||0;
+  document.getElementById('promo-message').value=p.message||'';
+  document.getElementById('promo-form-title').textContent='\u270F\uFE0F Modifier\u00a0: '+p.nom;
+  if(p.produits&&p.produits.length){
+    _promoProducts=p.produits;
+    _renderPromoPreview();
+    _setPromoBtn('promo-publish-btn',true);
+    _setPromoBtn('promo-download-btn',true);
+  }
+}
+
+function delPromo(id){
+  if(!confirm('Supprimer cette promotion ?')) return;
+  fbDeletePromo(id).then(function(){
+    _promos=_promos.filter(function(p){return p._id!==id;});
+    renderPromos(); updatePromoStats();
+    showToast('Promotion supprim\u00e9e');
+  });
+}
+
+// ── Destinataires ─────────────────────────────────────────────
+function setPromoDestinataires(mode,btn){
+  _promoDestinataires=mode;
+  document.querySelectorAll('#page-promos .filtre-role').forEach(function(b){b.classList.remove('active');});
+  if(btn) btn.classList.add('active');
+  document.getElementById('promo-dest-groupement').style.display=mode==='groupement'?'block':'none';
+  document.getElementById('promo-dest-selection').style.display=mode==='selection'?'block':'none';
+  _updateDestInfo();
+}
+
+function _fillPromoGroupements(){
+  var sel=document.getElementById('promo-dest-grp-select');
+  if(!sel) return;
+  sel.innerHTML='<option value="">-- Choisir --</option>';
+  _groupements.forEach(function(g){
+    var o=document.createElement('option');
+    o.value=g.nom; o.textContent=g.nom;
+    sel.appendChild(o);
+  });
+  sel.onchange=function(){_updateDestInfo();};
+}
+
+function _fillPromoClients(){
+  var el=document.getElementById('promo-clients-list');
+  if(!el) return;
+  var clients=comptes.filter(function(c){return c.role==='client';});
+  if(!clients.length){el.innerHTML='<div style="font-size:12px;color:var(--text-muted)">Aucun client</div>';return;}
+  el.innerHTML=clients.map(function(c,i){
+    return '<label class="promo-client-check">'
+      +'<input type="checkbox" id="promo-cli-'+i+'" value="'+escH(c.login)+'" checked>'
+      +'<span style="flex:1"><strong>'+escH(c.nom||c.login)+'</strong>'
+      +(c.ville?' <span style="color:var(--text-muted);font-size:11px">'+escH(c.ville)+'</span>':'')+'</span>'
+      +(c.email?'<span style="font-size:10px;color:var(--text-muted)">'+escH(c.email)+'</span>':'')
+      +'</label>';
+  }).join('');
+  el.addEventListener('change',function(){_updateDestInfo();});
+}
+
+function _getSelectedClients(){
+  if(_promoDestinataires==='tous'){
+    return comptes.filter(function(c){return c.role==='client';});
+  }
+  if(_promoDestinataires==='groupement'){
+    var grp=(document.getElementById('promo-dest-grp-select')||{}).value;
+    return comptes.filter(function(c){return c.role==='client'&&c.groupement===grp;});
+  }
+  // Sélection manuelle
+  var selected=[];
+  document.querySelectorAll('#promo-clients-list input[type=checkbox]:checked').forEach(function(cb){
+    var c=comptes.find(function(x){return x.login===cb.value;});
+    if(c) selected.push(c);
+  });
+  return selected;
+}
+
+function _updateDestInfo(){
+  var clients=_getSelectedClients();
+  var info=document.getElementById('promo-dest-info');
+  if(info) info.textContent=clients.length+' client'+(clients.length>1?'s':'')+' concern\u00e9'+(clients.length>1?'s':'');
+}
+
+// ── Upload Excel ──────────────────────────────────────────────
+function handlePromoFile(file){
+  if(!file) return;
+  if(typeof XLSX==='undefined'){showToast('\u26a0 XLSX non disponible');return;}
+  var reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      var wb=XLSX.read(e.target.result,{type:'array'});
+      var ws=wb.Sheets[wb.SheetNames[0]];
+      var rows=XLSX.utils.sheet_to_json(ws,{defval:''});
+      _promoProducts=[];
+      rows.forEach(function(row){
+        var code=String(row['Code']||row['CODE']||row['code']||'').trim();
+        var des=String(row['D\u00e9signation']||row['Designation']||row['DESIGNATION']||row['Libelle']||row['libelle']||'').trim();
+        var pu=parseFloat(String(row['PU HT']||row['PUHT']||row['pu_ht']||row['Prix']||row['prix']||0).replace(',','.'))||0;
+        var pcb=parseInt(row['PCB']||row['pcb']||1)||1;
+        var tva=parseFloat(row['TVA']||row['tva']||5.5)||5.5;
+        var ean=String(row['EAN']||row['ean']||'').trim();
+        var origine=String(row['Origine']||row['origine']||'').trim();
+        var certif=String(row['Certif']||row['certif']||row['Certification']||'').trim();
+        if(!code&&!des) return;
+        _promoProducts.push({code:code,designation:des,puHT:pu,pcb:pcb,tva:tva,ean:ean,origine:origine,certif:certif});
+      });
+      _renderPromoPreview();
+      _setPromoBtn('promo-publish-btn',_promoProducts.length>0);
+      _setPromoBtn('promo-download-btn',_promoProducts.length>0);
+      showToast('\u2705 '+_promoProducts.length+' produits charg\u00e9s');
+    }catch(err){showToast('\u26a0 Erreur lecture Excel\u00a0: '+err.message);}
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function _renderPromoPreview(){
+  var remise=parseFloat(document.getElementById('promo-remise').value)||0;
+  document.getElementById('promo-nb-produits').textContent=_promoProducts.length;
+  var tbody=document.getElementById('promo-preview-tbody');
+  tbody.innerHTML=_promoProducts.slice(0,30).map(function(p){
+    var prix=remise>0?(p.puHT*(1-remise/100)).toFixed(2):p.puHT.toFixed(2);
+    return '<tr>'
+      +'<td style="font-family:monospace;color:var(--brown)">'+escH(p.code)+'</td>'
+      +'<td>'+escH(p.designation)+'</td>'
+      +'<td style="text-align:center">'+p.pcb+'</td>'
+      +'<td style="text-align:right">'+p.puHT.toFixed(2)+'\u00a0\u20ac</td>'
+      +'<td style="text-align:right;color:var(--terra);font-weight:500">'+prix+'\u00a0\u20ac</td>'
+      +'<td style="text-align:center">'+p.tva+'%</td>'
+      +'</tr>';
+  }).join('');
+  document.getElementById('promo-preview').style.display='block';
+}
+
+function _setPromoBtn(id,enabled){
+  var btn=document.getElementById(id);
+  if(!btn) return;
+  btn.disabled=!enabled;
+  btn.style.opacity=enabled?'1':'0.5';
+}
+
+function _promoLog(msg,type){
+  var el=document.getElementById('promo-log');
+  if(!el) return;
+  el.style.display='block';
+  var color=type==='ok'?'#a8ff78':type==='err'?'#ff6b6b':'#ffd93d';
+  el.innerHTML+='<span style="color:'+color+'">'+(type==='ok'?'\u2705 ':type==='err'?'\u274c ':'\u{1F4E2} ')+escH(msg)+'</span>\n';
+  el.scrollTop=el.scrollHeight;
+}
+
+// ── G\u00e9n\u00e9ration HTML promo ─────────────────────────────────────────
+function _generatePromoHTML(){
+  var nom=document.getElementById('promo-nom').value.trim();
+  var slug=document.getElementById('promo-slug').value.trim();
+  var remise=parseFloat(document.getElementById('promo-remise').value)||0;
+  var minColis=parseInt(document.getElementById('promo-min-colis').value)||0;
+  var minHT=parseFloat(document.getElementById('promo-min-ht').value)||0;
+  var message=document.getElementById('promo-message').value.trim();
+  var debut=document.getElementById('promo-debut').value;
+  var fin=document.getElementById('promo-fin').value;
+  var clients=_getSelectedClients();
+
+  var rows=_promoProducts.map(function(p){
+    var prixRemise=remise>0?(p.puHT*(1-remise/100)).toFixed(2):p.puHT.toFixed(2);
+    return '<tr>'
+      +'<td style="font-family:monospace;font-size:11px;color:#5c4a38">'+escH(p.code)+'</td>'
+      +'<td>'+escH(p.designation)+'</td>'
+      +(p.ean?'<td style="font-size:10px;color:#a89080;font-family:monospace">'+escH(p.ean)+'</td>':'<td></td>')
+      +(p.origine?'<td style="font-size:11px;color:#a89080">'+escH(p.origine)+'</td>':'<td></td>')
+      +'<td style="text-align:center">'+p.pcb+'</td>'
+      +(remise>0
+        ?'<td style="text-align:right"><span style="text-decoration:line-through;color:#ccc;font-size:10px">'+p.puHT.toFixed(2)+'\u20ac</span> <strong style="color:#a0522d">'+prixRemise+'\u20ac</strong></td>'
+        :'<td style="text-align:right">'+p.puHT.toFixed(2)+'\u20ac</td>')
+      +'<td style="text-align:center">'+p.tva+'%</td>'
+      +'<td class="no-print" style="text-align:center">'
+      +'<input type="number" min="0" step="1" value="" placeholder="0" data-code="'+escH(p.code)+'" data-pu="'+prixRemise+'" data-pcb="'+p.pcb+'" '
+      +'oninput="updateTotaux()" style="width:60px;padding:4px 6px;border:1px solid #d0c0b0;border-radius:4px;text-align:center;font-family:Inter,sans-serif;font-size:12px">'
+      +'</td>'
+      +'<td style="text-align:right;font-weight:500;color:#5c4a38" id="tot-'+escH(p.code)+'">0,00\u00a0\u20ac</td>'
+      +'</tr>';
+  }).join('');
+
+  var conditionsText=[];
+  if(remise>0) conditionsText.push(remise+'% de remise sur tous les produits');
+  if(minColis>0) conditionsText.push('commande minimum\u00a0: '+minColis+' colis');
+  if(minHT>0) conditionsText.push('montant minimum\u00a0: '+minHT.toFixed(0)+'\u00a0\u20ac HT');
+  if(debut||fin) conditionsText.push('valable '+(debut&&fin?'du '+debut+' au '+fin:debut?'d\u00e8s le '+debut:'jusqu\'au '+fin));
+
+  var HTML='<!DOCTYPE html>\n<html lang="fr">\n<head>\n'
+    +'<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">\n'
+    +'<title>'+escH(nom)+' \u2014 Moulin des Moines</title>\n'
+    +'<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,200;0,400;1,200&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">\n'
+    +'<style>\n'
+    +':root{--terra:#a0522d;--brown:#78503c;--bg:#faf8f5;--border:#e8e0d6;--accent:#4a7c59}\n'
+    +'*{box-sizing:border-box;margin:0;padding:0}\n'
+    +'body{font-family:\'Inter\',sans-serif;font-weight:300;background:var(--bg);color:#5c4a38;padding:24px 20px}\n'
+    +'.header{display:flex;align-items:center;justify-content:space-between;padding-bottom:16px;border-bottom:2px solid var(--terra);margin-bottom:20px}\n'
+    +'.logo{font-family:\'Fraunces\',serif;font-weight:200;font-size:22px;color:var(--brown)}.logo em{font-style:italic;color:var(--terra)}\n'
+    +'.promo-banner{background:linear-gradient(135deg,#fff8f0,#fdebd0);border:2px solid var(--terra);border-radius:10px;padding:16px 20px;margin-bottom:20px;text-align:center}\n'
+    +'.promo-nom{font-family:\'Fraunces\',serif;font-weight:200;font-size:24px;color:var(--terra);margin-bottom:8px}\n'
+    +'.promo-conditions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:8px}\n'
+    +'.promo-chip{padding:4px 12px;border-radius:20px;background:var(--terra);color:#fff;font-size:12px;font-weight:500}\n'
+    +'.promo-msg{font-size:13px;font-weight:300;color:#78503c;line-height:1.6}\n'
+    +'table{width:100%;border-collapse:collapse;margin-bottom:20px}\n'
+    +'th{padding:9px 12px;font-size:10px;font-weight:500;color:#a89080;background:#f5f0ea;text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid #e8e0d6;text-align:left}\n'
+    +'td{padding:9px 12px;border-bottom:1px solid #f0ebe3;font-size:12px;vertical-align:middle}\n'
+    +'tr:hover{background:#fdf8f5}\n'
+    +'.totals{background:#fff;border:2px solid var(--terra);border-radius:8px;padding:14px 18px;display:flex;gap:20px;align-items:center;flex-wrap:wrap;margin-bottom:20px}\n'
+    +'.total-item{text-align:center}.total-val{font-family:\'Fraunces\',serif;font-size:20px;font-weight:200;color:var(--brown)}.total-lbl{font-size:10px;color:#a89080;text-transform:uppercase;letter-spacing:.4px}\n'
+    +'.send-btn{padding:12px 28px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;font-family:\'Inter\',sans-serif}\n'
+    +'.send-btn:hover{background:#3d6b4a}\n'
+    +'.form-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}\n'
+    +'.fg label{font-size:11px;color:#a89080;display:block;margin-bottom:4px}\n'
+    +'.fg input{width:100%;padding:8px 10px;border:1px solid #e0d0c4;border-radius:6px;font-family:\'Inter\',sans-serif;font-size:12px}\n'
+    +'@media print{.no-print{display:none}}\n'
+    +'</style>\n</head>\n<body>\n'
+    +'<div class="header"><div class="logo">Moulin <em>des</em> Moines</div>'
+    +'<div style="text-align:right;font-size:11px;color:#a89080">Bon de commande promotionnel<br>'+(debut&&fin?'Du '+debut+' au '+fin:fin?'Jusqu\'au '+fin:'')+'</div></div>\n'
+    +'<div class="promo-banner">\n'
+    +'<div class="promo-nom">'+escH(nom)+'</div>\n';
+  if(conditionsText.length){
+    HTML+='<div class="promo-conditions">\n';
+    conditionsText.forEach(function(c){HTML+='<span class="promo-chip">'+escH(c)+'</span>\n';});
+    HTML+='</div>\n';
+  }
+  if(message) HTML+='<div class="promo-msg">'+escH(message)+'</div>\n';
+  HTML+='</div>\n';
+
+  // Champs client
+  HTML+='<div class="form-fields no-print">\n'
+    +'<div class="fg"><label>Nom du magasin *</label><input type="text" id="f-magasin" placeholder="Votre magasin"></div>\n'
+    +'<div class="fg"><label>Email *</label><input type="email" id="f-email" placeholder="commande@magasin.fr"></div>\n'
+    +'<div class="fg"><label>T\u00e9l\u00e9phone</label><input type="tel" id="f-tel" placeholder="06..."></div>\n'
+    +'<div class="fg"><label>Ville</label><input type="text" id="f-ville" placeholder="Lyon"></div>\n'
+    +'</div>\n';
+
+  // Tableau produits
+  HTML+='<table>\n<thead><tr>\n'
+    +'<th>Code</th><th>D\u00e9signation</th><th>EAN</th><th>Origine</th><th style="text-align:center">PCB</th>'
+    +'<th style="text-align:right">Prix HT</th><th style="text-align:center">TVA</th>'
+    +'<th class="no-print" style="text-align:center">Qt\u00e9 colis</th>'
+    +'<th style="text-align:right">Total HT</th>'
+    +'</tr></thead>\n<tbody>\n'+rows+'\n</tbody>\n</table>\n';
+
+  // Totaux
+  HTML+='<div class="totals">\n'
+    +'<div class="total-item"><div class="total-val" id="tot-refs">0</div><div class="total-lbl">R\u00e9f.</div></div>\n'
+    +'<div class="total-item"><div class="total-val" id="tot-colis">0</div><div class="total-lbl">Colis</div></div>\n'
+    +'<div class="total-item"><div class="total-val" id="tot-ht">0,00\u00a0\u20ac</div><div class="total-lbl">Total HT</div></div>\n';
+  if(remise>0) HTML+='<div class="total-item"><div class="total-val" style="color:var(--terra)">-'+remise+'%</div><div class="total-lbl">Remise</div></div>\n';
+  HTML+='<div style="margin-left:auto" class="no-print"><button class="send-btn" onclick="sendOrder()">&#9993; Envoyer la commande</button></div>\n</div>\n';
+
+  // JS inline
+  var cond='';
+  if(minColis>0) cond+='\nif(totalColis>0&&totalColis<'+minColis+'){alert("Minimum de commande\u00a0: '+minColis+' colis.");return;}';
+  if(minHT>0) cond+='\nif(totalHT>0&&totalHT<'+minHT+'){alert("Montant minimum\u00a0: '+minHT+'\u00a0\u20ac HT.");return;}';
+
+  // Email destinataire
+  var mailto='cspoto@moulindesmoines.com';
+
+  HTML+='<script>\n'
+    +'function fmt2(n){return n.toFixed(2).replace(".",",")+"\\u00a0\\u20ac";}\n'
+    +'function updateTotaux(){\n'
+    +'  var refs=0,colis=0,ht=0;\n'
+    +'  document.querySelectorAll("input[data-code]").forEach(function(inp){\n'
+    +'    var q=parseInt(inp.value)||0;if(!q)return;\n'
+    +'    var pu=parseFloat(inp.dataset.pu)||0;var pcb=parseFloat(inp.dataset.pcb)||1;\n'
+    +'    refs++;colis+=q;ht+=pu*q*pcb;\n'
+    +'    var tc=document.getElementById("tot-"+inp.dataset.code);\n'
+    +'    if(tc)tc.textContent=fmt2(pu*q*pcb);\n'
+    +'  });\n'
+    +'  var el=document.getElementById("tot-refs");if(el)el.textContent=refs;\n'
+    +'  var el2=document.getElementById("tot-colis");if(el2)el2.textContent=colis;\n'
+    +'  var el3=document.getElementById("tot-ht");if(el3)el3.textContent=fmt2(ht);\n'
+    +'}\n'
+    +'function sendOrder(){\n'
+    +'  var mag=(document.getElementById("f-magasin")||{value:""}).value.trim();\n'
+    +'  var email=(document.getElementById("f-email")||{value:""}).value.trim();\n'
+    +'  if(!mag||!email){alert("Veuillez remplir le nom du magasin et l\'email.");return;}\n'
+    +'  var lines=[],refs=0,colis=0,ht=0;\n'
+    +'  document.querySelectorAll("input[data-code]").forEach(function(inp){\n'
+    +'    var q=parseInt(inp.value)||0;if(!q)return;\n'
+    +'    var pu=parseFloat(inp.dataset.pu)||0;var pcb=parseFloat(inp.dataset.pcb)||1;\n'
+    +'    refs++;colis+=q;ht+=pu*q*pcb;\n'
+    +'    lines.push(inp.dataset.code+"  x"+q+" colis = "+fmt2(pu*q*pcb));\n'
+    +'  });\n'
+    +'  if(!refs){alert("Votre panier est vide.");return;}'
+    +cond+'\n'
+    +'  var body="BON DE COMMANDE PROMOTIONNEL\\n'+escH(nom)+'\\n\\n"\n'
+    +'    +"Magasin : "+mag+"\\nEmail : "+email+"\\n\\nPRODUITS :\\n"+lines.join("\\n")\n'
+    +'    +"\\n\\nR\u00e9f\u00e9rences : "+refs+" | Colis : "+colis+" | Total HT : "+fmt2(ht);\n'
+    +'  window.location.href="mailto:'+mailto+'?subject="+encodeURIComponent("BDC Promo '+escH(nom)+' - "+mag)+"&body="+encodeURIComponent(body);\n'
+    +'}\n'
+    +'<\/script>\n</body>\n</html>';
+
+  return HTML;
+}
+
+// ── Publication GitHub ────────────────────────────────────────
+async function publishPromo(){
+  var nom=document.getElementById('promo-nom').value.trim();
+  var slug=document.getElementById('promo-slug').value.trim();
+  if(!nom||!slug){showToast('\u26a0 Nom et slug obligatoires');return;}
+  if(!_promoProducts.length){showToast('\u26a0 Chargez un fichier Excel');return;}
+
+  _setPromoBtn('promo-publish-btn',false);
+  document.getElementById('promo-log').textContent='';
+  _promoLog('G\u00e9n\u00e9ration du HTML...');
+
+  var html=_generatePromoHTML();
+  _promoHtmlGenerated=html;
+  _setPromoBtn('promo-download-btn',true);
+
+  var cfg=ghConfig();
+  if(!cfg.token){_promoLog('Token GitHub manquant — utilisez T\u00e9l\u00e9charger','err');_setPromoBtn('promo-publish-btn',true);return;}
+
+  try{
+    var filename='promo-'+slug+'.html';
+    _promoLog('Lecture de '+filename+' sur GitHub...');
+
+    // Lire SHA actuel si fichier existe déjà
+    var sha=null;
+    var res=await fetch(
+      'https://api.github.com/repos/'+cfg.user+'/'+cfg.repo+'/contents/'+filename+'?ref='+cfg.branch,
+      {headers:{'Authorization':'token '+cfg.token,'Accept':'application/vnd.github.v3+json'},cache:'no-store'}
+    );
+    if(res.status===200){
+      var existing=await res.json();
+      sha=existing.sha;
+      _promoLog('Fichier existant trouv\u00e9, mise \u00e0 jour...','ok');
+    } else if(res.status===404){
+      _promoLog('Nouveau fichier...');
+    } else {
+      throw new Error('GitHub HTTP '+res.status);
+    }
+
+    // Encoder et pusher
+    var b64=btoa(unescape(encodeURIComponent(html)));
+    var body={message:'Promo '+nom+' \u2014 '+new Date().toLocaleString('fr-FR'),content:b64,branch:cfg.branch};
+    if(sha) body.sha=sha;
+
+    var put=await fetch(
+      'https://api.github.com/repos/'+cfg.user+'/'+cfg.repo+'/contents/'+filename,
+      {method:'PUT',headers:{'Authorization':'token '+cfg.token,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},
+       body:JSON.stringify(body)}
+    );
+    if(put.status!==200&&put.status!==201){var ed=await put.json();throw new Error(ed.message||'PUT HTTP '+put.status);}
+
+    _promoLog('\u2705 Publi\u00e9 sur GitHub Pages !','ok');
+    var url='https://loac1118.github.io/MDM-BDC26/'+filename;
+    _promoLog('URL : '+url,'ok');
+
+    // Sauvegarder en Firestore
+    await _savePromoRecord(nom,slug,url);
+    showToast('\u2705 Promo publi\u00e9e : '+filename);
+  }catch(e){
+    _promoLog('\u274c '+e.message,'err');
+    showToast('\u274c GitHub\u00a0: '+e.message);
+  }
+  _setPromoBtn('promo-publish-btn',true);
+}
+
+async function _savePromoRecord(nom,slug,url){
+  var remise=parseFloat(document.getElementById('promo-remise').value)||0;
+  var minColis=parseInt(document.getElementById('promo-min-colis').value)||0;
+  var minHT=parseFloat(document.getElementById('promo-min-ht').value)||0;
+  var debut=document.getElementById('promo-debut').value;
+  var fin=document.getElementById('promo-fin').value;
+  var message=document.getElementById('promo-message').value.trim();
+  var clients=_getSelectedClients();
+
+  var record={
+    nom:nom,slug:slug,url:url,
+    remise:remise,minColis:minColis,minHT:minHT,
+    debut:debut,fin:fin,message:message,
+    destinataires:_promoDestinataires,
+    nbClients:clients.length,
+    nbProduits:_promoProducts.length,
+    produits:_promoProducts,
+    nbCommandes:0,
+    createdAt:firebase.firestore.FieldValue.serverTimestamp(),
+    updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+  };
+  if(_promoEditId) record._id=_promoEditId;
+
+  var id=await fbSavePromo(record);
+  record._id=id;
+  if(_promoEditId){
+    var idx=_promos.findIndex(function(p){return p._id===_promoEditId;});
+    if(idx>=0) _promos[idx]=record; else _promos.unshift(record);
+  } else {
+    _promos.unshift(record);
+  }
+  renderPromos(); updatePromoStats();
+  cancelPromo();
+}
+
+// ── T\u00e9l\u00e9chargement HTML ─────────────────────────────────────────
+function downloadPromo(){
+  if(!_promoHtmlGenerated) _promoHtmlGenerated=_generatePromoHTML();
+  var slug=document.getElementById('promo-slug').value.trim()||'promo';
+  var blob=new Blob([_promoHtmlGenerated],{type:'text/html;charset=utf-8'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='promo-'+slug+'.html';
+  a.click();
+  showToast('\u2705 Fichier t\u00e9l\u00e9charg\u00e9');
+}
+
+// ── Suivi commandes ───────────────────────────────────────────
+function viewPromoOrders(id){
+  var p=_promos.find(function(x){return x._id===id;});
+  if(!p) return;
+  showToast('Commandes promo "'+p.nom+'" : '+( p.nbCommandes||0)+' re\u00e7ue'+(p.nbCommandes>1?'s':''));
+}
+
 window.addEventListener('DOMContentLoaded',function(){
   loadComptes();
   loadActus();
   loadInscriptions();
   loadGroupements();
+  loadPromos();
   // Les tranches seront initialisées à l'ouverture de la page groupements
   showPage('dashboard', document.querySelector('.nav-item.active'));
 });

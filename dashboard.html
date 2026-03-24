@@ -897,6 +897,7 @@ window.PRODUCTS = [{"code":"ABRCOU200","libelle":"Abricots secs coupés bio - 20
 
 
 
+
 var FIREBASE_CONFIG = {
   apiKey:            "AIzaSyB000QDa4c-vMjO1Xuimw58iiRvwgbF1zc",
   authDomain:        "mdm-bdc26.firebaseapp.com",
@@ -991,19 +992,22 @@ function fbLoadHistory(login) {
 // Écoute temps réel des commandes client
 function fbWatchHistory(login, franco, callback) {
   initFirebase().then(function(db) {
-    // Annuler l'écoute précédente si elle existe
     if(window._historyUnsub) window._historyUnsub();
-    window._historyUnsub = db.collection('historique')
-      .doc(login)
-      .collection('commandes')
-      .orderBy('id', 'desc')
-      .limit(50)
-      .onSnapshot(function(snap) {
-        var orders = snap.docs.map(function(d) { return d.data(); });
-        callback(orders);
-      }, function(e) {
-        console.warn('fbWatchHistory error:', e);
-      });
+    var ref=db.collection('historique').doc(login).collection('commandes')
+      .orderBy('id','desc').limit(50);
+    window._historyUnsub=ref.onSnapshot(function(snap) {
+      var orders=snap.docs.map(function(d){return d.data();});
+      callback(orders);
+    }, function(e) {
+      console.warn('fbWatchHistory error:',e.code);
+      // Fallback sans orderBy
+      db.collection('historique').doc(login).collection('commandes').limit(50).get()
+        .then(function(snap){
+          var orders=snap.docs.map(function(d){return d.data();});
+          orders.sort(function(a,b){return (b.id||0)-(a.id||0);});
+          callback(orders);
+        }).catch(function(){});
+    });
   }).catch(function(){});
 }
 
@@ -1192,6 +1196,7 @@ function renderClient(data){
   try{local=JSON.parse(localStorage.getItem('mdm_history_'+login)||'[]');}catch(e){}
   if(local.length) _renderClientDash(local,franco);
 
+  var _prevOrderCount=local.length;
   fbWatchHistory(login,franco,function(fbOrders){
     if(!fbOrders) return;
     var ids={};var merged=[];
@@ -1200,6 +1205,11 @@ function renderClient(data){
     merged.sort(function(a,b){return (b.id||0)-(a.id||0);});
     if(merged.length>50) merged=merged.slice(0,50);
     localStorage.setItem('mdm_history_'+login,JSON.stringify(merged));
+    // Notifier si nouvelle commande détectée en temps réel
+    if(merged.length>_prevOrderCount && _prevOrderCount>0){
+      showToast('✅ Nouvelle commande enregistrée !');
+    }
+    _prevOrderCount=merged.length;
     _renderClientDash(merged,franco);
   });
 
@@ -1377,11 +1387,26 @@ function renderCommercial(data){
   });
   if(Object.keys(allOrdersMap).length) _render();
 
+  var _prevComCount=0;
   initFirebase().then(function(db){
     logins.forEach(function(lg){
       var unsub=db.collection('historique').doc(lg).collection('commandes')
         .orderBy('id','desc').limit(50)
-        .onSnapshot(function(snap){allOrdersMap[lg]=snap.docs.map(function(dd){return dd.data();});_render();},function(){});
+        .onSnapshot(function(snap){
+          var prev=allOrdersMap[lg]?allOrdersMap[lg].length:0;
+          allOrdersMap[lg]=snap.docs.map(function(dd){return dd.data();});
+          // Notifier si nouvelle commande
+          if(allOrdersMap[lg].length>prev && prev>0){
+            var cli=clients.find(function(c){return c.login.replace(/[^a-zA-Z0-9_-]/g,'_')===lg;});
+            showToast('✅ Nouvelle commande : '+(cli?cli.nom:lg));
+          }
+          _render();
+        },function(){
+          // Fallback sans orderBy
+          db.collection('historique').doc(lg).collection('commandes').limit(50).get()
+            .then(function(snap){allOrdersMap[lg]=snap.docs.map(function(dd){return dd.data();});_render();})
+            .catch(function(){});
+        });
       window._comHistoryUnsubs.push(unsub);
     });
   }).catch(function(){});
@@ -2395,6 +2420,7 @@ function toggleCliOrders(uid){
   if(el){ el.classList.toggle('open'); }
   if(chev){ chev.classList.toggle('open'); }
 }
+
 
 
 

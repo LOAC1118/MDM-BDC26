@@ -2176,30 +2176,82 @@ function renderHistorique(){
   var container=document.getElementById('historique-list');
   if(!container) return;
   container.innerHTML='<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:12px">Chargement…</div>';
-  fbLoadAllHistory().then(function(orders){
-    if(!orders||!orders.length){
+
+  // Annuler le watcher précédent
+  if(window._histoAdminUnsubs){
+    window._histoAdminUnsubs.forEach(function(u){try{u();}catch(e){}});
+  }
+  window._histoAdminUnsubs=[];
+  var allOrdersMap={};
+
+  function _renderAllOrders(){
+    var all=[];
+    Object.keys(allOrdersMap).forEach(function(login){
+      allOrdersMap[login].forEach(function(o){
+        all.push(Object.assign({},o,{_login:login}));
+      });
+    });
+    all.sort(function(a,b){return (b.id||0)-(a.id||0);});
+    if(!all.length){
       container.innerHTML='<div class="empty-state"><p>Aucune commande enregistrée.</p></div>';
       return;
     }
+    // Badge dans la nav
+    var badge=document.getElementById('badge-historique');
+    if(badge){badge.textContent=all.length;badge.style.display='inline-block';}
+
     var html='<table style="width:100%;border-collapse:collapse;font-size:12px">';
     html+='<thead><tr style="background:var(--bg)">';
     html+='<th style="padding:9px 12px;text-align:left;font-weight:500;color:var(--text-muted);border-bottom:1px solid var(--border)">Client</th>';
     html+='<th style="padding:9px 12px;text-align:left;font-weight:500;color:var(--text-muted);border-bottom:1px solid var(--border)">Date</th>';
     html+='<th style="padding:9px 12px;text-align:left;font-weight:500;color:var(--text-muted);border-bottom:1px solid var(--border)">Magasin</th>';
     html+='<th style="padding:9px 12px;text-align:right;font-weight:500;color:var(--text-muted);border-bottom:1px solid var(--border)">Réf.</th>';
+    html+='<th style="padding:9px 12px;text-align:right;font-weight:500;color:var(--text-muted);border-bottom:1px solid var(--border)">Colis</th>';
     html+='<th style="padding:9px 12px;text-align:right;font-weight:500;color:var(--text-muted);border-bottom:1px solid var(--border)">Total HT</th>';
+    html+='<th style="padding:9px 12px;text-align:center;font-weight:500;color:var(--text-muted);border-bottom:1px solid var(--border)">Nouveau</th>';
     html+='</tr></thead><tbody>';
-    orders.forEach(function(o){
-      html+='<tr style="border-bottom:1px solid var(--border-light)">';
-      html+='<td style="padding:9px 12px;color:var(--accent);font-weight:500">'+escH(o._login||o.login||'—')+'</td>';
+    var cutoff=Date.now()-10*60*1000; // 10 min
+    all.forEach(function(o){
+      var isNew=(o.id&&o.id>cutoff);
+      html+='<tr style="border-bottom:1px solid var(--border-light)'+(isNew?';background:#f0fdf4':'')+'">';
+      html+='<td style="padding:9px 12px;color:var(--accent);font-weight:500">'+escH(o._login||'—')+'</td>';
       html+='<td style="padding:9px 12px;color:var(--text-muted);font-weight:300">'+escH(String(o.date||'').split(' ')[0])+'</td>';
       html+='<td style="padding:9px 12px;color:var(--text)">'+escH(o.magasin||'—')+'</td>';
-      html+='<td style="padding:9px 12px;text-align:right;color:var(--text-muted)">'+( o.nbRefs||0)+'</td>';
-      html+='<td style="padding:9px 12px;text-align:right;font-family:Fraunces,serif;font-weight:200;color:var(--accent)">'+fmt2(o.totalNet||0)+' €</td>';
+      html+='<td style="padding:9px 12px;text-align:right;color:var(--text-muted)">'+(o.nbRefs||0)+'</td>';
+      html+='<td style="padding:9px 12px;text-align:right;color:var(--text-muted)">'+(o.nbColis||0)+'</td>';
+      html+='<td style="padding:9px 12px;text-align:right;font-family:Fraunces,serif;font-weight:200;color:var(--accent)">'+fmt2(o.totalNet||0)+' €</td>';
+      html+='<td style="padding:9px 12px;text-align:center">'+(isNew?'<span style="background:#22c55e;color:#fff;font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px">★ NOUVEAU</span>':'')+'</td>';
       html+='</tr>';
     });
     html+='</tbody></table>';
     container.innerHTML=html;
+  }
+
+  // Charger d'abord tous les logins, puis écouter chaque sous-collection
+  initFirebase().then(function(db){
+    db.collection('historique').get().then(function(snap){
+      if(!snap.docs.length){
+        container.innerHTML='<div class="empty-state"><p>Aucune commande.</p></div>';
+        return;
+      }
+      snap.docs.forEach(function(loginDoc){
+        var login=loginDoc.id;
+        var unsub=loginDoc.ref.collection('commandes')
+          .orderBy('id','desc').limit(50)
+          .onSnapshot(function(cmdSnap){
+            allOrdersMap[login]=cmdSnap.docs.map(function(d){return d.data();});
+            _renderAllOrders();
+          },function(e){
+            // Fallback sans orderBy
+            loginDoc.ref.collection('commandes').limit(50).get()
+              .then(function(s2){
+                allOrdersMap[login]=s2.docs.map(function(d){return d.data();});
+                _renderAllOrders();
+              }).catch(function(){});
+          });
+        window._histoAdminUnsubs.push(unsub);
+      });
+    });
   }).catch(function(){
     container.innerHTML='<div class="empty-state"><p>Erreur de chargement.</p></div>';
   });

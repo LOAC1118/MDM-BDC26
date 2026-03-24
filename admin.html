@@ -3063,13 +3063,49 @@ function handlePromoFile(file){
       _promoProducts=[];
       rows.forEach(function(row){
         var code=String(row['Code']||row['CODE']||row['code']||'').trim();
-        var des=String(row['D\u00e9signation']||row['Designation']||row['DESIGNATION']||row['Libelle']||row['libelle']||'').trim();
-        var pu=parseFloat(String(row['PU HT']||row['PUHT']||row['pu_ht']||row['Prix']||row['prix']||0).replace(',','.'))||0;
-        var pcb=parseInt(row['PCB']||row['pcb']||1)||1;
-        var tva=parseFloat(row['TVA']||row['tva']||5.5)||5.5;
-        var ean=String(row['EAN']||row['ean']||'').trim();
-        var origine=String(row['Origine']||row['origine']||'').trim();
-        var certif=String(row['Certif']||row['certif']||row['Certification']||'').trim();
+
+        // Chercher le prix dans toutes les variantes possibles de colonne
+        var _puVal='';
+        for(var _k in row){
+          var _kl=String(_k).toLowerCase().replace(/\s+/g,'');
+          if(_kl.indexOf('puht')>=0||_kl.indexOf('prix')>=0||_kl==='pu'){
+            if(row[_k]!==''&&row[_k]!==null&&row[_k]!==undefined){_puVal=String(row[_k]);break;}
+          }
+        }
+        var pu=parseFloat(_puVal.replace(',','.'))||0;
+        // PCB
+        var _pcbVal='';
+        for(var _k2 in row){
+          var _k2l=String(_k2).toLowerCase().replace(/\s+/g,'');
+          if(_k2l==='pcb'||_k2l==='colis'||_k2l.indexOf('pcb')>=0){
+            if(row[_k2]!==''&&row[_k2]!==null){_pcbVal=String(row[_k2]);break;}
+          }
+        }
+        var pcb=parseInt(_pcbVal)||1;
+        // TVA
+        var _tvaVal='';
+        for(var _k3 in row){
+          var _k3l=String(_k3).toLowerCase().replace(/\s+/g,'').replace(/%/g,'');
+          if(_k3l.indexOf('tva')>=0){
+            if(row[_k3]!==''&&row[_k3]!==null){_tvaVal=String(row[_k3]);break;}
+          }
+        }
+        var tva=parseFloat(_tvaVal)||5.5;
+        // EAN
+        var _eanVal='';
+        for(var _k4 in row){
+          var _k4l=String(_k4).toLowerCase().replace(/\s+/g,'');
+          if(_k4l.indexOf('ean')>=0||_k4l.indexOf('gencod')>=0||_k4l.indexOf('barcode')>=0){
+            if(row[_k4]!==''&&row[_k4]!==null){_eanVal=String(row[_k4]);break;}
+          }
+        }
+        var ean=_eanVal.trim();
+        // Origine
+        var origine=String(row['Origine']||row['origine']||row['ORIGINE']||'').trim();
+        // Certif
+        var certif=String(row['Certif.']||row['Certif']||row['certif']||row['Certification']||row['CERTIF']||'').trim();
+        // Désignation
+        var des=String(row['D\u00e9signation']||row['Designation']||row['DESIGNATION']||row['Libelle']||row['libelle']||row['Lib\u00e9ll\u00e9']||'').trim();
         if(!code&&!des) return;
         _promoProducts.push({code:code,designation:des,puHT:pu,pcb:pcb,tva:tva,ean:ean,origine:origine,certif:certif});
       });

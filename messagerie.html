@@ -214,9 +214,58 @@ function _toast(msg){
 function _convId(a,b){return [a,b].sort().join('_');}
 
 // ── Init ──────────────────────────────────────────────────────
+
+// Notification sonore et visuelle
+var _lastUnreadCount=0;
+var _audioCtx=null;
+
+function _playNotifIfNew(total){
+  if(total>_lastUnreadCount && _lastUnreadCount>=0){
+    // Son de notification via Web Audio API
+    try{
+      if(!_audioCtx) _audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+      var osc=_audioCtx.createOscillator();
+      var gain=_audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(_audioCtx.destination);
+      osc.frequency.setValueAtTime(880,_audioCtx.currentTime);
+      osc.frequency.setValueAtTime(1100,_audioCtx.currentTime+0.1);
+      gain.gain.setValueAtTime(0.3,_audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001,_audioCtx.currentTime+0.4);
+      osc.start(_audioCtx.currentTime);
+      osc.stop(_audioCtx.currentTime+0.4);
+    }catch(e){}
+
+    // Notification navigateur (si permission accordée)
+    if('Notification' in window && Notification.permission==='granted'){
+      new Notification('Nouveau message \u2014 MDM',{
+        body:'Vous avez '+total+' message'+(total>1?'s':'')+' non lu'+(total>1?'s':''),
+        icon:'https://loac1118.github.io/MDM-BDC26/favicon.ico',
+        tag:'mdm-msg'
+      });
+    } else if('Notification' in window && Notification.permission!=='denied'){
+      Notification.requestPermission();
+    }
+
+    // Flash du titre
+    var _flash=0;
+    var _orig=document.title;
+    var _ti=setInterval(function(){
+      _flash++;
+      document.title=_flash%2===0?_orig:'&#128172; NOUVEAU MESSAGE';
+      if(_flash>8) clearInterval(_ti);
+    },600);
+  }
+  _lastUnreadCount=total;
+}
+
 window.addEventListener('DOMContentLoaded',function(){
   var user=_getUser();
   if(!user){window.location.href='index.html';return;}
+  // Demander permission notifications
+  if('Notification' in window && Notification.permission==='default'){
+    Notification.requestPermission();
+  }
   _myLogin=user.login;
   _myNom=user.nom||user.login;
   _myRole=user.role||'client';
@@ -315,7 +364,7 @@ function renderConvList(convs){
   var list=document.getElementById('conv-list');
   if(!list) return;
   if(!convs.length){
-    list.innerHTML='<div class="msg-conv-empty" style="padding:20px;text-align:center;color:var(--text-muted)">&#128172; Aucune conversation.<br><small style="font-size:11px">Cliquez sur « Nouveau message » pour démarrer.</small></div>';
+    list.innerHTML='<div class="msg-conv-empty" style="padding:20px;text-align:center;color:var(--text-muted)">&#128172; Aucune conversation.<br><small style="font-size:11px">Cliquez sur « Nouveau message » pour démarrer.</small></div>';
     return;
   }
   var totalUnread=0;
@@ -339,25 +388,29 @@ function renderConvList(convs){
     if(unread>0) totalUnread+=unread;
     var initials=(partnerNom).charAt(0).toUpperCase();
     var isActive=c._id===_activeConvId;
-    return '<div class="msg-conv-item'+(unread>0?' unread':'')+(isActive?' active':'')+' " data-cid="'+c._id+'" data-nom="'+_esc(partnerNom)+'" onclick="var el=this;openConv(el.dataset.cid,el.dataset.nom)">'  
+    return '<div class="msg-conv-item'+(unread>0?' unread':'')+(isActive?' active':'')+' " data-cid="'+c._id+'" data-nom="'+_esc(partnerNom)+'" onclick="var el=this;openConv(el.dataset.cid,el.dataset.nom)">'
       +'<div class="msg-conv-name">'
       +'<div style="display:flex;align-items:center;gap:8px">'
       +'<div style="width:30px;height:30px;border-radius:50%;background:var(--accent-light);color:var(--accent);font-size:13px;font-weight:500;display:flex;align-items:center;justify-content:center;flex-shrink:0">'+initials+'</div>'
-      +'<span>'+_esc(partnerNom)+'</span>'
-      +(unread>0?'<span class="msg-unread-dot"></span>':'')
+      +'<span style="font-weight:'+(unread>0?'600':'400')+'">'+_esc(partnerNom)+'</span>'
+      +(unread>0?'<span class="msg-unread-dot"></span><span style="background:#c0392b;color:#fff;font-size:9px;font-weight:700;padding:1px 6px;border-radius:10px;margin-left:2px">'+unread+'</span>':'')
       +'</div>'
       +'<span class="msg-conv-time">'+time+'</span>'
       +'</div>'
-      +'<div class="msg-conv-preview" style="padding-left:38px">'+preview+'</div>'
+      +'<div class="msg-conv-preview" style="padding-left:38px;color:'+(unread>0?'var(--text)':'var(--text-muted)')+';font-weight:'+(unread>0?'500':'300')+'">'+preview+'</div>'
       +'</div>';
   }).join('');
 
-  // Badge non lus
+  // Badge total non lus
   var badge=document.getElementById('unread-badge');
-  if(badge){
-    badge.textContent=totalUnread;
-    badge.style.display=totalUnread>0?'inline':'none';
-  }
+  if(badge){badge.textContent=totalUnread;badge.style.display=totalUnread>0?'inline':'none';}
+
+  // Titre de la page avec badge
+  var baseTitle='Messagerie — MDM';
+  document.title=totalUnread>0?'('+totalUnread+') '+baseTitle:baseTitle;
+
+  // Notification sonore si nouveaux messages
+  _playNotifIfNew(totalUnread);
 }
 
 // ── Ouvrir une conversation ───────────────────────────────────

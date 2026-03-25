@@ -685,9 +685,7 @@ tbody tr.has-qty td.td-qty input{background:#ffe0b2;border-color:var(--terra)}
     <button class="no-print" id="btn-new-client" onclick="openNewClientModal()" style="display:none;font-size:11px;font-weight:400;padding:6px 11px;border-radius:6px;border:1px solid var(--border);background:var(--bg-card);color:var(--accent);cursor:pointer;font-family:inherit;white-space:nowrap">&#43; Client</button>
     <button class="no-print" onclick="openImportPanel()" style="font-size:11px;font-weight:500;padding:7px 12px;border-radius:6px;border:1px solid var(--border);background:var(--bg-card);color:var(--brown);cursor:pointer;font-family:inherit;white-space:nowrap;margin-right:4px">&#128196;&nbsp;Importer</button>
     <button class="no-print" onclick="openModal()" style="font-size:12px;font-weight:500;padding:7px 16px;border-radius:6px;border:none;background:var(--accent);color:#fff;cursor:pointer;font-family:inherit;white-space:nowrap">Envoyer la commande</button>
-    <button class="no-print" id="chat-fab" onclick="chatToggle()" title="Messagerie" style="display:none;position:relative;padding:7px 10px;border-radius:6px;font-size:14px;cursor:pointer;border:1px solid var(--border);background:var(--bg-card);color:var(--text)">
-      &#128172;<span id="chat-badge" style="position:absolute;top:-5px;right:-5px;background:#c0392b;color:#fff;font-size:9px;font-weight:600;padding:2px 5px;border-radius:10px;min-width:16px;text-align:center;display:none"></span>
-    </button>
+    <a href="messagerie.html" id="chat-fab" class="no-print" title="Messagerie" style="display:none;position:relative;padding:7px 10px;border-radius:6px;font-size:14px;text-decoration:none;border:1px solid var(--border);background:var(--bg-card);color:var(--text);align-items:center;gap:4px">&#128172;<span id="chat-badge" style="position:absolute;top:-5px;right:-5px;background:#c0392b;color:#fff;font-size:9px;font-weight:600;padding:2px 5px;border-radius:10px;min-width:16px;text-align:center;display:none"></span></a>
   </div>
 
 </header>
@@ -1232,7 +1230,7 @@ function fbDeleteInscription(id) {
 
       // Initialiser le chat
       var _allC=[];try{_allC=JSON.parse(localStorage.getItem("mdm_comptes")||"[]");}catch(e){}
-      chatInit(data.login,data.nom||data.login,data.role,data.commercial||"",_allC);
+      initNotifBadge(data.login);
       if(data.role === "user"){
         var btnNC=document.getElementById("btn-new-client");
         if(btnNC) btnNC.style.display="inline-flex";
@@ -3060,6 +3058,84 @@ function applyImport(){
 
 
 
+
+
+// ══════════════════════════════════════════════════════════════
+// NOTIFICATIONS MESSAGERIE — badge en temps réel
+// ══════════════════════════════════════════════════════════════
+var _notifUnsub=null;
+
+function initNotifBadge(login){
+  if(!login) return;
+
+  // Afficher le bouton messagerie
+  var fab=document.getElementById('chat-fab');
+  if(fab) fab.style.display='inline-flex';
+
+  // Firebase déjà initialisé dans commande.html
+  var db=null;
+  try{
+    if(typeof firebase==='undefined') return;
+    if(!firebase.apps||!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+    db=firebase.firestore();
+  }catch(e){ try{db=firebase.firestore();}catch(e2){return;} }
+
+  if(!db) return;
+
+  // Écouter tous les chats où login participe
+  // On écoute la collection chats pour les convs contenant ce login
+  var unreadCount=0;
+
+  function _updateBadge(n){
+    var badge=document.getElementById('chat-badge');
+    var fab2=document.getElementById('chat-fab');
+    if(!badge||!fab2) return;
+    if(n>0){
+      badge.textContent=n>99?'99+':String(n);
+      badge.style.display='flex';
+      badge.style.alignItems='center';
+      badge.style.justifyContent='center';
+      // Notification titre
+      if(document.title.indexOf('●')<0) document.title='● '+document.title;
+    } else {
+      badge.style.display='none';
+      document.title=document.title.replace('● ','');
+    }
+  }
+
+  // Lire le timestamp de dernière lecture depuis localStorage
+  function _getLastRead(convId){
+    try{ return parseInt(localStorage.getItem('mdm_lastread_'+convId)||'0'); }
+    catch(e){ return 0; }
+  }
+
+  // Construire les IDs de conversations possibles avec admin et commerciaux
+  // On écoute directement les convs dont l'ID contient le login
+  if(_notifUnsub){ try{_notifUnsub();}catch(e){} }
+
+  // Requête : tous les chats dont lastSender != login et lastTs > lastRead
+  _notifUnsub=db.collection('chats')
+    .orderBy('lastTs','desc')
+    .limit(50)
+    .onSnapshot(function(snap){
+      var unread=0;
+      snap.docs.forEach(function(doc){
+        var data=doc.data();
+        var id=doc.id;
+        // Vérifier que ce chat concerne ce login
+        var parts=id.split('_');
+        if(parts.indexOf(login)<0) return;
+        // Vérifier s'il y a des messages non lus
+        var lastTs=data.lastTs?data.lastTs.toMillis?data.lastTs.toMillis():(data.lastTs||0):0;
+        var lastRead=_getLastRead(id);
+        var lastSender=data.lastSender||'';
+        if(lastSender!==login && lastTs>lastRead) unread++;
+      });
+      _updateBadge(unread);
+    },function(e){
+      console.warn('Notif badge error:',e.code);
+    });
+}
 
 
 </script>v class="modal-nc">

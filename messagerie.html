@@ -167,6 +167,7 @@ body{font-family:'Inter',sans-serif;font-weight:300;background:var(--bg);color:v
 <script>
 
 
+
 var _fbReady=false,_fbDb=null;
 var _myLogin='',_myNom='',_myRole='';
 var _activeConvId=null;
@@ -261,25 +262,52 @@ function loadContacts(){
 
 // ── Chargement des conversations ──────────────────────────────
 function loadConversations(){
-  _initFB().then(function(db){
-    // Écoute temps réel sur toutes les conversations qui me concernent
-    if(_convUnsubs.length) _convUnsubs.forEach(function(u){u();});
-    _convUnsubs=[];
+  if(_convUnsubs.length){ _convUnsubs.forEach(function(u){try{u();}catch(e){}});}
+  _convUnsubs=[];
+  var _convsMap={};
 
-    var ref=db.collection('chats');
-    var unsub=ref.onSnapshot(function(snap){
-      var myConvs=[];
-      snap.docs.forEach(function(doc){
-        var id=doc.id;
-        var parts=id.split('_');
-        if(parts.indexOf(_myLogin)>=0){
-          myConvs.push(Object.assign({_id:id},doc.data()));
-        }
-      });
-      myConvs.sort(function(a,b){return (b.lastTs||0)-(a.lastTs||0);});
-      renderConvList(myConvs);
-    },function(e){console.warn('conv snapshot:',e);});
-    _convUnsubs.push(unsub);
+  function _render(){
+    var list=Object.values(_convsMap).filter(function(c){return c&&c._id;});
+    list.sort(function(a,b){return (b.lastTs||0)-(a.lastTs||0);});
+    renderConvList(list);
+  }
+
+  _initFB().then(function(db){
+    // Construire les IDs possibles à partir des contacts connus
+    var ids=[];
+    _contacts.forEach(function(c){
+      // Les deux ordres possibles (ancien chat non trié + nouveau trié)
+      ids.push(_myLogin+'_'+c.login);
+      ids.push(c.login+'_'+_myLogin);
+      ids.push(_convId(_myLogin,c.login)); // ordre alphabétique
+    });
+    // Dédupliquer
+    ids=ids.filter(function(id,i){return ids.indexOf(id)===i;});
+
+    if(!ids.length){
+      renderConvList([]);
+      return;
+    }
+
+    ids.forEach(function(id){
+      var unsub=db.collection('chats').doc(id)
+        .onSnapshot(function(doc){
+          if(doc.exists){
+            _convsMap[id]=Object.assign({_id:id},doc.data());
+          } else {
+            delete _convsMap[id];
+          }
+          _render();
+        },function(e){
+          // Doc inexistant ou accès refusé — ignorer
+          console.warn('conv watch '+id+':', e.code);
+        });
+      _convUnsubs.push(unsub);
+    });
+  }).catch(function(e){
+    console.warn('loadConversations error:',e);
+    var list=document.getElementById('conv-list');
+    if(list) list.innerHTML='<div class="msg-conv-empty">\u26a0 Erreur de connexion. Actualisez la page.</div>';
   });
 }
 
@@ -287,7 +315,7 @@ function renderConvList(convs){
   var list=document.getElementById('conv-list');
   if(!list) return;
   if(!convs.length){
-    list.innerHTML='<div class="msg-conv-empty">Aucune conversation.<br>Cliquez sur « Nouveau message » pour commencer.</div>';
+    list.innerHTML='<div class="msg-conv-empty" style="padding:20px;text-align:center;color:var(--text-muted)">&#128172; Aucune conversation.<br><small style="font-size:11px">Cliquez sur « Nouveau message » pour démarrer.</small></div>';
     return;
   }
   var totalUnread=0;
@@ -337,8 +365,9 @@ function openConv(convId,partnerNom){
   _activeConvId=convId;
   // Mettre à jour l'UI
   document.querySelectorAll('.msg-conv-item').forEach(function(el){el.classList.remove('active');});
-  var clicked=event&&event.currentTarget;
-  if(clicked) clicked.classList.add('active');
+  // Marquer l'item cliqué actif
+  var items=document.querySelectorAll('[data-cid="'+convId+'"]');
+  items.forEach(function(el){el.classList.add('active');});
 
   document.getElementById('msg-main-head').style.display='flex';
   document.getElementById('msg-main-name').textContent=partnerNom;
@@ -486,6 +515,7 @@ function openConvById(convId,nom){
       },function(){});
   });
 }
+
 
 
 </script>

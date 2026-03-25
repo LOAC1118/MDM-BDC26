@@ -8,6 +8,8 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.6.0/jspdf.plugin.autotable.min.js"></script>
 <style>
 
 
@@ -684,6 +686,13 @@ footer a{color:inherit;text-decoration:none;opacity:.7}footer a:hover{opacity:1}
 
 .cli-notes-btn{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:6px;background:var(--accent-light);color:var(--accent);font-size:14px;text-decoration:none;transition:all .15s;flex-shrink:0;margin-left:6px}
 .cli-notes-btn:hover{background:var(--accent);color:#fff}
+
+.export-bar{display:flex;gap:8px;padding:10px 18px;border-top:1px solid var(--border-light);background:var(--bg);flex-wrap:wrap}
+.export-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 13px;border-radius:6px;font-size:11px;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;border:1px solid var(--border)}
+.export-btn.excel{background:#e8f5e9;color:#2e7d32;border-color:#a5d6a7}
+.export-btn.excel:hover{background:#c8e6c9}
+.export-btn.pdf{background:var(--danger-light);color:var(--danger);border-color:#f5c6cb}
+.export-btn.pdf:hover{background:#fcc}
 </style>
 </head>
 <body>
@@ -883,6 +892,8 @@ window.PRODUCTS = [{"code":"ABRCOU200","libelle":"Abricots secs coupés bio - 20
 
 </script>
 <script>
+
+
 
 
 
@@ -1386,6 +1397,10 @@ function renderCommercial(data){
       });
     }
     html+='</div></div>';
+    html+='<div class="export-bar">';
+    html+='<button class="export-btn excel" onclick="exportDashExcel()">&#128202;&nbsp;Excel</button>';
+    html+='<button class="export-btn pdf" onclick="exportCommercialPDF()">&#128196;&nbsp;PDF</button>';
+    html+='</div>';
     content.innerHTML=html;
   }
 
@@ -2327,7 +2342,11 @@ function _renderClientDash(orders,franco){
     html+='</div>';
   }
   html+='</div></div>';
-
+  // Barre d'export
+  html+='<div class="export-bar">';
+  html+='<button class="export-btn excel" onclick="exportDashExcel()">&#128202;&nbsp;Excel</button>';
+  html+='<button class="export-btn pdf" onclick="exportClientPDF()">&#128196;&nbsp;PDF</button>';
+  html+='</div>';
   content.innerHTML=html;
 }
 
@@ -2449,6 +2468,138 @@ function toggleCliOrders(uid){
 
 
 
+
+
+
+
+// ── Export PDF commandes ──────────────────────────────────────
+function exportClientPDF(){
+  if(typeof window.jspdf==='undefined'&&typeof jsPDF==='undefined'){
+    alert('jsPDF non chargé. Réessayez dans quelques secondes.');return;
+  }
+  var jspdfLib=window.jspdf?window.jspdf.jsPDF:jsPDF;
+  var login=(window._currentData.login||'guest').replace(/[^a-zA-Z0-9_-]/g,'_');
+  var orders=[];
+  try{orders=JSON.parse(localStorage.getItem('mdm_history_'+login)||'[]');}catch(e){}
+  if(!orders.length){alert('Aucune commande à exporter.');return;}
+
+  var doc=new jspdfLib({orientation:'portrait',unit:'mm',format:'a4'});
+  var nom=window._currentData.nom||window._currentData.login||'Client';
+  var today=new Date().toLocaleDateString('fr-FR');
+
+  // En-tête
+  doc.setFontSize(18);doc.setTextColor(120,80,60);
+  doc.text('Moulin des Moines',15,18);
+  doc.setFontSize(11);doc.setTextColor(160,130,110);
+  doc.text('Historique des commandes',15,25);
+  doc.setFontSize(10);doc.setTextColor(100,100,100);
+  doc.text('Client : '+nom+'   |   Export du '+today,15,32);
+  doc.setDrawColor(160,82,45);doc.setLineWidth(0.5);doc.line(15,35,195,35);
+
+  // Tableau résumé
+  var head=[['Date','Magasin','Réf.','Colis','Total HT']];
+  var body=orders.map(function(o){
+    return [_fmtDate(o.date),o.magasin||'—',o.nbRefs||0,o.nbColis||0,
+      (o.totalNet||0).toFixed(2)+' €'];
+  });
+  doc.autoTable({
+    startY:40,head:head,body:body,
+    headStyles:{fillColor:[160,82,45],textColor:255,fontStyle:'bold',fontSize:9},
+    bodyStyles:{fontSize:8,textColor:[80,60,40]},
+    alternateRowStyles:{fillColor:[250,245,240]},
+    columnStyles:{0:{cellWidth:25},1:{cellWidth:55},2:{cellWidth:15,halign:'center'},
+      3:{cellWidth:15,halign:'center'},4:{cellWidth:28,halign:'right'}},
+    margin:{left:15,right:15}
+  });
+
+  // Total général
+  var ca=orders.reduce(function(s,o){return s+(o.totalNet||0);},0);
+  var y=doc.lastAutoTable.finalY+8;
+  doc.setFontSize(10);doc.setTextColor(74,124,89);
+  doc.text('CA total : '+ca.toFixed(2)+' € HT',15,y);
+
+  // Détail dernière commande
+  var last=orders[0];
+  if(last&&last.articles&&last.articles.length){
+    y+=10;
+    doc.setFontSize(11);doc.setTextColor(120,80,60);
+    doc.text('Détail dernière commande ('+_fmtDate(last.date)+')',15,y);
+    y+=5;
+    doc.autoTable({
+      startY:y,
+      head:[['Code','Désignation','Qté','PU HT','Total HT']],
+      body:last.articles.map(function(a){
+        return [a.code||'',a.libelle||'',a.qty||0,
+          (a.puHT||0).toFixed(2)+' €',(a.totalHT||0).toFixed(2)+' €'];
+      }),
+      headStyles:{fillColor:[74,124,89],textColor:255,fontSize:8},
+      bodyStyles:{fontSize:7,textColor:[80,60,40]},
+      alternateRowStyles:{fillColor:[240,250,244]},
+      columnStyles:{0:{cellWidth:22},1:{cellWidth:80},2:{cellWidth:12,halign:'center'},
+        3:{cellWidth:25,halign:'right'},4:{cellWidth:25,halign:'right'}},
+      margin:{left:15,right:15}
+    });
+  }
+
+  doc.save('commandes_'+nom.replace(/\s+/g,'_')+'_'+new Date().toISOString().slice(0,10)+'.pdf');
+}
+
+function exportCommercialPDF(){
+  if(typeof window.jspdf==='undefined'&&typeof jsPDF==='undefined'){
+    alert('jsPDF non chargé.');return;
+  }
+  var jspdfLib=window.jspdf?window.jspdf.jsPDF:jsPDF;
+  var login=window._currentData.login||'';
+  var allComptes=[];
+  try{allComptes=JSON.parse(localStorage.getItem('mdm_comptes')||'[]');}catch(e){}
+  var clients=allComptes.filter(function(c){return c.role==='client'&&c.commercial===login;});
+  if(!clients.length){alert('Aucun client à exporter.');return;}
+
+  var doc=new jspdfLib({orientation:'landscape',unit:'mm',format:'a4'});
+  var nom=window._currentData.nom||login;
+  var today=new Date().toLocaleDateString('fr-FR');
+
+  doc.setFontSize(18);doc.setTextColor(120,80,60);
+  doc.text('Moulin des Moines',15,18);
+  doc.setFontSize(11);doc.setTextColor(160,130,110);
+  doc.text('Activité commercial : '+nom,15,25);
+  doc.setFontSize(10);doc.setTextColor(100,100,100);
+  doc.text('Export du '+today,15,32);
+  doc.setDrawColor(160,82,45);doc.setLineWidth(0.5);doc.line(15,35,282,35);
+
+  // Toutes les commandes
+  var allOrders=[];
+  clients.forEach(function(co){
+    var lg=co.login.replace(/[^a-zA-Z0-9_-]/g,'_');
+    var hist=[];
+    try{hist=JSON.parse(localStorage.getItem('mdm_history_'+lg)||'[]');}catch(e){}
+    hist.forEach(function(o){allOrders.push(Object.assign({},o,{_clientNom:co.nom||co.login}));});
+  });
+  allOrders.sort(function(a,b){return (b.id||0)-(a.id||0);});
+
+  var head=[['Date','Client','Magasin','Réf.','Colis','Total HT']];
+  var body=allOrders.map(function(o){
+    return [_fmtDate(o.date),o._clientNom||'—',o.magasin||'—',
+      o.nbRefs||0,o.nbColis||0,(o.totalNet||0).toFixed(2)+' €'];
+  });
+
+  doc.autoTable({
+    startY:40,head:head,body:body,
+    headStyles:{fillColor:[160,82,45],textColor:255,fontStyle:'bold',fontSize:9},
+    bodyStyles:{fontSize:8,textColor:[80,60,40]},
+    alternateRowStyles:{fillColor:[250,245,240]},
+    columnStyles:{0:{cellWidth:22},1:{cellWidth:45},2:{cellWidth:55},
+      3:{cellWidth:15,halign:'center'},4:{cellWidth:15,halign:'center'},5:{cellWidth:30,halign:'right'}},
+    margin:{left:15,right:15}
+  });
+
+  var ca=allOrders.reduce(function(s,o){return s+(o.totalNet||0);},0);
+  var y=doc.lastAutoTable.finalY+8;
+  doc.setFontSize(10);doc.setTextColor(74,124,89);
+  doc.text('CA total clients : '+ca.toFixed(2)+' € HT   |   '+allOrders.length+' commandes',15,y);
+
+  doc.save('dashboard_'+nom.replace(/\s+/g,'_')+'_'+new Date().toISOString().slice(0,10)+'.pdf');
+}
 
 
 

@@ -1824,13 +1824,16 @@ function supprimerInscription(idx){
 function renderHistorique(){
   var container=document.getElementById('historique-list');
   if(!container) return;
-  container.innerHTML='<div style="padding:24px;text-align:center">Chargement...</div>';
+  container.innerHTML='<div style="padding:24px;text-align:center;color:var(--text-muted);font-size:12px">&#8987; Chargement des commandes\u2026</div>';
 
   if(window._histoAdminUnsubs){
     window._histoAdminUnsubs.forEach(function(u){try{u();}catch(e){}});
   }
   window._histoAdminUnsubs=[];
+
   var allOrdersMap={};
+  var _filterClient='';
+  var _filterSearch='';
 
   function _render(){
     var all=[];
@@ -1841,71 +1844,156 @@ function renderHistorique(){
     });
     all.sort(function(a,b){return (b.id||0)-(a.id||0);});
 
+    // Filtres
+    var filtered=all.filter(function(o){
+      if(_filterClient&&o._login!==_filterClient) return false;
+      if(_filterSearch){
+        var s=_filterSearch.toLowerCase();
+        return (o._login||'').toLowerCase().indexOf(s)>=0
+          ||(o.magasin||'').toLowerCase().indexOf(s)>=0;
+      }
+      return true;
+    });
+
+    // Badge nav
     var badge=document.getElementById('badge-historique');
     if(badge){badge.textContent=all.length;badge.style.display=all.length?'inline-block':'none';}
 
-    if(!all.length){
-      container.innerHTML='<div style="padding:30px;text-align:center;color:#b0968a;font-size:13px">'
-        +'<div style="font-size:32px;margin-bottom:10px">&#128230;</div>'
-        +'<p>Aucune commande dans Firebase.</p></div>';
+    // Stats globales
+    var caTotal=all.reduce(function(s,o){return s+(o.totalNet||0);},0);
+    var caFiltered=filtered.reduce(function(s,o){return s+(o.totalNet||0);},0);
+    var logins=Object.keys(allOrdersMap).filter(function(l){return allOrdersMap[l].length>0;});
+    var cutoff=Date.now()-10*60*1000;
+
+    var html='';
+
+    // ── KPIs ────────────────────────────────────────────────
+    html+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:16px 18px;background:var(--bg);border-bottom:1px solid var(--border-l)">';
+    html+='<div style="text-align:center"><div style="font-family:Fraunces,serif;font-size:24px;font-weight:200;color:var(--brown)">'+all.length+'</div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin-top:2px">Commandes</div></div>';
+    html+='<div style="text-align:center"><div style="font-family:Fraunces,serif;font-size:24px;font-weight:200;color:var(--accent)">'+fmtCA(caTotal)+'</div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin-top:2px">CA HT total</div></div>';
+    html+='<div style="text-align:center"><div style="font-family:Fraunces,serif;font-size:24px;font-weight:200;color:var(--brown)">'+logins.length+'</div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin-top:2px">Clients actifs</div></div>';
+    html+='<div style="text-align:center"><div style="font-family:Fraunces,serif;font-size:24px;font-weight:200;color:var(--terra)">'+fmtCA(all.length>0?caTotal/all.length:0)+'</div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin-top:2px">Panier moyen</div></div>';
+    html+='</div>';
+
+    // ── Barre outils ────────────────────────────────────────
+    html+='<div style="display:flex;gap:8px;padding:10px 14px;border-bottom:1px solid var(--border-l);flex-wrap:wrap;align-items:center;background:#fff">';
+    html+='<div style="position:relative;flex:1;min-width:180px;max-width:280px">';
+    html+='<span style="position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:12px">&#128269;</span>';
+    html+='<input type="text" id="histo-search" value="'+escH(_filterSearch)+'" placeholder="Client, magasin\u2026" oninput="window._histoSearchFn&&window._histoSearchFn(this.value)" style="width:100%;padding:6px 10px 6px 28px;border:1.5px solid var(--border);border-radius:6px;font-size:12px;font-family:Inter,sans-serif;outline:none">';
+    html+='</div>';
+    // Sélecteur client
+    html+='<select id="histo-filter-client" onchange="window._histoClientFn&&window._histoClientFn(this.value)" style="padding:6px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:12px;font-family:Inter,sans-serif;background:#fff;outline:none">';
+    html+='<option value="">Tous les comptes ('+logins.length+')</option>';
+    logins.sort().forEach(function(l){
+      var nb=allOrdersMap[l].length;
+      var ca=allOrdersMap[l].reduce(function(s,o){return s+(o.totalNet||0);},0);
+      // Trouver le nom du compte
+      var compte=comptes.find(function(c){return c.login===l;});
+      var label=compte?(compte.nom||l)+' ('+l+')':l;
+      html+='<option value="'+escH(l)+'"'+(l===_filterClient?' selected':'')+'>'+escH(label)+' \u2014 '+nb+' cmd \u2014 '+fmtCA(ca)+'</option>';
+    });
+    html+='</select>';
+    html+='<span style="font-size:11px;color:var(--text-muted);margin-left:4px">'+filtered.length+' / '+all.length+'</span>';
+    html+='<button onclick="exportHistoriqueAll()" style="margin-left:auto;padding:5px 12px;border:1px solid var(--border);border-radius:5px;background:#fff;font-size:11px;cursor:pointer;font-family:Inter,sans-serif;display:flex;align-items:center;gap:4px">&#128202; Excel</button>';
+    html+='</div>';
+
+    if(!filtered.length){
+      html+='<div style="padding:30px;text-align:center;color:var(--text-muted);font-size:13px">Aucune commande pour ce filtre.</div>';
+      container.innerHTML=html;
+      _bindFilters();
       return;
     }
 
-    var caTotal=all.reduce(function(s,o){return s+(o.totalNet||0);},0);
-    var cutoff=Date.now()-10*60*1000;
-
-    var html='<div style="display:flex;gap:20px;padding:12px 16px;background:var(--bg);border-bottom:1px solid var(--border-l);font-size:12px;flex-wrap:wrap;align-items:center">'
-      +'<span><strong>'+all.length+'</strong> commande'+(all.length>1?'s':'')+' au total</span>'
-      +'<span style="color:var(--accent)"><strong>'+fmtCA(caTotal)+'</strong> CA HT</span>'
-      +'<button onclick="exportHistoriqueAll()" style="margin-left:auto;padding:4px 10px;border:1px solid var(--border);border-radius:5px;background:#fff;font-size:11px;cursor:pointer;font-family:Inter,sans-serif">&#128202; Excel</button>'
-      +'</div>';
-
+    // ── Tableau ─────────────────────────────────────────────
     html+='<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px">';
     html+='<thead><tr style="background:var(--bg)">';
-    ['Client','Date','Magasin','Réf.','Colis','Total HT','Statut'].forEach(function(th){
-      html+='<th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);border-bottom:1.5px solid var(--border)">'+th+'</th>';
-    });
+    html+='<th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);border-bottom:1.5px solid var(--border)">Compte</th>';
+    html+='<th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);border-bottom:1.5px solid var(--border)">Date</th>';
+    html+='<th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);border-bottom:1.5px solid var(--border)">Magasin</th>';
+    html+='<th style="padding:9px 14px;text-align:right;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);border-bottom:1.5px solid var(--border)">R\u00e9f.</th>';
+    html+='<th style="padding:9px 14px;text-align:right;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);border-bottom:1.5px solid var(--border)">Colis</th>';
+    html+='<th style="padding:9px 14px;text-align:right;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);border-bottom:1.5px solid var(--border)">Total HT</th>';
+    html+='<th style="padding:9px 14px;text-align:center;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);border-bottom:1.5px solid var(--border)">Statut</th>';
+    html+='<th style="padding:9px 14px;border-bottom:1.5px solid var(--border)"></th>';
     html+='</tr></thead><tbody>';
 
-    all.forEach(function(o){
+    filtered.forEach(function(o,idx){
       var isNew=(o.id&&o.id>cutoff);
+      var oid='histo-detail-'+idx;
+      var compte=comptes.find(function(c){return c.login===o._login;});
+      var roleLabel=compte?({admin:'Admin',user:'Commercial',client:'Client'}[compte.role]||''):'';
+      var roleCls=compte?compte.role:'';
+
       html+='<tr style="border-bottom:1px solid var(--border-l)'+(isNew?';background:#f0fdf4':'')+'">';
-      html+='<td style="padding:9px 14px;font-weight:500;color:var(--accent)">'+escH(o._login||'—')+'</td>';
+      html+='<td style="padding:9px 14px"><div style="font-weight:500;color:var(--accent)">'+escH(o._login||'\u2014')+'</div>';
+      if(roleLabel) html+='<div style="font-size:9px;font-weight:600;text-transform:uppercase;padding:1px 5px;border-radius:3px;display:inline-block;margin-top:2px;background:'+(roleCls==='client'?'#fff3e0':roleCls==='user'?'var(--accent-l)':'#f3e5f5')+';color:'+(roleCls==='client'?'#e65100':roleCls==='user'?'var(--accent)':'#7b1fa2')+'">'+escH(roleLabel)+'</div>';
+      html+='</td>';
       html+='<td style="padding:9px 14px;color:var(--text-muted);font-weight:300;white-space:nowrap">'+escH(String(o.date||'').split(' ')[0])+'</td>';
-      html+='<td style="padding:9px 14px;color:var(--text)">'+escH(o.magasin||'—')+'</td>';
+      html+='<td style="padding:9px 14px;color:var(--text)">'+escH(o.magasin||'\u2014')+'</td>';
       html+='<td style="padding:9px 14px;text-align:right;color:var(--text-muted)">'+(o.nbRefs||0)+'</td>';
       html+='<td style="padding:9px 14px;text-align:right;color:var(--text-muted)">'+(o.nbColis||0)+'</td>';
-      html+='<td style="padding:9px 14px;text-align:right;font-weight:500;color:var(--brown)">'+fmt2(o.totalNet||0)+' €</td>';
-      html+='<td style="padding:9px 14px;text-align:center">'+(isNew?'<span style="background:#22c55e;color:#fff;font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px">NOUVEAU</span>':'—')+'</td>';
+      html+='<td style="padding:9px 14px;text-align:right;font-weight:600;color:var(--brown)">'+fmt2(o.totalNet||0)+'\u00a0\u20ac</td>';
+      html+='<td style="padding:9px 14px;text-align:center">'+(isNew?'<span style="background:#22c55e;color:#fff;font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;white-space:nowrap">NOUVEAU</span>':'<span style="color:var(--text-muted);font-size:11px">\u2014</span>')+'</td>';
+      html+='<td style="padding:9px 14px;text-align:right">';
+      if(o.articles&&o.articles.length){
+        html+='<button onclick="toggleHistoDetail(\''+oid+'\')" style="padding:3px 8px;border:1px solid var(--border);border-radius:4px;background:var(--bg);font-size:10px;cursor:pointer;font-family:Inter,sans-serif;color:var(--text-muted)">D\u00e9tail &#9660;</button>';
+      }
+      html+='</td>';
       html+='</tr>';
+
+      // Ligne de détail articles (masquée par défaut)
+      if(o.articles&&o.articles.length){
+        html+='<tr id="'+oid+'" style="display:none"><td colspan="8" style="padding:0 14px 12px 14px;background:#fafaf8">';
+        html+='<div style="border:1px solid var(--border-l);border-radius:6px;overflow:hidden;margin-top:4px">';
+        html+='<table style="width:100%;border-collapse:collapse;font-size:11px">';
+        html+='<thead><tr style="background:var(--bg)"><th style="padding:6px 10px;text-align:left;color:var(--text-muted);font-size:10px;font-weight:600;border-bottom:1px solid var(--border-l)">Code</th><th style="padding:6px 10px;text-align:left;color:var(--text-muted);font-size:10px;font-weight:600;border-bottom:1px solid var(--border-l)">D\u00e9signation</th><th style="padding:6px 10px;text-align:center;color:var(--text-muted);font-size:10px;font-weight:600;border-bottom:1px solid var(--border-l)">Colis</th><th style="padding:6px 10px;text-align:right;color:var(--text-muted);font-size:10px;font-weight:600;border-bottom:1px solid var(--border-l)">Total HT</th></tr></thead><tbody>';
+        o.articles.forEach(function(art){
+          html+='<tr style="border-bottom:1px solid var(--border-l)"><td style="padding:5px 10px;font-family:monospace;color:var(--brown)">'+escH(art.code||'')+'</td><td style="padding:5px 10px;color:var(--text)">'+escH(art.libelle||'')+'</td><td style="padding:5px 10px;text-align:center;color:var(--text-muted)">'+( art.qty||0)+'</td><td style="padding:5px 10px;text-align:right;color:var(--terra);font-weight:500">'+fmt2(art.totalHT||0)+'\u00a0\u20ac</td></tr>';
+        });
+        html+='</tbody></table></div></td></tr>';
+      }
     });
+
     html+='</tbody></table></div>';
+
+    if(_filterClient&&filtered.length){
+      var ca=filtered.reduce(function(s,o){return s+(o.totalNet||0);},0);
+      html+='<div style="padding:10px 16px;background:var(--accent-l);border-top:1px solid var(--border-l);font-size:12px;color:var(--accent)">&#128101; <strong>'+escH(_filterClient)+'</strong>\u00a0\u2014\u00a0'+filtered.length+' commande'+(filtered.length>1?'s':'')+'\u00a0\u2014\u00a0CA\u00a0: <strong>'+fmtCA(ca)+'</strong></div>';
+    }
+
     container.innerHTML=html;
+    _bindFilters();
   }
 
+  function _bindFilters(){
+    window._histoSearchFn=function(v){
+      _filterSearch=v;
+      _render();
+    };
+    window._histoClientFn=function(v){
+      _filterClient=v;
+      _render();
+    };
+  }
+
+  // Charger depuis Firebase
   initFirebase().then(function(db){
     db.collection('historique').get().then(function(snap){
       if(!snap.docs.length){
-        // Essayer collectionGroup
-        db.collectionGroup('commandes').orderBy('id','desc').limit(200)
+        db.collectionGroup('commandes').orderBy('id','desc').limit(500)
           .get().then(function(cgSnap){
             if(!cgSnap.docs.length){
-              container.innerHTML='<div style="padding:30px;text-align:center;color:#b0968a;font-size:13px">'
-                +'<div style="font-size:32px;margin-bottom:10px">&#128230;</div>'
-                +'<p>Aucune commande enregistrée.</p></div>';
+              container.innerHTML='<div style="padding:30px;text-align:center;color:var(--text-muted);font-size:13px"><div style="font-size:32px;margin-bottom:10px">&#128230;</div><p>Aucune commande enregistr\u00e9e.</p></div>';
               return;
             }
             cgSnap.docs.forEach(function(d){
-              var o=d.data();
               var login=d.ref.parent.parent.id;
               if(!allOrdersMap[login]) allOrdersMap[login]=[];
-              allOrdersMap[login].push(o);
+              allOrdersMap[login].push(d.data());
             });
             _render();
-          }).catch(function(){
-            container.innerHTML='<div style="padding:30px;text-align:center;color:#b0968a;font-size:13px">'
-              +'<div style="font-size:32px;margin-bottom:10px">&#128230;</div>'
-              +'<p>Aucune commande enregistrée.</p></div>';
+          }).catch(function(e){
+            container.innerHTML='<div style="padding:16px;background:#fdecea;border-radius:8px;font-size:12px;color:#c0392b;line-height:1.8"><strong>&#10060; Erreur</strong><br>Code\u00a0: <code>'+escH(e.code||'inconnu')+'</code><br>'+escH(e.message||'')+'</div>';
           });
         return;
       }
@@ -1914,38 +2002,46 @@ function renderHistorique(){
         var login=loginDoc.id;
         allOrdersMap[login]=[];
         var unsub=loginDoc.ref.collection('commandes')
-          .orderBy('id','desc').limit(100)
+          .orderBy('id','desc').limit(200)
           .onSnapshot(function(cmdSnap){
             allOrdersMap[login]=cmdSnap.docs.map(function(d){return d.data();});
             _render();
           },function(e){
-            console.warn('onSnapshot failed for '+login+':', e.code);
-            loginDoc.ref.collection('commandes').limit(100).get()
+            loginDoc.ref.collection('commandes').limit(200).get()
               .then(function(s2){
                 allOrdersMap[login]=s2.docs.map(function(d){return d.data();});
                 _render();
-              }).catch(function(e2){
-                console.warn('get failed for '+login+':', e2.code);
-                _render();
-              });
+              }).catch(function(){ _render(); });
           });
         window._histoAdminUnsubs.push(unsub);
       });
 
     }).catch(function(e){
       container.innerHTML='<div style="padding:16px;background:#fdecea;border-radius:8px;font-size:12px;color:#c0392b;line-height:1.8">'
-        +'<strong>&#10060; Erreur Firebase</strong><br>'
-        +'Code : <code>'+escH(e.code||'inconnu')+'</code><br>'
-        +'Vérifiez les règles Firestore sur la collection <code>historique</code>.</div>';
+        +'<strong>&#10060; Erreur Firebase</strong> \u2014 Code\u00a0: <code>'+escH(e.code||'inconnu')+'</code><br><br>'
+        +'Ajoutez ces r\u00e8gles dans <strong>Firebase Console \u2192 Firestore \u2192 R\u00e8gles</strong>\u00a0:<br><br>'
+        +'<code style="background:#fff3f3;padding:6px 10px;border-radius:4px;display:block;margin-top:4px;font-size:10px;line-height:1.8">'
+        +'match /historique/{login} { allow read, write: if true; }<br>'
+        +'match /historique/{login}/commandes/{id} { allow read, write: if true; }'
+        +'</code></div>';
     });
   }).catch(function(e){
-    container.innerHTML='<div style="padding:16px;background:#fdecea;border-radius:8px;font-size:12px;color:#c0392b">'
-      +'<strong>&#10060; Firebase non initialisé</strong><br>'+escH(e.message||'')+'</div>';
+    container.innerHTML='<div style="padding:16px;background:#fdecea;border-radius:8px;font-size:12px;color:#c0392b"><strong>&#10060; Firebase non initialis\u00e9</strong><br>'+escH(e.message||'')+'</div>';
   });
 }
 
+function toggleHistoDetail(id){
+  var el=document.getElementById(id);
+  if(!el) return;
+  el.style.display=el.style.display==='none'?'table-row':'none';
+}
+
+
+
+
 function exportHistoriqueAll(){
-  if(typeof XLSX==='undefined'){showToast('⚠ XLSX non chargé');return;}
+  if(typeof XLSX==='undefined'){showToast('\u26a0 XLSX non charg\u00e9');return;}
+  showToast('Pr\u00e9paration de l\u2019export\u2026');
   initFirebase().then(function(db){
     db.collection('historique').get().then(function(snap){
       var promises=snap.docs.map(function(loginDoc){
@@ -1956,21 +2052,38 @@ function exportHistoriqueAll(){
       Promise.all(promises).then(function(arrays){
         var all=[].concat.apply([],arrays);
         all.sort(function(a,b){return (b.id||0)-(a.id||0);});
-        var rows=[['Client','Date','Magasin','Réf.','Colis','Total HT']];
+
+        // Feuille résumé
+        var rows=[['Compte','R\u00f4le','Magasin','Date','R\u00e9f.','Colis','Total HT']];
         all.forEach(function(o){
-          rows.push([o._login||'',String(o.date||'').split(' ')[0],o.magasin||'',o.nbRefs||0,o.nbColis||0,o.totalNet||0]);
+          var compte=comptes.find(function(c){return c.login===o._login;});
+          var role=compte?compte.role:'';
+          rows.push([o._login||'',role,o.magasin||'',String(o.date||'').split(' ')[0],o.nbRefs||0,o.nbColis||0,o.totalNet||0]);
         });
         var ws=XLSX.utils.aoa_to_sheet(rows);
-        ws['!cols']=[{wch:20},{wch:14},{wch:30},{wch:8},{wch:8},{wch:14}];
+        ws['!cols']=[{wch:20},{wch:12},{wch:30},{wch:14},{wch:8},{wch:8},{wch:14}];
+
+        // Feuille détail articles
+        var rows2=[['Compte','Date','Magasin','Code','D\u00e9signation','Colis','PU HT','Total HT']];
+        all.forEach(function(o){
+          if(o.articles&&o.articles.length){
+            o.articles.forEach(function(art){
+              rows2.push([o._login||'',String(o.date||'').split(' ')[0],o.magasin||'',art.code||'',art.libelle||'',art.qty||0,art.puHT||0,art.totalHT||0]);
+            });
+          }
+        });
+        var ws2=XLSX.utils.aoa_to_sheet(rows2);
+        ws2['!cols']=[{wch:18},{wch:14},{wch:28},{wch:14},{wch:40},{wch:8},{wch:10},{wch:12}];
+
         var wb=XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb,ws,'Historique');
+        XLSX.utils.book_append_sheet(wb,ws,'R\u00e9sum\u00e9 commandes');
+        XLSX.utils.book_append_sheet(wb,ws2,'D\u00e9tail articles');
         XLSX.writeFile(wb,'historique_mdm_'+new Date().toISOString().slice(0,10)+'.xlsx');
-        showToast('✅ Export téléchargé');
+        showToast('\u2705 Export Excel t\u00e9l\u00e9charg\u00e9 ('+all.length+' commandes)');
       });
     });
   });
 }
-
 function fmt2(n){ return parseFloat(n||0).toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
 
 // ══════════════════════════════════════════════════════════════

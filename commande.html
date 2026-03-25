@@ -685,9 +685,7 @@ tbody tr.has-qty td.td-qty input{background:#ffe0b2;border-color:var(--terra)}
     <button class="no-print" id="btn-new-client" onclick="openNewClientModal()" style="display:none;font-size:11px;font-weight:400;padding:6px 11px;border-radius:6px;border:1px solid var(--border);background:var(--bg-card);color:var(--accent);cursor:pointer;font-family:inherit;white-space:nowrap">&#43; Client</button>
     <button class="no-print" onclick="openImportPanel()" style="font-size:11px;font-weight:500;padding:7px 12px;border-radius:6px;border:1px solid var(--border);background:var(--bg-card);color:var(--brown);cursor:pointer;font-family:inherit;white-space:nowrap;margin-right:4px">&#128196;&nbsp;Importer</button>
     <button class="no-print" onclick="openModal()" style="font-size:12px;font-weight:500;padding:7px 16px;border-radius:6px;border:none;background:var(--accent);color:#fff;cursor:pointer;font-family:inherit;white-space:nowrap">Envoyer la commande</button>
-    <button class="no-print" id="chat-fab" onclick="chatToggle()" title="Messagerie" style="display:none;position:relative;padding:7px 10px;border-radius:6px;font-size:14px;cursor:pointer;border:1px solid var(--border);background:var(--bg-card);color:var(--text)">
-      &#128172;<span id="chat-badge" style="position:absolute;top:-5px;right:-5px;background:#c0392b;color:#fff;font-size:9px;font-weight:600;padding:2px 5px;border-radius:10px;min-width:16px;text-align:center;display:none"></span>
-    </button>
+    <a href="messagerie.html?back=commande.html" id="chat-fab" class="no-print" title="Messagerie" style="display:none;position:relative;padding:7px 10px;border-radius:6px;font-size:14px;text-decoration:none;border:1px solid var(--border);background:var(--bg-card);color:var(--text);align-items:center;gap:4px">&#128172;<span id="chat-badge" style="position:absolute;top:-5px;right:-5px;background:#c0392b;color:#fff;font-size:9px;font-weight:600;padding:2px 5px;border-radius:10px;min-width:16px;text-align:center;display:none"></span></a>
   </div>
 
 </header>
@@ -1232,7 +1230,7 @@ function fbDeleteInscription(id) {
 
       // Initialiser le chat
       var _allC=[];try{_allC=JSON.parse(localStorage.getItem("mdm_comptes")||"[]");}catch(e){}
-      chatInit(data.login,data.nom||data.login,data.role,data.commercial||"",_allC);
+      initNotifBadge(data.login);
       if(data.role === "user"){
         var btnNC=document.getElementById("btn-new-client");
         if(btnNC) btnNC.style.display="inline-flex";
@@ -3061,6 +3059,54 @@ function applyImport(){
 
 
 
+
+
+function initNotifBadge(login){
+  if(!login) return;
+  var fab=document.getElementById('chat-fab');
+  if(fab) fab.style.display='inline-flex';
+  var db=null;
+  try{
+    if(typeof firebase==='undefined') return;
+    if(!firebase.apps||!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+    db=firebase.firestore();
+  }catch(e){ try{db=firebase.firestore();}catch(e2){return;} }
+  if(!db) return;
+
+  function _updateBadge(n){
+    var badge=document.getElementById('chat-badge');
+    if(!badge) return;
+    if(n>0){
+      badge.textContent=n>99?'99+':String(n);
+      badge.style.display='flex';
+      badge.style.alignItems='center';
+      badge.style.justifyContent='center';
+      if(document.title.indexOf('\u25cf')<0) document.title='\u25cf '+document.title;
+    } else {
+      badge.style.display='none';
+      document.title=document.title.replace('\u25cf ','');
+    }
+  }
+
+  window._notifUnsub && window._notifUnsub();
+  window._notifUnsub=db.collection('chats')
+    .orderBy('lastTs','desc').limit(50)
+    .onSnapshot(function(snap){
+      var unread=0;
+      snap.docs.forEach(function(doc){
+        var id=doc.id;
+        var parts=id.split('_');
+        if(parts.indexOf(login)<0) return;
+        var data=doc.data();
+        var lastSender=data.lastSender||'';
+        var lastTs=data.lastTs||0;
+        var lastRead=0;
+        try{lastRead=parseInt(localStorage.getItem('mdm_lastread_'+id)||'0');}catch(e){}
+        if(lastSender!==login && lastTs>lastRead) unread++;
+      });
+      _updateBadge(unread);
+    },function(e){ console.warn('Notif badge:',e.code); });
+}
 
 
 </script>

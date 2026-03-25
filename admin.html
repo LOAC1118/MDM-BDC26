@@ -393,6 +393,15 @@ code{background:var(--bg);padding:1px 4px;border-radius:3px;font-size:10px;font-
       </select>
       <button class="btn-action btn-sm" id="sort-dir-btn" onclick="toggleSortDir()">&#8593;</button>
     </div>
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead><tr>
+          <th>Login</th><th>Nom</th><th>R&ocirc;le</th><th>Remise</th>
+          <th>Email</th><th>T&eacute;l</th><th>Ville / CP</th>
+          <th>Groupement</th><th>Commercial</th><th>N&deg;</th><th>MDP</th><th></th>
+        </tr></thead>
+        <tbody id="comptes-tbody"></tbody>
+      </table>
     </div>
 
     <div class="page" id="page-inscriptions">
@@ -407,7 +416,7 @@ code{background:var(--bg);padding:1px 4px;border-radius:3px;font-size:10px;font-
         </div>
         <button onclick="if(confirm('Supprimer toutes les demandes trait\u00e9es ?'))purgeInscriptions()" class="btn-actu-del">&#128465; Purger les trait&#233;es</button>
       </div>
-    </div>
+      <div id="inscriptions-list"></div>
 
     <div class="page" id="page-groupements">
 <div class="page-title">Groupements</div>
@@ -469,7 +478,8 @@ code{background:var(--bg);padding:1px 4px;border-radius:3px;font-size:10px;font-
     <div id="grp-empty" style="display:none;text-align:center;padding:40px;color:#b09080;font-size:13px">
       Aucun groupement. Cliquez sur &laquo;&#160;Nouveau groupement&#160;&raquo; pour commencer.
     </div>
-    </div>
+    <!-- Cartes groupements -->
+    <div id="grp-cards"></div>
 
     <div class="page" id="page-historique">
 <div class="page-title">Historique des commandes</div>

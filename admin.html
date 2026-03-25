@@ -591,6 +591,23 @@ footer a{color:inherit;text-decoration:none;opacity:.7}footer a:hover{opacity:1}
 .promo-stat{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:10px 14px;text-align:center;flex:1}
 .promo-stat-val{font-family:'Fraunces',serif;font-weight:200;font-size:20px;color:var(--brown)}
 .promo-stat-lbl{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;margin-top:2px}
+
+.grp-card{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin-bottom:10px}
+.grp-card:hover{box-shadow:0 3px 12px var(--shadow)}
+.grp-card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.grp-card-name{font-size:15px;font-weight:500;color:var(--brown)}
+.grp-card-meta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.grp-chip-cli{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:5px;font-size:11px;background:var(--bg-beige-dark);color:var(--brown)}
+.grp-chip-franco{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:5px;font-size:11px;background:#e0f0ff;color:#0369a1}
+.grp-tranches{display:flex;flex-direction:column;gap:4px}
+.grp-tranche{display:flex;align-items:center;gap:12px;padding:6px 12px;background:var(--bg-beige);border-radius:6px;font-size:12px}
+.grp-tranche-range{color:var(--text-secondary);font-weight:300;flex:1}
+.grp-tranche-pct{color:var(--accent);font-weight:700;font-size:13px;min-width:40px;text-align:right}
+.grp-no-tranche{font-size:12px;font-weight:300;color:var(--text-muted);font-style:italic;padding:4px 0}
+.grp-tr-row{display:grid;grid-template-columns:1fr 1fr 100px 36px;gap:8px;align-items:center}
+.grp-tr-row input{width:100%;padding:7px 10px;border:1.5px solid #e0d0c4;border-radius:6px;font-family:Outfit,sans-serif;font-size:12px;background:var(--cream);outline:none}
+.grp-tr-row input:focus{border-color:var(--accent)}
+.grp-tr-del{width:28px;height:28px;border:none;background:var(--danger-light);color:var(--danger);border-radius:5px;cursor:pointer;font-size:13px;line-height:1}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -1038,91 +1055,69 @@ footer a{color:inherit;text-decoration:none;opacity:.7}footer a:hover{opacity:1}
 
 
     <!-- PAGE : GROUPEMENTS -->
-    <div class="page" id="page-groupements">
-      <div class="page-title">Groupements</div>
-      <div class="page-sub">D&#233;finissez les groupements et leurs remises &#8212; appliqu&#233;es automatiquement lors de la cr&#233;ation d&#8217;un compte client</div>
-      <div class="grp-form">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-          <span style="font-size:13px;font-weight:700;color:var(--brown)" id="grp-form-title">&#43; Nouveau groupement</span>
-          <button onclick="cancelGrp()" id="grp-cancel-btn" style="display:none;background:none;border:none;font-size:12px;color:#a08070;cursor:pointer;font-family:Outfit,sans-serif">Annuler</button>
-        </div>
+      <div class="page" id="page-groupements">
+    <div class="page-title">Groupements</div>
+    <div class="page-sub">D&eacute;finissez les groupements et leurs conditions commerciales&nbsp;&mdash; appliqu&eacute;es automatiquement aux comptes clients</div>
 
-        <!-- Nom -->
-        <div class="fg" style="margin-bottom:14px">
-          <label>Nom du groupement <span style="color:var(--terra)">*</span></label>
-          <input type="text" id="grp-nom" placeholder="ex&#160;: Biocoop, Naturalia&#8230;" style="max-width:400px">
-        </div>
-
-        <!-- Tranches de remise -->
-        <div class="fg" style="margin-bottom:14px">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-            <label style="margin:0">Tranches de remise (%)</label>
-            <button type="button" onclick="addRemiseTranche()" style="padding:3px 10px;background:var(--accent-light);color:var(--accent);border:1px solid var(--accent);border-radius:5px;font-size:11px;cursor:pointer;font-family:Inter,sans-serif">&#43; Tranche</button>
-          </div>
-          <div id="grp-remises-list" style="display:flex;flex-direction:column;gap:6px">
-            <!-- Tranches injectées dynamiquement -->
-          </div>
-          <div style="font-size:10px;color:var(--text-muted);margin-top:5px">Ex&#160;: 0–500&#160;€ = 5%, 500–1000&#160;€ = 8%, 1000&#160;€+ = 12%</div>
-        </div>
-
-        <!-- Tranches de franco -->
-        <div class="fg" style="margin-bottom:16px">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-            <label style="margin:0">Tranches de franco (&#8364;&#160;HT minimum)</label>
-            <button type="button" onclick="addFrancoTranche()" style="padding:3px 10px;background:var(--accent-light);color:var(--accent);border:1px solid var(--accent);border-radius:5px;font-size:11px;cursor:pointer;font-family:Inter,sans-serif">&#43; Tranche</button>
-          </div>
-          <div id="grp-francos-list" style="display:flex;flex-direction:column;gap:6px">
-            <!-- Tranches injectées dynamiquement -->
-          </div>
-          <div style="font-size:10px;color:var(--text-muted);margin-top:5px">Ex&#160;: &lt;300&#160;€ = 15&#160;€ de port, &#8805;300&#160;€ = gratuit</div>
-        </div>
-
-        <button onclick="saveGrp()" style="padding:9px 22px;background:var(--terra);color:#fff;border:none;border-radius:7px;font-family:Outfit,sans-serif;font-size:13px;font-weight:600;cursor:pointer" id="grp-save-btn">&#10003; Enregistrer</button>
-        <div id="grp-alert" style="display:none;margin-top:10px;padding:8px 12px;border-radius:6px;font-size:12px"></div>
-      </div>
-      </div>
-      <div style="background:#fff;border-radius:10px;box-shadow:0 2px 10px var(--shadow);overflow:hidden">
-        <table class="grp-table"><thead><tr>
-          <th>Nom du groupement</th><th style="text-align:center">Remises</th>
-          <th style="text-align:center">Francos</th>
-          <th style="text-align:center">Nb clients</th><th style="text-align:right">Actions</th>
-        </tr></thead><tbody id="grp-tbody"></tbody></table>
-        <div id="grp-empty" style="display:none;text-align:center;padding:40px;color:#b09080;font-size:13px">Aucun groupement. Ajoutez-en un ci-dessus.</div>
-      </div>
-
-      <!-- Remises produits par groupement -->
-      <div class="grp-rp-panel" id="grp-rp-panel" style="display:none">
-        <div class="grp-rp-panel-header">
-          <span class="grp-rp-panel-title">&#127991; Remises produits &#8212; <span id="grp-rp-panel-nom"></span></span>
-          <div style="display:flex;align-items:center;gap:10px">
-            <span style="font-size:11px;opacity:.7" id="grp-rp-count">0 produit(s)</span>
-            <button onclick="closeGrpRpPanel()" style="background:rgba(255,255,255,.2);border:none;color:#fff;cursor:pointer;padding:4px 10px;border-radius:6px;font-family:Outfit,sans-serif;font-size:11px">&#10005; Fermer</button>
-          </div>
-        </div>
-        <div style="padding:16px 18px">
-          <div style="font-size:11px;color:#b09080;margin-bottom:10px">
-            Upload un fichier Excel. Colonnes reconnues&#160;:
-            <code style="background:var(--cream);padding:1px 5px;border-radius:4px">Code</code> (obligatoire),
-            <code style="background:var(--cream);padding:1px 5px;border-radius:4px">Libelle</code>,
-            <code style="background:var(--cream);padding:1px 5px;border-radius:4px">Categorie</code>,
-            <code style="background:var(--cream);padding:1px 5px;border-radius:4px">Remise</code> (en %),
-            <code style="background:var(--cream);padding:1px 5px;border-radius:4px">Prix HT</code> (prix sp&#233;cial),
-            <code style="background:var(--cream);padding:1px 5px;border-radius:4px">EAN</code>.
-            Au moins Remise ou Prix HT requis par ligne.
-          </div>
-          <div class="grp-rp-drop" id="grp-rp-drop" onclick="document.getElementById('grp-rp-file').click()">&#128196; Glissez un fichier Excel ou cliquez pour charger<input type="file" id="grp-rp-file" accept=".xlsx,.xls" style="display:none" onchange="handleGrpRpFile(this.files[0])"></div>
-          <div id="grp-rp-table-wrap" style="margin-top:12px;max-height:320px;overflow-y:auto;display:none">
-            <table class="grp-rp-table"><thead><tr><th>Code</th><th>Lib&#233;ll&#233;</th><th>Cat&#233;gorie</th><th style="text-align:center">Remise %</th><th style="text-align:center">Prix HT sp&#233;cial</th><th>EAN</th><th></th></tr></thead>
-            <tbody id="grp-rp-tbody"></tbody></table>
-          </div>
-          <div style="display:flex;gap:10px;margin-top:12px;align-items:center">
-            <button onclick="saveGrpRp()" style="padding:8px 18px;background:var(--terra);color:#fff;border:none;border-radius:7px;font-family:Outfit,sans-serif;font-size:13px;font-weight:600;cursor:pointer">&#10003; Enregistrer les remises</button>
-            <button onclick="clearGrpRp()" style="padding:8px 14px;background:#f0e4da;color:var(--brown);border:none;border-radius:7px;font-family:Outfit,sans-serif;font-size:12px;cursor:pointer">&#128465; Tout effacer</button>
-            <span id="grp-rp-saved-msg" style="font-size:11px;color:var(--green);display:none">&#10003; Sauvegard&#233;</span>
-          </div>
-        </div>
-      </div>
+    <!-- Bouton nouveau -->
+    <div style="margin-bottom:16px">
+      <button class="btn-add" onclick="openNewGrp()" id="grp-new-btn" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;background:var(--terra);color:#fff;border:none;border-radius:7px;font-family:Outfit,sans-serif;font-size:13px;font-weight:600;cursor:pointer">&#43; Nouveau groupement</button>
     </div>
+
+    <!-- Formulaire masqué par défaut -->
+    <div id="grp-form-wrap" style="display:none">
+    <div class="section-card" style="margin-bottom:20px">
+      <div class="section-card-title">
+        <span id="grp-form-title">&#43; Nouveau groupement</span>
+        <button onclick="cancelGrp()" style="background:none;border:none;font-size:12px;color:#a08070;cursor:pointer;font-family:Outfit,sans-serif">Annuler</button>
+      </div>
+
+      <!-- Nom -->
+      <div class="fg" style="margin-bottom:16px">
+        <label>Nom du groupement <span style="color:var(--terra)">*</span></label>
+        <input type="text" id="grp-nom" placeholder="ex&#160;: Biocoop, Naturalia&hellip;" style="max-width:400px">
+      </div>
+
+      <!-- Franco unique -->
+      <div class="fg" style="margin-bottom:20px">
+        <label>Franco de port (&#8364;&#160;HT minimum) <span style="font-size:10px;font-weight:400;color:#b09080">&#8212; laisser vide si aucun</span></label>
+        <div style="display:flex;align-items:center;gap:10px">
+          <input type="number" id="grp-franco" min="0" step="10" placeholder="ex&#160;: 500"
+            style="width:160px;padding:9px 12px;border:1.5px solid #e0d0c4;border-radius:7px;font-family:Outfit,sans-serif;font-size:13px;background:var(--cream);outline:none">
+          <span style="font-size:12px;color:#b09080">&#8364;&#160;HT minimum pour franco gratuit</span>
+        </div>
+      </div>
+
+      <!-- Tranches de remise -->
+      <div class="fg" style="margin-bottom:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <label style="margin:0">Tranches de remise progressive</label>
+          <button type="button" onclick="addRemiseTranche()" style="padding:4px 12px;background:var(--accent-light);color:var(--accent);border:1px solid var(--accent);border-radius:5px;font-size:11px;cursor:pointer;font-family:Inter,sans-serif">&#43; Tranche</button>
+        </div>
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:10px;background:var(--bg-beige);padding:8px 12px;border-radius:6px;line-height:1.6">
+          &#128161; Ex&#160;: de 600&#8364; &#224; 900&#8364; = 10%&nbsp;&nbsp;|&nbsp;&nbsp;de 900&#8364; &#224; 1300&#8364; = 13%&nbsp;&nbsp;|&nbsp;&nbsp;d&#232;s 1300&#8364; = 15%
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 100px 36px;gap:8px;margin-bottom:6px;padding:0 2px">
+          <span style="font-size:10px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px">CA min (&#8364;)</span>
+          <span style="font-size:10px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px">CA max (&#8364; &#8212; vide = illimit&#233;)</span>
+          <span style="font-size:10px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px">Remise %</span>
+          <span></span>
+        </div>
+        <div id="grp-remises-list" style="display:flex;flex-direction:column;gap:6px"></div>
+      </div>
+
+      <div id="grp-alert" style="display:none;margin-bottom:12px;padding:8px 12px;border-radius:6px;font-size:12px"></div>
+      <button onclick="saveGrp()" style="padding:9px 22px;background:var(--terra);color:#fff;border:none;border-radius:7px;font-family:Outfit,sans-serif;font-size:13px;font-weight:600;cursor:pointer" id="grp-save-btn">&#10003; Enregistrer</button>
+    </div>
+    </div>
+
+    <!-- Liste vide -->
+    <div id="grp-empty" style="display:none;text-align:center;padding:40px;color:#b09080;font-size:13px">
+      Aucun groupement. Cliquez sur &laquo;&#160;Nouveau groupement&#160;&raquo; pour commencer.
+    </div>
+    <!-- Cartes groupements -->
+    <div id="grp-cards"></div>
+  </div>
 
 
   </main>
@@ -2513,166 +2508,65 @@ function delGrp(idx){
 }
 
 // ── Panel remises produits ────────────────────────────────────
-function openGrpRpPanel(idx){
-  _grpRpIdx=idx;
-  var g=_groupements[idx];
-  document.getElementById('grp-rp-panel').style.display='block';
-  document.getElementById('grp-rp-panel-nom').textContent=g.nom;
-  renderGrpRpTable(g.remises_produits||[]);
-  document.getElementById('grp-rp-panel').scrollIntoView({behavior:'smooth'});
-}
+function openGrpRpPanel(){}
 
-function closeGrpRpPanel(){
-  _grpRpIdx=-1;
-  document.getElementById('grp-rp-panel').style.display='none';
-}
 
-function renderGrpRpTable(rp){
-  var tbody=document.getElementById('grp-rp-tbody');
-  var wrap=document.getElementById('grp-rp-table-wrap');
-  var count=document.getElementById('grp-rp-count');
-  if(count) count.textContent=rp.length+' produit(s)';
-  if(!rp.length){ if(wrap) wrap.style.display='none'; return; }
-  if(wrap) wrap.style.display='block';
-  tbody.innerHTML=rp.map(function(r,i){
-    return '<tr>'
-      +'<td style="font-family:monospace;font-size:11px">'+escH(r.code||r.valeur||'')+'</td>'
-      +'<td>'+escH(r.libelle||'')+'</td>'
-      +'<td>'+escH(r.categorie||'')+'</td>'
-      +'<td style="text-align:center">'+(r.remise?r.remise+'%':'—')+'</td>'
-      +'<td style="text-align:center">'+(r.prixHT?r.prixHT+' €':'—')+'</td>'
-      +'<td style="font-family:monospace;font-size:10px">'+escH(r.ean||'')+'</td>'
-      +'<td style="text-align:center"><button onclick="delGrpRpRow('+i+')" style="background:none;border:none;cursor:pointer;color:var(--danger);font-size:13px">🗑</button></td>'
-      +'</tr>';
-  }).join('');
-}
+function closeGrpRpPanel(){}
 
-function delGrpRpRow(i){
-  if(_grpRpIdx<0) return;
-  _groupements[_grpRpIdx].remises_produits.splice(i,1);
-  renderGrpRpTable(_groupements[_grpRpIdx].remises_produits||[]);
-}
 
-function clearGrpRp(){
-  if(_grpRpIdx<0||!confirm('Effacer toutes les remises produits ?')) return;
-  _groupements[_grpRpIdx].remises_produits=[];
-  renderGrpRpTable([]);
-}
+function renderGrpRpTable(){}
 
-function saveGrpRp(){
-  if(_grpRpIdx<0) return;
-  var g=_groupements[_grpRpIdx];
-  fbSaveGroupement(g).then(function(id){ g._id=id; saveGroupements(); })
-    .catch(function(){ saveGroupements(); });
-  var msg=document.getElementById('grp-rp-saved-msg');
-  if(msg){ msg.style.display='inline'; setTimeout(function(){msg.style.display='none';},2500); }
-  showToast('✅ Remises produits sauvegardées');
-  renderGroupements();
-}
 
-function handleGrpRpFile(file){
-  if(!file) return;
-  if(typeof XLSX==='undefined'){ showToast('⚠ Bibliothèque Excel non disponible'); return; }
-  var reader=new FileReader();
-  reader.onload=function(e){
-    try{
-      var wb=XLSX.read(e.target.result,{type:'array'});
-      var ws=wb.Sheets[wb.SheetNames[0]];
-      var rows=XLSX.utils.sheet_to_json(ws,{defval:''});
-      var rp=[];
-      rows.forEach(function(row){
-        var code=String(row['Code']||row['code']||row['CODE']||'').trim();
-        var libelle=String(row['Libelle']||row['libelle']||row['Libellé']||row['LIBELLE']||'').trim();
-        var cat=String(row['Categorie']||row['categorie']||row['Catégorie']||'').trim();
-        var remise=parseFloat(row['Remise']||row['remise']||row['REMISE']||0)||0;
-        var prix=parseFloat(row['Prix HT']||row['prix_ht']||row['PrixHT']||0)||0;
-        var ean=String(row['EAN']||row['ean']||'').trim();
-        if(!code) return;
-        if(!remise&&!prix) return;
-        rp.push({code:code,libelle:libelle,categorie:cat,remise:remise,prixHT:prix,ean:ean});
-      });
-      if(_grpRpIdx>=0) _groupements[_grpRpIdx].remises_produits=rp;
-      renderGrpRpTable(rp);
-      showToast('✅ '+rp.length+' remise(s) chargée(s)');
-    }catch(err){ showToast('⚠ Erreur lecture Excel : '+err.message); }
-  };
-  reader.readAsArrayBuffer(file);
-}
+function delGrpRpRow(){}
+
+
+function clearGrpRp(){}
+
+
+function saveGrpRp(){}
+
+
+function handleGrpRpFile(){}
+
 
 
 // ── Tranches de remise ────────────────────────────────────────
 function addRemiseTranche(data){
   var list=document.getElementById('grp-remises-list');
   if(!list) return;
-  var d=data||{minCA:0,maxCA:'',remise:0};
+  var d=data||{minCA:0,maxCA:'',remise:''};
   var row=document.createElement('div');
-  row.className='tranche-row';
-  if(!list.children.length){
-    var hdr=document.createElement('div');
-    hdr.className='tranche-header';
-    hdr.innerHTML='<span>CA min (&#8364;)</span><span>CA max (&#8364;, vide=illimit&#233;)</span><span>Remise (%)</span><span></span>';
-    list.appendChild(hdr);
-  }
-  row.innerHTML='<input type="number" min="0" step="10" placeholder="0" value="'+(d.minCA||0)+'" class="grp-tr-min">'
-    +'<input type="number" min="0" step="10" placeholder="illimit&#233;" value="'+(d.maxCA||'')+'" class="grp-tr-max">'
-    +'<input type="number" min="0" max="99" step="0.5" placeholder="%" value="'+(d.remise||0)+'" class="grp-tr-rem">'
-    +'<button type="button" class="tranche-del" onclick="this.parentNode.remove()">&#10005;</button>';
+  row.className='grp-tr-row';
+  var inp1=document.createElement('input');
+  inp1.type='number'; inp1.min='0'; inp1.step='10';
+  inp1.placeholder='0'; inp1.value=d.minCA||0;
+  inp1.className='grp-tr-min';
+  var inp2=document.createElement('input');
+  inp2.type='number'; inp2.min='0'; inp2.step='10';
+  inp2.placeholder='Illimité'; inp2.value=d.maxCA||'';
+  inp2.className='grp-tr-max';
+  var inp3=document.createElement('input');
+  inp3.type='number'; inp3.min='0'; inp3.max='99'; inp3.step='0.5';
+  inp3.placeholder='%'; inp3.value=d.remise||'';
+  inp3.className='grp-tr-rem';
+  var btn=document.createElement('button');
+  btn.type='button'; btn.className='grp-tr-del';
+  btn.title='Supprimer'; btn.innerHTML='&#10005;';
+  btn.onclick=function(){ this.parentNode.remove(); };
+  row.appendChild(inp1); row.appendChild(inp2);
+  row.appendChild(inp3); row.appendChild(btn);
   list.appendChild(row);
 }
 
-function addFrancoTranche(data){
-  var list=document.getElementById('grp-francos-list');
-  if(!list) return;
-  var d=data||{minCA:0,maxCA:'',franco:0,fraisPort:0};
-  var row=document.createElement('div');
-  row.className='tranche-row';
-  if(!list.children.length){
-    var hdr=document.createElement('div');
-    hdr.className='tranche-header';
-    hdr.innerHTML='<span>Commande min (&#8364;)</span><span>Commande max (&#8364;)</span><span>Franco HT (0=gratuit)</span><span></span>';
-    list.appendChild(hdr);
-  }
-  row.innerHTML='<input type="number" min="0" step="10" placeholder="0" value="'+(d.minCA||0)+'" class="grp-fr-min">'
-    +'<input type="number" min="0" step="10" placeholder="illimit&#233;" value="'+(d.maxCA||'')+'" class="grp-fr-max">'
-    +'<input type="number" min="0" step="5" placeholder="0" value="'+(d.franco||0)+'" class="grp-fr-val">'
-    +'<button type="button" class="tranche-del" onclick="this.parentNode.remove()">&#10005;</button>';
-  list.appendChild(row);
-}
 
-function _collectTranches(){
-  var remises=[];
-  document.querySelectorAll('#grp-remises-list .tranche-row').forEach(function(row){
-    var min=parseFloat(row.querySelector('.grp-tr-min').value)||0;
-    var maxVal=row.querySelector('.grp-tr-max').value;
-    var max=maxVal===''?null:parseFloat(maxVal)||null;
-    var rem=parseFloat(row.querySelector('.grp-tr-rem').value)||0;
-    if(rem>0) remises.push({minCA:min,maxCA:max,remise:rem});
-  });
-  var francos=[];
-  document.querySelectorAll('#grp-francos-list .tranche-row').forEach(function(row){
-    var min=parseFloat(row.querySelector('.grp-fr-min').value)||0;
-    var maxVal=row.querySelector('.grp-fr-max').value;
-    var max=maxVal===''?null:parseFloat(maxVal)||null;
-    var val=parseFloat(row.querySelector('.grp-fr-val').value)||0;
-    francos.push({minCA:min,maxCA:max,franco:val});
-  });
-  return {remises:remises,francos:francos};
-}
+function addFrancoTranche(){}
 
-function _renderTranchesInForm(g){
-  // Reset
-  document.getElementById('grp-remises-list').innerHTML='';
-  document.getElementById('grp-francos-list').innerHTML='';
-  var remises=g.remises_tranches||[];
-  var francos=g.franco_tranches||[];
-  // Rétro-compat : anciens groupements avec remise/franco simples
-  if(!remises.length && g.remise>0) remises=[{minCA:0,maxCA:null,remise:g.remise}];
-  if(!francos.length && g.franco>0) francos=[{minCA:0,maxCA:null,franco:g.franco}];
-  if(!remises.length) remises=[{minCA:0,maxCA:null,remise:0}];
-  if(!francos.length) francos=[{minCA:0,maxCA:null,franco:0}];
-  remises.forEach(function(r){ addRemiseTranche(r); });
-  francos.forEach(function(f){ addFrancoTranche(f); });
-}
+
+function _collectTranches(){}
+
+
+function _renderTranchesInForm(){}
+
 
 // ── saveGrp ───────────────────────────────────────────────────
 function saveGrp(){
@@ -2685,17 +2579,21 @@ function saveGrp(){
     return;
   }
   alertEl.style.display='none';
-  var t=_collectTranches();
-  // Compatibilité : stocker aussi la remise/franco de base (première tranche)
-  var remise=(t.remises[0]&&t.remises[0].remise)||0;
-  var franco=(t.francos[0]&&t.francos[0].franco)||0;
-
+  var franco=parseFloat(document.getElementById('grp-franco').value)||0;
+  var remises=[];
+  document.querySelectorAll('#grp-remises-list .grp-tr-row').forEach(function(row){
+    var min=parseFloat(row.querySelector('.grp-tr-min').value)||0;
+    var maxVal=row.querySelector('.grp-tr-max').value.trim();
+    var max=maxVal===''?null:parseFloat(maxVal)||null;
+    var rem=parseFloat(row.querySelector('.grp-tr-rem').value)||0;
+    if(rem>0) remises.push({minCA:min,maxCA:max,remise:rem});
+  });
+  var remiseBase=(remises[0]&&remises[0].remise)||0;
   if(_grpEditIdx>=0){
     var g=_groupements[_grpEditIdx];
     var oldNom=g.nom;
-    g.nom=nom; g.remise=remise; g.franco=franco;
-    g.remises_tranches=t.remises;
-    g.franco_tranches=t.francos;
+    g.nom=nom; g.remise=remiseBase; g.franco=franco;
+    g.remises_tranches=remises; g.franco_tranches=[];
     if(oldNom!==nom){
       comptes.forEach(function(c){ if(c.groupement===oldNom) c.groupement=nom; });
       saveComptes();
@@ -2708,8 +2606,7 @@ function saveGrp(){
       alertEl.style.display='block'; alertEl.style.background='#fdecea'; alertEl.style.color='#c62828';
       return;
     }
-    var newGrp={nom:nom,remise:remise,franco:franco,
-      remises_tranches:t.remises,franco_tranches:t.francos,remises_produits:[]};
+    var newGrp={nom:nom,remise:remiseBase,franco:franco,remises_tranches:remises,franco_tranches:[],remises_produits:[]};
     _groupements.push(newGrp);
     fbSaveGroupement(newGrp).then(function(id){newGrp._id=id;saveGroupements();}).catch(function(){saveGroupements();});
     showToast('✅ Groupement créé : '+nom);
@@ -2717,81 +2614,98 @@ function saveGrp(){
   cancelGrp(); renderGroupements(); updateGroupementsBadge(); refreshGroupementSelect();
 }
 
+
 // ── editGrp ───────────────────────────────────────────────────
 function editGrp(idx){
   _grpEditIdx=idx;
   var g=_groupements[idx];
   document.getElementById('grp-nom').value=g.nom||'';
+  document.getElementById('grp-franco').value=g.franco>0?g.franco:'';
+  document.getElementById('grp-remises-list').innerHTML='';
+  var tr=g.remises_tranches||[];
+  if(!tr.length&&g.remise>0) tr=[{minCA:0,maxCA:'',remise:g.remise}];
+  if(!tr.length) tr=[{minCA:0,maxCA:'',remise:''}];
+  tr.forEach(function(t){ addRemiseTranche(t); });
   document.getElementById('grp-form-title').textContent='✏️ Modifier : '+g.nom;
-  document.getElementById('grp-cancel-btn').style.display='inline';
-  _renderTranchesInForm(g);
-  document.getElementById('grp-nom').focus();
-  document.querySelector('.grp-form').scrollIntoView({behavior:'smooth'});
+  document.getElementById('grp-alert').style.display='none';
+  document.getElementById('grp-form-wrap').style.display='block';
+  document.getElementById('grp-new-btn').style.display='none';
+  document.getElementById('grp-form-wrap').scrollIntoView({behavior:'smooth'});
 }
 
+
 // ── cancelGrp ─────────────────────────────────────────────────
+function openNewGrp(){
+  _grpEditIdx=-1;
+  document.getElementById('grp-nom').value='';
+  document.getElementById('grp-franco').value='';
+  document.getElementById('grp-remises-list').innerHTML='';
+  addRemiseTranche({minCA:0,maxCA:'',remise:''});
+  document.getElementById('grp-form-title').textContent='+ Nouveau groupement';
+  document.getElementById('grp-alert').style.display='none';
+  document.getElementById('grp-form-wrap').style.display='block';
+  document.getElementById('grp-form-wrap').scrollIntoView({behavior:'smooth'});
+  document.getElementById('grp-nom').focus();
+  document.getElementById('grp-new-btn').style.display='none';
+}
 function cancelGrp(){
   _grpEditIdx=-1;
-  function _s(id,prop,val){var e=document.getElementById(id);if(e)e[prop]=val;}
-  _s('grp-nom','value','');
-  _s('grp-remises-list','innerHTML','');
-  _s('grp-francos-list','innerHTML','');
-  // N'ajouter les tranches que si les conteneurs existent
-  if(document.getElementById('grp-remises-list')) addRemiseTranche({minCA:0,maxCA:null,remise:0});
-  if(document.getElementById('grp-francos-list')) addFrancoTranche({minCA:0,maxCA:null,franco:0});
-  _s('grp-form-title','textContent','+ Nouveau groupement');
-  _s('grp-cancel-btn','style.display','none');
-  _s('grp-alert','style.display','none');
+  document.getElementById('grp-form-wrap').style.display='none';
+  document.getElementById('grp-new-btn').style.display='inline-flex';
 }
+
 
 // ── renderGroupements ─────────────────────────────────────────
 function renderGroupements(){
-  // Init formulaire si vierge
   var rl=document.getElementById('grp-remises-list');
-  if(rl&&!rl.children.length) addRemiseTranche({minCA:0,maxCA:null,remise:0});
-  var fl=document.getElementById('grp-francos-list');
-  if(fl&&!fl.children.length) addFrancoTranche({minCA:0,maxCA:null,franco:0});
-  var tbody=document.getElementById('grp-tbody');
+  if(rl&&!rl.children.length) addRemiseTranche({minCA:0,maxCA:'',remise:''});
+  var cards=document.getElementById('grp-cards');
   var empty=document.getElementById('grp-empty');
-  if(!tbody) return;
+  if(!cards) return;
   if(!_groupements.length){
-    tbody.innerHTML=''; if(empty) empty.style.display='block';
+    cards.innerHTML='';
+    if(empty) empty.style.display='block';
     updateGroupementsBadge(); return;
   }
   if(empty) empty.style.display='none';
-  var nbClients={};
-  comptes.forEach(function(c){ if(c.groupement) nbClients[c.groupement]=(nbClients[c.groupement]||0)+1; });
-  tbody.innerHTML=_groupements.map(function(g,idx){
-    var nb=nbClients[g.nom]||0;
-    // Résumé remises
+  var nbCli={};
+  comptes.forEach(function(c){ if(c.groupement) nbCli[c.groupement]=(nbCli[c.groupement]||0)+1; });
+  var html='';
+  _groupements.forEach(function(g,idx){
+    var nb=nbCli[g.nom]||0;
     var tr=g.remises_tranches||[];
     if(!tr.length&&g.remise>0) tr=[{minCA:0,maxCA:null,remise:g.remise}];
-    var remiseTxt=tr.length?tr.map(function(t){
-      var range=t.maxCA?t.minCA+'–'+t.maxCA+' €':t.minCA+' €+';
-      return '<span class="remise-pill" style="font-size:9px;margin:1px">'+range+' = −'+t.remise+'%</span>';
-    }).join(' '):'<span style="color:var(--text-muted)">—</span>';
-    // Résumé francos
-    var tf=g.franco_tranches||[];
-    if(!tf.length&&g.franco>0) tf=[{minCA:0,maxCA:null,franco:g.franco}];
-    var francoTxt=tf.length?tf.map(function(f){
-      var range=f.maxCA?'<'+f.maxCA+' €':'≥'+f.minCA+' €';
-      var val=f.franco>0?f.franco+' €':'Gratuit';
-      return '<span style="font-size:10px;background:#f0f7f0;color:var(--green);padding:1px 6px;border-radius:4px;margin:1px;display:inline-block">'+range+' → '+val+'</span>';
-    }).join(' '):'<span style="color:var(--text-muted)">—</span>';
-
-    return '<tr>'
-      +'<td style="font-weight:500;color:var(--brown)">'+escH(g.nom||'—')+'</td>'
-      +'<td style="text-align:center">'+remiseTxt+'</td>'
-      +'<td style="text-align:center">'+francoTxt+'</td>'
-      +'<td style="text-align:center;color:var(--text-secondary)">'+nb+'</td>'
-      +'<td style="text-align:right;white-space:nowrap;display:flex;gap:5px;justify-content:flex-end">'
-      +'<button class="btn-action btn-edit" onclick="editGrp('+idx+')">&#9998; Modifier</button>'
-      +'<button class="btn-action" onclick="openGrpRpPanel('+idx+')" style="background:#f0f7f0;color:var(--green)">&#127991; Remises</button>'
-      +'<button class="btn-action btn-del" onclick="delGrp('+idx+')">&#128465;</button>'
-      +'</td>'
-      +'</tr>';
-  }).join('');
+    var metaHtml='<span class="grp-chip-cli">&#128101; '+nb+' client'+(nb>1?'s':'')+'</span>';
+    if(g.franco>0) metaHtml+='<span class="grp-chip-franco">&#128666; Franco : '+g.franco+' €</span>';
+    var trHtml='';
+    if(!tr.length){
+      trHtml='<div class="grp-no-tranche">Aucune remise définie</div>';
+    } else {
+      trHtml='<div class="grp-tranches">';
+      tr.forEach(function(t){
+        var r='';
+        if(t.minCA>0&&t.maxCA) r='De '+t.minCA+' € à '+t.maxCA+' €';
+        else if(t.minCA>0) r='Dès '+t.minCA+' €';
+        else if(t.maxCA) r='Jusqu’à '+t.maxCA+' €';
+        else r='Toutes commandes';
+        trHtml+='<div class="grp-tranche"><span class="grp-tranche-range">'+r+'</span><span class="grp-tranche-pct">-'+t.remise+'%</span></div>';
+      });
+      trHtml+='</div>';
+    }
+    html+='<div class="grp-card">';
+    html+='<div class="grp-card-head">';
+    html+='<div class="grp-card-name">'+escH(g.nom||'—')+'</div>';
+    html+='<div style="display:flex;gap:6px">';
+    html+='<button class="btn-action btn-edit" onclick="editGrp('+idx+')">&#9998; Modifier</button>';
+    html+='<button class="btn-action btn-del" onclick="delGrp('+idx+')">&#128465;</button>';
+    html+='</div></div>';
+    html+='<div class="grp-card-meta">'+metaHtml+'</div>';
+    html+=trHtml;
+    html+='</div>';
+  });
+  cards.innerHTML=html;
 }
+
 
 
 function renderActus(){

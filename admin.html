@@ -23,10 +23,10 @@
   --green:#2e7d47;--green-l:#e8f5ed;
   --r:8px;--sidebar:240px;--header:56px;
 }
-html,body{height:100%;margin:0;padding:0}body{font-family:'Inter',sans-serif;font-weight:300;background:var(--bg);color:var(--text);height:100vh;display:flex;flex-direction:column;overflow:hidden}
+html{height:100%;overflow:hidden}body{font-family:'Inter',sans-serif;font-weight:300;background:var(--bg);color:var(--text);height:100vh;overflow:hidden;display:flex;flex-direction:column}
 a{text-decoration:none;color:inherit}
-.layout{flex:1;overflow:hidden;position:relative;min-height:0}
-.main-area{margin-left:var(--sidebar);height:calc(100vh - var(--header));overflow-y:auto;overflow-x:hidden;padding:24px 28px}
+.layout{display:flex;flex:1;overflow:hidden;min-height:0}
+.main-area{flex:1;overflow-y:auto;overflow-x:hidden;padding:24px 28px;height:100%;min-height:0}
 
 /* Header */
 .adm-header{height:var(--header);background:var(--bg-card);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:16px;position:sticky;top:0;z-index:100;box-shadow:var(--shadow)}
@@ -53,7 +53,7 @@ a{text-decoration:none;color:inherit}
 .hdr-btn:hover{background:var(--danger-l);color:var(--danger);border-color:var(--danger)}
 
 /* Sidebar */
-.sidebar{position:fixed;top:var(--header);left:0;width:var(--sidebar);height:calc(100vh - var(--header));background:var(--bg-card);border-right:1px solid var(--border);overflow-y:auto;padding:10px 0;z-index:50}
+.sidebar{width:var(--sidebar);flex-shrink:0;background:var(--bg-card);border-right:1px solid var(--border);overflow-y:auto;padding:10px 0;height:100%}
 .nav-sec-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-3);padding:14px 16px 5px}
 .nav-item{display:flex;align-items:center;gap:10px;padding:8px 16px;cursor:pointer;transition:all .12s;color:var(--text-2);font-size:12px;font-weight:400;border-left:3px solid transparent}
 .nav-item:hover{background:var(--bg-hover);color:var(--text)}
@@ -3060,22 +3060,7 @@ function _generatePromoHTML(){
 
   // Script inline dans le bon généré
   HTML+='<script>\n'
-    +'var _FBCFG='+fbCfgStr+';\n'
-    +'var _fbDb3=null;\n'
-    +'function _initFB3(){\n'
-    +'  if(_fbDb3) return Promise.resolve(_fbDb3);\n'
-    +'  try{if(!firebase.apps||!firebase.apps.length)firebase.initializeApp(_FBCFG);}\n'
-    +'  catch(e){try{firebase.app();}catch(e2){}}\n'
-    +'  _fbDb3=firebase.firestore();\n'
-    +'  return Promise.resolve(_fbDb3);\n'
-    +'}\n'
-    +'function _getTokenData(){\n'
-    +'  try{var t=sessionStorage.getItem("mdm_token");if(!t)return null;\n'
-    +'    var d=JSON.parse(atob(t.replace(/-/g,"+").replace(/_/g,"/")));\n'
-    +'    return {login:d.login||"",nom:d.nom||"",commercial:d.commercial||null};\n'
-    +'  }catch(e){return null;}\n'
-    +'}\n'
-    +'function fmt2(n){return n.toFixed(2).replace(".",",")+"\u00a0\u20ac";}\n'
+    +'function fmt2(n){return n.toFixed(2).replace(".",",")+"\\u00a0\\u20ac";}\n'
     +'function updateTotaux(){\n'
     +'  var refs=0,colis=0,ht=0;\n'
     +'  document.querySelectorAll("input[data-code]").forEach(function(inp){\n'
@@ -3091,53 +3076,56 @@ function _generatePromoHTML(){
     +'}\n'
     +'async function sendOrder(){\n'
     +'  var mag=(document.getElementById("f-magasin")||{value:""}).value.trim();\n'
+    +'  var email=(document.getElementById("f-email")||{value:""}).value.trim();\n'
     +'  if(!mag){alert("Veuillez remplir le nom du magasin.");return;}\n'
-    +'  var clientEmail=(document.getElementById("f-email")||{value:""}).value.trim();\n'
-    +'  var tel=(document.getElementById("f-tel")||{value:""}).value.trim();\n'
-    +'  var ville=(document.getElementById("f-ville")||{value:""}).value.trim();\n'
     +'  var lines=[],refs=0,colis=0,ht=0;\n'
     +'  document.querySelectorAll("input[data-code]").forEach(function(inp){\n'
     +'    var q=parseInt(inp.value)||0;if(!q)return;\n'
     +'    var pu=parseFloat(inp.dataset.pu)||0;var pcb=parseFloat(inp.dataset.pcb)||1;\n'
     +'    refs++;colis+=q;ht+=pu*q*pcb;\n'
-    +'    lines.push("  "+inp.dataset.code+"  \u00d7"+q+" colis  "+fmt2(pu*q*pcb));\n'
+    +'    lines.push(inp.dataset.code+" x"+q+" colis = "+fmt2(pu*q*pcb));\n'
     +'  });\n'
     +'  if(!refs){alert("Votre panier est vide.");return;}\n'
     +cond+'\n'
     +'  var btn=document.getElementById("send-btn");\n'
-    +'  if(btn){btn.disabled=true;btn.textContent="Recherche du commercial\u2026";}\n'
-    +'  var tokenData=_getTokenData();\n'
-    +'  var commercialEmail="cspoto@moulindesmoines.com";\n'
-    +'  var ccEmail=null;\n'
-    +'  try{\n'
-    +'    var comLogin=tokenData?tokenData.commercial:null;\n'
-    +'    if(comLogin){\n'
-    +'      var db=await _initFB3();\n'
-    +'      var snap=await db.collection("comptes").where("login","==",comLogin).limit(1).get();\n'
-    +'      if(!snap.empty){\n'
-    +'        var comData=snap.docs[0].data();\n'
-    +'        if(comData.email){commercialEmail=comData.email;ccEmail="cspoto@moulindesmoines.com";}\n'
-    +'      }\n'
-    +'    }\n'
-    +'  }catch(e){console.warn("Lookup commercial:",e);}\n'
-    +'  var body="\\u2550\\u2550 BON DE COMMANDE PROMOTIONNEL \\u2550\\u2550\\n"\n'
+    +'  if(btn){btn.disabled=true;btn.textContent="Envoi en cours\\u2026";}\n'
+    +'  var commande="\\u2550\\u2550 BON DE COMMANDE PROMOTIONNEL \\u2550\\u2550\\n"\n'
     +'    +"'+escH(nom)+'\\n"\n'
-    +'    +"\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\n"\n'
+    +'    +"\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\n"\n'
     +'    +"Magasin       : "+mag+"\\n"\n'
-    +'    +(clientEmail?"Email client  : "+clientEmail+"\\n":"")\n'
-    +'    +(tel?"T\\u00e9l          : "+tel+"\\n":"")\n'
-    +'    +(ville?"Ville         : "+ville+"\\n":"")\n'
-    +'    +(tokenData&&tokenData.login?"Compte MDM    : "+tokenData.login+"\\n":"")\n'
-    +'    +"\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\n"\n'
+    +'    +(email?"Email client  : "+email+"\\n":"")\n'
+    +'    +"\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\n"\n'
     +'    +"PRODUITS :\\n"+lines.join("\\n")\n'
-    +'    +"\\n\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\n"\n'
+    +'    +"\\n\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\n"\n'
     +'    +"R\\u00e9f. : "+refs+" | Colis : "+colis+" | Total HT : "+fmt2(ht);\n'
-    +'  var subj=encodeURIComponent("BDC Promo '+escH(nom)+' \\u2014 "+mag);\n'
-    +'  var url="mailto:"+commercialEmail\n'
-    +'    +(ccEmail?"?cc="+encodeURIComponent(ccEmail)+"&":"?")\n'
-    +'    +"subject="+subj+"&body="+encodeURIComponent(body);\n'
-    +'  if(btn){btn.disabled=false;btn.innerHTML="\\u2709 Envoyer la commande";}\n'
-    +'  window.location.href=url;\n'
+    +'  var payload={\n'
+    +'    _subject:"BDC Promo '+escH(nom)+' \\u2014 "+mag,\n'
+    +'    _captcha:"false",\n'
+    +'    _template:"table",\n'
+    +'    magasin:mag,\n'
+    +'    email_client:email||"non renseign\\u00e9",\n'
+    +'    promotion:"'+escH(nom)+'",\n'
+    +'    commande:commande\n'
+    +'  };\n'
+    +'  if(email) payload._replyto=email;\n'
+    +'  try{\n'
+    +'    var res=await fetch("https://formsubmit.co/ajax/cspoto@moulindesmoines.com",{\n'
+    +'      method:"POST",\n'
+    +'      headers:{"Content-Type":"application/json","Accept":"application/json"},\n'
+    +'      body:JSON.stringify(payload)\n'
+    +'    });\n'
+    +'    var data=await res.json();\n'
+    +'    if(data.success==="true"||data.success===true){\n'
+    +'      if(btn){btn.disabled=false;btn.innerHTML="\\u2705 Commande envoy\\u00e9e !";}\n'
+    +'      alert("\\u2705 Votre commande a \\u00e9t\\u00e9 envoy\\u00e9e avec succ\\u00e8s !\\n\\nR\\u00e9capitulatif :\\n"+commande);\n'
+    +'    } else {\n'
+    +'      throw new Error("Erreur serveur");\n'
+    +'    }\n'
+    +'  }catch(e){\n'
+    +'    if(btn){btn.disabled=false;btn.innerHTML="\\u2709 Envoyer la commande";}\n'
+    +'    alert("\\u26a0 Erreur lors de l\'envoi. Veuillez r\\u00e9essayer ou contacter MDM.\\n\\ncspoto@moulindesmoines.com");\n'
+    +'    console.error(e);\n'
+    +'  }\n'
     +'}\n'
     +'<\/script>\n</body>\n</html>';
 

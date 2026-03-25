@@ -23,10 +23,10 @@
   --green:#2e7d47;--green-l:#e8f5ed;
   --r:8px;--sidebar:240px;--header:56px;
 }
-body{font-family:'Inter',sans-serif;font-weight:300;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+html{height:100%;overflow:hidden}body{font-family:'Inter',sans-serif;font-weight:300;background:var(--bg);color:var(--text);height:100vh;overflow:hidden;display:flex;flex-direction:column}
 a{text-decoration:none;color:inherit}
-.layout{display:flex;flex:1;overflow:hidden;height:calc(100vh - var(--header))}
-.main-area{flex:1;overflow-y:auto;padding:24px 28px}
+.layout{display:flex;flex:1;overflow:hidden;min-height:0}
+.main-area{flex:1;overflow-y:auto;overflow-x:hidden;padding:24px 28px;height:100%;min-height:0}
 
 /* Header */
 .adm-header{height:var(--header);background:var(--bg-card);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:16px;position:sticky;top:0;z-index:100;box-shadow:var(--shadow)}
@@ -53,7 +53,7 @@ a{text-decoration:none;color:inherit}
 .hdr-btn:hover{background:var(--danger-l);color:var(--danger);border-color:var(--danger)}
 
 /* Sidebar */
-.sidebar{width:var(--sidebar);flex-shrink:0;background:var(--bg-card);border-right:1px solid var(--border);overflow-y:auto;padding:10px 0}
+.sidebar{width:var(--sidebar);flex-shrink:0;background:var(--bg-card);border-right:1px solid var(--border);overflow-y:auto;padding:10px 0;height:100%}
 .nav-sec-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-3);padding:14px 16px 5px}
 .nav-item{display:flex;align-items:center;gap:10px;padding:8px 16px;cursor:pointer;transition:all .12s;color:var(--text-2);font-size:12px;font-weight:400;border-left:3px solid transparent}
 .nav-item:hover{background:var(--bg-hover);color:var(--text)}
@@ -2851,91 +2851,67 @@ function _updateDestInfo(){
 // ── Upload Excel ──────────────────────────────────────────────
 function handlePromoFile(file){
   if(!file) return;
-  if(typeof XLSX==="undefined"){showToast("\u26a0 XLSX non disponible");return;}
+  if(typeof XLSX==='undefined'){showToast('\u26a0 XLSX non disponible');return;}
   var reader=new FileReader();
   reader.onload=function(e){
     try{
-      var wb=XLSX.read(e.target.result,{type:"array",cellFormula:false});
+      var wb=XLSX.read(e.target.result,{type:'array'});
       var ws=wb.Sheets[wb.SheetNames[0]];
-      var raw=XLSX.utils.sheet_to_json(ws,{header:1,defval:null,blankrows:false});
-      var headerRowIdx=-1;
-      var headerRow=null;
-      for(var ri=0;ri<raw.length;ri++){
-        var row=raw[ri];
-        if(!row) continue;
-        var rowStr=row.map(function(v){return String(v||"").toLowerCase();}).join("|");
-        if(rowStr.indexOf("ref")>=0||rowStr.indexOf("libel")>=0||rowStr.indexOf("code")>=0){
-          headerRowIdx=ri; headerRow=row; break;
-        }
-      }
-      if(headerRowIdx<0){showToast("\u26a0 En-t\u00eates non trouv\u00e9s");return;}
-      var col={};
-      headerRow.forEach(function(h,ci){
-        if(h==null) return;
-        var hl=String(h).toLowerCase().trim().replace(/\s+/g,"");
-        col[hl]=ci;
-      });
-      function findCol(names){
-        for(var ni=0;ni<names.length;ni++){
-          var n=names[ni].toLowerCase().replace(/\s+/g,"");
-          if(col[n]!==undefined) return col[n];
-        }
-        return -1;
-      }
-      var ciCode=findCol(["ref","r\u00e9f\u00e9rence","reference","code"]);
-      var ciDes=findCol(["libell\u00e9","libelle","designation","d\u00e9signation","nom"]);
-      var ciPcb=findCol(["uvc","pcb","colis","nbcolis"]);
-      var ciEan=findCol(["ean","gencod","barcode","ean13"]);
-      var ciPrix=findCol(["prixremis\u00e9","prixremise","prixht","prix ht","tarif","montant"]);
-      var ciTva=findCol(["tva"]);
+      var rows=XLSX.utils.sheet_to_json(ws,{defval:''});
       _promoProducts=[];
-      var EMPTY="";
-      for(var di=headerRowIdx+1;di<raw.length;di++){
-        var row=raw[di];
-        if(!row) continue;
-        var allEmpty=true;
-        for(var ci=0;ci<row.length;ci++){if(row[ci]!=null&&row[ci]!==EMPTY){allEmpty=false;break;}}
-        if(allEmpty) continue;
-        var code=ciCode>=0?String(row[ciCode]||EMPTY).trim():EMPTY;
-        var des=ciDes>=0?String(row[ciDes]||EMPTY).trim():EMPTY;
-        if(!code&&!des) continue;
-        if(!code&&des===des.toUpperCase()&&des.length<30) continue;
-        var pcb=ciPcb>=0?parseInt(String(row[ciPcb]||EMPTY).replace(",","."))||1:1;
-        var ean=ciEan>=0?String(row[ciEan]||EMPTY).trim():EMPTY;
-        var tva=ciTva>=0?parseFloat(String(row[ciTva]||EMPTY).replace(",","."))||5.5:5.5;
-        var pu=0;
-        if(ciPrix>=0&&row[ciPrix]!=null&&row[ciPrix]!==EMPTY){
-          var ps=String(row[ciPrix]);
-          if(!ps.startsWith("=")) pu=parseFloat(ps.replace(",","."))||0;
-        }
-        if(pu===0){
-          var nums=[];
-          for(var nci=0;nci<row.length;nci++){
-            if(row[nci]==null||row[nci]===EMPTY) continue;
-            var vs=String(row[nci]);
-            if(vs.startsWith("=")) continue;
-            var n=parseFloat(vs.replace(",","."));
-            if(!isNaN(n)&&n>0&&n<1000) nums.push(n);
+      rows.forEach(function(row){
+        var code=String(row['Code']||row['CODE']||row['code']||'').trim();
+
+        // Chercher le prix dans toutes les variantes possibles de colonne
+        var _puVal='';
+        for(var _k in row){
+          var _kl=String(_k).toLowerCase().replace(/\s+/g,'');
+          if(_kl.indexOf('puht')>=0||_kl.indexOf('prix')>=0||_kl==='pu'){
+            if(row[_k]!==''&&row[_k]!==null&&row[_k]!==undefined){_puVal=String(row[_k]);break;}
           }
-          if(nums.length>0) pu=nums[nums.length-1];
         }
-        _promoProducts.push({code:code,designation:des||code,puHT:pu,pcb:pcb,tva:tva,ean:ean,origine:"",certif:""});
-      }
+        var pu=parseFloat(_puVal.replace(',','.'))||0;
+        // PCB
+        var _pcbVal='';
+        for(var _k2 in row){
+          var _k2l=String(_k2).toLowerCase().replace(/\s+/g,'');
+          if(_k2l==='pcb'||_k2l==='colis'||_k2l.indexOf('pcb')>=0){
+            if(row[_k2]!==''&&row[_k2]!==null){_pcbVal=String(row[_k2]);break;}
+          }
+        }
+        var pcb=parseInt(_pcbVal)||1;
+        // TVA
+        var _tvaVal='';
+        for(var _k3 in row){
+          var _k3l=String(_k3).toLowerCase().replace(/\s+/g,'').replace(/%/g,'');
+          if(_k3l.indexOf('tva')>=0){
+            if(row[_k3]!==''&&row[_k3]!==null){_tvaVal=String(row[_k3]);break;}
+          }
+        }
+        var tva=parseFloat(_tvaVal)||5.5;
+        // EAN
+        var _eanVal='';
+        for(var _k4 in row){
+          var _k4l=String(_k4).toLowerCase().replace(/\s+/g,'');
+          if(_k4l.indexOf('ean')>=0||_k4l.indexOf('gencod')>=0||_k4l.indexOf('barcode')>=0){
+            if(row[_k4]!==''&&row[_k4]!==null){_eanVal=String(row[_k4]);break;}
+          }
+        }
+        var ean=_eanVal.trim();
+        // Origine
+        var origine=String(row['Origine']||row['origine']||row['ORIGINE']||'').trim();
+        // Certif
+        var certif=String(row['Certif.']||row['Certif']||row['certif']||row['Certification']||row['CERTIF']||'').trim();
+        // Désignation
+        var des=String(row['D\u00e9signation']||row['Designation']||row['DESIGNATION']||row['Libelle']||row['libelle']||row['Lib\u00e9ll\u00e9']||'').trim();
+        if(!code&&!des) return;
+        _promoProducts.push({code:code,designation:des,puHT:pu,pcb:pcb,tva:tva,ean:ean,origine:origine,certif:certif});
+      });
       _renderPromoPreview();
-      _setPromoBtn("promo-publish-btn",_promoProducts.length>0);
-      _setPromoBtn("promo-download-btn",_promoProducts.length>0);
-      var noPrix=_promoProducts.filter(function(p){return !p.puHT;}).length;
-      var msg="\u2705 "+_promoProducts.length+" produits charg\u00e9s";
-      if(noPrix>0) msg+=" \u2014 \u26a0 "+noPrix+" sans prix (formules non \u00e9valu\u00e9es)";
-      showToast(msg);
-      if(noPrix>0){
-        var logEl=document.getElementById("promo-log");
-        if(logEl){
-          logEl.style.display="block";
-          logEl.innerHTML="<span style=\"color:#ffd93d\">\u26a0 "+noPrix+" produits sans prix.\nLes colonnes prix contiennent des formules VLOOKUP que le navigateur ne peut pas \u00e9valuer.\nSolution : dans Excel, Ctrl+A puis Copier \u2192 Collage sp\u00e9cial \u2192 Valeurs, puis r\u00e9importez.</span>";
-        }
-      }
-    }catch(err){showToast("\u26a0 Erreur Excel : "+err.message);}
+      _setPromoBtn('promo-publish-btn',_promoProducts.length>0);
+      _setPromoBtn('promo-download-btn',_promoProducts.length>0);
+      showToast('\u2705 '+_promoProducts.length+' produits charg\u00e9s');
+    }catch(err){showToast('\u26a0 Erreur lecture Excel\u00a0: '+err.message);}
   };
   reader.readAsArrayBuffer(file);
 }

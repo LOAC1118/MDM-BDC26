@@ -938,6 +938,7 @@ tbody tr.has-qty td.td-qty input{background:#ffe0b2;border-color:var(--terra)}
 
 
 
+
 // ============================================================
 // MDM — Couch<script>
 
@@ -1270,6 +1271,10 @@ function fbDeleteInscription(id) {
       }
       // Init brouillon
       if(data.role === 'client' || data.role === 'user') draftInit();
+      // Ouvrir le panneau import si ?import=1 dans l'URL
+      if(window.location.search.indexOf('import=1')>=0){
+        setTimeout(function(){ openImportPanel(); },400);
+      }
       } catch(e) { console.error(e); }
   });
 })();
@@ -3052,6 +3057,7 @@ function applyImport(){
   showToast('\u2705 '+applied+' produits import\u00e9s — v\u00e9rifiez et envoyez la commande');
   setTimeout(function(){ openModal(); }, 600);
 }
+
 
 
 

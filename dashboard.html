@@ -917,6 +917,7 @@ window.PRODUCTS = [{"code":"ABRCOU200","libelle":"Abricots secs coupés bio - 20
 
 
 
+
 var FIREBASE_CONFIG = {
   apiKey:            "AIzaSyB000QDa4c-vMjO1Xuimw58iiRvwgbF1zc",
   authDomain:        "mdm-bdc26.firebaseapp.com",
@@ -2365,7 +2366,7 @@ function _renderQuickActions(role){
   btns+='<a class="quick-btn" href="notes.html"><span class="quick-btn-icon">&#128203;</span>Mes notes</a>';
   btns+='<a class="quick-btn" href="actus.html"><span class="quick-btn-icon">&#128241;</span>Actualités</a>';
   if(role==='user'||role==='admin'){
-    btns+='<button class="quick-btn" onclick="showImportSection()"><span class="quick-btn-icon">&#128196;</span>Importer un PDF</button>';
+    btns+='<a class="quick-btn" href="commande.html?import=1"><span class="quick-btn-icon">&#128196;</span>Importer un PDF</a>';
   }
   qa.innerHTML=btns;
 }
@@ -2600,6 +2601,7 @@ function exportCommercialPDF(){
 
   doc.save('dashboard_'+nom.replace(/\s+/g,'_')+'_'+new Date().toISOString().slice(0,10)+'.pdf');
 }
+
 
 
 

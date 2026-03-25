@@ -23,10 +23,10 @@
   --green:#2e7d47;--green-l:#e8f5ed;
   --r:8px;--sidebar:240px;--header:56px;
 }
-html{height:100%;overflow:hidden}body{font-family:'Inter',sans-serif;font-weight:300;background:var(--bg);color:var(--text);height:100vh;overflow:hidden;display:flex;flex-direction:column}
+html,body{height:100%;margin:0;padding:0}body{font-family:'Inter',sans-serif;font-weight:300;background:var(--bg);color:var(--text);height:100vh;display:flex;flex-direction:column;overflow:hidden}
 a{text-decoration:none;color:inherit}
-.layout{display:flex;flex:1;overflow:hidden;min-height:0}
-.main-area{flex:1;overflow-y:auto;overflow-x:hidden;padding:24px 28px;height:100%;min-height:0}
+.layout{flex:1;overflow:hidden;position:relative;min-height:0}
+.main-area{margin-left:var(--sidebar);height:calc(100vh - var(--header));overflow-y:auto;overflow-x:hidden;padding:24px 28px}
 
 /* Header */
 .adm-header{height:var(--header);background:var(--bg-card);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:16px;position:sticky;top:0;z-index:100;box-shadow:var(--shadow)}
@@ -53,7 +53,7 @@ a{text-decoration:none;color:inherit}
 .hdr-btn:hover{background:var(--danger-l);color:var(--danger);border-color:var(--danger)}
 
 /* Sidebar */
-.sidebar{width:var(--sidebar);flex-shrink:0;background:var(--bg-card);border-right:1px solid var(--border);overflow-y:auto;padding:10px 0;height:100%}
+.sidebar{position:fixed;top:var(--header);left:0;width:var(--sidebar);height:calc(100vh - var(--header));background:var(--bg-card);border-right:1px solid var(--border);overflow-y:auto;padding:10px 0;z-index:50}
 .nav-sec-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-3);padding:14px 16px 5px}
 .nav-item{display:flex;align-items:center;gap:10px;padding:8px 16px;cursor:pointer;transition:all .12s;color:var(--text-2);font-size:12px;font-weight:400;border-left:3px solid transparent}
 .nav-item:hover{background:var(--bg-hover);color:var(--text)}
@@ -2710,9 +2710,8 @@ function renderPromos(){
         +'</div>':'')
       +'</div>'
       +'<div class="promo-card-actions">'
-      +'<button class="btn-action" onclick="exportPromoExcel(\''+p._id+'\')" title="Exporter Excel" style="background:#e8f5e9;color:#2e7d32;border-color:#a5d6a7">&#128202;</button>'
-      +'<button class="btn-action" onclick="exportPromoPDF(\''+p._id+'\')" title="Exporter PDF" style="background:var(--danger-l);color:var(--danger);border-color:#f5c6cb">&#128196;</button>'
-      +'<button class="btn-action btn-edit" onclick="editPromo(\''+p._id+'\')" title="Modifier">&#9998; Modifier</button>'
+      +'<button class="btn-action" onclick="viewPromoOrders(\''+p._id+'\')" title="Commandes">&#128203;</button>'
+      +'<button class="btn-action btn-edit" onclick="editPromo(\''+p._id+'\')" title="Modifier">&#9998;</button>'
       +'<button class="btn-action btn-del" onclick="delPromo(\''+p._id+'\')" title="Supprimer">&#128465;</button>'
       +'</div>'
       +'</div>';
@@ -2770,19 +2769,12 @@ function editPromo(id){
   document.getElementById('promo-min-colis').value=p.minColis||0;
   document.getElementById('promo-min-ht').value=p.minHT||0;
   document.getElementById('promo-message').value=p.message||'';
-  document.getElementById('promo-form-title').textContent='✏️ Modifier : '+p.nom;
-  // Recharger les produits existants
+  document.getElementById('promo-form-title').textContent='\u270F\uFE0F Modifier\u00a0: '+p.nom;
   if(p.produits&&p.produits.length){
-    _promoProducts=JSON.parse(JSON.stringify(p.produits));
+    _promoProducts=p.produits;
     _renderPromoPreview();
     _setPromoBtn('promo-publish-btn',true);
     _setPromoBtn('promo-download-btn',true);
-    // Afficher un message indiquant que les produits sont chargés
-    var logEl=document.getElementById('promo-log');
-    if(logEl){
-      logEl.style.display='block';
-      logEl.innerHTML='<span style="color:#a8ff78">✅ '+p.produits.length+' produits chargés depuis la promo existante. Vous pouvez modifier les conditions et republier.</span>';
-    }
   }
 }
 
@@ -3509,128 +3501,6 @@ async function pushStockToGithub() {
     stockLog(e.message, 'err');
     showToast('\u274c Stock\u00a0: ' + e.message);
   }
-}
-
-
-// ══════════════════════════════════════════════════════════════
-// EXPORT PROMO Excel + PDF
-// ══════════════════════════════════════════════════════════════
-
-function exportPromoExcel(id){
-  if(typeof XLSX==='undefined'){showToast('\u26a0 XLSX non charg\u00e9');return;}
-  var p=_promos.find(function(x){return x._id===id;});
-  if(!p){showToast('\u26a0 Promo introuvable');return;}
-  var produits=p.produits||[];
-  if(!produits.length){showToast('\u26a0 Aucun produit dans cette promo');return;}
-
-  var remise=p.remise||0;
-
-  // Feuille 1 : Infos promo
-  var infoRows=[
-    ['Bon de commande promotionnel',''],
-    ['Nom',p.nom||''],
-    ['P\u00e9riode',(p.debut&&p.fin)?p.debut+' \u2192 '+p.fin:(p.fin?'Jusqu\u0027au '+p.fin:'')],
-    ['Remise',remise>0?remise+'%':''],
-    ['Minimum colis',p.minColis>0?p.minColis:''],
-    ['Minimum HT',p.minHT>0?p.minHT+' \u20ac HT':''],
-    ['Message',p.message||''],
-    ['',''],
-    ['Nb produits',produits.length],
-    ['Nb commandes',p.nbCommandes||0],
-  ];
-  var wsInfo=XLSX.utils.aoa_to_sheet(infoRows);
-  wsInfo['!cols']=[{wch:20},{wch:40}];
-
-  // Feuille 2 : Catalogue produits
-  var head=['Code','D\u00e9signation','EAN','PCB','PU HT','Prix remis\u00e9 HT','TVA %'];
-  var rows=[head];
-  produits.forEach(function(pr){
-    var prixRemise=remise>0?Math.round(pr.puHT*(1-remise/100)*100)/100:pr.puHT;
-    rows.push([pr.code||'',pr.designation||'',pr.ean||'',pr.pcb||1,
-      pr.puHT||0,prixRemise,pr.tva||5.5]);
-  });
-  var wsProd=XLSX.utils.aoa_to_sheet(rows);
-  wsProd['!cols']=[{wch:14},{wch:45},{wch:16},{wch:6},{wch:10},{wch:14},{wch:8}];
-
-  var wb=XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb,wsInfo,'Informations');
-  XLSX.utils.book_append_sheet(wb,wsProd,'Produits');
-  var fname='promo_'+(p.slug||p.nom||'export').replace(/[^a-zA-Z0-9_-]/g,'_')+'_'+new Date().toISOString().slice(0,10)+'.xlsx';
-  XLSX.writeFile(wb,fname);
-  showToast('\u2705 Export Excel t\u00e9l\u00e9charg\u00e9');
-}
-
-function exportPromoPDF(id){
-  var jspdfLib=window.jspdf?window.jspdf.jsPDF:(typeof jsPDF!=='undefined'?jsPDF:null);
-  if(!jspdfLib){
-    // Charger jsPDF dynamiquement
-    var s=document.createElement('script');
-    s.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
-    s.onload=function(){
-      var s2=document.createElement('script');
-      s2.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.6.0/jspdf.plugin.autotable.min.js';
-      s2.onload=function(){exportPromoPDF(id);};
-      document.head.appendChild(s2);
-    };
-    document.head.appendChild(s);
-    showToast('Chargement PDF\u2026 R\u00e9essayez dans 2 secondes');
-    return;
-  }
-  var p=_promos.find(function(x){return x._id===id;});
-  if(!p){showToast('\u26a0 Promo introuvable');return;}
-  var produits=p.produits||[];
-  if(!produits.length){showToast('\u26a0 Aucun produit dans cette promo');return;}
-
-  var remise=p.remise||0;
-  var doc=new jspdfLib({orientation:'portrait',unit:'mm',format:'a4'});
-  var today=new Date().toLocaleDateString('fr-FR');
-
-  // En-tête
-  doc.setFontSize(20); doc.setTextColor(120,80,60);
-  doc.text('Moulin des Moines',15,18);
-  doc.setFontSize(13); doc.setTextColor(160,82,45);
-  doc.text(p.nom||'Promotion',15,26);
-  doc.setFontSize(9); doc.setTextColor(130,100,80);
-
-  var meta=[];
-  if(p.debut&&p.fin) meta.push('P\u00e9riode\u00a0: du '+p.debut+' au '+p.fin);
-  if(remise>0) meta.push('Remise\u00a0: -'+remise+'%');
-  if(p.minColis>0) meta.push('Min.\u00a0: '+p.minColis+' colis');
-  if(p.minHT>0) meta.push('Min. HT\u00a0: '+p.minHT+' \u20ac');
-  if(meta.length) doc.text(meta.join('   |   '),15,33);
-  if(p.message){ doc.setTextColor(100,100,100); doc.text(p.message,15,39,{maxWidth:180}); }
-
-  doc.setDrawColor(160,82,45); doc.setLineWidth(0.5);
-  doc.line(15,42,195,42);
-
-  // Tableau produits
-  var head=[['Code','D\u00e9signation','EAN','PCB','PU HT','Prix remis\u00e9']];
-  var body=produits.map(function(pr){
-    var prixRemise=remise>0?(pr.puHT*(1-remise/100)).toFixed(2):pr.puHT.toFixed(2);
-    return [pr.code||'',pr.designation||'',pr.ean||'',String(pr.pcb||1),
-      (pr.puHT||0).toFixed(2)+' \u20ac',prixRemise+' \u20ac'];
-  });
-
-  doc.autoTable({
-    startY:46, head:head, body:body,
-    headStyles:{fillColor:[160,82,45],textColor:255,fontStyle:'bold',fontSize:8},
-    bodyStyles:{fontSize:7,textColor:[80,60,40]},
-    alternateRowStyles:{fillColor:[250,245,240]},
-    columnStyles:{
-      0:{cellWidth:20},1:{cellWidth:75},2:{cellWidth:28},
-      3:{cellWidth:10,halign:'center'},4:{cellWidth:22,halign:'right'},5:{cellWidth:24,halign:'right'}
-    },
-    margin:{left:15,right:15}
-  });
-
-  // Récap final
-  var y=doc.lastAutoTable.finalY+8;
-  doc.setFontSize(9); doc.setTextColor(74,124,89);
-  doc.text(produits.length+' r\u00e9f\u00e9rences   |   Export du '+today,15,y);
-
-  var fname='promo_'+(p.slug||p.nom||'export').replace(/[^a-zA-Z0-9_-]/g,'_')+'_'+new Date().toISOString().slice(0,10)+'.pdf';
-  doc.save(fname);
-  showToast('\u2705 Export PDF t\u00e9l\u00e9charg\u00e9');
 }
 
 window.addEventListener('DOMContentLoaded',function(){

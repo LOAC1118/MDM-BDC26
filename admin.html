@@ -3459,12 +3459,10 @@ function handleStockFile(file) {
   if (!file) return;
   if (typeof XLSX === 'undefined') { showToast('\u26a0 Biblioth\u00e8que Excel non disponible'); return; }
 
-  // Reset log
   var logEl = document.getElementById('stock-log');
-  if (logEl) { logEl.style.display='none'; logEl.innerHTML=''; }
   var resEl = document.getElementById('stock-result');
+  if (logEl) { logEl.style.display='none'; logEl.innerHTML=''; }
   if (resEl) resEl.style.display='none';
-
   var dropZone = document.getElementById('stock-drop-zone');
   if (dropZone) dropZone.style.borderColor = 'var(--accent)';
 
@@ -3474,50 +3472,106 @@ function handleStockFile(file) {
       var wb = XLSX.read(e.target.result, {type:'array'});
       var ws = wb.Sheets[wb.SheetNames[0]];
       var rows = XLSX.utils.sheet_to_json(ws, {defval:''});
+      if (!rows.length) { showToast('\u26a0 Fichier vide ou non lisible'); return; }
 
+      var allKeys = Object.keys(rows[0]);
+
+      // -- D\u00e9tection colonne Code --
+      var codeKey = null;
+      var CODE_NAMES = [
+        'code article','codearticle','code','ref','reference',
+        'codeproduit','code produit','articlecode'
+      ];
+      for (var ki=0; ki<allKeys.length; ki++) {
+        var kl = allKeys[ki].toLowerCase().replace(/\s+/g,' ').trim();
+        if (CODE_NAMES.indexOf(kl) >= 0) { codeKey = allKeys[ki]; break; }
+      }
+
+      // -- D\u00e9tection colonne Stock --
+      // Priorit\u00e9 : "Disponible" > noms connus > premi\u00e8re colonne num\u00e9rique
+      var stockKey = null;
+      var STOCK_NAMES = [
+        'disponible','stock disponible','dispo',
+        'stock','quantite','quantit\u00e9','qty','qte',
+        'stockdisponible','quantitedisponible',
+        'solde','inventaire','restant','nb colis'
+      ];
+      for (var ki=0; ki<allKeys.length; ki++) {
+        var kl2 = allKeys[ki].toLowerCase().replace(/\s+/g,' ').trim();
+        if (STOCK_NAMES.indexOf(kl2) >= 0) { stockKey = allKeys[ki]; break; }
+      }
+      // Fallback : premi\u00e8re colonne num\u00e9rique hors code/poids/dlc
+      if (!stockKey) {
+        var EXCLUDE_KW = ['poids','dlc','tva','ean','pcb','prix','pu','kg','livraison','piece','pi\u00e8ce','r\u00e9serv','reserv','site','lang'];
+        for (var ki=0; ki<allKeys.length; ki++) {
+          if (allKeys[ki] === codeKey) continue;
+          var kl3 = allKeys[ki].toLowerCase();
+          var skip = false;
+          for (var ei=0; ei<EXCLUDE_KW.length; ei++) { if (kl3.indexOf(EXCLUDE_KW[ei])>=0){skip=true;break;} }
+          if (skip) continue;
+          var numCount=0;
+          for (var ri=0; ri<Math.min(rows.length,15); ri++) {
+            var v=rows[ri][allKeys[ki]];
+            if (v!==''&&v!==null&&!isNaN(parseFloat(String(v).replace(',','.')))) numCount++;
+          }
+          if (numCount >= 3) { stockKey = allKeys[ki]; break; }
+        }
+      }
+
+      // -- Log --
+      if (logEl) {
+        logEl.style.display='block';
+        var logHtml = '<span style="color:#7ecfff">\u{1F4CB} Colonnes d\u00e9tect\u00e9es dans le fichier :\n  '+allKeys.join('\n  ')+'</span>\n\n';
+        logHtml += '<span style="color:'+(codeKey?'#a8ff78':'#ff6b6b')+'">'+(codeKey?'\u2705 Colonne Code : '+codeKey:'\u274c Colonne Code introuvable')+'</span>\n';
+        logHtml += '<span style="color:'+(stockKey?'#a8ff78':'#ff6b6b')+'">'+(stockKey?'\u2705 Colonne Stock : '+stockKey:'\u274c Colonne Stock introuvable')+'</span>\n';
+        logEl.innerHTML = logHtml;
+      }
+
+      if (!codeKey) {
+        showToast('\u26a0 Colonne Code introuvable');
+        if (dropZone) dropZone.style.borderColor = 'var(--danger)';
+        return;
+      }
+      if (!stockKey) {
+        showToast('\u26a0 Colonne stock introuvable \u2014 voir le log');
+        if (logEl) logEl.innerHTML += '<span style="color:#ffd93d">\u26a0 Renommez une colonne en "Disponible" ou "Stock" dans votre fichier.</span>\n';
+        if (dropZone) dropZone.style.borderColor = 'var(--danger)';
+        return;
+      }
+
+      // -- Chargement --
       _stockData = {};
-      var found = 0;
-
+      var found = 0, skipped = 0;
       rows.forEach(function(row) {
-        // Chercher colonne code (insensible à la casse)
-        var code = '';
-        var qty = null;
-        for (var k in row) {
-          var kl = String(k).toLowerCase().replace(/\s+/g,'');
-          if (kl === 'code' || kl === 'ref' || kl === 'reference' || kl === 'codearticle') {
-            code = String(row[k]||'').trim();
-          }
-          if (kl === 'stock' || kl === 'quantite' || kl === 'qty' || kl === 'qte' || kl === 'stockdisponible' || kl === 'dispo') {
-            var v = parseFloat(String(row[k]||'0').replace(',','.'));
-            if (!isNaN(v)) qty = v;
-          }
-        }
-        if (code && qty !== null) {
-          _stockData[code] = qty;
-          found++;
-        }
+        var code = String(row[codeKey]||'').trim();
+        if (!code) return;
+        var v = parseFloat(String(row[stockKey]||'0').replace(',','.'));
+        if (!isNaN(v)) { _stockData[code] = v; found++; }
+        else skipped++;
       });
 
       if (dropZone) dropZone.style.borderColor = '#d0c0b0';
+      if (logEl) {
+        logEl.innerHTML += '<span style="color:#a8ff78">\u2705 '+found+' produits charg\u00e9s'+(skipped?' ('+skipped+' ignor\u00e9s)':'')+'</span>\n';
+      }
 
-      // Afficher résultat
       var resText = document.getElementById('stock-result-text');
       if (resText) {
-        resText.innerHTML = '\u2705 <strong>'+found+' produits</strong> charg\u00e9s depuis '+escH(file.name)
-          +'<br>\u{1F4CB} Colonnes d\u00e9tect\u00e9es\u00a0: Code + Stock'
-          +'<br>\u26a0 Cliquez sur \u00ab Mettre \u00e0 jour \u00bb pour publier sur GitHub.';
+        resText.innerHTML = '\u2705 <strong>'+found+' produits</strong> charg\u00e9s depuis <em>'+escH(file.name)+'</em>'
+          +'<br>\u{1F50D} Code&nbsp;: <code>'+escH(codeKey)+'</code>'
+          +'&nbsp;&nbsp;&bull;&nbsp;&nbsp;Stock&nbsp;: <code>'+escH(stockKey)+'</code>'
+          +'<br><small style="color:var(--text-muted)">Cliquez sur \u00ab&nbsp;Mettre \u00e0 jour&nbsp;\u00bb pour publier sur GitHub Pages.</small>';
       }
       if (resEl) resEl.style.display = 'block';
 
-      // Activer le bouton de push
       var btn = document.getElementById('stock-push-btn');
       if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
+      showToast('\u2705 '+found+' stocks charg\u00e9s \u2014 '+escH(stockKey));
 
-      showToast('\u2705 ' + found + ' stocks charg\u00e9s depuis ' + file.name);
     } catch(err) {
       if (dropZone) dropZone.style.borderColor = 'var(--danger)';
-      showToast('\u26a0 Erreur lecture Excel\u00a0: ' + err.message);
-      stockLog('Erreur\u00a0: ' + err.message, 'err');
+      showToast('\u26a0 Erreur lecture Excel\u00a0: '+err.message);
+      if (logEl) { logEl.style.display='block'; logEl.innerHTML += '<span style="color:#ff6b6b">\u274c '+escH(err.message)+'</span>\n'; }
     }
   };
   reader.readAsArrayBuffer(file);

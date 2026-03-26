@@ -330,6 +330,7 @@ code{background:var(--bg);padding:1px 4px;border-radius:3px;font-size:10px;font-
   </nav>
 
   <main class="main">
+
     <div class="page active" id="page-dashboard">
 <div class="page-header">
       <div class="page-title">Tableau de bord</div>
@@ -363,6 +364,7 @@ code{background:var(--bg);padding:1px 4px;border-radius:3px;font-size:10px;font-
             <button class="btn-action btn-sm" onclick="showPage('actualites',document.querySelector('[onclick*=actualites]'))">G&#233;rer &#8594;</button>
           </div>
           <div id="dash-actus"><div style="color:var(--text-3);font-size:12px;text-align:center;padding:12px">Aucune</div></div></div></div></div>
+    
     </div>
 
     <div class="page" id="page-comptes">
@@ -403,6 +405,7 @@ code{background:var(--bg);padding:1px 4px;border-radius:3px;font-size:10px;font-
         <tbody id="comptes-tbody"></tbody>
       </table>
     </div>
+    </div>
 
     <div class="page" id="page-inscriptions">
 <div class="page-title">Demandes d&#8217;inscription</div>
@@ -417,6 +420,7 @@ code{background:var(--bg);padding:1px 4px;border-radius:3px;font-size:10px;font-
         <button onclick="if(confirm('Supprimer toutes les demandes trait\u00e9es ?'))purgeInscriptions()" class="btn-actu-del">&#128465; Purger les trait&#233;es</button>
       </div>
       <div id="inscriptions-list"></div>
+    </div>
 
     <div class="page" id="page-groupements">
 <div class="page-title">Groupements</div>
@@ -480,6 +484,7 @@ code{background:var(--bg);padding:1px 4px;border-radius:3px;font-size:10px;font-
     </div>
     <!-- Cartes groupements -->
     <div id="grp-cards"></div>
+    </div>
 
     <div class="page" id="page-historique">
 <div class="page-title">Historique des commandes</div>
@@ -502,6 +507,7 @@ code{background:var(--bg);padding:1px 4px;border-radius:3px;font-size:10px;font-
         </div>
       </div>
     
+    
     </div>
 
     <div class="page" id="page-stocks">
@@ -514,6 +520,7 @@ code{background:var(--bg);padding:1px 4px;border-radius:3px;font-size:10px;font-
       <div>Fichier attendu&nbsp;: colonnes <strong>Code article</strong> + <strong>Disponible</strong>. Export depuis votre logiciel de gestion (ERP/WMS).</div>
     </div>
     <div class="section-card" id="stock-section"><div class="section-card-title"><span>&#128230; Mise &#224; jour des stocks</span></div><div class="info-banner" style="margin-bottom:14px"><span class="icon">&#128196;</span><div>Importez le fichier <strong>stock.xlsx</strong> export&#233; depuis votre logiciel de gestion. Les stocks seront inject&#233;s dans <code>commande.html</code> et publi&#233;s sur GitHub Pages automatiquement.</div></div><div id="stock-drop-zone" style="border:2px dashed #d0c0b0;border-radius:10px;padding:28px 20px;text-align:center;cursor:pointer;transition:all .2s;background:var(--cream);margin-bottom:14px" onclick="document.getElementById('stock-file-input').click()" ondragover="event.preventDefault();this.style.borderColor='var(--terra)';this.style.background='#fff8f3'" ondragleave="this.style.borderColor='#d0c0b0';this.style.background='var(--cream)'" ondrop="event.preventDefault();this.style.borderColor='#d0c0b0';this.style.background='var(--cream)';handleStockFile(event.dataTransfer.files[0])"><div style="font-size:32px;margin-bottom:8px">&#128196;</div><div style="font-size:14px;font-weight:600;color:var(--brown);margin-bottom:4px">Glissez stock.xlsx ici</div><div style="font-size:12px;color:#b09080">ou cliquez pour choisir le fichier</div><input type="file" id="stock-file-input" accept=".xlsx,.xls" style="display:none" onchange="handleStockFile(this.files[0])"></div><div id="stock-result" style="display:none;margin-bottom:14px"><div style="background:#f0f7f2;border:1.5px solid rgba(26,92,46,.2);border-radius:8px;padding:12px 14px"><div id="stock-result-text" style="font-size:12px;color:#2e6e40;line-height:1.8"></div></div></div><div id="stock-log" style="display:none;background:#1e1e1e;color:#a8ff78;border-radius:8px;padding:12px 14px;font-family:monospace;font-size:11px;line-height:1.8;max-height:160px;overflow-y:auto;white-space:pre-wrap;margin-bottom:14px"></div></div>
+    
     </div>
 
     <div class="page" id="page-promos">
@@ -666,6 +673,7 @@ code{background:var(--bg);padding:1px 4px;border-radius:3px;font-size:10px;font-
       <div style="font-size:11px;font-weight:600;color:var(--brown);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Promotions cr&eacute;&eacute;es</div>
 
     <!-- PAGE MESSAGERIE --></div>
+    
     </div>
 
     <div class="page" id="page-messagerie">
@@ -696,6 +704,7 @@ code{background:var(--bg);padding:1px 4px;border-radius:3px;font-size:10px;font-
           </div>
         </div>
       </div>
+    
     
     </div>
 
@@ -755,7 +764,10 @@ code{background:var(--bg);padding:1px 4px;border-radius:3px;font-size:10px;font-
 
     <!-- LISTE -->
     <div style="margin-top:24px">
-      <div style="font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.7px;color:var(--text-muted);margin-bottom:12px">Publi&eacute;es</div></div>
+      <div style="font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.7px;color:var(--text-muted);margin-bottom:12px">Publi&eacute;es</div>
+      <div id="actus-list"></div>
+    </div>
+    
     </div>
 
     <div class="page" id="page-parametres">
@@ -770,6 +782,7 @@ code{background:var(--bg);padding:1px 4px;border-radius:3px;font-size:10px;font-
 
     <!-- PAGE : PROMOS -->
   
+    
     </div>
 
   </main>

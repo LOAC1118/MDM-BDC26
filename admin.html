@@ -2042,7 +2042,10 @@ function renderCommandes(){
   if(!container) return;
   container.innerHTML='<div style="padding:24px;text-align:center;color:var(--text-muted);font-size:12px">⏳ Chargement des commandes…</div>';
 
-  if(_cmdUnsubs.length){ _cmdUnsubs.forEach(function(u){try{u();}catch(e){}});}
+  // Stopper les listeners précédents
+  if(_cmdUnsubs&&_cmdUnsubs.length){
+    _cmdUnsubs.forEach(function(u){try{u();}catch(e){}});
+  }
   _cmdUnsubs=[];
   _cmdAllOrdersMap={};
 
@@ -2071,7 +2074,6 @@ function renderCommandes(){
     var caTotal=all.reduce(function(s,o){return s+(o.totalNet||0);},0);
     var logins=Object.keys(_cmdAllOrdersMap).filter(function(l){return _cmdAllOrdersMap[l].length>0;});
     var cutoff=Date.now()-10*60*1000;
-
     var html='';
 
     // KPIs
@@ -2082,7 +2084,7 @@ function renderCommandes(){
     html+='<div style="text-align:center"><div style="font-family:Fraunces,serif;font-size:24px;font-weight:200;color:var(--terra)">'+fmtCA(all.length>0?caTotal/all.length:0)+'</div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin-top:2px">Panier moyen</div></div>';
     html+='</div>';
 
-    // Barre filtres
+    // Toolbar filtres
     html+='<div style="display:flex;gap:8px;padding:10px 14px;border-bottom:1px solid var(--border-l);flex-wrap:wrap;align-items:center;background:#fff">';
     html+='<div style="position:relative;flex:1;min-width:160px;max-width:260px">';
     html+='<span style="position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:12px">🔍</span>';
@@ -2123,7 +2125,6 @@ function renderCommandes(){
       var compte=comptes.find(function(c){return c.login===o._login;});
       var roleCls=compte?compte.role:'';
       var roleLabel=compte?({admin:'Admin',user:'Commercial',client:'Client'}[compte.role]||''):'';
-
       html+='<tr style="border-bottom:1px solid var(--border-l)'+(isNew?';background:#f0fdf4':'')+'">';
       html+='<td style="padding:8px 12px"><div style="font-weight:500;color:var(--accent)">'+escH(o._login||'—')+'</div>';
       if(roleLabel) html+='<div style="font-size:9px;font-weight:700;text-transform:uppercase;padding:1px 5px;border-radius:3px;display:inline-block;margin-top:2px;background:'+(roleCls==='client'?'#fff3e0':roleCls==='user'?'var(--accent-l)':'#f3e5f5')+';color:'+(roleCls==='client'?'#e65100':roleCls==='user'?'var(--accent)':'#7b1fa2')+'">'+escH(roleLabel)+'</div>';
@@ -2134,31 +2135,35 @@ function renderCommandes(){
       html+='<td style="padding:8px 12px;text-align:right;color:var(--text-muted)">'+(o.nbColis||0)+'</td>';
       html+='<td style="padding:8px 12px;text-align:right;font-weight:600;color:var(--brown)">'+fmt2(o.totalNet||0)+' €</td>';
       html+='<td style="padding:8px 12px;text-align:center">'+(isNew?'<span style="background:#22c55e;color:#fff;font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px">NOUVEAU</span>':'<span style="color:var(--text-muted);font-size:11px">—</span>')+'</td>';
-
-      // Actions: détail + modifier + supprimer
-      html+='<td style="padding:8px 12px;white-space:nowrap">';
-      html+='<div style="display:flex;gap:4px">';
+      html+='<td style="padding:8px 12px;white-space:nowrap"><div style="display:flex;gap:4px">';
       if(o.articles&&o.articles.length){
-        html+='<button onclick="toggleCmdDetail(\''+oid+'\')" class="btn-action btn-sm" title="Détail">📋</button>';
+        html+='<button onclick="toggleCmdDetail(this.dataset.id)" data-id="'+oid+'" class="btn-action btn-sm" title="Détail">📋</button>';
       }
-      html+='<button onclick="openEditCmd(\''+o._login+'\',\''+o.id+'\')" class="btn-action btn-edit btn-sm" title="Modifier">✏️</button>';
-      html+='<button onclick="deleteCmd(\''+o._login+'\',\''+o.id+'\')" class="btn-action btn-del btn-sm" title="Supprimer">🗑</button>';
+      html+='<button onclick="openEditCmd(this.dataset.login,this.dataset.id)" data-login="'+escH(o._login)+'" data-id="'+o.id+'" class="btn-action btn-edit btn-sm" title="Modifier">✏️</button>';
+      html+='<button onclick="deleteCmd(this.dataset.login,this.dataset.id)" data-login="'+escH(o._login)+'" data-id="'+o.id+'" class="btn-action btn-del btn-sm" title="Supprimer">🗑</button>';
       html+='</div></td></tr>';
 
-      // Ligne de détail
       if(o.articles&&o.articles.length){
         html+='<tr id="'+oid+'" style="display:none"><td colspan="8" style="padding:0 12px 10px;background:#fafaf8">';
         html+='<div style="border:1px solid var(--border-l);border-radius:6px;overflow:hidden;margin-top:4px">';
-        html+='<table style="width:100%;border-collapse:collapse;font-size:11px">';
-        html+='<thead><tr style="background:var(--bg)"><th style="padding:5px 10px;text-align:left;color:var(--text-muted);font-size:10px;border-bottom:1px solid var(--border-l)">Code</th><th style="padding:5px 10px;text-align:left;color:var(--text-muted);font-size:10px;border-bottom:1px solid var(--border-l)">Désignation</th><th style="padding:5px 10px;text-align:center;color:var(--text-muted);font-size:10px;border-bottom:1px solid var(--border-l)">Colis</th><th style="padding:5px 10px;text-align:right;color:var(--text-muted);font-size:10px;border-bottom:1px solid var(--border-l)">Total HT</th></tr></thead><tbody>';
+        html+='<table style="width:100%;border-collapse:collapse;font-size:11px"><thead><tr style="background:var(--bg)">';
+        html+='<th style="padding:5px 10px;font-size:10px;color:var(--text-muted);border-bottom:1px solid var(--border-l)">Code</th>';
+        html+='<th style="padding:5px 10px;font-size:10px;color:var(--text-muted);border-bottom:1px solid var(--border-l)">Désignation</th>';
+        html+='<th style="padding:5px 10px;font-size:10px;color:var(--text-muted);text-align:center;border-bottom:1px solid var(--border-l)">Colis</th>';
+        html+='<th style="padding:5px 10px;font-size:10px;color:var(--text-muted);text-align:right;border-bottom:1px solid var(--border-l)">Total HT</th>';
+        html+='</tr></thead><tbody>';
         o.articles.forEach(function(art){
-          html+='<tr style="border-bottom:1px solid var(--border-l)"><td style="padding:4px 10px;font-family:monospace;color:var(--brown)">'+escH(art.code||'')+'</td><td style="padding:4px 10px;color:var(--text)">'+escH(art.libelle||'')+'</td><td style="padding:4px 10px;text-align:center;color:var(--text-muted)">'+(art.qty||0)+'</td><td style="padding:4px 10px;text-align:right;color:var(--terra);font-weight:500">'+fmt2(art.totalHT||0)+' €</td></tr>';
+          html+='<tr style="border-bottom:1px solid var(--border-l)">';
+          html+='<td style="padding:4px 10px;font-family:monospace;color:var(--brown)">'+escH(art.code||'')+'</td>';
+          html+='<td style="padding:4px 10px;color:var(--text)">'+escH(art.libelle||'')+'</td>';
+          html+='<td style="padding:4px 10px;text-align:center;color:var(--text-muted)">'+(art.qty||0)+'</td>';
+          html+='<td style="padding:4px 10px;text-align:right;color:var(--terra);font-weight:500">'+fmt2(art.totalHT||0)+' €</td>';
+          html+='</tr>';
         });
         html+='</tbody></table></div></td></tr>';
       }
     });
     html+='</tbody></table></div>';
-
     container.innerHTML=html;
     _bindCmdFilters();
   }
@@ -2168,53 +2173,65 @@ function renderCommandes(){
     window._cmdLoginFn=function(v){_cmdFilterLogin=v;_render();};
   }
 
-  // Charger depuis Firebase
+  // ── Charger depuis Firebase ──────────────────────────────────
+  // Stratégie : lire historique/{login}/commandes pour chaque compte connu
+  // Évite collectionGroup qui nécessite un index composite
   initFirebase().then(function(db){
-    db.collection('historique').get().then(function(snap){
-      if(!snap.docs.length){
-        db.collectionGroup('commandes').orderBy('id','desc').limit(500)
-          .get().then(function(cgSnap){
-            if(!cgSnap.docs.length){
-              container.innerHTML='<div style="padding:30px;text-align:center;color:var(--text-muted);font-size:13px"><div style="font-size:32px;margin-bottom:10px">📦</div><p>Aucune commande enregistrée.</p></div>';
-              return;
-            }
-            cgSnap.docs.forEach(function(d){
-              var login=d.ref.parent.parent.id;
-              if(!_cmdAllOrdersMap[login]) _cmdAllOrdersMap[login]=[];
-              _cmdAllOrdersMap[login].push(d.data());
-            });
-            _render();
-          }).catch(function(e){
-            container.innerHTML='<div style="padding:16px;background:#fdecea;border-radius:8px;font-size:12px;color:#c0392b">❌ Erreur Firebase: '+escH(e.code||e.message||'')+'</div>';
-          });
-        return;
-      }
 
-      snap.docs.forEach(function(loginDoc){
-        var login=loginDoc.id;
-        _cmdAllOrdersMap[login]=[];
-        var unsub=loginDoc.ref.collection('commandes')
-          .orderBy('id','desc').limit(200)
-          .onSnapshot(function(cmdSnap){
-            _cmdAllOrdersMap[login]=cmdSnap.docs.map(function(d){return d.data();});
+    function _loadForLogin(login){
+      var ref=db.collection('historique').doc(login).collection('commandes');
+      var unsub=ref.orderBy('id','desc').limit(200)
+        .onSnapshot(function(snap){
+          _cmdAllOrdersMap[login]=snap.docs.map(function(d){return d.data();});
+          _render();
+        },function(e){
+          // Fallback sans orderBy
+          ref.limit(200).get().then(function(s2){
+            _cmdAllOrdersMap[login]=s2.docs.map(function(d){return d.data();});
             _render();
-          },function(e){
-            loginDoc.ref.collection('commandes').limit(200).get()
-              .then(function(s2){
-                _cmdAllOrdersMap[login]=s2.docs.map(function(d){return d.data();});
-                _render();
-              }).catch(function(){_render();});
+          }).catch(function(){
+            _cmdAllOrdersMap[login]=[];
+            _render();
           });
-        _cmdUnsubs.push(unsub);
+        });
+      _cmdUnsubs.push(unsub);
+    }
+
+    // Charger pour tous les comptes connus localement
+    if(comptes&&comptes.length){
+      comptes.forEach(function(c){ _loadForLogin(c.login); });
+      // Aussi lire la collection historique pour détecter d'autres comptes
+      db.collection('historique').get().then(function(snap){
+        snap.docs.forEach(function(doc){
+          if(!comptes.find(function(c){return c.login===doc.id;})){
+            _loadForLogin(doc.id);
+          }
+        });
+      }).catch(function(){});
+    } else {
+      // Pas de comptes en mémoire : lire directement historique
+      db.collection('historique').get().then(function(snap){
+        if(!snap.docs.length){
+          container.innerHTML='<div style="padding:30px;text-align:center;color:var(--text-muted);font-size:13px"><div style="font-size:32px;margin-bottom:10px">📦</div><p>Aucune commande enregistrée.</p></div>';
+          return;
+        }
+        snap.docs.forEach(function(doc){ _loadForLogin(doc.id); });
+      }).catch(function(e){
+        container.innerHTML='<div style="padding:16px;background:#fdecea;border-radius:8px;font-size:12px;color:#c0392b;line-height:1.8">'
+          +'❌ <strong>Erreur Firebase</strong><br>Code : <code>'+escH(e.code||'inconnu')+'</code><br><br>'
+          +'<strong>Solution :</strong> Dans Firebase Console → Firestore → Règles, publiez :<br>'
+          +'<code style="display:block;background:#fff3f3;padding:8px;margin-top:6px;font-size:10px;line-height:2;border-radius:4px;white-space:pre">'
+          +'rules_version = \'2\';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read, write: if true;\n    }\n  }\n}'
+          +'</code></div>';
       });
+    }
 
-    }).catch(function(e){
-      container.innerHTML='<div style="padding:16px;background:#fdecea;border-radius:8px;font-size:12px;color:#c0392b;line-height:1.8">❌ <strong>Erreur Firebase</strong><br>Code: <code>'+escH(e.code||'inconnu')+'</code><br><br>Ajoutez ces règles Firestore:<br><code style="display:block;background:#fff3f3;padding:6px;margin-top:4px;font-size:10px;line-height:1.8">match /historique/{login} { allow read, write: if true; }<br>match /historique/{login}/commandes/{id} { allow read, write: if true; }</code></div>';
-    });
   }).catch(function(e){
-    container.innerHTML='<div style="padding:16px;background:#fdecea;border-radius:8px;font-size:12px;color:#c0392b">❌ Firebase non initialisé: '+escH(e.message||'')+'</div>';
+    container.innerHTML='<div style="padding:16px;background:#fdecea;border-radius:8px;font-size:12px;color:#c0392b">'
+      +'❌ Firebase non initialisé : '+escH(e.message||'')+'</div>';
   });
 }
+
 
 function toggleCmdDetail(id){
   var el=document.getElementById(id);

@@ -317,7 +317,7 @@ code{background:var(--bg);padding:1px 4px;border-radius:3px;font-size:10px;font-
     <div class="nav-item" onclick="showPage('groupements',this)"><span class="nav-icon">&#127991;</span><span class="nav-txt">Groupements</span><span class="nav-badge nb-gray" id="badge-groupements" style="display:none">0</span></div>
 
     <div class="nav-label-section">Commandes &amp; Stocks</div>
-    <div class="nav-item" onclick="showPage('historique',this)"><span class="nav-icon">&#128230;</span><span class="nav-txt">Historique</span><span class="nav-badge nb-green" id="badge-historique" style="display:none">0</span></div>
+    <div class="nav-item" onclick="showPage('commandes',this)"><span class="nav-icon">&#128230;</span><span class="nav-txt"><span>Commandes</span></span><span class="nav-badge nb-green" id="badge-commandes" style="display:none">0</span></div>
     <div class="nav-item" onclick="showPage('stocks',this)"><span class="nav-icon">&#128218;</span><span class="nav-txt">Stocks</span></div>
     <div class="nav-item" onclick="showPage('promos',this)"><span class="nav-icon">&#127381;</span><span class="nav-txt">Promotions</span></div>
 
@@ -330,7 +330,6 @@ code{background:var(--bg);padding:1px 4px;border-radius:3px;font-size:10px;font-
   </nav>
 
   <main class="main">
-
     <div class="page active" id="page-dashboard">
 <div class="page-header">
       <div class="page-title">Tableau de bord</div>
@@ -346,7 +345,7 @@ code{background:var(--bg);padding:1px 4px;border-radius:3px;font-size:10px;font-
       <div class="section-card">
         <div class="section-card-title">
           <span>&#128230; Derni&#232;res commandes</span>
-          <button class="btn-action btn-sm" onclick="showPage('historique',document.querySelector('[onclick*=historique]'))">Voir tout &#8594;</button>
+          <button class="btn-action btn-sm" onclick="showPage('commandes',document.querySelector('[onclick*=historique]'))">Voir tout &#8594;</button>
         </div>
         <div id="dashboard-orders"><div style="text-align:center;padding:20px;color:var(--text-3);font-size:12px">Chargement&#8230;</div></div>
       </div>
@@ -364,7 +363,6 @@ code{background:var(--bg);padding:1px 4px;border-radius:3px;font-size:10px;font-
             <button class="btn-action btn-sm" onclick="showPage('actualites',document.querySelector('[onclick*=actualites]'))">G&#233;rer &#8594;</button>
           </div>
           <div id="dash-actus"><div style="color:var(--text-3);font-size:12px;text-align:center;padding:12px">Aucune</div></div></div></div></div>
-    
     </div>
 
     <div class="page" id="page-comptes">
@@ -405,7 +403,6 @@ code{background:var(--bg);padding:1px 4px;border-radius:3px;font-size:10px;font-
         <tbody id="comptes-tbody"></tbody>
       </table>
     </div>
-    </div>
 
     <div class="page" id="page-inscriptions">
 <div class="page-title">Demandes d&#8217;inscription</div>
@@ -420,7 +417,6 @@ code{background:var(--bg);padding:1px 4px;border-radius:3px;font-size:10px;font-
         <button onclick="if(confirm('Supprimer toutes les demandes trait\u00e9es ?'))purgeInscriptions()" class="btn-actu-del">&#128465; Purger les trait&#233;es</button>
       </div>
       <div id="inscriptions-list"></div>
-    </div>
 
     <div class="page" id="page-groupements">
 <div class="page-title">Groupements</div>
@@ -484,9 +480,8 @@ code{background:var(--bg);padding:1px 4px;border-radius:3px;font-size:10px;font-
     </div>
     <!-- Cartes groupements -->
     <div id="grp-cards"></div>
-    </div>
 
-    <div class="page" id="page-historique">
+    <div class="page" id="page-commandes">
 <div class="page-title">Historique des commandes</div>
       <div class="page-sub">Commandes re&#231;ues via le bon de commande en ligne</div>
       <div class="info-banner">
@@ -507,7 +502,6 @@ code{background:var(--bg);padding:1px 4px;border-radius:3px;font-size:10px;font-
         </div>
       </div>
     
-    
     </div>
 
     <div class="page" id="page-stocks">
@@ -520,7 +514,6 @@ code{background:var(--bg);padding:1px 4px;border-radius:3px;font-size:10px;font-
       <div>Fichier attendu&nbsp;: colonnes <strong>Code article</strong> + <strong>Disponible</strong>. Export depuis votre logiciel de gestion (ERP/WMS).</div>
     </div>
     <div class="section-card" id="stock-section"><div class="section-card-title"><span>&#128230; Mise &#224; jour des stocks</span></div><div class="info-banner" style="margin-bottom:14px"><span class="icon">&#128196;</span><div>Importez le fichier <strong>stock.xlsx</strong> export&#233; depuis votre logiciel de gestion. Les stocks seront inject&#233;s dans <code>commande.html</code> et publi&#233;s sur GitHub Pages automatiquement.</div></div><div id="stock-drop-zone" style="border:2px dashed #d0c0b0;border-radius:10px;padding:28px 20px;text-align:center;cursor:pointer;transition:all .2s;background:var(--cream);margin-bottom:14px" onclick="document.getElementById('stock-file-input').click()" ondragover="event.preventDefault();this.style.borderColor='var(--terra)';this.style.background='#fff8f3'" ondragleave="this.style.borderColor='#d0c0b0';this.style.background='var(--cream)'" ondrop="event.preventDefault();this.style.borderColor='#d0c0b0';this.style.background='var(--cream)';handleStockFile(event.dataTransfer.files[0])"><div style="font-size:32px;margin-bottom:8px">&#128196;</div><div style="font-size:14px;font-weight:600;color:var(--brown);margin-bottom:4px">Glissez stock.xlsx ici</div><div style="font-size:12px;color:#b09080">ou cliquez pour choisir le fichier</div><input type="file" id="stock-file-input" accept=".xlsx,.xls" style="display:none" onchange="handleStockFile(this.files[0])"></div><div id="stock-result" style="display:none;margin-bottom:14px"><div style="background:#f0f7f2;border:1.5px solid rgba(26,92,46,.2);border-radius:8px;padding:12px 14px"><div id="stock-result-text" style="font-size:12px;color:#2e6e40;line-height:1.8"></div></div></div><div id="stock-log" style="display:none;background:#1e1e1e;color:#a8ff78;border-radius:8px;padding:12px 14px;font-family:monospace;font-size:11px;line-height:1.8;max-height:160px;overflow-y:auto;white-space:pre-wrap;margin-bottom:14px"></div></div>
-    
     </div>
 
     <div class="page" id="page-promos">
@@ -673,7 +666,6 @@ code{background:var(--bg);padding:1px 4px;border-radius:3px;font-size:10px;font-
       <div style="font-size:11px;font-weight:600;color:var(--brown);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Promotions cr&eacute;&eacute;es</div>
 
     <!-- PAGE MESSAGERIE --></div>
-    
     </div>
 
     <div class="page" id="page-messagerie">
@@ -704,7 +696,6 @@ code{background:var(--bg);padding:1px 4px;border-radius:3px;font-size:10px;font-
           </div>
         </div>
       </div>
-    
     
     </div>
 
@@ -764,10 +755,7 @@ code{background:var(--bg);padding:1px 4px;border-radius:3px;font-size:10px;font-
 
     <!-- LISTE -->
     <div style="margin-top:24px">
-      <div style="font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.7px;color:var(--text-muted);margin-bottom:12px">Publi&eacute;es</div>
-      <div id="actus-list"></div>
-    </div>
-    
+      <div style="font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.7px;color:var(--text-muted);margin-bottom:12px">Publi&eacute;es</div></div>
     </div>
 
     <div class="page" id="page-parametres">
@@ -782,7 +770,6 @@ code{background:var(--bg);padding:1px 4px;border-radius:3px;font-size:10px;font-
 
     <!-- PAGE : PROMOS -->
   
-    
     </div>
 
   </main>
@@ -1575,7 +1562,7 @@ function showPage(id, el){
   else if(id === "comptes") { renderComptes(); }
   else if(id === "actualites") { renderActus(); }
   else if(id === "inscriptions") { renderInscrip(); }
-  else if(id === "historique") { renderHistorique(); }
+  else if(id === "commandes") { renderCommandes(); }
   else if(id === "groupements") { renderGroupements(); }
   else if(id === "stocks") { /* stocks page — no init needed */ }
   else if(id === "promos") { renderPromos(); }
@@ -2009,159 +1996,164 @@ function supprimerInscription(idx){
 // ══════════════════════════════════════════════════════════════
 // HISTORIQUE COMMANDES
 // ══════════════════════════════════════════════════════════════
-function renderHistorique(){
+
+
+// ══════════════════════════════════════════════════════════════
+// MODULE COMMANDES — Admin / Commercial / Client
+// Firestore: historique/{login}/commandes/{id}
+// ══════════════════════════════════════════════════════════════
+
+var _cmdUnsubs=[];
+var _cmdAllOrdersMap={};
+var _cmdFilterLogin='';
+var _cmdFilterSearch='';
+var _cmdFilterStatus='';
+var _cmdEditModal=null; // commande en cours d'édition
+
+// ── Firestore helpers ─────────────────────────────────────────
+function fbDeleteOrder(login,orderId){
+  return initFirebase().then(function(db){
+    return db.collection('historique').doc(login)
+      .collection('commandes').doc(String(orderId)).delete();
+  });
+}
+function fbUpdateOrder(login,order){
+  return initFirebase().then(function(db){
+    return db.collection('historique').doc(login)
+      .collection('commandes').doc(String(order.id)).set(order,{merge:true});
+  });
+}
+
+// ── Rendu principal ────────────────────────────────────────────
+function renderCommandes(){
   var container=document.getElementById('historique-list');
   if(!container) return;
-  container.innerHTML='<div style="padding:24px;text-align:center;color:var(--text-muted);font-size:12px">&#8987; Chargement des commandes\u2026</div>';
+  container.innerHTML='<div style="padding:24px;text-align:center;color:var(--text-muted);font-size:12px">⏳ Chargement des commandes…</div>';
 
-  if(window._histoAdminUnsubs){
-    window._histoAdminUnsubs.forEach(function(u){try{u();}catch(e){}});
-  }
-  window._histoAdminUnsubs=[];
-
-  var allOrdersMap={};
-  var _filterClient='';
-  var _filterSearch='';
+  if(_cmdUnsubs.length){ _cmdUnsubs.forEach(function(u){try{u();}catch(e){}});}
+  _cmdUnsubs=[];
+  _cmdAllOrdersMap={};
 
   function _render(){
     var all=[];
-    Object.keys(allOrdersMap).forEach(function(login){
-      allOrdersMap[login].forEach(function(o){
+    Object.keys(_cmdAllOrdersMap).forEach(function(login){
+      _cmdAllOrdersMap[login].forEach(function(o){
         all.push(Object.assign({},o,{_login:login}));
       });
     });
     all.sort(function(a,b){return (b.id||0)-(a.id||0);});
 
-    // Filtres
     var filtered=all.filter(function(o){
-      if(_filterClient&&o._login!==_filterClient) return false;
-      if(_filterSearch){
-        var s=_filterSearch.toLowerCase();
+      if(_cmdFilterLogin && o._login!==_cmdFilterLogin) return false;
+      if(_cmdFilterSearch){
+        var s=_cmdFilterSearch.toLowerCase();
         return (o._login||'').toLowerCase().indexOf(s)>=0
-          ||(o.magasin||'').toLowerCase().indexOf(s)>=0;
+          || (o.magasin||'').toLowerCase().indexOf(s)>=0;
       }
       return true;
     });
 
-    // Badge nav
-    var badge=document.getElementById('badge-historique');
+    var badge=document.getElementById('badge-commandes');
     if(badge){badge.textContent=all.length;badge.style.display=all.length?'inline-block':'none';}
 
-    // Stats globales
     var caTotal=all.reduce(function(s,o){return s+(o.totalNet||0);},0);
-    var caFiltered=filtered.reduce(function(s,o){return s+(o.totalNet||0);},0);
-    var logins=Object.keys(allOrdersMap).filter(function(l){return allOrdersMap[l].length>0;});
+    var logins=Object.keys(_cmdAllOrdersMap).filter(function(l){return _cmdAllOrdersMap[l].length>0;});
     var cutoff=Date.now()-10*60*1000;
 
     var html='';
 
-    // ── KPIs ────────────────────────────────────────────────
-    html+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:16px 18px;background:var(--bg);border-bottom:1px solid var(--border-l)">';
+    // KPIs
+    html+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:14px 16px;background:var(--bg);border-bottom:1px solid var(--border-l)">';
     html+='<div style="text-align:center"><div style="font-family:Fraunces,serif;font-size:24px;font-weight:200;color:var(--brown)">'+all.length+'</div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin-top:2px">Commandes</div></div>';
     html+='<div style="text-align:center"><div style="font-family:Fraunces,serif;font-size:24px;font-weight:200;color:var(--accent)">'+fmtCA(caTotal)+'</div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin-top:2px">CA HT total</div></div>';
-    html+='<div style="text-align:center"><div style="font-family:Fraunces,serif;font-size:24px;font-weight:200;color:var(--brown)">'+logins.length+'</div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin-top:2px">Clients actifs</div></div>';
+    html+='<div style="text-align:center"><div style="font-family:Fraunces,serif;font-size:24px;font-weight:200;color:var(--brown)">'+logins.length+'</div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin-top:2px">Comptes</div></div>';
     html+='<div style="text-align:center"><div style="font-family:Fraunces,serif;font-size:24px;font-weight:200;color:var(--terra)">'+fmtCA(all.length>0?caTotal/all.length:0)+'</div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin-top:2px">Panier moyen</div></div>';
     html+='</div>';
 
-    // ── Barre outils ────────────────────────────────────────
+    // Barre filtres
     html+='<div style="display:flex;gap:8px;padding:10px 14px;border-bottom:1px solid var(--border-l);flex-wrap:wrap;align-items:center;background:#fff">';
-    html+='<div style="position:relative;flex:1;min-width:180px;max-width:280px">';
-    html+='<span style="position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:12px">&#128269;</span>';
-    html+='<input type="text" id="histo-search" value="'+escH(_filterSearch)+'" placeholder="Client, magasin\u2026" oninput="window._histoSearchFn&&window._histoSearchFn(this.value)" style="width:100%;padding:6px 10px 6px 28px;border:1.5px solid var(--border);border-radius:6px;font-size:12px;font-family:Inter,sans-serif;outline:none">';
+    html+='<div style="position:relative;flex:1;min-width:160px;max-width:260px">';
+    html+='<span style="position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:12px">🔍</span>';
+    html+='<input type="text" id="cmd-search" value="'+escH(_cmdFilterSearch)+'" placeholder="Compte, magasin…" oninput="window._cmdSearchFn&&window._cmdSearchFn(this.value)" style="width:100%;padding:6px 10px 6px 28px;border:1.5px solid var(--border);border-radius:6px;font-size:12px;font-family:Inter,sans-serif;outline:none">';
     html+='</div>';
-    // Sélecteur client
-    html+='<select id="histo-filter-client" onchange="window._histoClientFn&&window._histoClientFn(this.value)" style="padding:6px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:12px;font-family:Inter,sans-serif;background:#fff;outline:none">';
+    html+='<select id="cmd-filter-login" onchange="window._cmdLoginFn&&window._cmdLoginFn(this.value)" style="padding:6px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:12px;font-family:Inter,sans-serif;background:#fff;outline:none">';
     html+='<option value="">Tous les comptes ('+logins.length+')</option>';
-    logins.sort().forEach(function(l){
-      var nb=allOrdersMap[l].length;
-      var ca=allOrdersMap[l].reduce(function(s,o){return s+(o.totalNet||0);},0);
-      // Trouver le nom du compte
+    logins.slice().sort().forEach(function(l){
+      var nb=_cmdAllOrdersMap[l].length;
+      var ca=_cmdAllOrdersMap[l].reduce(function(s,o){return s+(o.totalNet||0);},0);
       var compte=comptes.find(function(c){return c.login===l;});
       var label=compte?(compte.nom||l)+' ('+l+')':l;
-      html+='<option value="'+escH(l)+'"'+(l===_filterClient?' selected':'')+'>'+escH(label)+' \u2014 '+nb+' cmd \u2014 '+fmtCA(ca)+'</option>';
+      html+='<option value="'+escH(l)+'"'+(l===_cmdFilterLogin?' selected':'')+'>'+escH(label)+' — '+nb+' — '+fmtCA(ca)+'</option>';
     });
     html+='</select>';
-    html+='<span style="font-size:11px;color:var(--text-muted);margin-left:4px">'+filtered.length+' / '+all.length+'</span>';
-    html+='<button onclick="exportHistoriqueAll()" style="margin-left:auto;padding:5px 12px;border:1px solid var(--border);border-radius:5px;background:#fff;font-size:11px;cursor:pointer;font-family:Inter,sans-serif;display:flex;align-items:center;gap:4px">&#128202; Excel</button>';
+    html+='<span style="font-size:11px;color:var(--text-muted)">'+filtered.length+' / '+all.length+'</span>';
+    html+='<button onclick="exportCmdExcel()" style="margin-left:auto;padding:5px 12px;border:1px solid var(--border);border-radius:5px;background:#fff;font-size:11px;cursor:pointer;font-family:Inter,sans-serif">📊 Excel</button>';
     html+='</div>';
 
     if(!filtered.length){
-      html+='<div style="padding:30px;text-align:center;color:var(--text-muted);font-size:13px">Aucune commande pour ce filtre.</div>';
+      html+='<div style="padding:30px;text-align:center;color:var(--text-muted);font-size:13px"><div style="font-size:32px;margin-bottom:10px">📦</div><p>Aucune commande.</p></div>';
       container.innerHTML=html;
-      _bindFilters();
+      _bindCmdFilters();
       return;
     }
 
-    // ── Tableau ─────────────────────────────────────────────
+    // Tableau
     html+='<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px">';
     html+='<thead><tr style="background:var(--bg)">';
-    html+='<th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);border-bottom:1.5px solid var(--border)">Compte</th>';
-    html+='<th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);border-bottom:1.5px solid var(--border)">Date</th>';
-    html+='<th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);border-bottom:1.5px solid var(--border)">Magasin</th>';
-    html+='<th style="padding:9px 14px;text-align:right;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);border-bottom:1.5px solid var(--border)">R\u00e9f.</th>';
-    html+='<th style="padding:9px 14px;text-align:right;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);border-bottom:1.5px solid var(--border)">Colis</th>';
-    html+='<th style="padding:9px 14px;text-align:right;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);border-bottom:1.5px solid var(--border)">Total HT</th>';
-    html+='<th style="padding:9px 14px;text-align:center;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);border-bottom:1.5px solid var(--border)">Statut</th>';
-    html+='<th style="padding:9px 14px;border-bottom:1.5px solid var(--border)"></th>';
+    ['Compte','Date','Magasin','Réf.','Colis','Total HT','Statut','Actions'].forEach(function(th){
+      html+='<th style="padding:8px 12px;text-align:left;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--text-muted);border-bottom:1.5px solid var(--border)">'+th+'</th>';
+    });
     html+='</tr></thead><tbody>';
 
     filtered.forEach(function(o,idx){
       var isNew=(o.id&&o.id>cutoff);
-      var oid='histo-detail-'+idx;
+      var oid='cmd-detail-'+idx;
       var compte=comptes.find(function(c){return c.login===o._login;});
-      var roleLabel=compte?({admin:'Admin',user:'Commercial',client:'Client'}[compte.role]||''):'';
       var roleCls=compte?compte.role:'';
+      var roleLabel=compte?({admin:'Admin',user:'Commercial',client:'Client'}[compte.role]||''):'';
 
       html+='<tr style="border-bottom:1px solid var(--border-l)'+(isNew?';background:#f0fdf4':'')+'">';
-      html+='<td style="padding:9px 14px"><div style="font-weight:500;color:var(--accent)">'+escH(o._login||'\u2014')+'</div>';
-      if(roleLabel) html+='<div style="font-size:9px;font-weight:600;text-transform:uppercase;padding:1px 5px;border-radius:3px;display:inline-block;margin-top:2px;background:'+(roleCls==='client'?'#fff3e0':roleCls==='user'?'var(--accent-l)':'#f3e5f5')+';color:'+(roleCls==='client'?'#e65100':roleCls==='user'?'var(--accent)':'#7b1fa2')+'">'+escH(roleLabel)+'</div>';
+      html+='<td style="padding:8px 12px"><div style="font-weight:500;color:var(--accent)">'+escH(o._login||'—')+'</div>';
+      if(roleLabel) html+='<div style="font-size:9px;font-weight:700;text-transform:uppercase;padding:1px 5px;border-radius:3px;display:inline-block;margin-top:2px;background:'+(roleCls==='client'?'#fff3e0':roleCls==='user'?'var(--accent-l)':'#f3e5f5')+';color:'+(roleCls==='client'?'#e65100':roleCls==='user'?'var(--accent)':'#7b1fa2')+'">'+escH(roleLabel)+'</div>';
       html+='</td>';
-      html+='<td style="padding:9px 14px;color:var(--text-muted);font-weight:300;white-space:nowrap">'+escH(String(o.date||'').split(' ')[0])+'</td>';
-      html+='<td style="padding:9px 14px;color:var(--text)">'+escH(o.magasin||'\u2014')+'</td>';
-      html+='<td style="padding:9px 14px;text-align:right;color:var(--text-muted)">'+(o.nbRefs||0)+'</td>';
-      html+='<td style="padding:9px 14px;text-align:right;color:var(--text-muted)">'+(o.nbColis||0)+'</td>';
-      html+='<td style="padding:9px 14px;text-align:right;font-weight:600;color:var(--brown)">'+fmt2(o.totalNet||0)+'\u00a0\u20ac</td>';
-      html+='<td style="padding:9px 14px;text-align:center">'+(isNew?'<span style="background:#22c55e;color:#fff;font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;white-space:nowrap">NOUVEAU</span>':'<span style="color:var(--text-muted);font-size:11px">\u2014</span>')+'</td>';
-      html+='<td style="padding:9px 14px;text-align:right">';
-      if(o.articles&&o.articles.length){
-        html+='<button onclick="toggleHistoDetail(\''+oid+'\')" style="padding:3px 8px;border:1px solid var(--border);border-radius:4px;background:var(--bg);font-size:10px;cursor:pointer;font-family:Inter,sans-serif;color:var(--text-muted)">D\u00e9tail &#9660;</button>';
-      }
-      html+='</td>';
-      html+='</tr>';
+      html+='<td style="padding:8px 12px;color:var(--text-muted);font-weight:300;white-space:nowrap">'+escH(String(o.date||'').split(' ')[0])+'</td>';
+      html+='<td style="padding:8px 12px;color:var(--text)">'+escH(o.magasin||'—')+'</td>';
+      html+='<td style="padding:8px 12px;text-align:right;color:var(--text-muted)">'+(o.nbRefs||0)+'</td>';
+      html+='<td style="padding:8px 12px;text-align:right;color:var(--text-muted)">'+(o.nbColis||0)+'</td>';
+      html+='<td style="padding:8px 12px;text-align:right;font-weight:600;color:var(--brown)">'+fmt2(o.totalNet||0)+' €</td>';
+      html+='<td style="padding:8px 12px;text-align:center">'+(isNew?'<span style="background:#22c55e;color:#fff;font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px">NOUVEAU</span>':'<span style="color:var(--text-muted);font-size:11px">—</span>')+'</td>';
 
-      // Ligne de détail articles (masquée par défaut)
+      // Actions: détail + modifier + supprimer
+      html+='<td style="padding:8px 12px;white-space:nowrap">';
+      html+='<div style="display:flex;gap:4px">';
       if(o.articles&&o.articles.length){
-        html+='<tr id="'+oid+'" style="display:none"><td colspan="8" style="padding:0 14px 12px 14px;background:#fafaf8">';
+        html+='<button onclick="toggleCmdDetail(\''+oid+'\')" class="btn-action btn-sm" title="Détail">📋</button>';
+      }
+      html+='<button onclick="openEditCmd(\''+o._login+'\',\''+o.id+'\')" class="btn-action btn-edit btn-sm" title="Modifier">✏️</button>';
+      html+='<button onclick="deleteCmd(\''+o._login+'\',\''+o.id+'\')" class="btn-action btn-del btn-sm" title="Supprimer">🗑</button>';
+      html+='</div></td></tr>';
+
+      // Ligne de détail
+      if(o.articles&&o.articles.length){
+        html+='<tr id="'+oid+'" style="display:none"><td colspan="8" style="padding:0 12px 10px;background:#fafaf8">';
         html+='<div style="border:1px solid var(--border-l);border-radius:6px;overflow:hidden;margin-top:4px">';
         html+='<table style="width:100%;border-collapse:collapse;font-size:11px">';
-        html+='<thead><tr style="background:var(--bg)"><th style="padding:6px 10px;text-align:left;color:var(--text-muted);font-size:10px;font-weight:600;border-bottom:1px solid var(--border-l)">Code</th><th style="padding:6px 10px;text-align:left;color:var(--text-muted);font-size:10px;font-weight:600;border-bottom:1px solid var(--border-l)">D\u00e9signation</th><th style="padding:6px 10px;text-align:center;color:var(--text-muted);font-size:10px;font-weight:600;border-bottom:1px solid var(--border-l)">Colis</th><th style="padding:6px 10px;text-align:right;color:var(--text-muted);font-size:10px;font-weight:600;border-bottom:1px solid var(--border-l)">Total HT</th></tr></thead><tbody>';
+        html+='<thead><tr style="background:var(--bg)"><th style="padding:5px 10px;text-align:left;color:var(--text-muted);font-size:10px;border-bottom:1px solid var(--border-l)">Code</th><th style="padding:5px 10px;text-align:left;color:var(--text-muted);font-size:10px;border-bottom:1px solid var(--border-l)">Désignation</th><th style="padding:5px 10px;text-align:center;color:var(--text-muted);font-size:10px;border-bottom:1px solid var(--border-l)">Colis</th><th style="padding:5px 10px;text-align:right;color:var(--text-muted);font-size:10px;border-bottom:1px solid var(--border-l)">Total HT</th></tr></thead><tbody>';
         o.articles.forEach(function(art){
-          html+='<tr style="border-bottom:1px solid var(--border-l)"><td style="padding:5px 10px;font-family:monospace;color:var(--brown)">'+escH(art.code||'')+'</td><td style="padding:5px 10px;color:var(--text)">'+escH(art.libelle||'')+'</td><td style="padding:5px 10px;text-align:center;color:var(--text-muted)">'+( art.qty||0)+'</td><td style="padding:5px 10px;text-align:right;color:var(--terra);font-weight:500">'+fmt2(art.totalHT||0)+'\u00a0\u20ac</td></tr>';
+          html+='<tr style="border-bottom:1px solid var(--border-l)"><td style="padding:4px 10px;font-family:monospace;color:var(--brown)">'+escH(art.code||'')+'</td><td style="padding:4px 10px;color:var(--text)">'+escH(art.libelle||'')+'</td><td style="padding:4px 10px;text-align:center;color:var(--text-muted)">'+(art.qty||0)+'</td><td style="padding:4px 10px;text-align:right;color:var(--terra);font-weight:500">'+fmt2(art.totalHT||0)+' €</td></tr>';
         });
         html+='</tbody></table></div></td></tr>';
       }
     });
-
     html+='</tbody></table></div>';
 
-    if(_filterClient&&filtered.length){
-      var ca=filtered.reduce(function(s,o){return s+(o.totalNet||0);},0);
-      html+='<div style="padding:10px 16px;background:var(--accent-l);border-top:1px solid var(--border-l);font-size:12px;color:var(--accent)">&#128101; <strong>'+escH(_filterClient)+'</strong>\u00a0\u2014\u00a0'+filtered.length+' commande'+(filtered.length>1?'s':'')+'\u00a0\u2014\u00a0CA\u00a0: <strong>'+fmtCA(ca)+'</strong></div>';
-    }
-
     container.innerHTML=html;
-    _bindFilters();
+    _bindCmdFilters();
   }
 
-  function _bindFilters(){
-    window._histoSearchFn=function(v){
-      _filterSearch=v;
-      _render();
-    };
-    window._histoClientFn=function(v){
-      _filterClient=v;
-      _render();
-    };
+  function _bindCmdFilters(){
+    window._cmdSearchFn=function(v){_cmdFilterSearch=v;_render();};
+    window._cmdLoginFn=function(v){_cmdFilterLogin=v;_render();};
   }
 
   // Charger depuis Firebase
@@ -2171,52 +2163,248 @@ function renderHistorique(){
         db.collectionGroup('commandes').orderBy('id','desc').limit(500)
           .get().then(function(cgSnap){
             if(!cgSnap.docs.length){
-              container.innerHTML='<div style="padding:30px;text-align:center;color:var(--text-muted);font-size:13px"><div style="font-size:32px;margin-bottom:10px">&#128230;</div><p>Aucune commande enregistr\u00e9e.</p></div>';
+              container.innerHTML='<div style="padding:30px;text-align:center;color:var(--text-muted);font-size:13px"><div style="font-size:32px;margin-bottom:10px">📦</div><p>Aucune commande enregistrée.</p></div>';
               return;
             }
             cgSnap.docs.forEach(function(d){
               var login=d.ref.parent.parent.id;
-              if(!allOrdersMap[login]) allOrdersMap[login]=[];
-              allOrdersMap[login].push(d.data());
+              if(!_cmdAllOrdersMap[login]) _cmdAllOrdersMap[login]=[];
+              _cmdAllOrdersMap[login].push(d.data());
             });
             _render();
           }).catch(function(e){
-            container.innerHTML='<div style="padding:16px;background:#fdecea;border-radius:8px;font-size:12px;color:#c0392b;line-height:1.8"><strong>&#10060; Erreur</strong><br>Code\u00a0: <code>'+escH(e.code||'inconnu')+'</code><br>'+escH(e.message||'')+'</div>';
+            container.innerHTML='<div style="padding:16px;background:#fdecea;border-radius:8px;font-size:12px;color:#c0392b">❌ Erreur Firebase: '+escH(e.code||e.message||'')+'</div>';
           });
         return;
       }
 
       snap.docs.forEach(function(loginDoc){
         var login=loginDoc.id;
-        allOrdersMap[login]=[];
+        _cmdAllOrdersMap[login]=[];
         var unsub=loginDoc.ref.collection('commandes')
           .orderBy('id','desc').limit(200)
           .onSnapshot(function(cmdSnap){
-            allOrdersMap[login]=cmdSnap.docs.map(function(d){return d.data();});
+            _cmdAllOrdersMap[login]=cmdSnap.docs.map(function(d){return d.data();});
             _render();
           },function(e){
             loginDoc.ref.collection('commandes').limit(200).get()
               .then(function(s2){
-                allOrdersMap[login]=s2.docs.map(function(d){return d.data();});
+                _cmdAllOrdersMap[login]=s2.docs.map(function(d){return d.data();});
                 _render();
-              }).catch(function(){ _render(); });
+              }).catch(function(){_render();});
           });
-        window._histoAdminUnsubs.push(unsub);
+        _cmdUnsubs.push(unsub);
       });
 
     }).catch(function(e){
-      container.innerHTML='<div style="padding:16px;background:#fdecea;border-radius:8px;font-size:12px;color:#c0392b;line-height:1.8">'
-        +'<strong>&#10060; Erreur Firebase</strong> \u2014 Code\u00a0: <code>'+escH(e.code||'inconnu')+'</code><br><br>'
-        +'Ajoutez ces r\u00e8gles dans <strong>Firebase Console \u2192 Firestore \u2192 R\u00e8gles</strong>\u00a0:<br><br>'
-        +'<code style="background:#fff3f3;padding:6px 10px;border-radius:4px;display:block;margin-top:4px;font-size:10px;line-height:1.8">'
-        +'match /historique/{login} { allow read, write: if true; }<br>'
-        +'match /historique/{login}/commandes/{id} { allow read, write: if true; }'
-        +'</code></div>';
+      container.innerHTML='<div style="padding:16px;background:#fdecea;border-radius:8px;font-size:12px;color:#c0392b;line-height:1.8">❌ <strong>Erreur Firebase</strong><br>Code: <code>'+escH(e.code||'inconnu')+'</code><br><br>Ajoutez ces règles Firestore:<br><code style="display:block;background:#fff3f3;padding:6px;margin-top:4px;font-size:10px;line-height:1.8">match /historique/{login} { allow read, write: if true; }<br>match /historique/{login}/commandes/{id} { allow read, write: if true; }</code></div>';
     });
   }).catch(function(e){
-    container.innerHTML='<div style="padding:16px;background:#fdecea;border-radius:8px;font-size:12px;color:#c0392b"><strong>&#10060; Firebase non initialis\u00e9</strong><br>'+escH(e.message||'')+'</div>';
+    container.innerHTML='<div style="padding:16px;background:#fdecea;border-radius:8px;font-size:12px;color:#c0392b">❌ Firebase non initialisé: '+escH(e.message||'')+'</div>';
   });
 }
+
+function toggleCmdDetail(id){
+  var el=document.getElementById(id);
+  if(!el) return;
+  el.style.display=el.style.display==='none'?'table-row':'none';
+}
+
+// ── Modifier une commande ──────────────────────────────────────
+function openEditCmd(login,orderId){
+  // Trouver la commande
+  var orders=_cmdAllOrdersMap[login]||[];
+  var order=orders.find(function(o){return String(o.id)===String(orderId);});
+  if(!order){showToast('⚠ Commande introuvable');return;}
+
+  _cmdEditModal={login:login,order:JSON.parse(JSON.stringify(order))};
+
+  // Construire la modale d'édition
+  var html='<div id="cmd-edit-overlay" onclick="if(event.target===this)closeCmdEdit()" style="position:fixed;inset:0;background:rgba(45,32,24,.4);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px">';
+  html+='<div style="background:#fff;border-radius:12px;width:100%;max-width:700px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(45,32,24,.2)">';
+
+  // Header
+  html+='<div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">';
+  html+='<div><div style="font-size:15px;font-weight:500;color:var(--text)">✏️ Modifier la commande</div>';
+  html+='<div style="font-size:11px;color:var(--text-muted);margin-top:2px">'+escH(login)+' — '+escH(String(order.date||'').split(' ')[0])+'</div></div>';
+  html+='<button onclick="closeCmdEdit()" style="width:26px;height:26px;border:none;background:none;font-size:18px;cursor:pointer;color:var(--text-muted)">✕</button>';
+  html+='</div>';
+
+  html+='<div style="padding:20px">';
+
+  // Infos générales
+  html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">';
+  html+='<div class="fg"><label>Magasin</label><input id="cedit-magasin" type="text" value="'+escH(order.magasin||'')+'"></div>';
+  html+='<div class="fg"><label>Email</label><input id="cedit-email" type="email" value="'+escH(order.mail||'')+'"></div>';
+  html+='</div>';
+
+  // Tableau des articles modifiables
+  if(order.articles&&order.articles.length){
+    html+='<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--text-muted);margin-bottom:8px">Articles</div>';
+    html+='<div style="border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:14px">';
+    html+='<table style="width:100%;border-collapse:collapse;font-size:12px">';
+    html+='<thead><tr style="background:var(--bg)"><th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:600;color:var(--text-muted);border-bottom:1px solid var(--border)">Code</th><th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:600;color:var(--text-muted);border-bottom:1px solid var(--border)">Désignation</th><th style="padding:8px 10px;text-align:center;font-size:10px;font-weight:600;color:var(--text-muted);border-bottom:1px solid var(--border)">Colis</th><th style="padding:8px 10px;text-align:right;font-size:10px;font-weight:600;color:var(--text-muted);border-bottom:1px solid var(--border)">PU HT</th><th style="padding:8px 10px;text-align:right;font-size:10px;font-weight:600;color:var(--text-muted);border-bottom:1px solid var(--border)">Total HT</th><th style="padding:8px 10px;border-bottom:1px solid var(--border)"></th></tr></thead>';
+    html+='<tbody id="cedit-articles">';
+    order.articles.forEach(function(art,i){
+      html+='<tr style="border-bottom:1px solid var(--border-l)">';
+      html+='<td style="padding:6px 10px;font-family:monospace;font-size:11px;color:var(--brown)">'+escH(art.code||'')+'</td>';
+      html+='<td style="padding:6px 10px;color:var(--text);font-size:12px">'+escH(art.libelle||'')+'</td>';
+      html+='<td style="padding:6px 10px;text-align:center"><input type="number" min="0" step="1" value="'+(art.qty||0)+'" onchange="updateCeditLine('+i+',this.value)" style="width:60px;padding:4px;border:1.5px solid var(--border);border-radius:5px;font-family:inherit;font-size:12px;text-align:center;outline:none"></td>';
+      html+='<td style="padding:6px 10px;text-align:right;color:var(--text-muted);font-size:11px">'+fmt2(art.puHT||0)+'</td>';
+      html+='<td style="padding:6px 10px;text-align:right;color:var(--terra);font-weight:500" id="cedit-tot-'+i+'">'+fmt2(art.totalHT||0)+'</td>';
+      html+='<td style="padding:6px 10px;text-align:center"><button onclick="removeCeditLine('+i+')" style="background:var(--danger-l);color:var(--danger);border:none;border-radius:4px;padding:2px 7px;cursor:pointer;font-size:11px">✕</button></td>';
+      html+='</tr>';
+    });
+    html+='</tbody></table></div>';
+  } else {
+    html+='<div style="padding:12px;background:var(--bg);border-radius:6px;font-size:12px;color:var(--text-muted);margin-bottom:14px">Aucun article dans cette commande.</div>';
+  }
+
+  // Totaux recalculés
+  html+='<div style="background:var(--bg);border-radius:8px;padding:12px 14px;margin-bottom:16px;display:flex;gap:20px;font-size:12px">';
+  html+='<span>Réf: <strong id="cedit-nbrefs">'+(order.nbRefs||0)+'</strong></span>';
+  html+='<span>Colis: <strong id="cedit-nbcolis">'+(order.nbColis||0)+'</strong></span>';
+  html+='<span>Total HT: <strong id="cedit-total" style="color:var(--accent)">'+fmt2(order.totalNet||0)+'</strong></span>';
+  html+='</div>';
+
+  // Actions
+  html+='<div style="display:flex;gap:8px;justify-content:flex-end;padding-top:12px;border-top:1px solid var(--border)">';
+  html+='<button onclick="closeCmdEdit()" class="btn-outline">Annuler</button>';
+  html+='<button onclick="saveCmdEdit()" class="btn-accent">✓ Enregistrer</button>';
+  html+='</div>';
+  html+='</div></div></div>';
+
+  // Injecter dans le DOM
+  var overlay=document.createElement('div');
+  overlay.innerHTML=html;
+  document.body.appendChild(overlay.firstChild);
+}
+
+function updateCeditLine(i,newQty){
+  if(!_cmdEditModal) return;
+  var art=_cmdEditModal.order.articles[i];
+  if(!art) return;
+  var qty=parseInt(newQty)||0;
+  var pcb=art.pcb||1;
+  art.qty=qty;
+  art.totalHT=art.puHT*qty*pcb;
+  var totEl=document.getElementById('cedit-tot-'+i);
+  if(totEl) totEl.textContent=fmt2(art.totalHT);
+  _recalcCeditTotals();
+}
+
+function removeCeditLine(i){
+  if(!_cmdEditModal) return;
+  _cmdEditModal.order.articles.splice(i,1);
+  // Rafraîchir la modale
+  var login=_cmdEditModal.login;
+  var order=_cmdEditModal.order;
+  closeCmdEdit();
+  // Reconstruire avec l'order modifié temporairement dans la map
+  var orders=_cmdAllOrdersMap[login]||[];
+  var idx=orders.findIndex(function(o){return String(o.id)===String(order.id);});
+  if(idx>=0) orders[idx]=order;
+  openEditCmd(login,order.id);
+}
+
+function _recalcCeditTotals(){
+  if(!_cmdEditModal) return;
+  var arts=_cmdEditModal.order.articles||[];
+  var nbRefs=arts.filter(function(a){return a.qty>0;}).length;
+  var nbColis=arts.reduce(function(s,a){return s+(a.qty||0);},0);
+  var total=arts.reduce(function(s,a){return s+(a.totalHT||0);},0);
+  _cmdEditModal.order.nbRefs=nbRefs;
+  _cmdEditModal.order.nbColis=nbColis;
+  _cmdEditModal.order.totalNet=total;
+  var e1=document.getElementById('cedit-nbrefs');if(e1) e1.textContent=nbRefs;
+  var e2=document.getElementById('cedit-nbcolis');if(e2) e2.textContent=nbColis;
+  var e3=document.getElementById('cedit-total');if(e3) e3.textContent=fmt2(total);
+}
+
+function closeCmdEdit(){
+  var el=document.getElementById('cmd-edit-overlay');
+  if(el) el.remove();
+  _cmdEditModal=null;
+}
+
+function saveCmdEdit(){
+  if(!_cmdEditModal) return;
+  var magasin=(document.getElementById('cedit-magasin')||{}).value||_cmdEditModal.order.magasin;
+  var mail=(document.getElementById('cedit-email')||{}).value||_cmdEditModal.order.mail;
+  _recalcCeditTotals();
+  var order=Object.assign({},_cmdEditModal.order,{magasin:magasin,mail:mail});
+  var login=_cmdEditModal.login;
+
+  fbUpdateOrder(login,order).then(function(){
+    showToast('✅ Commande mise à jour');
+    closeCmdEdit();
+    // Mettre à jour dans la map locale
+    var orders=_cmdAllOrdersMap[login]||[];
+    var idx=orders.findIndex(function(o){return String(o.id)===String(order.id);});
+    if(idx>=0) orders[idx]=order; else orders.unshift(order);
+    renderCommandes();
+  }).catch(function(e){
+    showToast('⚠ Erreur: '+e.message);
+  });
+}
+
+// ── Supprimer une commande ─────────────────────────────────────
+function deleteCmd(login,orderId){
+  if(!confirm('Supprimer définitivement cette commande de '+login+' ?\nCette action est irréversible.')) return;
+  fbDeleteOrder(login,orderId).then(function(){
+    showToast('🗑 Commande supprimée');
+    // Retirer de la map locale
+    if(_cmdAllOrdersMap[login]){
+      _cmdAllOrdersMap[login]=_cmdAllOrdersMap[login].filter(function(o){return String(o.id)!==String(orderId);});
+    }
+    renderCommandes();
+  }).catch(function(e){
+    showToast('⚠ Erreur suppression: '+e.message);
+  });
+}
+
+// ── Export Excel ───────────────────────────────────────────────
+function exportCmdExcel(){
+  if(typeof XLSX==='undefined'){showToast('⚠ XLSX non chargé');return;}
+  var all=[];
+  Object.keys(_cmdAllOrdersMap).forEach(function(login){
+    _cmdAllOrdersMap[login].forEach(function(o){all.push(Object.assign({},o,{_login:login}));});
+  });
+  all.sort(function(a,b){return (b.id||0)-(a.id||0);});
+
+  // Feuille résumé
+  var rows=[['Compte','Rôle','Magasin','Email','Date','Réf.','Colis','Total HT']];
+  all.forEach(function(o){
+    var compte=comptes.find(function(c){return c.login===o._login;});
+    rows.push([o._login||'',compte?compte.role:'',o.magasin||'',o.mail||'',
+      String(o.date||'').split(' ')[0],o.nbRefs||0,o.nbColis||0,o.totalNet||0]);
+  });
+  var ws=XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols']=[{wch:18},{wch:12},{wch:28},{wch:24},{wch:14},{wch:8},{wch:8},{wch:14}];
+
+  // Feuille articles
+  var rows2=[['Compte','Date','Magasin','Code','Désignation','Colis','PU HT','Total HT']];
+  all.forEach(function(o){
+    if(o.articles) o.articles.forEach(function(art){
+      rows2.push([o._login||'',String(o.date||'').split(' ')[0],o.magasin||'',
+        art.code||'',art.libelle||'',art.qty||0,art.puHT||0,art.totalHT||0]);
+    });
+  });
+  var ws2=XLSX.utils.aoa_to_sheet(rows2);
+  ws2['!cols']=[{wch:18},{wch:14},{wch:28},{wch:14},{wch:40},{wch:8},{wch:10},{wch:12}];
+
+  var wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Commandes');
+  XLSX.utils.book_append_sheet(wb,ws2,'Articles');
+  XLSX.writeFile(wb,'commandes_mdm_'+new Date().toISOString().slice(0,10)+'.xlsx');
+  showToast('✅ Export téléchargé');
+}
+
+// Alias pour compatibilité
+function exportHistoriqueAll(){ exportCmdExcel(); }
+function toggleHistoDetail(id){ toggleCmdDetail(id); }
+
+
 
 function toggleHistoDetail(id){
   var el=document.getElementById(id);

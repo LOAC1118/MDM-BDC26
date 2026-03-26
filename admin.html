@@ -284,12 +284,54 @@ table.tbl tr:hover td,.md-tbl tr:hover td,.grp-table tr:hover td{background:var(
 code{background:var(--bg);padding:1px 4px;border-radius:3px;font-size:10px;font-family:monospace;color:var(--brown)}
 .mdm-req{color:var(--danger)}
 #toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--text);color:#fff;padding:8px 16px;border-radius:7px;font-size:12px;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.2);opacity:0;transition:opacity .25s;white-space:nowrap;font-family:'Inter',sans-serif;pointer-events:none}
-@media(max-width:900px){.stats-grid{grid-template-columns:repeat(2,1fr)}.two-col{grid-template-columns:1fr}}
-@media(max-width:640px){.sidebar{display:none}.main{padding:14px}}</style>
+
+
+.hamburger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:6px;border-radius:6px;transition:background .15s;flex-shrink:0}
+.hamburger:hover{background:var(--bg)}
+.hamburger span{display:block;width:20px;height:2px;background:var(--text2);border-radius:2px;transition:all .25s}
+.hamburger.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.hamburger.open span:nth-child(2){opacity:0}
+.hamburger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(45,32,24,.4);z-index:150}
+.sidebar-overlay.open{display:block}
+@media(max-width:900px){.stats-grid{grid-template-columns:repeat(2,1fr)}.two-col,.fg-row{grid-template-columns:1fr}.search-wrap{max-width:220px}}
+@media(max-width:768px){
+  :root{--topbar:50px}
+  .hamburger{display:flex}
+  .sidebar{position:fixed;top:var(--topbar);left:0;bottom:0;z-index:200;transform:translateX(-100%);transition:transform .25s ease;box-shadow:4px 0 20px rgba(45,32,24,.15)}
+  .sidebar.open{transform:translateX(0)}
+  .zone{display:block}
+  .main{padding:14px;width:100%}
+  .topbar{padding:0 12px;gap:8px}
+  .logo sup{display:none}
+  .search-wrap{display:none}
+  .stats-grid{grid-template-columns:repeat(2,1fr);gap:8px}
+  .tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  table.tbl{min-width:600px}
+  table.tbl th,table.tbl td{padding:6px 8px;font-size:11px}
+  .modal{max-width:100%;border-radius:12px 12px 0 0;position:fixed;bottom:0;left:0;right:0;max-height:92vh}
+  .modal-bg{padding:0;align-items:flex-end}
+  .msg-layout{grid-template-columns:1fr;height:auto}
+  .msg-conv-col{height:300px}
+  .msg-chat-col{height:400px}
+  .promo-card{flex-direction:column;align-items:flex-start}
+  .promo-card-actions{width:100%;justify-content:flex-end}
+  .page-actions{flex-wrap:wrap;gap:6px}
+  div[style*="grid-template-columns:repeat(4,1fr)"]{grid-template-columns:repeat(2,1fr)!important}
+}
+@media(max-width:480px){
+  .stats-grid{grid-template-columns:1fr 1fr}
+  .stat-val{font-size:20px}
+  .page-title{font-size:18px}
+  .toolbar{flex-direction:column;align-items:stretch}
+  .tb-search{max-width:100%}
+}
+</style>
 </head>
 <body>
 
 <header class="topbar">
+  <button class="hamburger" id="admin-hamburger" onclick="toggleAdminSidebar()" aria-label="Menu"><span></span><span></span><span></span></button>
   <div class="logo">Moulin <em>des</em> Moines <sup>Admin</sup></div>
   <div class="search-wrap">
     <span class="search-ico">&#128269;</span>
@@ -900,38 +942,17 @@ code{background:var(--bg);padding:1px 4px;border-radius:3px;font-size:10px;font-
             <label>Notes internes</label>
             <textarea id="f-notes" rows="2" placeholder="Notes sur ce compte…" style="width:100%;padding:8px 10px;border:1.5px solid #e0d0c4;border-radius:7px;font-family:Outfit,sans-serif;font-size:12px;background:var(--cream);color:var(--brown);resize:vertical"></textarea>
           </div>
-          <div class="fg"><label>Franco de port (&#8364; HT) <span style="font-size:10px;color:#b09080;font-weight:400;text-transform:none">— laisser vide si aucun</span></label><input type="number" id="f-franco" placeholder="ex&#160;: 500" min="0" step="10" style="width:100%;padding:9px 12px;border:1.5px solid #e0d0c4;border-radius:7px;font-family:Outfit,sans-serif;font-size:13px;background:#fff;outline:none"><div class="hint">Laisser vide = pas de franco</div></div></div>
-    </div>
+          <div class="fg"><label>Franco de port (&#8364; HT) <span style="font-size:10px;color:#b09080;font-weight:400;text-transform:none">— laisser vide si aucun</span></label><input type="number" id="f-franco" placeholder="ex&#160;: 500" min="function toggleAdminSidebar(){
+  var sb=document.querySelector('.sidebar');
+  var ov=document.getElementById('admin-overlay');
+  var hb=document.getElementById('admin-hamburger');
+  if(!sb) return;
+  var isOpen=sb.classList.contains('open');
+  sb.classList.toggle('open',!isOpen);
+  if(ov) ov.classList.toggle('open',!isOpen);
+  if(hb) hb.classList.toggle('open',!isOpen);
+}
 
-    <!-- ── Section commercial ── -->
-    <div class="modal-section" id="section-commercial">
-      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.9px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px">
-        &#128188; Commercial r&#233;f&#233;rent
-        <span style="flex:1;height:1px;background:var(--border);display:block"></span>
-      </div>
-      <div class="fg">
-        <label>Commercial assign&#233; <span style="font-size:10px;color:#b09080;font-weight:400;text-transform:none">(optionnel)</span></label>
-        <div id="commercial-field">
-          <select id="f-commercial" style="width:100%;padding:9px 12px;border:1.5px solid #e0d0c4;border-radius:7px;font-family:Outfit,sans-serif;font-size:13px;background:var(--cream);color:var(--brown)">
-            <option value="">&#8212; Aucun commercial assign&#233; &#8212;</option>
-          </select>
-        </div>
-      </div>
-    </div>
-
-    <!-- ── Boutons d'action ── -->
-    <div class="modal-actions">
-      <button onclick="closeModal()" style="padding:9px 20px;border-radius:7px;border:1.5px solid #e0d0c4;background:var(--bg);color:var(--text-secondary);font-family:Outfit,sans-serif;font-size:13px;cursor:pointer">Annuler</button>
-      <button onclick="saveCompte()" class="btn-save" style="padding:9px 22px;border-radius:7px;border:none;background:var(--terra);color:#fff;font-family:Outfit,sans-serif;font-size:13px;font-weight:600;cursor:pointer">&#10003; Enregistrer</button>
-    </div>
-  </div>
-  <!-- Fin modal -->
-
-<div style="text-align:center;padding:10px;font-size:10px;color:#64748b;border-top:1px solid var(--border)">&copy; 2026 Moulin des Moines &nbsp;&middot;&nbsp; <a href="mentions-legales.html" style="color:inherit;opacity:.7;text-decoration:none">Mentions l&eacute;gales &amp; RGPD</a></div>
-<div id="toast"></div>
-<div id="toast"></div>
-
-<script>
 
 // ── Utilitaires manquants ────────────────────────────────────
 function fmtCA(n){
@@ -3909,6 +3930,20 @@ async function pushStockToGithub() {
 }
 
 window.addEventListener('DOMContentLoaded',function(){
+  // Fermer sidebar mobile au clic nav
+  document.querySelectorAll('.nav-item').forEach(function(item){
+    item.addEventListener('click',function(){
+      if(window.innerWidth<=768){
+        var sb=document.querySelector('.sidebar');
+        var ov=document.getElementById('admin-overlay');
+        var hb=document.getElementById('admin-hamburger');
+        if(sb)sb.classList.remove('open');
+        if(ov)ov.classList.remove('open');
+        if(hb)hb.classList.remove('open');
+      }
+    });
+  });
+
   loadComptes();
   loadActus();
   loadInscriptions();
@@ -3916,6 +3951,56 @@ window.addEventListener('DOMContentLoaded',function(){
   loadPromos();
   // Les tranches seront initialisées à l'ouverture de la page groupements
   showPage('dashboard', document.querySelector('.nav-item.active'));
+});
+
+function setActuType(type,btn){
+  document.getElementById('actu-type').value=type;
+  document.querySelectorAll('.actu-type-btn').forEach(function(b){
+    b.style.background='var(--bg)';b.style.color='var(--text)';b.style.borderColor='var(--border)';
+  });
+  if(btn){btn.style.background='var(--accent)';btn.style.color='#fff';btn.style.borderColor='var(--accent)';}
+  updateActuPreview();
+}
+
+function updateActuPreview(){
+  var type=document.getElementById('actu-type').value||'info';
+  var titre=(document.getElementById('actu-titre').value||'Titre de l\'actualité').trim();
+  var contenu=(document.getElementById('actu-contenu').value||'Le contenu s\'affichera ici.').trim();
+  var B={info:{label:'Info',bg:'#e8f4ed',color:'#2d6a4a'},promo:{label:'Promo',bg:'#fef3c7',color:'#92400e'},alerte:{label:'Alerte',bg:'#fee2e2',color:'#991b1b'}};
+  var b=B[type]||B.info;
+  var el=document.getElementById('actu-preview-badge');
+  if(el){el.textContent=b.label;el.style.background=b.bg;el.style.color=b.color;}
+  var t=document.getElementById('actu-preview-titre'); if(t) t.textContent=titre;
+  var c=document.getElementById('actu-preview-body'); if(c) c.textContent=contenu;
+  var d=document.getElementById('actu-preview-date'); if(d) d.textContent=new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'});
+}
+
+function saveActuNew(){
+  var titre=(document.getElementById('actu-titre').value||'').trim();
+  var contenu=(document.getElementById('actu-contenu').value||'').trim();
+  var type=document.getElementById('actu-type').value||'info';
+  var actif=document.getElementById('actu-actif').checked;
+  if(!titre||!contenu){showToast('\u26a0 Titre et contenu obligatoires');return;}
+  var dateStr=new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'});
+  if(actuEditIndex>=0){
+    actus[actuEditIndex]=Object.assign(actus[actuEditIndex],{titre:titre,contenu:contenu,type:type,actif:actif});
+    showToast('\u2705 Actualité mise à jour');
+  } else {
+    actus.unshift({titre:titre,contenu:contenu,type:type,actif:actif,date:dateStr});
+    showToast('\u2705 Actualité publiée');
+  }
+  saveActus(); renderActus(); cancelActu();
+}
+
+
+
+
+
+
+
+
+
+d', document.querySelector('.nav-item.active'));
 });
 
 function setActuType(type,btn){

@@ -647,6 +647,51 @@ tbody tr.has-qty td.td-qty input{background:#ffe0b2;border-color:var(--terra)}
 .import-panel-foot{padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:8px;flex-shrink:0}
 .import-overlay{position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:299;display:none}
 .import-overlay.open{display:block}
+
+/* ═══════════════════════════════════════════
+   COMMANDE — RESPONSIVE AMÉLIORÉ
+═══════════════════════════════════════════ */
+@media(max-width:768px){
+  /* Totals bar : pleine largeur */
+  .totals-bar{left:0!important}
+
+  /* Header compact */
+  .page-header{padding:10px 14px;gap:10px;flex-wrap:wrap}
+  .page-header .header-actions{gap:6px}
+  .page-header .header-actions button,
+  .page-header .header-actions a{
+    font-size:11px!important;padding:6px 9px!important
+  }
+
+  /* Barre de recherche */
+  .search-bar{padding:8px 12px;border-radius:8px;margin:8px 12px;gap:8px}
+  .search-bar input{font-size:13px}
+
+  /* Tableau produits : scroll horizontal */
+  .bdc-scroll-wrap,.table-wrap,[class*="product-table"]{
+    overflow-x:auto;-webkit-overflow-scrolling:touch
+  }
+  /* Colonnes peu importantes masquées */
+  .col-region,.col-uvc-total{display:none!important}
+
+  /* Import panel plein écran */
+  .import-panel{width:100%!important;left:0!important}
+
+  /* Modal plein écran */
+  .modal-nc{max-width:calc(100vw - 24px)!important;padding:18px!important}
+}
+
+@media(max-width:480px){
+  /* Totals bar : 2 colonnes */
+  .totals-bar{height:auto!important;padding:8px 12px!important;flex-wrap:wrap!important;gap:6px!important}
+  .totals-bar > *{font-size:11px!important}
+
+  /* Boutons header : icônes seulement */
+  .page-header .btn-label{display:none}
+
+  /* Réduire padding cellules */
+  table th, table td{padding:5px 7px!important;font-size:11px!important}
+}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>

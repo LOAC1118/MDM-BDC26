@@ -743,15 +743,18 @@ table.mc-tbl tr:last-child td{border:none}
 
 
 /* ══ RESPONSIVE MES-COMMANDES ══ */
-.mc-hamburger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:6px;border-radius:6px;flex-shrink:0;margin-right:6px}
+.mc-hamburger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:6px;border-radius:6px;flex-shrink:0}
 .mc-hamburger span{display:block;width:20px;height:2px;background:#7a6655;border-radius:2px;transition:all .25s}
 .mc-hamburger.is-open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
 .mc-hamburger.is-open span:nth-child(2){opacity:0}
 .mc-hamburger.is-open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
 .mc-sb-overlay{display:none;position:fixed;inset:0;background:rgba(45,32,24,.45);z-index:149;cursor:pointer}
 .mc-sb-overlay.is-open{display:block}
+.mc-mobile-bar{display:none;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid #e5dcd5;background:#fff;position:sticky;top:0;z-index:10}
 @media(max-width:768px){
   .mc-hamburger{display:flex}
+  .mc-mobile-bar{display:flex}
+  .mc-mobile-bar-title{font-family:'Fraunces',serif;font-weight:200;font-size:18px;color:#6b4c3b}
   .mdm-sidebar{
     position:fixed!important;
     top:0;left:0;bottom:0;
@@ -759,12 +762,13 @@ table.mc-tbl tr:last-child td{border:none}
     transform:translateX(-100%);
     transition:transform .28s cubic-bezier(.4,0,.2,1);
     box-shadow:none;
+    overflow-y:auto;
   }
   .mdm-sidebar.is-open{
     transform:translateX(0);
     box-shadow:6px 0 24px rgba(45,32,24,.18);
   }
-  .mdm-main-content{margin-left:0!important}
+  .mdm-main-content{margin-left:0!important;width:100%}
   .mc-page{padding:14px}
   .mc-kpis{grid-template-columns:1fr 1fr!important;gap:8px}
   .mc-filters{flex-direction:column;align-items:stretch}
@@ -777,14 +781,15 @@ table.mc-tbl tr:last-child td{border:none}
   .mc-modal-overlay{padding:0!important;align-items:flex-end!important}
 }
 @media(max-width:480px){
-  .mc-title{font-size:19px}
+  .mc-title{font-size:18px}
   .mc-kpi-val{font-size:20px}
+  .mc-header{display:none}
 }
-
-.mc-mobile-header{display:none}@media(max-width:768px){.mc-mobile-header{display:flex}}</style>
+</style>
 </head>
 <body>
 
+<div class="mdm-layout">
 <nav class="mdm-sidebar" id="mdm-sidebar">
   <!-- User -->
   <div class="mdm-sidebar-user-block">
@@ -868,8 +873,76 @@ table.mc-tbl tr:last-child td{border:none}
     <a class="mdm-nav-item" href="#" onclick="logout();return false">
       <span class="mdm-nav-icon">&#x23FB;</span>
       <span class="mdm-nav-label">D&eacute;connexion</span>
-   
-/* ── Hamburger mes-commandes ── */
+    </a>
+  </div>
+
+</nav>
+
+<div class="mdm-main-content">
+<div class="mc-sb-overlay" id="mc-sb-overlay" onclick="mcCloseSidebar()"></div>
+<div class="mc-mobile-bar">
+  <button class="mc-hamburger" id="mc-hb" onclick="mcToggleSidebar()" aria-label="Menu"><span></span><span></span><span></span></button>
+  <span class="mc-mobile-bar-title">Mes commandes</span>
+</div>
+  <div class="mc-page">
+
+    <!-- Header -->
+    <div class="mc-header">
+      <div class="mc-title" id="mc-page-title">Mes commandes</div>
+      <div class="mc-sub">Toutes vos commandes enregistrées — modifiables et supprimables</div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="mc-kpis">
+      <div class="mc-kpi k1">
+        <div class="mc-kpi-val" id="mc-kpi1-val">—</div>
+        <div class="mc-kpi-lbl">Commandes</div>
+      </div>
+      <div class="mc-kpi k2">
+        <div class="mc-kpi-val" id="mc-kpi2-val">—</div>
+        <div class="mc-kpi-lbl">CA HT total</div>
+      </div>
+      <div class="mc-kpi k3">
+        <div class="mc-kpi-val" id="mc-kpi3-val">—</div>
+        <div class="mc-kpi-lbl">Panier moyen</div>
+      </div>
+    </div>
+
+    <!-- Filtres -->
+    <div class="mc-filters">
+      <div class="mc-search-wrap">
+        <span class="mc-search-ico">🔍</span>
+        <input type="text" placeholder="Magasin, compte…" oninput="mcSetSearch(this.value)">
+      </div>
+      <div id="mc-filter-login-wrap" style="display:none">
+        <select id="mc-filter-login" class="mc-select" onchange="mcSetLogin(this.value)">
+          <option value="">Tous mes comptes</option>
+        </select>
+      </div>
+      <button onclick="mcExportExcel()" class="mc-btn" style="margin-left:auto">📊 Export Excel</button>
+      <button onclick="window.location.href='commande.html'" class="mc-btn accent">&#43; Nouvelle commande</button>
+    </div>
+
+    <!-- Tableau -->
+    <div id="mc-table-wrap" class="mc-table-wrap">
+      <div class="mc-empty">⏳ Chargement…</div>
+    </div>
+
+  </div>
+</div>
+
+</div>
+
+<!-- Modal édition -->
+<div class="mc-modal-overlay" id="mc-modal" onclick="if(event.target===this)mcCloseEdit()">
+  <div class="mc-modal">
+    <div id="mc-modal-inner"></div>
+  </div>
+</div>
+
+<div id="mc-toast" class="mc-toast"></div>
+
+<script>
 function mcToggleSidebar(){
   var sb=document.querySelector('.mdm-sidebar');
   var ov=document.getElementById('mc-sb-overlay');
@@ -888,6 +961,11 @@ function mcCloseSidebar(){
   if(ov) ov.classList.remove('is-open');
   if(hb) hb.classList.remove('is-open');
   document.body.style.overflow='';
+}
+
+/* ── Fonctions sidebar ── */
+function showProfil(){
+  window.location.href='dashboard.html#profil';
 }
 
 
@@ -1282,63 +1360,9 @@ function mcSetLogin(v){_filterLogin=v;renderCommandes();}
   if(sideRole) sideRole.textContent=_myRole==='user'?'Commercial':'Client';
 
   loadCommandes();
-})();
-
-all.push(Object.assign({},o,{_login:login}));});
+  document.querySelectorAll(".mdm-nav-item").forEach(function(it){
+    it.addEventListener("click",function(){if(window.innerWidth<=768)mcCloseSidebar();});
   });
-  all.sort(function(a,b){return (b.id||0)-(a.id||0);});
-  var rows=[['Compte','Magasin','Email','Date','Réf.','Colis','Total HT']];
-  all.forEach(function(o){
-    rows.push([o._login||'',o.magasin||'',o.mail||'',String(o.date||'').split(' ')[0],o.nbRefs||0,o.nbColis||0,o.totalNet||0]);
-  });
-  var ws=XLSX.utils.aoa_to_sheet(rows);
-  ws['!cols']=[{wch:18},{wch:28},{wch:24},{wch:14},{wch:8},{wch:8},{wch:14}];
-  var wb=XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb,ws,'Commandes');
-  XLSX.writeFile(wb,'mes-commandes_'+new Date().toISOString().slice(0,10)+'.xlsx');
-  showToast('✅ Export téléchargé');
-}
-
-// ── Filters ──────────────────────────────────────────────────
-function mcSetSearch(v){_filterSearch=v;renderCommandes();}
-function mcSetLogin(v){_filterLogin=v;renderCommandes();}
-
-// ── Init ─────────────────────────────────────────────────────
-(function(){
-  var token=sessionStorage.getItem('mdm_token');
-  if(!token){window.location.href='index.html';return;}
-  var data;
-  try{data=JSON.parse(_safeB64Decode(token));}
-  catch(e){sessionStorage.removeItem('mdm_token');window.location.href='index.html';return;}
-  if(!data.exp||Date.now()>data.exp){sessionStorage.removeItem('mdm_token');window.location.href='index.html';return;}
-  if(data.role==='admin'){window.location.href='admin.html';return;}
-
-  _myLogin=data.login||'';
-  _myRole=data.role||'client';
-  _myNom=data.nom||data.login||'';
-  _myCommercial=data.commercial||'';
-
-  // Afficher le nom
-  var userEl=document.getElementById('mc-user-name');
-  if(userEl) userEl.textContent=_myNom;
-  var roleEl=document.getElementById('mc-user-role');
-  if(roleEl) roleEl.textContent=_myRole==='user'?'Commercial':'Client';
-
-  // Titre
-  var titleEl=document.getElementById('mc-page-title');
-  if(titleEl) titleEl.textContent=_myRole==='user'?'Mes commandes & clients':'Mes commandes';
-
-  // Afficher sélecteur compte si commercial
-  var selWrap=document.getElementById('mc-filter-login-wrap');
-  if(selWrap&&_myRole==='user') selWrap.style.display='flex';
-
-  // Sidebar user
-  var sideUser=document.getElementById('sidebar-user-name');
-  if(sideUser) sideUser.textContent=_myNom;
-  var sideRole=document.getElementById('sidebar-user-role');
-  if(sideRole) sideRole.textContent=_myRole==='user'?'Commercial':'Client';
-
-  loadCommandes();
 })();
 
 </script>

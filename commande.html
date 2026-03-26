@@ -648,49 +648,22 @@ tbody tr.has-qty td.td-qty input{background:#ffe0b2;border-color:var(--terra)}
 .import-overlay{position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:299;display:none}
 .import-overlay.open{display:block}
 
-/* ═══════════════════════════════════════════
-   COMMANDE — RESPONSIVE AMÉLIORÉ
-═══════════════════════════════════════════ */
+/* ══ RESPONSIVE COMMANDE (complément) ══ */
 @media(max-width:768px){
-  /* Totals bar : pleine largeur */
-  .totals-bar{left:0!important}
-
-  /* Header compact */
-  .page-header{padding:10px 14px;gap:10px;flex-wrap:wrap}
-  .page-header .header-actions{gap:6px}
-  .page-header .header-actions button,
-  .page-header .header-actions a{
-    font-size:11px!important;padding:6px 9px!important
-  }
-
-  /* Barre de recherche */
-  .search-bar{padding:8px 12px;border-radius:8px;margin:8px 12px;gap:8px}
-  .search-bar input{font-size:13px}
-
-  /* Tableau produits : scroll horizontal */
-  .bdc-scroll-wrap,.table-wrap,[class*="product-table"]{
-    overflow-x:auto;-webkit-overflow-scrolling:touch
-  }
-  /* Colonnes peu importantes masquées */
-  .col-region,.col-uvc-total{display:none!important}
-
-  /* Import panel plein écran */
-  .import-panel{width:100%!important;left:0!important}
-
-  /* Modal plein écran */
-  .modal-nc{max-width:calc(100vw - 24px)!important;padding:18px!important}
+  .totals-bar{left:0!important;right:0!important}
+  .draft-bar{left:0!important;right:0!important}
+  .page-header{padding:10px 14px!important;flex-wrap:wrap;gap:8px}
+  .header-actions{gap:5px!important}
+  .header-actions .btn,.header-actions button{padding:5px 8px!important;font-size:11px!important}
+  .search-bar{padding:8px 12px;margin:6px 12px;border-radius:8px}
+  .import-panel{width:100%!important;left:0!important;right:0!important}
+  .modal-nc{max-width:calc(100vw - 20px)!important;padding:16px!important}
+  table th,table td{padding:5px 7px!important;font-size:11px!important}
 }
-
 @media(max-width:480px){
-  /* Totals bar : 2 colonnes */
-  .totals-bar{height:auto!important;padding:8px 12px!important;flex-wrap:wrap!important;gap:6px!important}
+  .totals-bar{height:auto!important;padding:8px 12px!important;flex-wrap:wrap!important;gap:4px!important}
   .totals-bar > *{font-size:11px!important}
-
-  /* Boutons header : icônes seulement */
-  .page-header .btn-label{display:none}
-
-  /* Réduire padding cellules */
-  table th, table td{padding:5px 7px!important;font-size:11px!important}
+  .page-header{padding:8px 10px!important}
 }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>

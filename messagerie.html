@@ -88,53 +88,31 @@ body{font-family:'Inter',sans-serif;font-weight:300;background:var(--bg);color:v
 .btn-send-msg:hover{background:var(--accent-hover)}
 .btn-cancel-msg{padding:9px 16px;background:transparent;color:var(--text-secondary);border:1px solid var(--border);border-radius:7px;font-family:'Inter',sans-serif;font-size:13px;cursor:pointer}
 
-/* ═══════════════════════════════════════════
-   MESSAGERIE — RESPONSIVE
-═══════════════════════════════════════════ */
+/* ══ RESPONSIVE MESSAGERIE ══ */
 @media(max-width:768px){
-  /* Header */
   .msg-header{padding:0 12px;height:50px}
   .msg-logo{font-size:14px}
   .compose-btn{font-size:11px;padding:6px 10px}
   .back-btn{font-size:11px;padding:6px 10px}
-
-  /* Layout : une colonne, on empile */
   .msg-layout{
     grid-template-columns:1fr!important;
+    grid-template-rows:auto 1fr!important;
     height:auto!important;
+    min-height:calc(100vh - 50px);
   }
-
-  /* Liste conversations : hauteur fixe */
-  .msg-sidebar,.msg-conv-col{
-    height:45vh!important;
+  .msg-sidebar{
+    height:220px!important;min-height:220px!important;
     border-right:none!important;
-    border-bottom:1px solid var(--border,#e5dcd5);
+    border-bottom:1px solid var(--border,#e5dcd5)!important;
   }
-
-  /* Zone chat */
-  .msg-main,.msg-chat-area{
-    height:45vh!important;
-    min-height:300px;
-  }
-
-  /* Input message */
-  .msg-input-wrap,.msg-input-bar{
-    padding:8px 10px!important;
-  }
-
-  /* Compose modal : plein écran */
-  .compose-modal{
-    left:8px!important;right:8px!important;
-    bottom:8px!important;top:auto!important;
-    width:auto!important;
-  }
+  .msg-main{min-height:300px}
+  .msg-input-wrap{padding:8px 10px!important}
+  .compose-modal{left:8px!important;right:8px!important;bottom:8px!important;top:auto!important;width:auto!important}
 }
-
 @media(max-width:480px){
   .msg-header-right{gap:6px}
-  .compose-btn small,.back-btn small{display:none}
   .msg-conv-item{padding:8px 10px}
-  .msg-bubble{max-width:85%!important}
+  .msg-bubble{max-width:88%!important}
 }
 </style>
 </head>

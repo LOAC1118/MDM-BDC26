@@ -284,53 +284,12 @@ table.tbl tr:hover td,.md-tbl tr:hover td,.grp-table tr:hover td{background:var(
 code{background:var(--bg);padding:1px 4px;border-radius:3px;font-size:10px;font-family:monospace;color:var(--brown)}
 .mdm-req{color:var(--danger)}
 #toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--text);color:#fff;padding:8px 16px;border-radius:7px;font-size:12px;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.2);opacity:0;transition:opacity .25s;white-space:nowrap;font-family:'Inter',sans-serif;pointer-events:none}
-
-
-/* ══ RESPONSIVE ADMIN ══ */
-.adm-hamburger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:6px;border-radius:6px;flex-shrink:0}
-.adm-hamburger span{display:block;width:20px;height:2px;background:var(--text2);border-radius:2px;transition:all .25s}
-.adm-hamburger.is-open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
-.adm-hamburger.is-open span:nth-child(2){opacity:0}
-.adm-hamburger.is-open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
-.adm-sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(45,32,24,.45);z-index:150;cursor:pointer}
-.adm-sidebar-overlay.is-open{display:block}
-@media(max-width:900px){.stats-grid{grid-template-columns:repeat(2,1fr)}.two-col{grid-template-columns:1fr}.fg-row{grid-template-columns:1fr}.search-wrap{max-width:200px}}
-@media(max-width:768px){
-  :root{--topbar:52px}
-  .adm-hamburger{display:flex}
-  .sidebar{position:fixed!important;top:var(--topbar);left:0;bottom:0;z-index:200;transform:translateX(-100%);transition:transform .28s cubic-bezier(.4,0,.2,1)}
-  .sidebar.is-open{transform:translateX(0);box-shadow:6px 0 24px rgba(45,32,24,.18)}
-  .zone{display:block!important}
-  .main{padding:14px!important}
-  .topbar{padding:0 12px!important;gap:8px!important}
-  .logo sup{display:none}
-  .search-wrap{display:none!important}
-  .stats-grid{grid-template-columns:1fr 1fr;gap:8px}
-  .tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
-  table.tbl{min-width:580px}
-  table.tbl th,table.tbl td{padding:6px 8px;font-size:11px}
-  .modal{max-width:100%!important;border-radius:14px 14px 0 0!important;position:fixed!important;bottom:0!important;left:0!important;right:0!important;max-height:90vh!important}
-  .modal-bg{padding:0!important;align-items:flex-end!important}
-  .msg-layout{grid-template-columns:1fr!important;height:auto!important}
-  .msg-conv-col{height:42vh;border-right:none;border-bottom:1px solid var(--border)}
-  .msg-chat-col{height:42vh}
-  .promo-card{flex-direction:column;align-items:flex-start}
-  .promo-card-actions{width:100%;justify-content:flex-end}
-  div[style*="grid-template-columns:repeat(4,1fr)"]{grid-template-columns:repeat(2,1fr)!important}
-}
-@media(max-width:480px){
-  .stats-grid{grid-template-columns:1fr 1fr}
-  .stat-val{font-size:20px}
-  .page-title{font-size:17px}
-  .toolbar{flex-direction:column;align-items:stretch}
-  .tb-search{max-width:100%}
-}
-</style>
+@media(max-width:900px){.stats-grid{grid-template-columns:repeat(2,1fr)}.two-col{grid-template-columns:1fr}}
+@media(max-width:640px){.sidebar{display:none}.main{padding:14px}}</style>
 </head>
 <body>
 
 <header class="topbar">
-  <button class="adm-hamburger" id="adm-hb" onclick="admToggleSidebar()" aria-label="Menu"><span></span><span></span><span></span></button>
   <div class="logo">Moulin <em>des</em> Moines <sup>Admin</sup></div>
   <div class="search-wrap">
     <span class="search-ico">&#128269;</span>
@@ -712,8 +671,8 @@ code{background:var(--bg);padding:1px 4px;border-radius:3px;font-size:10px;font-
     <!-- Liste des promos -->
     <div id="promo-list-section">
       <div style="font-size:11px;font-weight:600;color:var(--brown);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Promotions cr&eacute;&eacute;es</div>
-
-    <!-- PAGE MESSAGERIE --></div>
+      <div id="promo-list"></div>
+    </div>
     
     </div>
 
@@ -969,32 +928,10 @@ code{background:var(--bg);padding:1px 4px;border-radius:3px;font-size:10px;font-
   <!-- Fin modal -->
 
 <div style="text-align:center;padding:10px;font-size:10px;color:#64748b;border-top:1px solid var(--border)">&copy; 2026 Moulin des Moines &nbsp;&middot;&nbsp; <a href="mentions-legales.html" style="color:inherit;opacity:.7;text-decoration:none">Mentions l&eacute;gales &amp; RGPD</a></div>
-<div class="adm-sidebar-overlay" id="adm-overlay" onclick="admToggleSidebar()"></div>
 <div id="toast"></div>
 <div id="toast"></div>
 
 <script>
-/* ── Hamburger admin ── */
-function admToggleSidebar(){
-  var sb=document.querySelector('.sidebar');
-  var ov=document.getElementById('adm-overlay');
-  var hb=document.getElementById('adm-hb');
-  if(!sb) return;
-  var open=sb.classList.toggle('is-open');
-  if(ov) ov.classList.toggle('is-open',open);
-  if(hb) hb.classList.toggle('is-open',open);
-  document.body.style.overflow=open&&window.innerWidth<=768?'hidden':'';
-}
-function admCloseSidebar(){
-  var sb=document.querySelector('.sidebar');
-  var ov=document.getElementById('adm-overlay');
-  var hb=document.getElementById('adm-hb');
-  if(sb) sb.classList.remove('is-open');
-  if(ov) ov.classList.remove('is-open');
-  if(hb) hb.classList.remove('is-open');
-  document.body.style.overflow='';
-}
-
 
 // ── Utilitaires manquants ────────────────────────────────────
 function fmtCA(n){
@@ -3972,12 +3909,6 @@ async function pushStockToGithub() {
 }
 
 window.addEventListener('DOMContentLoaded',function(){
-  document.querySelectorAll('.nav-item').forEach(function(it){
-    it.addEventListener('click',function(){
-      if(window.innerWidth<=768) admCloseSidebar();
-    });
-  });
-
   loadComptes();
   loadActus();
   loadInscriptions();
@@ -4025,16 +3956,6 @@ function saveActuNew(){
   }
   saveActus(); renderActus(); cancelActu();
 }
-
-
-
-
-
-
-
-
-
-
 
 
 

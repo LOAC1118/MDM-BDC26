@@ -285,7 +285,14 @@ code{background:var(--bg);padding:1px 4px;border-radius:3px;font-size:10px;font-
 .mdm-req{color:var(--danger)}
 #toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--text);color:#fff;padding:8px 16px;border-radius:7px;font-size:12px;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.2);opacity:0;transition:opacity .25s;white-space:nowrap;font-family:'Inter',sans-serif;pointer-events:none}
 @media(max-width:900px){.stats-grid{grid-template-columns:repeat(2,1fr)}.two-col{grid-template-columns:1fr}}
-@media(max-width:640px){.sidebar{display:none}.main{padding:14px}}</style>
+@media(max-width:640px){.sidebar{display:none}.main{padding:14px}}
+/* ══ PROMO UPLOAD ══ */
+.promo-upload-area{border:2px dashed var(--border);border-radius:10px;padding:28px 20px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg)}
+.promo-upload-area:hover,.promo-upload-area.drag-over{border-color:var(--accent);background:var(--accent-l)}
+.promo-upload-area:hover .promo-upload-icon{transform:translateY(-4px)}
+.promo-upload-title{font-size:14px;font-weight:500;color:var(--brown);margin-bottom:4px}
+.promo-upload-area.has-file{border-color:var(--accent);border-style:solid;background:var(--accent-l)}
+</style>
 </head>
 <body>
 
@@ -523,160 +530,105 @@ code{background:var(--bg);padding:1px 4px;border-radius:3px;font-size:10px;font-
     
     </div>
 
-    <div class="page" id="page-promos">
-<div class="page-title">Bons de commande promotionnels</div>
-    <div class="page-sub">Cr&eacute;ez, publiez et suivez vos bons de commande th&eacute;matiques</div>
-
-    <!-- Statistiques -->
+      <div class="page" id="page-promos">
+    <div class="page-header">
+      <div class="page-title">Promotions</div>
+      <div class="page-sub">Créez et publiez vos bons de commande promotionnels</div>
+      <div class="page-actions">
+        <button class="btn-add" id="promo-new-btn" onclick="openNewPromo()">&#43; Nouvelle promotion</button>
+      </div>
+    </div>
     <div class="promo-stat-bar" id="promo-stats-bar" style="display:none">
       <div class="promo-stat"><div class="promo-stat-val" id="ps-total">0</div><div class="promo-stat-lbl">Promos</div></div>
-      <div class="promo-stat"><div class="promo-stat-val c-green" id="ps-actives">0</div><div class="promo-stat-lbl">Actives</div></div>
-      <div class="promo-stat"><div class="promo-stat-val" id="ps-commandes">0</div><div class="promo-stat-lbl">Commandes re&ccedil;ues</div></div>
+      <div class="promo-stat"><div class="promo-stat-val" id="ps-actives" style="color:var(--green)">0</div><div class="promo-stat-lbl">Actives</div></div>
+      <div class="promo-stat"><div class="promo-stat-val" id="ps-commandes">0</div><div class="promo-stat-lbl">Commandes</div></div>
     </div>
-
-    <!-- Bouton nouveau -->
-    <div style="margin-bottom:16px">
-      <button onclick="openNewPromo()" class="btn-add" id="promo-new-btn">&#127381; Nouvelle promo</button>
-    </div>
-
-    <!-- Formulaire (masqué par défaut) -->
-    <div id="promo-form-wrap" style="display:none">
-    <div class="section-card" style="margin-bottom:20px">
-      <div class="section-card-title">
-        <span id="promo-form-title">&#127381; Nouvelle promotion</span>
-        <button onclick="cancelPromo()" style="background:none;border:none;font-size:12px;color:#a08070;cursor:pointer;font-family:Outfit,sans-serif">Annuler</button>
-      </div>
-
-      <!-- &Eacute;tape 1 : Infos g&eacute;n&eacute;rales -->
-      <div class="promo-step">
-        <div class="promo-step-num">1</div>
-        <div class="promo-step-body">
-          <div class="promo-step-title">Informations g&eacute;n&eacute;rales</div>
-          <div class="promo-form-grid">
-            <div class="fg" style="margin:0">
-              <label>Nom de la promotion <span style="color:var(--terra)">*</span></label>
-              <input type="text" id="promo-nom" placeholder="ex&#160;: Chocolats de P&#226;ques 2026">
-            </div>
-            <div class="fg" style="margin:0">
-              <label>Slug URL <span style="color:var(--terra)">*</span></label>
-              <input type="text" id="promo-slug" placeholder="ex&#160;: paques2026" oninput="this.value=this.value.toLowerCase().replace(/[^a-z0-9-]/g,'')">
-              <div class="hint">Fichier g&eacute;n&eacute;r&eacute;&#160;: <code id="promo-slug-preview">promo-[slug].html</code></div>
-            </div>
-            <div class="fg" style="margin:0">
-              <label>Date de d&eacute;but</label>
-              <input type="date" id="promo-debut">
-            </div>
-            <div class="fg" style="margin:0">
-              <label>Date de fin</label>
-              <input type="date" id="promo-fin">
-            </div>
+    <div id="promo-form-wrap" style="display:none;margin-bottom:20px">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title" id="promo-form-title">&#127381; Nouvelle promotion</div>
+          <button onclick="cancelPromo()" class="btn-outline btn-sm">✕ Annuler</button>
+        </div>
+        <div class="fg-row" style="margin-bottom:10px">
+          <div class="fg">
+            <label>Nom de la promotion <span style="color:var(--danger)">*</span></label>
+            <input type="text" id="promo-nom" placeholder="ex : Chocolats de Pâques 2026" style="font-size:14px;font-weight:400">
+            <div class="hint">Fichier généré : <code id="promo-slug-preview">promo-[slug].html</code> <input type="hidden" id="promo-slug"></div>
+          </div>
+          <div class="fg">
+            <label>Message promotionnel</label>
+            <textarea id="promo-message" rows="2" placeholder="Offre spéciale… valable jusqu'au…" style="resize:vertical"></textarea>
           </div>
         </div>
-      </div>
-
-      <!-- &Eacute;tape 2 : Conditions commerciales -->
-      <div class="promo-step">
-        <div class="promo-step-num">2</div>
-        <div class="promo-step-body">
-          <div class="promo-step-title">Conditions commerciales</div>
-          <div class="promo-conditions-grid">
-            <div class="fg" style="margin:0">
-              <label>Remise (%)</label>
-              <input type="number" id="promo-remise" min="0" max="99" step="0.5" value="0" placeholder="0">
-            </div>
-            <div class="fg" style="margin:0">
-              <label>Minimum de commande (colis)</label>
-              <input type="number" id="promo-min-colis" min="0" step="1" value="0" placeholder="0">
-            </div>
-            <div class="fg" style="margin:0">
-              <label>Minimum de commande (&euro; HT)</label>
-              <input type="number" id="promo-min-ht" min="0" step="10" value="0" placeholder="0">
-            </div>
-          </div>
-          <div class="fg" style="margin:0">
-            <label>Message promotionnel (affich&eacute; en t&ecirc;te du bon)</label>
-            <textarea id="promo-message" rows="2" placeholder="ex&#160;: Profitez de -15% sur notre s&eacute;lection Chocolate P&#226;ques 2026 — offre valable jusqu'au 31 mars." style="width:100%;padding:9px;border:1.5px solid #e0d0c4;border-radius:7px;font-family:Outfit,sans-serif;font-size:13px;resize:vertical"></textarea>
-          </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px">
+          <div class="fg"><label>Date début</label><input type="date" id="promo-debut"></div>
+          <div class="fg"><label>Date fin</label><input type="date" id="promo-fin"></div>
+          <div class="fg"><label>Remise (%)</label><input type="number" id="promo-remise" value="0" min="0" max="100" step="0.5" oninput="_renderPromoPreview()"></div>
+          <div class="fg"><label>Min colis</label><input type="number" id="promo-min-colis" value="0" min="0"></div>
         </div>
-      </div>
-
-      <!-- &Eacute;tape 3 : Catalogue produits -->
-      <div class="promo-step">
-        <div class="promo-step-num">3</div>
-        <div class="promo-step-body">
-          <div class="promo-step-title">Catalogue produits (Excel)</div>
-          <div class="promo-drop-zone" id="promo-drop-zone"
+        <div class="fg" style="margin-bottom:12px">
+          <label>Montant minimum HT (€)</label>
+          <input type="number" id="promo-min-ht" value="0" min="0" step="10" style="max-width:200px">
+        </div>
+        <div style="margin-bottom:12px">
+          <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--text3);margin-bottom:8px">Catalogue produits (Excel)</div>
+          <div class="promo-upload-area" id="promo-drop-zone"
             onclick="document.getElementById('promo-file-input').click()"
             ondragover="event.preventDefault();this.classList.add('drag-over')"
             ondragleave="this.classList.remove('drag-over')"
             ondrop="event.preventDefault();this.classList.remove('drag-over');handlePromoFile(event.dataTransfer.files[0])">
-            <div style="font-size:28px;margin-bottom:8px">&#128196;</div>
-            <div style="font-size:13px;font-weight:500;color:var(--brown);margin-bottom:4px">Glissez votre fichier Excel ici</div>
-            <div style="font-size:11px;color:#b09080">Colonnes&#160;: Code &middot; D&eacute;signation &middot; PU HT &middot; PCB &middot; TVA (EAN, Origine, Certif optionnels)</div>
+            <div style="font-size:30px;margin-bottom:8px;transition:transform .2s" class="promo-upload-icon">&#128196;</div>
+            <div class="promo-upload-title" id="promo-upload-title">Glissez votre fichier Excel ici</div>
+            <div style="font-size:12px;color:var(--text3);margin-bottom:6px">ou <span style="color:var(--accent);font-weight:500">cliquez pour parcourir</span></div>
+            <div style="font-size:10px;color:var(--text3)">.xlsx &nbsp;•&nbsp; .xls &nbsp;•&nbsp; colonnes&nbsp;: <code>Code</code> <code>Désignation</code> <code>PU HT</code> <code>PCB</code></div>
             <input type="file" id="promo-file-input" accept=".xlsx,.xls" style="display:none" onchange="handlePromoFile(this.files[0])">
           </div>
-          <div id="promo-preview" style="display:none;margin-top:12px">
-            <div style="font-size:11px;font-weight:600;color:var(--brown);margin-bottom:6px">
-              &#128269; <span id="promo-nb-produits">0</span> produits charg&eacute;s
-            </div>
-            <div style="max-height:220px;overflow-y:auto;border:1.5px solid #e0d0c4;border-radius:8px">
-              <table class="promo-table">
-                <thead><tr><th>Code</th><th>D&eacute;signation</th><th>PCB</th><th>PU HT</th><th>Remis&eacute;</th><th>TVA</th></tr></thead>
-                <tbody id="promo-preview-tbody"></tbody>
-              </table>
-            </div>
+        </div>
+        <div id="promo-preview" style="display:none;margin-bottom:12px">
+          <div style="font-size:12px;color:var(--text2);padding:6px 10px;background:var(--bg);border-radius:6px;margin-bottom:8px">
+            <span id="promo-nb-produits" style="font-weight:600;color:var(--accent)">0</span> produits chargés
+            <span style="color:var(--text3);font-size:11px;margin-left:8px" id="promo-remise-info"></span>
+          </div>
+          <div class="tbl-wrap" style="max-height:200px;overflow-y:auto">
+            <table class="tbl">
+              <thead><tr>
+                <th>Code</th><th>Désignation</th><th>EAN</th>
+                <th>PCB</th><th style="text-align:right">PU HT</th><th style="text-align:right">Avec remise</th>
+              </tr></thead>
+              <tbody id="promo-preview-tbody"></tbody>
+            </table>
           </div>
         </div>
-      </div>
-
-      <!-- &Eacute;tape 4 : Destinataires -->
-      <div class="promo-step">
-        <div class="promo-step-num">4</div>
-        <div class="promo-step-body">
-          <div class="promo-step-title">Destinataires</div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
-            <button class="filtre-role active" onclick="setPromoDestinataires('tous',this)">&#127968; Tous les clients</button>
-            <button class="filtre-role" onclick="setPromoDestinataires('groupement',this)">&#127991; Par groupement</button>
-            <button class="filtre-role" onclick="setPromoDestinataires('selection',this)">&#9998; S&eacute;lection manuelle</button>
+        <div style="margin-bottom:12px">
+          <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--text3);margin-bottom:8px">Destinataires</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
+            <button class="pill active" onclick="setPromoDestinataires('tous',this)">Tous les clients</button>
+            <button class="pill" onclick="setPromoDestinataires('groupement',this)">Par groupement</button>
+            <button class="pill" onclick="setPromoDestinataires('selection',this)">Sélection manuelle</button>
           </div>
-          <div id="promo-dest-groupement" style="display:none;margin-bottom:10px">
-            <label style="font-size:11px;color:var(--text-muted)">Groupement</label>
-            <select id="promo-dest-grp-select" style="width:100%;max-width:300px;padding:8px;border:1.5px solid #e0d0c4;border-radius:6px;font-family:Outfit,sans-serif;font-size:12px"></select>
+          <div id="promo-dest-groupement" style="display:none">
+            <select id="promo-dest-grp-select" class="sort-sel" style="width:100%;max-width:320px"><option value="">-- Choisir --</option></select>
           </div>
           <div id="promo-dest-selection" style="display:none">
-            <div id="promo-clients-list" class="promo-clients-grid"></div>
+            <div id="promo-clients-list" style="max-height:180px;overflow-y:auto;border:1px solid var(--border);border-radius:6px;padding:6px 10px"></div>
           </div>
-          <div id="promo-dest-info" style="font-size:11px;color:var(--text-muted);margin-top:6px"></div>
+          <div id="promo-dest-info" style="font-size:11px;color:var(--text3);margin-top:6px"></div>
+        </div>
+        <div id="promo-log" style="display:none;margin-bottom:12px;padding:8px 12px;background:#1a1a2e;color:#a8ff78;border-radius:6px;font-family:monospace;font-size:10px;line-height:1.8;white-space:pre-wrap;max-height:120px;overflow-y:auto"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;padding-top:12px;border-top:1px solid var(--border);align-items:center">
+          <button class="btn-accent" id="promo-publish-btn" onclick="publishPromo()" disabled style="opacity:.45;cursor:not-allowed">&#128640; Publier sur GitHub Pages</button>
+          <button class="btn-outline" id="promo-download-btn" onclick="downloadPromo()" disabled style="opacity:.45;cursor:not-allowed">&#11015; Télécharger HTML</button>
+          <span id="promo-status" style="font-size:11px;color:var(--text3);margin-left:4px"></span>
         </div>
       </div>
-
-      <!-- Log -->
-      <div id="promo-log" class="promo-log"></div>
-
-      <!-- Boutons d'action -->
-      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding-top:4px">
-        <button id="promo-publish-btn" onclick="publishPromo()" disabled
-          style="padding:9px 20px;background:var(--terra);color:#fff;border:none;border-radius:7px;font-family:Outfit,sans-serif;font-size:13px;font-weight:600;cursor:pointer;opacity:.5">
-          &#128229; G&eacute;n&eacute;rer &amp; publier
-        </button>
-        <button id="promo-download-btn" onclick="downloadPromo()" disabled
-          style="padding:9px 20px;background:var(--brown);color:#fff;border:none;border-radius:7px;font-family:Outfit,sans-serif;font-size:13px;font-weight:600;cursor:pointer;opacity:.5">
-          &#11015; T&eacute;l&eacute;charger HTML
-        </button>
-        <span id="promo-status" style="font-size:12px;color:var(--text-muted)"></span>
-      </div>
     </div>
-    </div><!-- /promo-form-wrap -->
-
-    <!-- Liste des promos -->
     <div id="promo-list-section">
-      <div style="font-size:11px;font-weight:600;color:var(--brown);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Promotions cr&eacute;&eacute;es</div>
+      <div style="font-size:11px;font-weight:600;color:var(--brown);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Promotions créées</div>
       <div id="promo-list"></div>
     </div>
-    
-    </div>
+  </div>
 
-    <div class="page" id="page-messagerie">
+<div class="page" id="page-messagerie">
 <div class="page-title">Messagerie</div>
       <div class="page-sub">Discussions en temps r&eacute;el avec tous les comptes</div>
       <div class="msg-layout">
@@ -3257,26 +3209,27 @@ function _updateDestInfo(){
 function handlePromoFile(file){
   if(!file) return;
   if(typeof XLSX==='undefined'){showToast('\u26a0 XLSX non disponible');return;}
+  var zone=document.getElementById('promo-drop-zone');
+  var titleEl=document.getElementById('promo-upload-title');
+  if(titleEl) titleEl.textContent='Lecture en cours\u2026';
   var reader=new FileReader();
   reader.onload=function(e){
     try{
       var wb=XLSX.read(e.target.result,{type:'array'});
       var ws=wb.Sheets[wb.SheetNames[0]];
       var rows=XLSX.utils.sheet_to_json(ws,{defval:''});
+      if(!rows.length){showToast('\u26a0 Fichier vide');if(titleEl)titleEl.textContent='Fichier vide \u2014 r\u00e9essayez';return;}
       _promoProducts=[];
       rows.forEach(function(row){
-        var code=String(row['Code']||row['CODE']||row['code']||'').trim();
-
-        // Chercher le prix dans toutes les variantes possibles de colonne
+        var code=String(row['Code']||row['CODE']||row['code']||row['Ref']||row['REF']||row['ref']||'').trim();
         var _puVal='';
         for(var _k in row){
           var _kl=String(_k).toLowerCase().replace(/\s+/g,'');
-          if(_kl.indexOf('puht')>=0||_kl.indexOf('prix')>=0||_kl==='pu'){
-            if(row[_k]!==''&&row[_k]!==null&&row[_k]!==undefined){_puVal=String(row[_k]);break;}
+          if(_kl.indexOf('puht')>=0||_kl.indexOf('prixht')>=0||_kl==='prix'||_kl==='pu'||_kl==='tarif'){
+            if(row[_k]!==''&&row[_k]!==null){_puVal=String(row[_k]);break;}
           }
         }
-        var pu=parseFloat(_puVal.replace(',','.'))||0;
-        // PCB
+        var pu=parseFloat(String(_puVal).replace(',','.'))||0;
         var _pcbVal='';
         for(var _k2 in row){
           var _k2l=String(_k2).toLowerCase().replace(/\s+/g,'');
@@ -3285,66 +3238,70 @@ function handlePromoFile(file){
           }
         }
         var pcb=parseInt(_pcbVal)||1;
-        // TVA
         var _tvaVal='';
         for(var _k3 in row){
           var _k3l=String(_k3).toLowerCase().replace(/\s+/g,'').replace(/%/g,'');
-          if(_k3l.indexOf('tva')>=0){
-            if(row[_k3]!==''&&row[_k3]!==null){_tvaVal=String(row[_k3]);break;}
-          }
+          if(_k3l.indexOf('tva')>=0){if(row[_k3]!==''&&row[_k3]!==null){_tvaVal=String(row[_k3]);break;}}
         }
         var tva=parseFloat(_tvaVal)||5.5;
-        // EAN
         var _eanVal='';
         for(var _k4 in row){
           var _k4l=String(_k4).toLowerCase().replace(/\s+/g,'');
-          if(_k4l.indexOf('ean')>=0||_k4l.indexOf('gencod')>=0||_k4l.indexOf('barcode')>=0){
-            if(row[_k4]!==''&&row[_k4]!==null){_eanVal=String(row[_k4]);break;}
-          }
+          if(_k4l.indexOf('ean')>=0||_k4l.indexOf('gencod')>=0){if(row[_k4]!==''&&row[_k4]!==null){_eanVal=String(row[_k4]);break;}}
         }
-        var ean=_eanVal.trim();
-        // Origine
+        var des=String(row['\u00e9signation']||row['Designation']||row['DESIGNATION']||row['Libelle']||row['libelle']||row['D\u00e9signation']||row['description']||row['Description']||'').trim();
         var origine=String(row['Origine']||row['origine']||row['ORIGINE']||'').trim();
-        // Certif
-        var certif=String(row['Certif.']||row['Certif']||row['certif']||row['Certification']||row['CERTIF']||'').trim();
-        // Désignation
-        var des=String(row['D\u00e9signation']||row['Designation']||row['DESIGNATION']||row['Libelle']||row['libelle']||row['Lib\u00e9ll\u00e9']||'').trim();
+        var certif=String(row['Certif.']||row['Certif']||row['certif']||row['Certification']||'').trim();
         if(!code&&!des) return;
-        _promoProducts.push({code:code,designation:des,puHT:pu,pcb:pcb,tva:tva,ean:ean,origine:origine,certif:certif});
+        _promoProducts.push({code:code,designation:des,puHT:pu,pcb:pcb,tva:tva,ean:String(_eanVal).trim(),origine:origine,certif:certif});
       });
+      if(zone) zone.classList.add('has-file');
+      if(titleEl) titleEl.textContent='\u2705 '+_promoProducts.length+' produits charg\u00e9s \u2014 '+file.name;
       _renderPromoPreview();
       _setPromoBtn('promo-publish-btn',_promoProducts.length>0);
       _setPromoBtn('promo-download-btn',_promoProducts.length>0);
       showToast('\u2705 '+_promoProducts.length+' produits charg\u00e9s');
-    }catch(err){showToast('\u26a0 Erreur lecture Excel\u00a0: '+err.message);}
+    }catch(err){
+      if(titleEl) titleEl.textContent='Erreur \u2014 '+err.message;
+      showToast('\u26a0 Erreur Excel\u00a0: '+err.message);
+    }
   };
   reader.readAsArrayBuffer(file);
 }
 
+
 function _renderPromoPreview(){
-  var remise=parseFloat(document.getElementById('promo-remise').value)||0;
-  document.getElementById('promo-nb-produits').textContent=_promoProducts.length;
+  var remise=parseFloat((document.getElementById('promo-remise')||{value:0}).value)||0;
+  var nbEl=document.getElementById('promo-nb-produits');
+  if(nbEl) nbEl.textContent=_promoProducts.length;
+  var infoEl=document.getElementById('promo-remise-info');
+  if(infoEl) infoEl.textContent=remise>0?'(remise '+remise+'% appliqu\u00e9e)':'';
   var tbody=document.getElementById('promo-preview-tbody');
-  tbody.innerHTML=_promoProducts.slice(0,30).map(function(p){
-    var prix=remise>0?(p.puHT*(1-remise/100)).toFixed(2):p.puHT.toFixed(2);
+  if(!tbody) return;
+  tbody.innerHTML=_promoProducts.slice(0,50).map(function(p){
+    var prixRemise=remise>0?(p.puHT*(1-remise/100)).toFixed(2):null;
     return '<tr>'
-      +'<td style="font-family:monospace;color:var(--brown)">'+escH(p.code)+'</td>'
+      +'<td style="font-family:monospace;font-size:11px;color:var(--brown)">'+escH(p.code)+'</td>'
       +'<td>'+escH(p.designation)+'</td>'
-      +'<td style="text-align:center">'+p.pcb+'</td>'
-      +'<td style="text-align:right">'+p.puHT.toFixed(2)+'\u00a0\u20ac</td>'
-      +'<td style="text-align:right;color:var(--terra);font-weight:500">'+prix+'\u00a0\u20ac</td>'
-      +'<td style="text-align:center">'+p.tva+'%</td>'
-      +'</tr>';
+      +'<td style="font-size:10px;color:var(--text3);font-family:monospace">'+escH(p.ean||'')+'</td>'
+      +'<td style="text-align:center;color:var(--text3)">'+p.pcb+'</td>'
+      +'<td style="text-align:right;color:var(--text2)">'+p.puHT.toFixed(2)+'\u00a0\u20ac</td>'
+      +'<td style="text-align:right;font-weight:500;color:'+(prixRemise?'var(--accent)':'var(--text3)')+'">'+
+      (prixRemise?prixRemise+'\u00a0\u20ac':'\u2014')+'</td></tr>';
   }).join('');
-  document.getElementById('promo-preview').style.display='block';
+  var preview=document.getElementById('promo-preview');
+  if(preview) preview.style.display=_promoProducts.length?'block':'none';
 }
 
-function _setPromoBtn(id,enabled){
+
+function _setPromoBtn(id,enable){
   var btn=document.getElementById(id);
   if(!btn) return;
-  btn.disabled=!enabled;
-  btn.style.opacity=enabled?'1':'0.5';
+  btn.disabled=!enable;
+  btn.style.opacity=enable?'1':'0.45';
+  btn.style.cursor=enable?'pointer':'not-allowed';
 }
+
 
 function _promoLog(msg,type){
   var el=document.getElementById('promo-log');
@@ -3552,67 +3509,75 @@ function _generatePromoHTML(){
 
 // ── Publication GitHub ────────────────────────────────────────
 async function publishPromo(){
-  var nom=document.getElementById('promo-nom').value.trim();
-  var slug=document.getElementById('promo-slug').value.trim();
-  if(!nom||!slug){showToast('\u26a0 Nom et slug obligatoires');return;}
-  if(!_promoProducts.length){showToast('\u26a0 Chargez un fichier Excel');return;}
-
+  var nomEl=document.getElementById('promo-nom');
+  var nom=nomEl?nomEl.value.trim():'';
+  var slugEl=document.getElementById('promo-slug');
+  var slug=slugEl?slugEl.value.trim():'';
+  if(!slug&&nom){
+    slug=nom.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'').replace(/-+/g,'-');
+    if(slugEl) slugEl.value=slug;
+  }
+  if(!nom){showToast('\u26a0 Nom obligatoire');return;}
+  if(!_promoProducts.length){showToast('\u26a0 Chargez un fichier Excel d\u2019abord');return;}
   _setPromoBtn('promo-publish-btn',false);
-  document.getElementById('promo-log').textContent='';
-  _promoLog('G\u00e9n\u00e9ration du HTML...');
-
+  var logEl=document.getElementById('promo-log');
+  var statusEl=document.getElementById('promo-status');
+  if(logEl){logEl.style.display='block';logEl.textContent='';}
+  _promoLog('G\u00e9n\u00e9ration du HTML\u2026');
   var html=_generatePromoHTML();
   _promoHtmlGenerated=html;
   _setPromoBtn('promo-download-btn',true);
-
   var cfg=ghConfig();
-  if(!cfg.token){_promoLog('Token GitHub manquant — utilisez T\u00e9l\u00e9charger','err');_setPromoBtn('promo-publish-btn',true);return;}
-
-  try{
-    var filename='promo-'+slug+'.html';
-    _promoLog('Lecture de '+filename+' sur GitHub...');
-
-    // Lire SHA actuel si fichier existe déjà
-    var sha=null;
-    var res=await fetch(
-      'https://api.github.com/repos/'+cfg.user+'/'+cfg.repo+'/contents/'+filename+'?ref='+cfg.branch,
-      {headers:{'Authorization':'token '+cfg.token,'Accept':'application/vnd.github.v3+json'},cache:'no-store'}
-    );
-    if(res.status===200){
-      var existing=await res.json();
-      sha=existing.sha;
-      _promoLog('Fichier existant trouv\u00e9, mise \u00e0 jour...','ok');
-    } else if(res.status===404){
-      _promoLog('Nouveau fichier...');
-    } else {
-      throw new Error('GitHub HTTP '+res.status);
-    }
-
-    // Encoder et pusher
+  if(!cfg.token){
+    _promoLog('Token GitHub manquant \u2014 t\u00e9l\u00e9chargez le fichier \u00e0 la place','err');
+    _setPromoBtn('promo-publish-btn',true);
+    return;
+  }
+  var filename='promo-'+slug+'.html';
+  _promoLog('Recherche du fichier sur GitHub\u2026');
+  fetch('https://api.github.com/repos/'+cfg.user+'/'+cfg.repo+'/contents/'+filename+'?ref='+cfg.branch,
+    {headers:{'Authorization':'token '+cfg.token,'Accept':'application/vnd.github.v3+json'},cache:'no-store'})
+  .then(function(res){
+    if(res.status===200) return res.json().then(function(d){return d.sha;});
+    if(res.status===404) return null;
+    return res.json().then(function(d){throw new Error('GitHub '+res.status+': '+(d.message||''));});
+  })
+  .then(function(sha){
+    if(sha) _promoLog('Fichier existant \u2014 mise \u00e0 jour\u2026');
+    else _promoLog('Cr\u00e9ation du fichier\u2026');
     var b64=btoa(unescape(encodeURIComponent(html)));
     var body={message:'Promo '+nom+' \u2014 '+new Date().toLocaleString('fr-FR'),content:b64,branch:cfg.branch};
     if(sha) body.sha=sha;
-
-    var put=await fetch(
-      'https://api.github.com/repos/'+cfg.user+'/'+cfg.repo+'/contents/'+filename,
+    return fetch('https://api.github.com/repos/'+cfg.user+'/'+cfg.repo+'/contents/'+filename,
       {method:'PUT',headers:{'Authorization':'token '+cfg.token,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},
-       body:JSON.stringify(body)}
-    );
-    if(put.status!==200&&put.status!==201){var ed=await put.json();throw new Error(ed.message||'PUT HTTP '+put.status);}
-
-    _promoLog('\u2705 Publi\u00e9 sur GitHub Pages !','ok');
+       body:JSON.stringify(body)});
+  })
+  .then(function(put){
+    return put.json().then(function(d){
+      if(put.status!==200&&put.status!==201) throw new Error(d.message||'PUT HTTP '+put.status);
+      return d;
+    });
+  })
+  .then(function(){
+    _promoLog('\u2705 Publi\u00e9 avec succ\u00e8s !','ok');
     var url='https://loac1118.github.io/MDM-BDC26/'+filename;
-    _promoLog('URL : '+url,'ok');
-
-    // Sauvegarder en Firestore
-    await _savePromoRecord(nom,slug,url);
-    showToast('\u2705 Promo publi\u00e9e : '+filename);
-  }catch(e){
+    _promoLog('URL\u00a0: '+url,'ok');
+    if(statusEl) statusEl.innerHTML='<a href="'+url+'" target="_blank" style="color:var(--accent);font-size:11px">\ud83d\udd17 Voir</a>';
+    return _savePromoRecord(nom,slug,url);
+  })
+  .then(function(){
+    showToast('\u2705 Promo publi\u00e9e\u00a0: '+filename);
+    _setPromoBtn('promo-publish-btn',true);
+    cancelPromo();
+    loadPromos();
+  })
+  .catch(function(e){
     _promoLog('\u274c '+e.message,'err');
     showToast('\u274c GitHub\u00a0: '+e.message);
-  }
-  _setPromoBtn('promo-publish-btn',true);
+    _setPromoBtn('promo-publish-btn',true);
+  });
 }
+
 
 async function _savePromoRecord(nom,slug,url){
   var remise=parseFloat(document.getElementById('promo-remise').value)||0;

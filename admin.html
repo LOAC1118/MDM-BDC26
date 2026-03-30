@@ -284,12 +284,20 @@ table.tbl tr:hover td,.md-tbl tr:hover td,.grp-table tr:hover td{background:var(
 code{background:var(--bg);padding:1px 4px;border-radius:3px;font-size:10px;font-family:monospace;color:var(--brown)}
 .mdm-req{color:var(--danger)}
 #toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--text);color:#fff;padding:8px 16px;border-radius:7px;font-size:12px;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.2);opacity:0;transition:opacity .25s;white-space:nowrap;font-family:'Inter',sans-serif;pointer-events:none}
-@media(max-width:900px){.stats-grid{grid-template-columns:repeat(2,1fr)}.two-col{grid-template-columns:1fr}}
-@media(max-width:640px){.sidebar{display:none}.main{padding:14px}}
-/* ══ PROMO UPLOAD ══ */
+.two-col{grid-template-columns:1fr}}
+.main{padding:14px}}
+.adm-hamburger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:6px;border-radius:6px;flex-shrink:0}
+.adm-hamburger span{display:block;width:20px;height:2px;background:var(--text2);border-radius:2px;transition:all .25s}
+.adm-hamburger.is-open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.adm-hamburger.is-open span:nth-child(2){opacity:0}
+.adm-hamburger.is-open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+.adm-sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(45,32,24,.45);z-index:150;cursor:pointer}
+.adm-sidebar-overlay.is-open{display:block}
+@media(max-width:900px){.stats-grid{grid-template-columns:repeat(2,1fr)}.two-col{grid-template-columns:1fr}.fg-row{grid-template-columns:1fr}}
+@media(max-width:768px){:root{--topbar:52px}.adm-hamburger{display:flex}.sidebar{position:fixed!important;top:var(--topbar);left:0;bottom:0;z-index:200;transform:translateX(-100%);transition:transform .28s cubic-bezier(.4,0,.2,1)}.sidebar.is-open{transform:translateX(0);box-shadow:6px 0 24px rgba(45,32,24,.18)}.zone{display:block!important}.main{padding:14px!important}.topbar{padding:0 12px!important;gap:8px!important}.logo sup{display:none}.search-wrap{display:none!important}.stats-grid{grid-template-columns:1fr 1fr;gap:8px}.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}table.tbl{min-width:580px}table.tbl th,table.tbl td{padding:6px 8px;font-size:11px}.modal{max-width:100%!important;border-radius:14px 14px 0 0!important;position:fixed!important;bottom:0!important;left:0!important;right:0!important;max-height:90vh!important}.modal-bg{padding:0!important;align-items:flex-end!important}.msg-layout{grid-template-columns:1fr!important;height:auto!important}.msg-conv-col{height:42vh;border-right:none;border-bottom:1px solid var(--border)}.msg-chat-col{height:42vh}div[style*="grid-template-columns:repeat(4,1fr)"]{grid-template-columns:repeat(2,1fr)!important}}
+@media(max-width:480px){.stats-grid{grid-template-columns:1fr 1fr}.stat-val{font-size:20px}.page-title{font-size:17px}.toolbar{flex-direction:column;align-items:stretch}}
 .promo-upload-area{border:2px dashed var(--border);border-radius:10px;padding:28px 20px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg)}
 .promo-upload-area:hover,.promo-upload-area.drag-over{border-color:var(--accent);background:var(--accent-l)}
-.promo-upload-area:hover .promo-upload-icon{transform:translateY(-4px)}
 .promo-upload-title{font-size:14px;font-weight:500;color:var(--brown);margin-bottom:4px}
 .promo-upload-area.has-file{border-color:var(--accent);border-style:solid;background:var(--accent-l)}
 </style>
@@ -297,6 +305,7 @@ code{background:var(--bg);padding:1px 4px;border-radius:3px;font-size:10px;font-
 <body>
 
 <header class="topbar">
+  <button class="adm-hamburger" id="adm-hb" onclick="admToggleSidebar()" aria-label="Menu"><span></span><span></span><span></span></button>
   <div class="logo">Moulin <em>des</em> Moines <sup>Admin</sup></div>
   <div class="search-wrap">
     <span class="search-ico">&#128269;</span>
@@ -530,105 +539,160 @@ code{background:var(--bg);padding:1px 4px;border-radius:3px;font-size:10px;font-
     
     </div>
 
-      <div class="page" id="page-promos">
-    <div class="page-header">
-      <div class="page-title">Promotions</div>
-      <div class="page-sub">Créez et publiez vos bons de commande promotionnels</div>
-      <div class="page-actions">
-        <button class="btn-add" id="promo-new-btn" onclick="openNewPromo()">&#43; Nouvelle promotion</button>
-      </div>
-    </div>
+    <div class="page" id="page-promos">
+<div class="page-title">Bons de commande promotionnels</div>
+    <div class="page-sub">Cr&eacute;ez, publiez et suivez vos bons de commande th&eacute;matiques</div>
+
+    <!-- Statistiques -->
     <div class="promo-stat-bar" id="promo-stats-bar" style="display:none">
       <div class="promo-stat"><div class="promo-stat-val" id="ps-total">0</div><div class="promo-stat-lbl">Promos</div></div>
-      <div class="promo-stat"><div class="promo-stat-val" id="ps-actives" style="color:var(--green)">0</div><div class="promo-stat-lbl">Actives</div></div>
-      <div class="promo-stat"><div class="promo-stat-val" id="ps-commandes">0</div><div class="promo-stat-lbl">Commandes</div></div>
+      <div class="promo-stat"><div class="promo-stat-val c-green" id="ps-actives">0</div><div class="promo-stat-lbl">Actives</div></div>
+      <div class="promo-stat"><div class="promo-stat-val" id="ps-commandes">0</div><div class="promo-stat-lbl">Commandes re&ccedil;ues</div></div>
     </div>
-    <div id="promo-form-wrap" style="display:none;margin-bottom:20px">
-      <div class="card">
-        <div class="card-head">
-          <div class="card-title" id="promo-form-title">&#127381; Nouvelle promotion</div>
-          <button onclick="cancelPromo()" class="btn-outline btn-sm">✕ Annuler</button>
-        </div>
-        <div class="fg-row" style="margin-bottom:10px">
-          <div class="fg">
-            <label>Nom de la promotion <span style="color:var(--danger)">*</span></label>
-            <input type="text" id="promo-nom" placeholder="ex : Chocolats de Pâques 2026" style="font-size:14px;font-weight:400">
-            <div class="hint">Fichier généré : <code id="promo-slug-preview">promo-[slug].html</code> <input type="hidden" id="promo-slug"></div>
+
+    <!-- Bouton nouveau -->
+    <div style="margin-bottom:16px">
+      <button onclick="openNewPromo()" class="btn-add" id="promo-new-btn">&#127381; Nouvelle promo</button>
+    </div>
+
+    <!-- Formulaire (masqué par défaut) -->
+    <div id="promo-form-wrap" style="display:none">
+    <div class="section-card" style="margin-bottom:20px">
+      <div class="section-card-title">
+        <span id="promo-form-title">&#127381; Nouvelle promotion</span>
+        <button onclick="cancelPromo()" style="background:none;border:none;font-size:12px;color:#a08070;cursor:pointer;font-family:Outfit,sans-serif">Annuler</button>
+      </div>
+
+      <!-- &Eacute;tape 1 : Infos g&eacute;n&eacute;rales -->
+      <div class="promo-step">
+        <div class="promo-step-num">1</div>
+        <div class="promo-step-body">
+          <div class="promo-step-title">Informations g&eacute;n&eacute;rales</div>
+          <div class="promo-form-grid">
+            <div class="fg" style="margin:0">
+              <label>Nom de la promotion <span style="color:var(--terra)">*</span></label>
+              <input type="text" id="promo-nom" placeholder="ex&#160;: Chocolats de P&#226;ques 2026">
+            </div>
+            <div class="fg" style="margin:0">
+              <label>Slug URL <span style="color:var(--terra)">*</span></label>
+              <input type="text" id="promo-slug" placeholder="ex&#160;: paques2026" oninput="this.value=this.value.toLowerCase().replace(/[^a-z0-9-]/g,'')">
+              <div class="hint">Fichier g&eacute;n&eacute;r&eacute;&#160;: <code id="promo-slug-preview">promo-[slug].html</code></div>
+            </div>
+            <div class="fg" style="margin:0">
+              <label>Date de d&eacute;but</label>
+              <input type="date" id="promo-debut">
+            </div>
+            <div class="fg" style="margin:0">
+              <label>Date de fin</label>
+              <input type="date" id="promo-fin">
+            </div>
           </div>
-          <div class="fg">
-            <label>Message promotionnel</label>
-            <textarea id="promo-message" rows="2" placeholder="Offre spéciale… valable jusqu'au…" style="resize:vertical"></textarea>
+        </div>
+      </div>
+
+      <!-- &Eacute;tape 2 : Conditions commerciales -->
+      <div class="promo-step">
+        <div class="promo-step-num">2</div>
+        <div class="promo-step-body">
+          <div class="promo-step-title">Conditions commerciales</div>
+          <div class="promo-conditions-grid">
+            <div class="fg" style="margin:0">
+              <label>Remise (%)</label>
+              <input type="number" id="promo-remise" min="0" max="99" step="0.5" value="0" placeholder="0">
+            </div>
+            <div class="fg" style="margin:0">
+              <label>Minimum de commande (colis)</label>
+              <input type="number" id="promo-min-colis" min="0" step="1" value="0" placeholder="0">
+            </div>
+            <div class="fg" style="margin:0">
+              <label>Minimum de commande (&euro; HT)</label>
+              <input type="number" id="promo-min-ht" min="0" step="10" value="0" placeholder="0">
+            </div>
+          </div>
+          <div class="fg" style="margin:0">
+            <label>Message promotionnel (affich&eacute; en t&ecirc;te du bon)</label>
+            <textarea id="promo-message" rows="2" placeholder="ex&#160;: Profitez de -15% sur notre s&eacute;lection Chocolate P&#226;ques 2026 — offre valable jusqu'au 31 mars." style="width:100%;padding:9px;border:1.5px solid #e0d0c4;border-radius:7px;font-family:Outfit,sans-serif;font-size:13px;resize:vertical"></textarea>
           </div>
         </div>
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px">
-          <div class="fg"><label>Date début</label><input type="date" id="promo-debut"></div>
-          <div class="fg"><label>Date fin</label><input type="date" id="promo-fin"></div>
-          <div class="fg"><label>Remise (%)</label><input type="number" id="promo-remise" value="0" min="0" max="100" step="0.5" oninput="_renderPromoPreview()"></div>
-          <div class="fg"><label>Min colis</label><input type="number" id="promo-min-colis" value="0" min="0"></div>
-        </div>
-        <div class="fg" style="margin-bottom:12px">
-          <label>Montant minimum HT (€)</label>
-          <input type="number" id="promo-min-ht" value="0" min="0" step="10" style="max-width:200px">
-        </div>
-        <div style="margin-bottom:12px">
-          <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--text3);margin-bottom:8px">Catalogue produits (Excel)</div>
-          <div class="promo-upload-area" id="promo-drop-zone"
+      </div>
+
+      <!-- &Eacute;tape 3 : Catalogue produits -->
+      <div class="promo-step">
+        <div class="promo-step-num">3</div>
+        <div class="promo-step-body">
+          <div class="promo-step-title">Catalogue produits (Excel)</div>
+          <div class="promo-drop-zone" id="promo-drop-zone"
             onclick="document.getElementById('promo-file-input').click()"
             ondragover="event.preventDefault();this.classList.add('drag-over')"
             ondragleave="this.classList.remove('drag-over')"
             ondrop="event.preventDefault();this.classList.remove('drag-over');handlePromoFile(event.dataTransfer.files[0])">
-            <div style="font-size:30px;margin-bottom:8px;transition:transform .2s" class="promo-upload-icon">&#128196;</div>
-            <div class="promo-upload-title" id="promo-upload-title">Glissez votre fichier Excel ici</div>
-            <div style="font-size:12px;color:var(--text3);margin-bottom:6px">ou <span style="color:var(--accent);font-weight:500">cliquez pour parcourir</span></div>
-            <div style="font-size:10px;color:var(--text3)">.xlsx &nbsp;•&nbsp; .xls &nbsp;•&nbsp; colonnes&nbsp;: <code>Code</code> <code>Désignation</code> <code>PU HT</code> <code>PCB</code></div>
+            <div style="font-size:28px;margin-bottom:8px">&#128196;</div>
+            <div style="font-size:13px;font-weight:500;color:var(--brown);margin-bottom:4px">Glissez votre fichier Excel ici</div>
+            <div style="font-size:11px;color:#b09080">Colonnes&#160;: Code &middot; D&eacute;signation &middot; PU HT &middot; PCB &middot; TVA (EAN, Origine, Certif optionnels)</div>
             <input type="file" id="promo-file-input" accept=".xlsx,.xls" style="display:none" onchange="handlePromoFile(this.files[0])">
           </div>
-        </div>
-        <div id="promo-preview" style="display:none;margin-bottom:12px">
-          <div style="font-size:12px;color:var(--text2);padding:6px 10px;background:var(--bg);border-radius:6px;margin-bottom:8px">
-            <span id="promo-nb-produits" style="font-weight:600;color:var(--accent)">0</span> produits chargés
-            <span style="color:var(--text3);font-size:11px;margin-left:8px" id="promo-remise-info"></span>
+          <div id="promo-preview" style="display:none;margin-top:12px">
+            <div style="font-size:11px;font-weight:600;color:var(--brown);margin-bottom:6px">
+              &#128269; <span id="promo-nb-produits">0</span> produits charg&eacute;s
+            </div>
+            <div style="max-height:220px;overflow-y:auto;border:1.5px solid #e0d0c4;border-radius:8px">
+              <table class="promo-table">
+                <thead><tr><th>Code</th><th>D&eacute;signation</th><th>PCB</th><th>PU HT</th><th>Remis&eacute;</th><th>TVA</th></tr></thead>
+                <tbody id="promo-preview-tbody"></tbody>
+              </table>
+            </div>
           </div>
-          <div class="tbl-wrap" style="max-height:200px;overflow-y:auto">
-            <table class="tbl">
-              <thead><tr>
-                <th>Code</th><th>Désignation</th><th>EAN</th>
-                <th>PCB</th><th style="text-align:right">PU HT</th><th style="text-align:right">Avec remise</th>
-              </tr></thead>
-              <tbody id="promo-preview-tbody"></tbody>
-            </table>
-          </div>
-        </div>
-        <div style="margin-bottom:12px">
-          <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--text3);margin-bottom:8px">Destinataires</div>
-          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
-            <button class="pill active" onclick="setPromoDestinataires('tous',this)">Tous les clients</button>
-            <button class="pill" onclick="setPromoDestinataires('groupement',this)">Par groupement</button>
-            <button class="pill" onclick="setPromoDestinataires('selection',this)">Sélection manuelle</button>
-          </div>
-          <div id="promo-dest-groupement" style="display:none">
-            <select id="promo-dest-grp-select" class="sort-sel" style="width:100%;max-width:320px"><option value="">-- Choisir --</option></select>
-          </div>
-          <div id="promo-dest-selection" style="display:none">
-            <div id="promo-clients-list" style="max-height:180px;overflow-y:auto;border:1px solid var(--border);border-radius:6px;padding:6px 10px"></div>
-          </div>
-          <div id="promo-dest-info" style="font-size:11px;color:var(--text3);margin-top:6px"></div>
-        </div>
-        <div id="promo-log" style="display:none;margin-bottom:12px;padding:8px 12px;background:#1a1a2e;color:#a8ff78;border-radius:6px;font-family:monospace;font-size:10px;line-height:1.8;white-space:pre-wrap;max-height:120px;overflow-y:auto"></div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;padding-top:12px;border-top:1px solid var(--border);align-items:center">
-          <button class="btn-accent" id="promo-publish-btn" onclick="publishPromo()" disabled style="opacity:.45;cursor:not-allowed">&#128640; Publier sur GitHub Pages</button>
-          <button class="btn-outline" id="promo-download-btn" onclick="downloadPromo()" disabled style="opacity:.45;cursor:not-allowed">&#11015; Télécharger HTML</button>
-          <span id="promo-status" style="font-size:11px;color:var(--text3);margin-left:4px"></span>
         </div>
       </div>
-    </div>
-    <div id="promo-list-section">
-      <div style="font-size:11px;font-weight:600;color:var(--brown);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Promotions créées</div>
-      <div id="promo-list"></div>
-    </div>
-  </div>
 
-<div class="page" id="page-messagerie">
+      <!-- &Eacute;tape 4 : Destinataires -->
+      <div class="promo-step">
+        <div class="promo-step-num">4</div>
+        <div class="promo-step-body">
+          <div class="promo-step-title">Destinataires</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+            <button class="filtre-role active" onclick="setPromoDestinataires('tous',this)">&#127968; Tous les clients</button>
+            <button class="filtre-role" onclick="setPromoDestinataires('groupement',this)">&#127991; Par groupement</button>
+            <button class="filtre-role" onclick="setPromoDestinataires('selection',this)">&#9998; S&eacute;lection manuelle</button>
+          </div>
+          <div id="promo-dest-groupement" style="display:none;margin-bottom:10px">
+            <label style="font-size:11px;color:var(--text-muted)">Groupement</label>
+            <select id="promo-dest-grp-select" style="width:100%;max-width:300px;padding:8px;border:1.5px solid #e0d0c4;border-radius:6px;font-family:Outfit,sans-serif;font-size:12px"></select>
+          </div>
+          <div id="promo-dest-selection" style="display:none">
+            <div id="promo-clients-list" class="promo-clients-grid"></div>
+          </div>
+          <div id="promo-dest-info" style="font-size:11px;color:var(--text-muted);margin-top:6px"></div>
+        </div>
+      </div>
+
+      <!-- Log -->
+      <div id="promo-log" class="promo-log"></div>
+
+      <!-- Boutons d'action -->
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding-top:4px">
+        <button id="promo-publish-btn" onclick="publishPromo()" disabled
+          style="padding:9px 20px;background:var(--terra);color:#fff;border:none;border-radius:7px;font-family:Outfit,sans-serif;font-size:13px;font-weight:600;cursor:pointer;opacity:.5">
+          &#128229; G&eacute;n&eacute;rer &amp; publier
+        </button>
+        <button id="promo-download-btn" onclick="downloadPromo()" disabled
+          style="padding:9px 20px;background:var(--brown);color:#fff;border:none;border-radius:7px;font-family:Outfit,sans-serif;font-size:13px;font-weight:600;cursor:pointer;opacity:.5">
+          &#11015; T&eacute;l&eacute;charger HTML
+        </button>
+        <span id="promo-status" style="font-size:12px;color:var(--text-muted)"></span>
+      </div>
+    </div>
+    </div><!-- /promo-form-wrap -->
+
+    <!-- Liste des promos -->
+    <div id="promo-list-section">
+      <div style="font-size:11px;font-weight:600;color:var(--brown);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Promotions cr&eacute;&eacute;es</div>
+
+    <!-- PAGE MESSAGERIE --></div>
+    
+    </div>
+
+    <div class="page" id="page-messagerie">
 <div class="page-title">Messagerie</div>
       <div class="page-sub">Discussions en temps r&eacute;el avec tous les comptes</div>
       <div class="msg-layout">
@@ -880,10 +944,13 @@ code{background:var(--bg);padding:1px 4px;border-radius:3px;font-size:10px;font-
   <!-- Fin modal -->
 
 <div style="text-align:center;padding:10px;font-size:10px;color:#64748b;border-top:1px solid var(--border)">&copy; 2026 Moulin des Moines &nbsp;&middot;&nbsp; <a href="mentions-legales.html" style="color:inherit;opacity:.7;text-decoration:none">Mentions l&eacute;gales &amp; RGPD</a></div>
+<div class="adm-sidebar-overlay" id="adm-overlay" onclick="admToggleSidebar()"></div>
 <div id="toast"></div>
 <div id="toast"></div>
 
-<script>
+<script>function admToggleSidebar(){var sb=document.querySelector('.sidebar'),ov=document.getElementById('adm-overlay'),hb=document.getElementById('adm-hb');if(!sb)return;var open=sb.classList.toggle('is-open');if(ov)ov.classList.toggle('is-open',open);if(hb)hb.classList.toggle('is-open',open);document.body.style.overflow=open&&window.innerWidth<=768?'hidden':'';}
+function admCloseSidebar(){var sb=document.querySelector('.sidebar'),ov=document.getElementById('adm-overlay'),hb=document.getElementById('adm-hb');if(sb)sb.classList.remove('is-open');if(ov)ov.classList.remove('is-open');if(hb)hb.classList.remove('is-open');document.body.style.overflow='';}
+
 
 // ── Utilitaires manquants ────────────────────────────────────
 function fmtCA(n){
@@ -3209,27 +3276,26 @@ function _updateDestInfo(){
 function handlePromoFile(file){
   if(!file) return;
   if(typeof XLSX==='undefined'){showToast('\u26a0 XLSX non disponible');return;}
-  var zone=document.getElementById('promo-drop-zone');
-  var titleEl=document.getElementById('promo-upload-title');
-  if(titleEl) titleEl.textContent='Lecture en cours\u2026';
   var reader=new FileReader();
   reader.onload=function(e){
     try{
       var wb=XLSX.read(e.target.result,{type:'array'});
       var ws=wb.Sheets[wb.SheetNames[0]];
       var rows=XLSX.utils.sheet_to_json(ws,{defval:''});
-      if(!rows.length){showToast('\u26a0 Fichier vide');if(titleEl)titleEl.textContent='Fichier vide \u2014 r\u00e9essayez';return;}
       _promoProducts=[];
       rows.forEach(function(row){
-        var code=String(row['Code']||row['CODE']||row['code']||row['Ref']||row['REF']||row['ref']||'').trim();
+        var code=String(row['Code']||row['CODE']||row['code']||'').trim();
+
+        // Chercher le prix dans toutes les variantes possibles de colonne
         var _puVal='';
         for(var _k in row){
           var _kl=String(_k).toLowerCase().replace(/\s+/g,'');
-          if(_kl.indexOf('puht')>=0||_kl.indexOf('prixht')>=0||_kl==='prix'||_kl==='pu'||_kl==='tarif'){
-            if(row[_k]!==''&&row[_k]!==null){_puVal=String(row[_k]);break;}
+          if(_kl.indexOf('puht')>=0||_kl.indexOf('prix')>=0||_kl==='pu'){
+            if(row[_k]!==''&&row[_k]!==null&&row[_k]!==undefined){_puVal=String(row[_k]);break;}
           }
         }
-        var pu=parseFloat(String(_puVal).replace(',','.'))||0;
+        var pu=parseFloat(_puVal.replace(',','.'))||0;
+        // PCB
         var _pcbVal='';
         for(var _k2 in row){
           var _k2l=String(_k2).toLowerCase().replace(/\s+/g,'');
@@ -3238,70 +3304,66 @@ function handlePromoFile(file){
           }
         }
         var pcb=parseInt(_pcbVal)||1;
+        // TVA
         var _tvaVal='';
         for(var _k3 in row){
           var _k3l=String(_k3).toLowerCase().replace(/\s+/g,'').replace(/%/g,'');
-          if(_k3l.indexOf('tva')>=0){if(row[_k3]!==''&&row[_k3]!==null){_tvaVal=String(row[_k3]);break;}}
+          if(_k3l.indexOf('tva')>=0){
+            if(row[_k3]!==''&&row[_k3]!==null){_tvaVal=String(row[_k3]);break;}
+          }
         }
         var tva=parseFloat(_tvaVal)||5.5;
+        // EAN
         var _eanVal='';
         for(var _k4 in row){
           var _k4l=String(_k4).toLowerCase().replace(/\s+/g,'');
-          if(_k4l.indexOf('ean')>=0||_k4l.indexOf('gencod')>=0){if(row[_k4]!==''&&row[_k4]!==null){_eanVal=String(row[_k4]);break;}}
+          if(_k4l.indexOf('ean')>=0||_k4l.indexOf('gencod')>=0||_k4l.indexOf('barcode')>=0){
+            if(row[_k4]!==''&&row[_k4]!==null){_eanVal=String(row[_k4]);break;}
+          }
         }
-        var des=String(row['\u00e9signation']||row['Designation']||row['DESIGNATION']||row['Libelle']||row['libelle']||row['D\u00e9signation']||row['description']||row['Description']||'').trim();
+        var ean=_eanVal.trim();
+        // Origine
         var origine=String(row['Origine']||row['origine']||row['ORIGINE']||'').trim();
-        var certif=String(row['Certif.']||row['Certif']||row['certif']||row['Certification']||'').trim();
+        // Certif
+        var certif=String(row['Certif.']||row['Certif']||row['certif']||row['Certification']||row['CERTIF']||'').trim();
+        // Désignation
+        var des=String(row['D\u00e9signation']||row['Designation']||row['DESIGNATION']||row['Libelle']||row['libelle']||row['Lib\u00e9ll\u00e9']||'').trim();
         if(!code&&!des) return;
-        _promoProducts.push({code:code,designation:des,puHT:pu,pcb:pcb,tva:tva,ean:String(_eanVal).trim(),origine:origine,certif:certif});
+        _promoProducts.push({code:code,designation:des,puHT:pu,pcb:pcb,tva:tva,ean:ean,origine:origine,certif:certif});
       });
-      if(zone) zone.classList.add('has-file');
-      if(titleEl) titleEl.textContent='\u2705 '+_promoProducts.length+' produits charg\u00e9s \u2014 '+file.name;
       _renderPromoPreview();
       _setPromoBtn('promo-publish-btn',_promoProducts.length>0);
       _setPromoBtn('promo-download-btn',_promoProducts.length>0);
       showToast('\u2705 '+_promoProducts.length+' produits charg\u00e9s');
-    }catch(err){
-      if(titleEl) titleEl.textContent='Erreur \u2014 '+err.message;
-      showToast('\u26a0 Erreur Excel\u00a0: '+err.message);
-    }
+    }catch(err){showToast('\u26a0 Erreur lecture Excel\u00a0: '+err.message);}
   };
   reader.readAsArrayBuffer(file);
 }
 
-
 function _renderPromoPreview(){
-  var remise=parseFloat((document.getElementById('promo-remise')||{value:0}).value)||0;
-  var nbEl=document.getElementById('promo-nb-produits');
-  if(nbEl) nbEl.textContent=_promoProducts.length;
-  var infoEl=document.getElementById('promo-remise-info');
-  if(infoEl) infoEl.textContent=remise>0?'(remise '+remise+'% appliqu\u00e9e)':'';
+  var remise=parseFloat(document.getElementById('promo-remise').value)||0;
+  document.getElementById('promo-nb-produits').textContent=_promoProducts.length;
   var tbody=document.getElementById('promo-preview-tbody');
-  if(!tbody) return;
-  tbody.innerHTML=_promoProducts.slice(0,50).map(function(p){
-    var prixRemise=remise>0?(p.puHT*(1-remise/100)).toFixed(2):null;
+  tbody.innerHTML=_promoProducts.slice(0,30).map(function(p){
+    var prix=remise>0?(p.puHT*(1-remise/100)).toFixed(2):p.puHT.toFixed(2);
     return '<tr>'
-      +'<td style="font-family:monospace;font-size:11px;color:var(--brown)">'+escH(p.code)+'</td>'
+      +'<td style="font-family:monospace;color:var(--brown)">'+escH(p.code)+'</td>'
       +'<td>'+escH(p.designation)+'</td>'
-      +'<td style="font-size:10px;color:var(--text3);font-family:monospace">'+escH(p.ean||'')+'</td>'
-      +'<td style="text-align:center;color:var(--text3)">'+p.pcb+'</td>'
-      +'<td style="text-align:right;color:var(--text2)">'+p.puHT.toFixed(2)+'\u00a0\u20ac</td>'
-      +'<td style="text-align:right;font-weight:500;color:'+(prixRemise?'var(--accent)':'var(--text3)')+'">'+
-      (prixRemise?prixRemise+'\u00a0\u20ac':'\u2014')+'</td></tr>';
+      +'<td style="text-align:center">'+p.pcb+'</td>'
+      +'<td style="text-align:right">'+p.puHT.toFixed(2)+'\u00a0\u20ac</td>'
+      +'<td style="text-align:right;color:var(--terra);font-weight:500">'+prix+'\u00a0\u20ac</td>'
+      +'<td style="text-align:center">'+p.tva+'%</td>'
+      +'</tr>';
   }).join('');
-  var preview=document.getElementById('promo-preview');
-  if(preview) preview.style.display=_promoProducts.length?'block':'none';
+  document.getElementById('promo-preview').style.display='block';
 }
 
-
-function _setPromoBtn(id,enable){
+function _setPromoBtn(id,enabled){
   var btn=document.getElementById(id);
   if(!btn) return;
-  btn.disabled=!enable;
-  btn.style.opacity=enable?'1':'0.45';
-  btn.style.cursor=enable?'pointer':'not-allowed';
+  btn.disabled=!enabled;
+  btn.style.opacity=enabled?'1':'0.5';
 }
-
 
 function _promoLog(msg,type){
   var el=document.getElementById('promo-log');
@@ -3509,75 +3571,493 @@ function _generatePromoHTML(){
 
 // ── Publication GitHub ────────────────────────────────────────
 async function publishPromo(){
-  var nomEl=document.getElementById('promo-nom');
-  var nom=nomEl?nomEl.value.trim():'';
-  var slugEl=document.getElementById('promo-slug');
-  var slug=slugEl?slugEl.value.trim():'';
-  if(!slug&&nom){
-    slug=nom.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'').replace(/-+/g,'-');
-    if(slugEl) slugEl.value=slug;
-  }
-  if(!nom){showToast('\u26a0 Nom obligatoire');return;}
-  if(!_promoProducts.length){showToast('\u26a0 Chargez un fichier Excel d\u2019abord');return;}
+  var nom=document.getElementById('promo-nom').value.trim();
+  var slug=document.getElementById('promo-slug').value.trim();
+  if(!nom||!slug){showToast('\u26a0 Nom et slug obligatoires');return;}
+  if(!_promoProducts.length){showToast('\u26a0 Chargez un fichier Excel');return;}
+
   _setPromoBtn('promo-publish-btn',false);
-  var logEl=document.getElementById('promo-log');
-  var statusEl=document.getElementById('promo-status');
-  if(logEl){logEl.style.display='block';logEl.textContent='';}
-  _promoLog('G\u00e9n\u00e9ration du HTML\u2026');
+  document.getElementById('promo-log').textContent='';
+  _promoLog('G\u00e9n\u00e9ration du HTML...');
+
   var html=_generatePromoHTML();
   _promoHtmlGenerated=html;
   _setPromoBtn('promo-download-btn',true);
+
   var cfg=ghConfig();
-  if(!cfg.token){
-    _promoLog('Token GitHub manquant \u2014 t\u00e9l\u00e9chargez le fichier \u00e0 la place','err');
-    _setPromoBtn('promo-publish-btn',true);
-    return;
-  }
-  var filename='promo-'+slug+'.html';
-  _promoLog('Recherche du fichier sur GitHub\u2026');
-  fetch('https://api.github.com/repos/'+cfg.user+'/'+cfg.repo+'/contents/'+filename+'?ref='+cfg.branch,
-    {headers:{'Authorization':'token '+cfg.token,'Accept':'application/vnd.github.v3+json'},cache:'no-store'})
-  .then(function(res){
-    if(res.status===200) return res.json().then(function(d){return d.sha;});
-    if(res.status===404) return null;
-    return res.json().then(function(d){throw new Error('GitHub '+res.status+': '+(d.message||''));});
-  })
-  .then(function(sha){
-    if(sha) _promoLog('Fichier existant \u2014 mise \u00e0 jour\u2026');
-    else _promoLog('Cr\u00e9ation du fichier\u2026');
+  if(!cfg.token){_promoLog('Token GitHub manquant — utilisez T\u00e9l\u00e9charger','err');_setPromoBtn('promo-publish-btn',true);return;}
+
+  try{
+    var filename='promo-'+slug+'.html';
+    _promoLog('Lecture de '+filename+' sur GitHub...');
+
+    // Lire SHA actuel si fichier existe déjà
+    var sha=null;
+    var res=await fetch(
+      'https://api.github.com/repos/'+cfg.user+'/'+cfg.repo+'/contents/'+filename+'?ref='+cfg.branch,
+      {headers:{'Authorization':'token '+cfg.token,'Accept':'application/vnd.github.v3+json'},cache:'no-store'}
+    );
+    if(res.status===200){
+      var existing=await res.json();
+      sha=existing.sha;
+      _promoLog('Fichier existant trouv\u00e9, mise \u00e0 jour...','ok');
+    } else if(res.status===404){
+      _promoLog('Nouveau fichier...');
+    } else {
+      throw new Error('GitHub HTTP '+res.status);
+    }
+
+    // Encoder et pusher
     var b64=btoa(unescape(encodeURIComponent(html)));
     var body={message:'Promo '+nom+' \u2014 '+new Date().toLocaleString('fr-FR'),content:b64,branch:cfg.branch};
     if(sha) body.sha=sha;
-    return fetch('https://api.github.com/repos/'+cfg.user+'/'+cfg.repo+'/contents/'+filename,
+
+    var put=await fetch(
+      'https://api.github.com/repos/'+cfg.user+'/'+cfg.repo+'/contents/'+filename,
       {method:'PUT',headers:{'Authorization':'token '+cfg.token,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},
-       body:JSON.stringify(body)});
-  })
-  .then(function(put){
-    return put.json().then(function(d){
-      if(put.status!==200&&put.status!==201) throw new Error(d.message||'PUT HTTP '+put.status);
-      return d;
-    });
-  })
-  .then(function(){
-    _promoLog('\u2705 Publi\u00e9 avec succ\u00e8s !','ok');
+       body:JSON.stringify(body)}
+    );
+    if(put.status!==200&&put.status!==201){var ed=await put.json();throw new Error(ed.message||'PUT HTTP '+put.status);}
+
+    _promoLog('\u2705 Publi\u00e9 sur GitHub Pages !','ok');
     var url='https://loac1118.github.io/MDM-BDC26/'+filename;
-    _promoLog('URL\u00a0: '+url,'ok');
-    if(statusEl) statusEl.innerHTML='<a href="'+url+'" target="_blank" style="color:var(--accent);font-size:11px">\ud83d\udd17 Voir</a>';
-    return _savePromoRecord(nom,slug,url);
-  })
-  .then(function(){
-    showToast('\u2705 Promo publi\u00e9e\u00a0: '+filename);
-    _setPromoBtn('promo-publish-btn',true);
-    cancelPromo();
-    loadPromos();
-  })
-  .catch(function(e){
+    _promoLog('URL : '+url,'ok');
+
+    // Sauvegarder en Firestore
+    await _savePromoRecord(nom,slug,url);
+    showToast('\u2705 Promo publi\u00e9e : '+filename);
+  }catch(e){
     _promoLog('\u274c '+e.message,'err');
     showToast('\u274c GitHub\u00a0: '+e.message);
-    _setPromoBtn('promo-publish-btn',true);
-  });
+  }
+  _setPromoBtn('promo-publish-btn',true);
 }
 
+async function _savePromoRecord(nom,slug,url){
+  var remise=parseFloat(document.getElementById('promo-remise').value)||0;
+  var minColis=parseInt(document.getElementById('promo-min-colis').value)||0;
+  var minHT=parseFloat(document.getElementById('promo-min-ht').value)||0;
+  var debut=document.getElementById('promo-debut').value;
+  var fin=document.getElementById('promo-fin').value;
+  var message=document.getElementById('promo-message').value.trim();
+  var clients=_getSelectedClients();
+
+  var record={
+    nom:nom,slug:slug,url:url,
+    remise:remise,minColis:minColis,minHT:minHT,
+    debut:debut,fin:fin,message:message,
+    destinataires:_promoDestinataires,
+    nbClients:clients.length,
+    nbProduits:_promoProducts.length,
+    produits:_promoProducts,
+    nbCommandes:0,
+    createdAt:firebase.firestore.FieldValue.serverTimestamp(),
+    updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+  };
+  if(_promoEditId) record._id=_promoEditId;
+
+  var id=await fbSavePromo(record);
+  record._id=id;
+  if(_promoEditId){
+    var idx=_promos.findIndex(function(p){return p._id===_promoEditId;});
+    if(idx>=0) _promos[idx]=record; else _promos.unshift(record);
+  } else {
+    _promos.unshift(record);
+  }
+  renderPromos(); updatePromoStats();
+  cancelPromo();
+}
+
+// ── T\u00e9l\u00e9chargement HTML ─────────────────────────────────────────
+function downloadPromo(){
+  if(!_promoHtmlGenerated) _promoHtmlGenerated=_generatePromoHTML();
+  var slug=document.getElementById('promo-slug').value.trim()||'promo';
+  var blob=new Blob([_promoHtmlGenerated],{type:'text/html;charset=utf-8'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='promo-'+slug+'.html';
+  a.click();
+  showToast('\u2705 Fichier t\u00e9l\u00e9charg\u00e9');
+}
+
+// ── Suivi commandes ───────────────────────────────────────────
+function viewPromoOrders(id){
+  var p=_promos.find(function(x){return x._id===id;});
+  if(!p) return;
+  showToast('Commandes promo "'+p.nom+'" : '+( p.nbCommandes||0)+' re\u00e7ue'+(p.nbCommandes>1?'s':''));
+}
+
+
+// ══════════════════════════════════════════════════════════════
+// GESTION DES STOCKS
+// ══════════════════════════════════════════════════════════════
+
+var _stockData = {}; // { code: qty }
+
+function stockLog(msg, type) {
+  var el = document.getElementById('stock-log');
+  if (!el) return;
+  el.style.display = 'block';
+  var color = type==='ok' ? '#a8ff78' : type==='err' ? '#ff6b6b' : '#ffd93d';
+  el.innerHTML += '<span style="color:'+color+'">' + (type==='ok'?'\u2705 ':type==='err'?'\u274c ':'\u{1F4E2} ') + escH(msg) + '</span>\n';
+  el.scrollTop = el.scrollHeight;
+}
+
+function stockStatus(msg, type) {
+  var el = document.getElementById('stock-status');
+  if (!el) return;
+  var icons = {ok:'\u2705', err:'\u274c', loading:'\u23F3'};
+  el.style.color = type==='ok' ? '#2e7d32' : type==='err' ? '#c62828' : '#b45309';
+  el.textContent = (icons[type]||'') + ' ' + msg;
+}
+
+function handleStockFile(file) {
+  if (!file) return;
+  if (typeof XLSX === 'undefined') { showToast('\u26a0 Biblioth\u00e8que Excel non disponible'); return; }
+
+  var logEl = document.getElementById('stock-log');
+  var resEl = document.getElementById('stock-result');
+  if (logEl) { logEl.style.display='none'; logEl.innerHTML=''; }
+  if (resEl) resEl.style.display='none';
+  var dropZone = document.getElementById('stock-drop-zone');
+  if (dropZone) dropZone.style.borderColor = 'var(--accent)';
+
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var wb = XLSX.read(e.target.result, {type:'array'});
+      var ws = wb.Sheets[wb.SheetNames[0]];
+      var rows = XLSX.utils.sheet_to_json(ws, {defval:''});
+      if (!rows.length) { showToast('\u26a0 Fichier vide ou non lisible'); return; }
+
+      var allKeys = Object.keys(rows[0]);
+
+      // -- D\u00e9tection colonne Code --
+      var codeKey = null;
+      var CODE_NAMES = [
+        'code article','codearticle','code','ref','reference',
+        'codeproduit','code produit','articlecode'
+      ];
+      for (var ki=0; ki<allKeys.length; ki++) {
+        var kl = allKeys[ki].toLowerCase().replace(/\s+/g,' ').trim();
+        if (CODE_NAMES.indexOf(kl) >= 0) { codeKey = allKeys[ki]; break; }
+      }
+
+      // -- D\u00e9tection colonne Stock --
+      // Priorit\u00e9 : "Disponible" > noms connus > premi\u00e8re colonne num\u00e9rique
+      var stockKey = null;
+      var STOCK_NAMES = [
+        'disponible','stock disponible','dispo',
+        'stock','quantite','quantit\u00e9','qty','qte',
+        'stockdisponible','quantitedisponible',
+        'solde','inventaire','restant','nb colis'
+      ];
+      for (var ki=0; ki<allKeys.length; ki++) {
+        var kl2 = allKeys[ki].toLowerCase().replace(/\s+/g,' ').trim();
+        if (STOCK_NAMES.indexOf(kl2) >= 0) { stockKey = allKeys[ki]; break; }
+      }
+      // Fallback : premi\u00e8re colonne num\u00e9rique hors code/poids/dlc
+      if (!stockKey) {
+        var EXCLUDE_KW = ['poids','dlc','tva','ean','pcb','prix','pu','kg','livraison','piece','pi\u00e8ce','r\u00e9serv','reserv','site','lang'];
+        for (var ki=0; ki<allKeys.length; ki++) {
+          if (allKeys[ki] === codeKey) continue;
+          var kl3 = allKeys[ki].toLowerCase();
+          var skip = false;
+          for (var ei=0; ei<EXCLUDE_KW.length; ei++) { if (kl3.indexOf(EXCLUDE_KW[ei])>=0){skip=true;break;} }
+          if (skip) continue;
+          var numCount=0;
+          for (var ri=0; ri<Math.min(rows.length,15); ri++) {
+            var v=rows[ri][allKeys[ki]];
+            if (v!==''&&v!==null&&!isNaN(parseFloat(String(v).replace(',','.')))) numCount++;
+          }
+          if (numCount >= 3) { stockKey = allKeys[ki]; break; }
+        }
+      }
+
+      // -- Log --
+      if (logEl) {
+        logEl.style.display='block';
+        var logHtml = '<span style="color:#7ecfff">\u{1F4CB} Colonnes d\u00e9tect\u00e9es dans le fichier :\n  '+allKeys.join('\n  ')+'</span>\n\n';
+        logHtml += '<span style="color:'+(codeKey?'#a8ff78':'#ff6b6b')+'">'+(codeKey?'\u2705 Colonne Code : '+codeKey:'\u274c Colonne Code introuvable')+'</span>\n';
+        logHtml += '<span style="color:'+(stockKey?'#a8ff78':'#ff6b6b')+'">'+(stockKey?'\u2705 Colonne Stock : '+stockKey:'\u274c Colonne Stock introuvable')+'</span>\n';
+        logEl.innerHTML = logHtml;
+      }
+
+      if (!codeKey) {
+        showToast('\u26a0 Colonne Code introuvable');
+        if (dropZone) dropZone.style.borderColor = 'var(--danger)';
+        return;
+      }
+      if (!stockKey) {
+        showToast('\u26a0 Colonne stock introuvable \u2014 voir le log');
+        if (logEl) logEl.innerHTML += '<span style="color:#ffd93d">\u26a0 Renommez une colonne en "Disponible" ou "Stock" dans votre fichier.</span>\n';
+        if (dropZone) dropZone.style.borderColor = 'var(--danger)';
+        return;
+      }
+
+      // -- Chargement --
+      _stockData = {};
+      var found = 0, skipped = 0;
+      rows.forEach(function(row) {
+        var code = String(row[codeKey]||'').trim();
+        if (!code) return;
+        var v = parseFloat(String(row[stockKey]||'0').replace(',','.'));
+        if (!isNaN(v)) { _stockData[code] = v; found++; }
+        else skipped++;
+      });
+
+      if (dropZone) dropZone.style.borderColor = '#d0c0b0';
+      if (logEl) {
+        logEl.innerHTML += '<span style="color:#a8ff78">\u2705 '+found+' produits charg\u00e9s'+(skipped?' ('+skipped+' ignor\u00e9s)':'')+'</span>\n';
+      }
+
+      var resText = document.getElementById('stock-result-text');
+      if (resText) {
+        resText.innerHTML = '\u2705 <strong>'+found+' produits</strong> charg\u00e9s depuis <em>'+escH(file.name)+'</em>'
+          +'<br>\u{1F50D} Code&nbsp;: <code>'+escH(codeKey)+'</code>'
+          +'&nbsp;&nbsp;&bull;&nbsp;&nbsp;Stock&nbsp;: <code>'+escH(stockKey)+'</code>'
+          +'<br><small style="color:var(--text-muted)">Cliquez sur \u00ab&nbsp;Mettre \u00e0 jour&nbsp;\u00bb pour publier sur GitHub Pages.</small>';
+      }
+      if (resEl) resEl.style.display = 'block';
+
+      var btn = document.getElementById('stock-push-btn');
+      if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
+      showToast('\u2705 '+found+' stocks charg\u00e9s \u2014 '+escH(stockKey));
+
+    } catch(err) {
+      if (dropZone) dropZone.style.borderColor = 'var(--danger)';
+      showToast('\u26a0 Erreur lecture Excel\u00a0: '+err.message);
+      if (logEl) { logEl.style.display='block'; logEl.innerHTML += '<span style="color:#ff6b6b">\u274c '+escH(err.message)+'</span>\n'; }
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+async function pushStockToGithub() {
+  if (!Object.keys(_stockData).length) { showToast('\u26a0 Chargez d\'abord un fichier stock'); return; }
+
+  saveGhConfig();
+  var cfg = ghConfig();
+  // Le stock va dans commande.html (pas index.html)
+  var stockFile = cfg.user + '/' + cfg.repo + '/contents/commande.html';
+  var logEl = document.getElementById('stock-log');
+  if (logEl) { logEl.style.display='block'; logEl.innerHTML=''; }
+
+  stockStatus('Lecture de commande.html...', 'loading');
+  stockLog('Connexion GitHub...');
+
+  try {
+    // 1. Lire commande.html sur GitHub
+    var res = await fetch(
+      'https://api.github.com/repos/'+cfg.user+'/'+cfg.repo+'/contents/commande.html?ref='+cfg.branch+'&t='+Date.now(),
+      {headers:{'Authorization':'token '+cfg.token,'Accept':'application/vnd.github.v3+json'},cache:'no-store'}
+    );
+    if (res.status === 401) throw new Error('Token invalide (401)');
+    if (res.status === 404) throw new Error('commande.html introuvable sur '+cfg.user+'/'+cfg.repo);
+    if (res.status !== 200) throw new Error('Lecture GitHub HTTP ' + res.status);
+
+    var sd = await res.json();
+    var sha = sd.sha;
+    stockLog('commande.html lu (SHA\u00a0: '+sha.substring(0,8)+'...)', 'ok');
+
+    // 2. D\u00e9coder le HTML
+    var html = decodeURIComponent(escape(atob(sd.content.replace(/\n/g,''))));
+
+    // 3. Injecter les stocks dans le tableau PRODUCTS
+    // Pattern : {"code":"XXX",...,"stock":N} ou {"code":"XXX",...,"stock":null}
+    var updated = 0;
+    var notFound = 0;
+    var newHtml = html.replace(/"code"\s*:\s*"([^"]+)"([^}]*)"stock"\s*:\s*([^,}\]]+)/g, function(match, code, middle, oldStock) {
+      if (_stockData.hasOwnProperty(code)) {
+        updated++;
+        return '"code":"'+code+'"'+middle+'"stock":'+_stockData[code];
+      }
+      notFound++;
+      return match;
+    });
+
+    if (updated === 0) {
+      // Essayer l'autre ordre (stock avant d'autres champs)
+      newHtml = html.replace(/"stock"\s*:\s*([^,}\]]+)([^}]*)"code"\s*:\s*"([^"]+)"/g, function(match, oldStock, middle, code) {
+        if (_stockData.hasOwnProperty(code)) {
+          updated++;
+          return '"stock":'+_stockData[code]+middle+'"code":"'+code+'"';
+        }
+        return match;
+      });
+    }
+
+    stockLog(updated+' stocks mis \u00e0 jour, '+notFound+' codes non trouv\u00e9s dans commande.html', updated>0?'ok':'loading');
+
+    if (updated === 0) throw new Error('Aucun code produit correspondant trouv\u00e9 dans commande.html');
+
+    // 4. Re-encoder et pusher
+    var newB64 = btoa(unescape(encodeURIComponent(newHtml)));
+    var today = new Date().toLocaleString('fr-FR');
+    stockLog('Push sur GitHub...');
+
+    var put = await fetch(
+      'https://api.github.com/repos/'+cfg.user+'/'+cfg.repo+'/contents/commande.html',
+      {
+        method: 'PUT',
+        headers: {'Authorization':'token '+cfg.token,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},
+        body: JSON.stringify({
+          message: 'MAJ stocks MDM \u2014 '+today+' ['+updated+' produits]',
+          content: newB64,
+          sha: sha,
+          branch: cfg.branch
+        })
+      }
+    );
+
+    if (put.status===200 || put.status===201) {
+      stockStatus('Publi\u00e9 \u2014 '+updated+' stocks mis \u00e0 jour', 'ok');
+      stockLog('commande.html publi\u00e9 sur GitHub Pages', 'ok');
+      stockLog('\u{1F310} Actif dans ~1 minute', 'ok');
+      showToast('\u2705 '+updated+' stocks publi\u00e9s sur GitHub');
+    } else {
+      var ed = await put.json();
+      throw new Error(ed.message || 'PUT HTTP ' + put.status);
+    }
+
+  } catch(e) {
+    stockStatus('Erreur', 'err');
+    stockLog(e.message, 'err');
+    showToast('\u274c Stock\u00a0: ' + e.message);
+  }
+}
+
+window.addEventListener('DOMContentLoaded',function(){
+  document.querySelectorAll('.nav-item').forEach(function(it){
+    it.addEventListener('click',function(){if(window.innerWidth<=768)admCloseSidebar();});
+  });
+
+  loadComptes();
+  loadActus();
+  loadInscriptions();
+  loadGroupements();
+  loadPromos();
+  // Les tranches seront initialisées à l'ouverture de la page groupements
+  showPage('dashboard', document.querySelector('.nav-item.active'));
+});
+
+function setActuType(type,btn){
+  document.getElementById('actu-type').value=type;
+  document.querySelectorAll('.actu-type-btn').forEach(function(b){
+    b.style.background='var(--bg)';b.style.color='var(--text)';b.style.borderColor='var(--border)';
+  });
+  if(btn){btn.style.background='var(--accent)';btn.style.color='#fff';btn.style.borderColor='var(--accent)';}
+  updateActuPreview();
+}
+
+function updateActuPreview(){
+  var type=document.getElementById('actu-type').value||'info';
+  var titre=(document.getElementById('actu-titre').value||'Titre de l\'actualité').trim();
+  var contenu=(document.getElementById('actu-contenu').value||'Le contenu s\'affichera ici.').trim();
+  var B={info:{label:'Info',bg:'#e8f4ed',color:'#2d6a4a'},promo:{label:'Promo',bg:'#fef3c7',color:'#92400e'},alerte:{label:'Alerte',bg:'#fee2e2',color:'#991b1b'}};
+  var b=B[type]||B.info;
+  var el=document.getElementById('actu-preview-badge');
+  if(el){el.textContent=b.label;el.style.background=b.bg;el.style.color=b.color;}
+  var t=document.getElementById('actu-preview-titre'); if(t) t.textContent=titre;
+  var c=document.getElementById('actu-preview-body'); if(c) c.textContent=contenu;
+  var d=document.getElementById('actu-preview-date'); if(d) d.textContent=new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'});
+}
+
+function saveActuNew(){
+  var titre=(document.getElementById('actu-titre').value||'').trim();
+  var contenu=(document.getElementById('actu-contenu').value||'').trim();
+  var type=document.getElementById('actu-type').value||'info';
+  var actif=document.getElementById('actu-actif').checked;
+  if(!titre||!contenu){showToast('\u26a0 Titre et contenu obligatoires');return;}
+  var dateStr=new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'});
+  if(actuEditIndex>=0){
+    actus[actuEditIndex]=Object.assign(actus[actuEditIndex],{titre:titre,contenu:contenu,type:type,actif:actif});
+    showToast('\u2705 Actualité mise à jour');
+  } else {
+    actus.unshift({titre:titre,contenu:contenu,type:type,actif:actif,date:dateStr});
+    showToast('\u2705 Actualité publiée');
+  }
+  saveActus(); renderActus(); cancelActu();
+}
+
+
+
+
+
+
+
+
+
+</script>
+</body>\n</html>';
+
+  return HTML;
+}
+
+
+// ── Publication GitHub ────────────────────────────────────────
+async function publishPromo(){
+  var nom=document.getElementById('promo-nom').value.trim();
+  var slug=document.getElementById('promo-slug').value.trim();
+  if(!nom||!slug){showToast('\u26a0 Nom et slug obligatoires');return;}
+  if(!_promoProducts.length){showToast('\u26a0 Chargez un fichier Excel');return;}
+
+  _setPromoBtn('promo-publish-btn',false);
+  document.getElementById('promo-log').textContent='';
+  _promoLog('G\u00e9n\u00e9ration du HTML...');
+
+  var html=_generatePromoHTML();
+  _promoHtmlGenerated=html;
+  _setPromoBtn('promo-download-btn',true);
+
+  var cfg=ghConfig();
+  if(!cfg.token){_promoLog('Token GitHub manquant — utilisez T\u00e9l\u00e9charger','err');_setPromoBtn('promo-publish-btn',true);return;}
+
+  try{
+    var filename='promo-'+slug+'.html';
+    _promoLog('Lecture de '+filename+' sur GitHub...');
+
+    // Lire SHA actuel si fichier existe déjà
+    var sha=null;
+    var res=await fetch(
+      'https://api.github.com/repos/'+cfg.user+'/'+cfg.repo+'/contents/'+filename+'?ref='+cfg.branch,
+      {headers:{'Authorization':'token '+cfg.token,'Accept':'application/vnd.github.v3+json'},cache:'no-store'}
+    );
+    if(res.status===200){
+      var existing=await res.json();
+      sha=existing.sha;
+      _promoLog('Fichier existant trouv\u00e9, mise \u00e0 jour...','ok');
+    } else if(res.status===404){
+      _promoLog('Nouveau fichier...');
+    } else {
+      throw new Error('GitHub HTTP '+res.status);
+    }
+
+    // Encoder et pusher
+    var b64=btoa(unescape(encodeURIComponent(html)));
+    var body={message:'Promo '+nom+' \u2014 '+new Date().toLocaleString('fr-FR'),content:b64,branch:cfg.branch};
+    if(sha) body.sha=sha;
+
+    var put=await fetch(
+      'https://api.github.com/repos/'+cfg.user+'/'+cfg.repo+'/contents/'+filename,
+      {method:'PUT',headers:{'Authorization':'token '+cfg.token,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},
+       body:JSON.stringify(body)}
+    );
+    if(put.status!==200&&put.status!==201){var ed=await put.json();throw new Error(ed.message||'PUT HTTP '+put.status);}
+
+    _promoLog('\u2705 Publi\u00e9 sur GitHub Pages !','ok');
+    var url='https://loac1118.github.io/MDM-BDC26/'+filename;
+    _promoLog('URL : '+url,'ok');
+
+    // Sauvegarder en Firestore
+    await _savePromoRecord(nom,slug,url);
+    showToast('\u2705 Promo publi\u00e9e : '+filename);
+  }catch(e){
+    _promoLog('\u274c '+e.message,'err');
+    showToast('\u274c GitHub\u00a0: '+e.message);
+  }
+  _setPromoBtn('promo-publish-btn',true);
+}
 
 async function _savePromoRecord(nom,slug,url){
   var remise=parseFloat(document.getElementById('promo-remise').value)||0;

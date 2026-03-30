@@ -693,20 +693,6 @@ footer a{color:inherit;text-decoration:none;opacity:.7}footer a:hover{opacity:1}
 .export-btn.excel:hover{background:#c8e6c9}
 .export-btn.pdf{background:var(--danger-light);color:var(--danger);border-color:#f5c6cb}
 .export-btn.pdf:hover{background:#fcc}
-
-/* ══ RESPONSIVE DASHBOARD (complément) ══ */
-@media(max-width:768px){
-  .totals-bar{left:0!important;right:0!important}
-  .dash-two-col,.dash-grid{grid-template-columns:1fr!important}
-  .kpi-grid{grid-template-columns:repeat(2,1fr)!important;gap:8px!important}
-  .chat-fab{bottom:70px!important;right:12px!important}
-  div[style*="grid-template-columns:repeat(4"]{grid-template-columns:repeat(2,1fr)!important}
-  div[style*="grid-template-columns:repeat(3"]{grid-template-columns:1fr 1fr!important}
-}
-@media(max-width:480px){
-  .kpi-value{font-size:20px!important}
-  .mdm-header{padding:0 10px!important}
-}
 </style>
 </head>
 <body>
@@ -3439,6 +3425,108 @@ function deleteNote(noteId){
     showToast('\u26a0 '+e.message);
   });
 }
+
+</script>
+<script>
+
+/* ── MDM Messagerie — Badge temps réel ── */
+(function(){
+  var _notifUnsub=null;
+  var _notifFbDb=null;
+  var _notifFbReady=false;
+
+  var FIREBASE_CONFIG={
+    apiKey:"AIzaSyB000QDa4c-vMjO1Xuimw58iiRvwgbF1zc",
+    authDomain:"mdm-bdc26.firebaseapp.com",
+    projectId:"mdm-bdc26",
+    storageBucket:"mdm-bdc26.firebasestorage.app",
+    messagingSenderId:"52658530893",
+    appId:"1:52658530893:web:166626ae4d681465ddca04"
+  };
+
+  function _initFBNotif(){
+    if(_notifFbReady) return Promise.resolve(_notifFbDb);
+    return new Promise(function(resolve,reject){
+      try{
+        if(typeof firebase==='undefined') return reject(new Error('firebase absent'));
+        if(!firebase.apps||!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+        _notifFbDb=firebase.firestore();
+        _notifFbReady=true; resolve(_notifFbDb);
+      }catch(e){
+        try{_notifFbDb=firebase.firestore();_notifFbReady=true;resolve(_notifFbDb);}
+        catch(e2){reject(e2);}
+      }
+    });
+  }
+
+  function _getMyLogin(){
+    try{
+      var t=sessionStorage.getItem('mdm_token'); if(!t) return null;
+      var parts=t.split('.'); var raw=parts.length===3?parts[1]:t;
+      var d=JSON.parse(atob(raw.replace(/-/g,'+').replace(/_/g,'/')));
+      return d.login||null;
+    }catch(e){return null;}
+  }
+
+  function _updateBadges(count){
+    var els=[
+      document.getElementById('badge-messagerie'),
+      document.getElementById('sidebar-chat-badge'),
+      document.getElementById('chat-badge'),
+      document.getElementById('mdm-msg-badge'),
+    ];
+    els.forEach(function(el){
+      if(!el) return;
+      if(count>0){
+        el.textContent=count>99?'99+':String(count);
+        el.style.display='inline-flex';
+        el.style.alignItems='center';
+        el.style.justifyContent='center';
+      } else {
+        el.style.display='none';
+      }
+    });
+    // Fab messagerie toujours visible si connecté
+    var fab=document.getElementById('chat-fab');
+    if(fab) fab.style.display='inline-flex';
+    // Titre page
+    var base=document.title.replace(/^\(\d+\)\s*/,'');
+    document.title=count>0?'('+count+') '+base:base;
+  }
+
+  function _startNotifWatch(login){
+    _initFBNotif().then(function(db){
+      if(_notifUnsub){try{_notifUnsub();}catch(e){}}
+      _notifUnsub=db.collection('chats').orderBy('lastTs','desc').limit(100)
+        .onSnapshot(function(snap){
+          var total=0;
+          snap.docs.forEach(function(doc){
+            var parts=doc.id.split('_');
+            if(parts.indexOf(login)<0) return;
+            var unread=doc.data()['unread_'+login]||0;
+            total+=unread;
+          });
+          _updateBadges(total);
+        },function(e){console.warn('[MDM notif]',e.code);});
+    }).catch(function(){});
+  }
+
+  // Auto-démarrage
+  function _init(){
+    var login=_getMyLogin();
+    if(!login) return;
+    // Afficher le fab si présent
+    var fab=document.getElementById('chat-fab');
+    if(fab) fab.style.display='inline-flex';
+    _startNotifWatch(login);
+  }
+
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',_init);
+  } else {
+    setTimeout(_init,200);
+  }
+})();
 
 </script>
 </body>

@@ -741,55 +741,10 @@ table.mc-tbl tr:last-child td{border:none}
 .mc-modal-body{padding:20px}
 .mc-modal-foot{padding:12px 20px;border-top:1px solid #e5dcd5;display:flex;gap:8px;justify-content:flex-end;background:#f5f2ee;border-radius:0 0 12px 12px}
 
-
-/* ══ RESPONSIVE MES-COMMANDES ══ */
-.mc-hamburger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:6px;border-radius:6px;flex-shrink:0}
-.mc-hamburger span{display:block;width:20px;height:2px;background:#7a6655;border-radius:2px;transition:all .25s}
-.mc-hamburger.is-open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
-.mc-hamburger.is-open span:nth-child(2){opacity:0}
-.mc-hamburger.is-open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
-.mc-sb-overlay{display:none;position:fixed;inset:0;background:rgba(45,32,24,.45);z-index:149;cursor:pointer}
-.mc-sb-overlay.is-open{display:block}
-.mc-mobile-bar{display:none;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid #e5dcd5;background:#fff;position:sticky;top:0;z-index:10}
-@media(max-width:768px){
-  .mc-hamburger{display:flex}
-  .mc-mobile-bar{display:flex}
-  .mc-mobile-bar-title{font-family:'Fraunces',serif;font-weight:200;font-size:18px;color:#6b4c3b}
-  .mdm-sidebar{
-    position:fixed!important;
-    top:0;left:0;bottom:0;
-    z-index:200;
-    transform:translateX(-100%);
-    transition:transform .28s cubic-bezier(.4,0,.2,1);
-    box-shadow:none;
-    overflow-y:auto;
-  }
-  .mdm-sidebar.is-open{
-    transform:translateX(0);
-    box-shadow:6px 0 24px rgba(45,32,24,.18);
-  }
-  .mdm-main-content{margin-left:0!important;width:100%}
-  .mc-page{padding:14px}
-  .mc-kpis{grid-template-columns:1fr 1fr!important;gap:8px}
-  .mc-filters{flex-direction:column;align-items:stretch}
-  .mc-search-wrap{max-width:100%}
-  .mc-filters .mc-btn{width:100%;justify-content:center}
-  .mc-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
-  table.mc-tbl{min-width:500px}
-  table.mc-tbl th,table.mc-tbl td{padding:6px 8px;font-size:11px}
-  .mc-modal{border-radius:14px 14px 0 0!important;position:fixed!important;bottom:0!important;left:0!important;right:0!important;width:100%!important;max-height:90vh!important}
-  .mc-modal-overlay{padding:0!important;align-items:flex-end!important}
-}
-@media(max-width:480px){
-  .mc-title{font-size:18px}
-  .mc-kpi-val{font-size:20px}
-  .mc-header{display:none}
-}
 </style>
 </head>
 <body>
 
-<div class="mdm-layout">
 <nav class="mdm-sidebar" id="mdm-sidebar">
   <!-- User -->
   <div class="mdm-sidebar-user-block">
@@ -879,11 +834,6 @@ table.mc-tbl tr:last-child td{border:none}
 </nav>
 
 <div class="mdm-main-content">
-<div class="mc-sb-overlay" id="mc-sb-overlay" onclick="mcCloseSidebar()"></div>
-<div class="mc-mobile-bar">
-  <button class="mc-hamburger" id="mc-hb" onclick="mcToggleSidebar()" aria-label="Menu"><span></span><span></span><span></span></button>
-  <span class="mc-mobile-bar-title">Mes commandes</span>
-</div>
   <div class="mc-page">
 
     <!-- Header -->
@@ -931,8 +881,6 @@ table.mc-tbl tr:last-child td{border:none}
   </div>
 </div>
 
-</div>
-
 <!-- Modal édition -->
 <div class="mc-modal-overlay" id="mc-modal" onclick="if(event.target===this)mcCloseEdit()">
   <div class="mc-modal">
@@ -943,31 +891,6 @@ table.mc-tbl tr:last-child td{border:none}
 <div id="mc-toast" class="mc-toast"></div>
 
 <script>
-function mcToggleSidebar(){
-  var sb=document.querySelector('.mdm-sidebar');
-  var ov=document.getElementById('mc-sb-overlay');
-  var hb=document.getElementById('mc-hb');
-  if(!sb) return;
-  var open=sb.classList.toggle('is-open');
-  if(ov) ov.classList.toggle('is-open',open);
-  if(hb) hb.classList.toggle('is-open',open);
-  document.body.style.overflow=open&&window.innerWidth<=768?'hidden':'';
-}
-function mcCloseSidebar(){
-  var sb=document.querySelector('.mdm-sidebar');
-  var ov=document.getElementById('mc-sb-overlay');
-  var hb=document.getElementById('mc-hb');
-  if(sb) sb.classList.remove('is-open');
-  if(ov) ov.classList.remove('is-open');
-  if(hb) hb.classList.remove('is-open');
-  document.body.style.overflow='';
-}
-
-/* ── Fonctions sidebar ── */
-function showProfil(){
-  window.location.href='dashboard.html#profil';
-}
-
 
 var FIREBASE_CONFIG = {
   apiKey:            "AIzaSyB000QDa4c-vMjO1Xuimw58iiRvwgbF1zc",
@@ -1360,9 +1283,108 @@ function mcSetLogin(v){_filterLogin=v;renderCommandes();}
   if(sideRole) sideRole.textContent=_myRole==='user'?'Commercial':'Client';
 
   loadCommandes();
-  document.querySelectorAll(".mdm-nav-item").forEach(function(it){
-    it.addEventListener("click",function(){if(window.innerWidth<=768)mcCloseSidebar();});
-  });
+})();
+
+</script>
+<script>
+
+/* ── MDM Messagerie — Badge temps réel ── */
+(function(){
+  var _notifUnsub=null;
+  var _notifFbDb=null;
+  var _notifFbReady=false;
+
+  var FIREBASE_CONFIG={
+    apiKey:"AIzaSyB000QDa4c-vMjO1Xuimw58iiRvwgbF1zc",
+    authDomain:"mdm-bdc26.firebaseapp.com",
+    projectId:"mdm-bdc26",
+    storageBucket:"mdm-bdc26.firebasestorage.app",
+    messagingSenderId:"52658530893",
+    appId:"1:52658530893:web:166626ae4d681465ddca04"
+  };
+
+  function _initFBNotif(){
+    if(_notifFbReady) return Promise.resolve(_notifFbDb);
+    return new Promise(function(resolve,reject){
+      try{
+        if(typeof firebase==='undefined') return reject(new Error('firebase absent'));
+        if(!firebase.apps||!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+        _notifFbDb=firebase.firestore();
+        _notifFbReady=true; resolve(_notifFbDb);
+      }catch(e){
+        try{_notifFbDb=firebase.firestore();_notifFbReady=true;resolve(_notifFbDb);}
+        catch(e2){reject(e2);}
+      }
+    });
+  }
+
+  function _getMyLogin(){
+    try{
+      var t=sessionStorage.getItem('mdm_token'); if(!t) return null;
+      var parts=t.split('.'); var raw=parts.length===3?parts[1]:t;
+      var d=JSON.parse(atob(raw.replace(/-/g,'+').replace(/_/g,'/')));
+      return d.login||null;
+    }catch(e){return null;}
+  }
+
+  function _updateBadges(count){
+    var els=[
+      document.getElementById('badge-messagerie'),
+      document.getElementById('sidebar-chat-badge'),
+      document.getElementById('chat-badge'),
+      document.getElementById('mdm-msg-badge'),
+    ];
+    els.forEach(function(el){
+      if(!el) return;
+      if(count>0){
+        el.textContent=count>99?'99+':String(count);
+        el.style.display='inline-flex';
+        el.style.alignItems='center';
+        el.style.justifyContent='center';
+      } else {
+        el.style.display='none';
+      }
+    });
+    // Fab messagerie toujours visible si connecté
+    var fab=document.getElementById('chat-fab');
+    if(fab) fab.style.display='inline-flex';
+    // Titre page
+    var base=document.title.replace(/^\(\d+\)\s*/,'');
+    document.title=count>0?'('+count+') '+base:base;
+  }
+
+  function _startNotifWatch(login){
+    _initFBNotif().then(function(db){
+      if(_notifUnsub){try{_notifUnsub();}catch(e){}}
+      _notifUnsub=db.collection('chats').orderBy('lastTs','desc').limit(100)
+        .onSnapshot(function(snap){
+          var total=0;
+          snap.docs.forEach(function(doc){
+            var parts=doc.id.split('_');
+            if(parts.indexOf(login)<0) return;
+            var unread=doc.data()['unread_'+login]||0;
+            total+=unread;
+          });
+          _updateBadges(total);
+        },function(e){console.warn('[MDM notif]',e.code);});
+    }).catch(function(){});
+  }
+
+  // Auto-démarrage
+  function _init(){
+    var login=_getMyLogin();
+    if(!login) return;
+    // Afficher le fab si présent
+    var fab=document.getElementById('chat-fab');
+    if(fab) fab.style.display='inline-flex';
+    _startNotifWatch(login);
+  }
+
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',_init);
+  } else {
+    setTimeout(_init,200);
+  }
 })();
 
 </script>

@@ -2506,10 +2506,8 @@ function handleImportFile(file){
     _parseExcelImport(file);
   } else if(ext==='pdf'){
     _parsePdfImport(file);
-  } else if(ext==='txt'||ext==='csv'){
-    _parseTxtImport(file);
   } else {
-    document.getElementById('import-log').textContent='⚠ Format non supporté. Utilisez .xlsx, .pdf ou .txt';
+    document.getElementById('import-log').textContent='\u26a0 Format non support\u00e9. Utilisez .xlsx ou .pdf';
   }
 }
 
@@ -2587,88 +2585,22 @@ async
 // ── Lecture PDF sans PDF.js (extraction texte brut) ───────────
 async function _parsePdfImport(file){
   var log=document.getElementById('import-log');
-  log.textContent='Lecture du PDF…';
+  log.textContent='Lecture du PDF\u2026';
   log.style.whiteSpace='pre-wrap';
-  var reader=new FileReader();
-  reader.onload=function(e){
-    try{
-      var buffer=e.target.result;
-      var text=_extractPdfRawText(buffer);
-      if(!text||text.trim().length<10){
-        log.textContent='⚠ Impossible d’extraire le texte de ce PDF.\nEssayez de convertir en Excel ou TXT.';
-        return;
-      }
-      log.textContent='';
-      _parsePdfText(text, file.name);
-    }catch(err){
-      log.textContent='⚠ Erreur PDF : '+err.message;
+  try{
+    var arrayBuffer=await file.arrayBuffer();
+    // Extraire le texte brut du PDF (tokens /BT ... ET et Tj/TJ)
+    var text=_extractPdfRawText(arrayBuffer);
+    if(!text||text.trim().length<20){
+      log.textContent='\u26a0 Impossible d\u2019extraire le texte de ce PDF.\nEssayez de convertir en Excel.';
+      return;
     }
-  };
-  reader.readAsArrayBuffer(file);
-}
-function _parseTxtImport(file){
-  var log=document.getElementById('import-log');
-  log.textContent='Lecture du fichier texte…';
-  var reader=new FileReader();
-  reader.onload=function(e){
-    try{
-      var text=e.target.result;
-      log.textContent='';
-      _parseTxtText(text, file.name);
-    }catch(err){
-      log.textContent='⚠ Erreur TXT : '+err.message;
-    }
-  };
-  reader.readAsText(file,'UTF-8');
-}
-
-function _parseTxtText(text, filename){
-  var products=(typeof PRODUCTS!=='undefined'?PRODUCTS:[])||[];
-  var codeIndex={};
-  products.forEach(function(p){ codeIndex[p.code.toUpperCase()]=p; });
-
-  var lines=text.split(/\r?\n/);
-  var parsed=[];
-  var stats={total:0,found:0,notfound:0};
-
-  lines.forEach(function(line){
-    line=line.trim();
-    if(!line||line.startsWith('#')||line.startsWith('//')) return;
-
-    // Formats reconnus :
-    // "CODE123 5"
-    // "CODE123;5"
-    // "CODE123,5"
-    // "CODE123 | 5"
-    // "5 CODE123"
-    // "CODE123\t5"
-    var m=null;
-    // Essai : CODE SEPARATEUR QTE
-    m=line.match(/^([A-Z0-9_\-]{3,20})\s*[;,|\t]\s*(\d+)/i);
-    if(!m) m=line.match(/^([A-Z0-9_\-]{3,20})\s+(\d+)$/i);
-    // Essai : QTE SEPARATEUR CODE
-    if(!m) m=line.match(/^(\d+)\s*[;,|\t]\s*([A-Z0-9_\-]{3,20})/i);
-    if(m&&m[3]) m=[m[0],m[2],m[1]]; // Inverser si QTE en premier
-    if(!m) return;
-
-    var code=m[1].trim().toUpperCase();
-    var qty=parseInt(m[2])||0;
-    if(code&&qty>0){
-      parsed.push({code:code,qty:qty});
-      stats.total++;
-    }
-  });
-
-  if(!parsed.length){
-    document.getElementById('import-log').textContent=
-      '⚠ Aucune ligne reconnue.\n'
-      +'Format attendu (une ligne par produit):\n'
-      +'  CODE123 5\n  CODE123;5\n  CODE123,5\n  CODE123\t5';
-    return;
+    log.textContent='';
+    _parsePdfText(text, file.name);
+  }catch(err){
+    log.textContent='\u26a0 Erreur PDF\u00a0: '+err.message;
   }
-  _matchAndDisplay(parsed, 'TXT : '+filename);
 }
-
 
 function _extractPdfRawText(buffer){
   // Lire les octets du PDF comme string
@@ -3931,16 +3863,15 @@ function draftInit(){
       ondrop="event.preventDefault();this.classList.remove('drag');handleImportFile(event.dataTransfer.files[0])">
       <div class="import-drop-icon">&#128196;</div>
       <div class="import-drop-txt">Glissez votre fichier ici</div>
-      <div class="import-drop-sub">Excel (.xlsx), PDF, ou TXT — glissez ou cliquez</div>
-      <input type="file" id="import-file-input" accept=".xlsx,.xls,.pdf,.txt,.csv" style="display:none"
+      <div class="import-drop-sub">Excel (.xlsx, .xls) ou PDF — colonnes Code + Quantit&#233;</div>
+      <input type="file" id="import-file-input" accept=".xlsx,.xls,.pdf" style="display:none"
         onchange="handleImportFile(this.files[0])">
     </div>
     <!-- Aide format -->
     <div style="margin-top:12px;padding:10px 14px;background:#f0f7f2;border-radius:7px;font-size:11px;color:var(--accent);line-height:1.7">
       <strong>Formats accept&#233;s&nbsp;:</strong><br>
-      &#8226; <strong>Excel</strong> (.xlsx, .xls)&nbsp;: colonnes <code>Code</code> + <code>Qte</code><br>
-      &#8226; <strong>PDF</strong>&nbsp;: extraction automatique codes + quantit&eacute;s<br>
-      &#8226; <strong>TXT / CSV</strong>&nbsp;: une ligne par produit, format <code>CODE;QTE</code> ou <code>CODE QTE</code>
+      &#8226; Excel&nbsp;: colonnes <code>Code</code> + <code>Qte</code> (ou Quantite, Qty, Colis&#8230;)<br>
+      &#8226; PDF&nbsp;: lignes avec code produit et quantit&#233; d&#233;tect&#233;s automatiquement
     </div>
     <!-- R&#233;sultat -->
     <div class="import-result" id="import-result" style="display:none">
@@ -3958,5 +3889,107 @@ function draftInit(){
   </div>
 </div>
 
+<script>
+
+/* ── MDM Messagerie — Badge temps réel ── */
+(function(){
+  var _notifUnsub=null;
+  var _notifFbDb=null;
+  var _notifFbReady=false;
+
+  var FIREBASE_CONFIG={
+    apiKey:"AIzaSyB000QDa4c-vMjO1Xuimw58iiRvwgbF1zc",
+    authDomain:"mdm-bdc26.firebaseapp.com",
+    projectId:"mdm-bdc26",
+    storageBucket:"mdm-bdc26.firebasestorage.app",
+    messagingSenderId:"52658530893",
+    appId:"1:52658530893:web:166626ae4d681465ddca04"
+  };
+
+  function _initFBNotif(){
+    if(_notifFbReady) return Promise.resolve(_notifFbDb);
+    return new Promise(function(resolve,reject){
+      try{
+        if(typeof firebase==='undefined') return reject(new Error('firebase absent'));
+        if(!firebase.apps||!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+        _notifFbDb=firebase.firestore();
+        _notifFbReady=true; resolve(_notifFbDb);
+      }catch(e){
+        try{_notifFbDb=firebase.firestore();_notifFbReady=true;resolve(_notifFbDb);}
+        catch(e2){reject(e2);}
+      }
+    });
+  }
+
+  function _getMyLogin(){
+    try{
+      var t=sessionStorage.getItem('mdm_token'); if(!t) return null;
+      var parts=t.split('.'); var raw=parts.length===3?parts[1]:t;
+      var d=JSON.parse(atob(raw.replace(/-/g,'+').replace(/_/g,'/')));
+      return d.login||null;
+    }catch(e){return null;}
+  }
+
+  function _updateBadges(count){
+    var els=[
+      document.getElementById('badge-messagerie'),
+      document.getElementById('sidebar-chat-badge'),
+      document.getElementById('chat-badge'),
+      document.getElementById('mdm-msg-badge'),
+    ];
+    els.forEach(function(el){
+      if(!el) return;
+      if(count>0){
+        el.textContent=count>99?'99+':String(count);
+        el.style.display='inline-flex';
+        el.style.alignItems='center';
+        el.style.justifyContent='center';
+      } else {
+        el.style.display='none';
+      }
+    });
+    // Fab messagerie toujours visible si connecté
+    var fab=document.getElementById('chat-fab');
+    if(fab) fab.style.display='inline-flex';
+    // Titre page
+    var base=document.title.replace(/^\(\d+\)\s*/,'');
+    document.title=count>0?'('+count+') '+base:base;
+  }
+
+  function _startNotifWatch(login){
+    _initFBNotif().then(function(db){
+      if(_notifUnsub){try{_notifUnsub();}catch(e){}}
+      _notifUnsub=db.collection('chats').orderBy('lastTs','desc').limit(100)
+        .onSnapshot(function(snap){
+          var total=0;
+          snap.docs.forEach(function(doc){
+            var parts=doc.id.split('_');
+            if(parts.indexOf(login)<0) return;
+            var unread=doc.data()['unread_'+login]||0;
+            total+=unread;
+          });
+          _updateBadges(total);
+        },function(e){console.warn('[MDM notif]',e.code);});
+    }).catch(function(){});
+  }
+
+  // Auto-démarrage
+  function _init(){
+    var login=_getMyLogin();
+    if(!login) return;
+    // Afficher le fab si présent
+    var fab=document.getElementById('chat-fab');
+    if(fab) fab.style.display='inline-flex';
+    _startNotifWatch(login);
+  }
+
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',_init);
+  } else {
+    setTimeout(_init,200);
+  }
+})();
+
+</script>
 </body>
 </html>

@@ -650,6 +650,8 @@ tbody tr.has-qty td.td-qty input{background:#ffe0b2;border-color:var(--terra)}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>if(typeof pdfjsLib!=="undefined") pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";</script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -908,16 +910,7 @@ tbody tr.has-qty td.td-qty input{background:#ffe0b2;border-color:var(--terra)}
     <div class="fg"><label>Commentaire</label><textarea id="m-comment" placeholder="Informations compl&#233;mentaires, contraintes de livraison..."></textarea></div>
     <div class="alert" id="modal-alert"></div>
     <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeModal()">Annuler</button>
-      <button class="btn btn-green" id="btn-send" onclick="sendOrder()">
-        <span class="spinner" id="spinner"></span>
-        <span id="send-label">&#128228; Envoyer la commande</span>
-      </button>
-    </div>
-  </div>
-</div>
-
-<script>
+      <button class="btn-cancel" onclick="closeModal()">Annu
 
 
 
@@ -2577,6 +2570,55 @@ function _parseExcelImport(file){
   };
   reader.readAsArrayBuffer(file);
 }
+function _parsePdfWithPdfjs(file){
+  var log=document.getElementById('import-log');
+  var reader=new FileReader();
+  reader.onload=function(e){
+    var typedArray=new Uint8Array(e.target.result);
+    pdfjsLib.getDocument({data:typedArray}).promise.then(function(pdf){
+      var maxPages=pdf.numPages;
+      var pagesPromises=[];
+      for(var p=1;p<=maxPages;p++){
+        pagesPromises.push(pdf.getPage(p).then(function(page){
+          return page.getTextContent();
+        }));
+      }
+      return Promise.all(pagesPromises);
+    }).then(function(pagesContent){
+      // Assembler tout le texte page par page
+      var fullText='';
+      pagesContent.forEach(function(content){
+        var pageText='';
+        var lastY=null;
+        content.items.forEach(function(item){
+          // Saut de ligne si changement de Y significatif
+          if(lastY!==null && Math.abs(item.transform[5]-lastY)>3){
+            pageText+='\n';
+          }
+          pageText+=item.str;
+          // Espace si pas déjà
+          if(!item.str.endsWith(' ')) pageText+=' ';
+          lastY=item.transform[5];
+        });
+        fullText+=pageText+'\n';
+      });
+      if(log) log.textContent='';
+      _parsePdfText(fullText, file.name);
+    }).catch(function(err){
+      if(log) log.textContent='\u26a0 PDF.js error\u00a0: '+err.message+'\nTentative avec méthode alternative\u2026';
+      // Fallback méthode manuelle
+      var r2=new FileReader();
+      r2.onload=function(e2){
+        var text=_extractPdfRawText(e2.target.result);
+        _parsePdfText(text, file.name);
+      };
+      r2.readAsArrayBuffer(file);
+    });
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+
 
 // ── Parse PDF ─────────────────────────────────────────────────
 async 
@@ -2585,22 +2627,35 @@ async
 // ── Lecture PDF sans PDF.js (extraction texte brut) ───────────
 async function _parsePdfImport(file){
   var log=document.getElementById('import-log');
-  log.textContent='Lecture du PDF\u2026';
+  if(!log) return;
   log.style.whiteSpace='pre-wrap';
-  try{
-    var arrayBuffer=await file.arrayBuffer();
-    // Extraire le texte brut du PDF (tokens /BT ... ET et Tj/TJ)
-    var text=_extractPdfRawText(arrayBuffer);
-    if(!text||text.trim().length<20){
-      log.textContent='\u26a0 Impossible d\u2019extraire le texte de ce PDF.\nEssayez de convertir en Excel.';
-      return;
-    }
-    log.textContent='';
-    _parsePdfText(text, file.name);
-  }catch(err){
-    log.textContent='\u26a0 Erreur PDF\u00a0: '+err.message;
+  log.textContent='Lecture du PDF\u2026';
+
+  // Essayer PDF.js d'abord (meilleure extraction)
+  if(typeof pdfjsLib!=='undefined'){
+    _parsePdfWithPdfjs(file);
+    return;
   }
+
+  // Fallback : FileReader + extraction manuelle
+  var reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      var text=_extractPdfRawText(e.target.result);
+      if(!text||text.trim().length<10){
+        log.textContent='\u26a0 PDF illisible (probablement scanné).\nUtilisez Excel (.xlsx) ou TXT.';
+        return;
+      }
+      log.textContent='';
+      _parsePdfText(text, file.name);
+    }catch(err){
+      log.textContent='\u26a0 Erreur PDF\u00a0: '+err.message;
+    }
+  };
+  reader.onerror=function(){ log.textContent='\u26a0 Impossible de lire le fichier.'; };
+  reader.readAsArrayBuffer(file);
 }
+
 
 function _extractPdfRawText(buffer){
   // Lire les octets du PDF comme string
@@ -2653,10 +2708,7 @@ function _extractPdfRawText(buffer){
 
 function _parsePdfText(text, filename){
   var products=(typeof PRODUCTS!=='undefined'?PRODUCTS:[])||[];
-
-  // Index par EAN (priorité) et par code MDM
-  var eanIndex={};
-  var codeIndex={};
+  var eanIndex={}, codeIndex={};
   products.forEach(function(p){
     codeIndex[p.code.toUpperCase()]=p;
     if(p.ean){
@@ -2665,125 +2717,129 @@ function _parsePdfText(text, filename){
     }
   });
 
-  var parsed=[];
-  var seen={};
-
-  // ── Nettoyer le texte ──────────────────────────────────────
-  // Remplacer les retours chariot multiples par un seul
+  var parsed=[], seen={};
   var cleanText=text.replace(/\r\n/g,'\n').replace(/\r/g,'\n');
-
-  // ── Méthode 1 : parser ligne par ligne (format BDC MDM) ────
-  // Format: EAN CODE_MDM DESIGNATION... QTE,000 PRIX TOTAL
   var lines=cleanText.split('\n');
+
+  // ── Patterns reconnus ──────────────────────────────────────
   lines.forEach(function(line){
     line=line.trim();
-    if(!line||line.length<8) return;
+    if(!line||line.length<4) return;
+    // Ignorer entêtes / pieds de page
+    if(/^(C Article|D[ée]signation|Code Client|Total|Page\s+\d|N[°º]\s*Commande|Bon de commande|Moulin|Date|Référence)/i.test(line)) return;
 
-    // Ignorer lignes d'en-tête / pied de page
-    if(/^(C Article|D.signation|Cde |Code Client|Total Commande|N. Commande|\d+\/\d+$)/i.test(line)) return;
-
-    // Pattern principal : EAN (7-13 chiffres) + CODE + ... + QTE,000 + PRIX + TOTAL
-    var m=line.match(/(\d{7,13})\s+([A-Za-z][A-Za-z0-9_\-]{1,25})\s+.{3,60}?\s+(\d{1,5})[,\.](\d{3})\s+[\d,\.]+\s+[\d,\.]+/);
-    if(m){
-      var ean=m[1], codeMDM=m[2].toUpperCase(), qty=parseInt(m[3]);
-      if(qty>0){
-        // Chercher d'abord par code MDM
-        if(codeIndex[codeMDM]&&!seen[codeMDM]){
-          parsed.push({code:codeMDM,qty:qty});
-          seen[codeMDM]=true; return;
-        }
-        // Sinon par EAN
-        if(eanIndex[ean]&&!seen[ean]){
-          var prod=eanIndex[ean];
-          if(!seen[prod.code]){
-            parsed.push({code:prod.code,qty:qty});
-            seen[prod.code]=true; return;
-          }
-        }
-        // Code inconnu mais noter quand même
-        if(!seen[codeMDM]){
-          parsed.push({code:codeMDM,qty:qty});
-          seen[codeMDM]=true;
-        }
+    // FORMAT 1 : EAN CODE_MDM ... QTE,000 PRIX TOTAL  (BDC MDM standard)
+    var m1=line.match(/(\d{7,14})\s+([A-Za-z][A-Za-z0-9_\-]{1,25})\s+.{2,60}?\s+(\d{1,5})[,.](\d{3})\s+[\d,.]+\s+[\d,.]+/);
+    if(m1){
+      var ean=m1[1], code=m1[2].toUpperCase(), qty=parseInt(m1[3]);
+      if(qty>0 && !seen[code]){
+        var prod=codeIndex[code]||eanIndex[ean];
+        parsed.push({code:prod?prod.code:code, qty:qty});
+        seen[prod?prod.code:code]=true;
+        return;
       }
-      return;
     }
 
-    // Pattern EAN seul (pas de code MDM séparé) : EAN EAN DESIGNATION QTE,000 PRIX TOTAL
-    var m2=line.match(/(\d{7,13})\s+\d{7,13}\s+.{3,60}?\s+(\d{1,5})[,\.](\d{3})\s+[\d,\.]+\s+[\d,\.]+/);
+    // FORMAT 2 : CODE_MDM ... QTE,000  (sans EAN)
+    var m2=line.match(/\b([A-Z][A-Z0-9_\-]{2,20})\b.{0,60}?\s+(\d{1,5})[,.](\d{3})\b/);
     if(m2){
-      var ean=m2[1], qty=parseInt(m2[2]);
-      if(qty>0&&eanIndex[ean]&&!seen[ean]){
-        var prod=eanIndex[ean];
-        if(!seen[prod.code]){
-          parsed.push({code:prod.code,qty:qty});
-          seen[prod.code]=true;
+      var code=m2[1].toUpperCase(), qty=parseInt(m2[2]);
+      if(qty>0 && codeIndex[code] && !seen[code]){
+        parsed.push({code:code, qty:qty});
+        seen[code]=true;
+        return;
+      }
+    }
+
+    // FORMAT 3 : CODE suivi de quantité entière (format simple : "ABCDEF 5")
+    var m3=line.match(/^([A-Z][A-Z0-9_\-]{2,20})\s+(\d{1,4})(\s|$)/);
+    if(m3){
+      var code=m3[1].toUpperCase(), qty=parseInt(m3[2]);
+      if(qty>0 && codeIndex[code] && !seen[code]){
+        parsed.push({code:code, qty:qty});
+        seen[code]=true;
+        return;
+      }
+    }
+
+    // FORMAT 4 : EAN seul sur la ligne, quantité sur la même ligne ou suivante
+    var m4=line.match(/\b(\d{13})\b/);
+    if(m4){
+      var ean=m4[1], prod=eanIndex[ean];
+      if(prod && !seen[prod.code]){
+        // Chercher quantité sur la ligne
+        var rest=line.replace(ean,'');
+        var qm=rest.match(/(\d{1,5})[,.](\d{3})/)||rest.match(/\b(\d{1,4})\b/);
+        if(qm){
+          var qty=parseInt(qm[1]);
+          if(qty>0){
+            parsed.push({code:prod.code, qty:qty});
+            seen[prod.code]=true;
+          }
         }
       }
-      return;
     }
   });
 
-  // ── Méthode 2 : scan global du texte pour EAN connus ───────
-  // Si méthode 1 n'a rien trouvé (ex: PDF où le texte est concaténé sans \n)
+  // ── Scan global si rien trouvé ─────────────────────────────
   if(!parsed.length){
-    // Chercher tous les EAN de 13 chiffres dans le texte brut
-    var eanPattern=/\b(\d{13})\b/g;
-    var em;
-    while((em=eanPattern.exec(cleanText))!==null){
-      var ean=em[1];
-      var prod=eanIndex[ean];
-      if(!prod) continue;
-      if(seen[prod.code]) continue;
-
-      // Chercher un nombre de quantité proche (dans les 80 chars suivants)
-      var after=cleanText.substring(em.index+13,em.index+200);
-      // Chercher QTE,000 ou QTE.000 (format MDM)
-      var qm=after.match(/(\d{1,5})[,\.](\d{3})\b/);
-      if(!qm) qm=after.match(/\b(\d{1,4})\b/);
+    // Chercher les EAN 13 chiffres dans tout le texte
+    var eanRe=/\b(\d{13})\b/g, em;
+    while((em=eanRe.exec(cleanText))!==null){
+      var ean=em[1], prod=eanIndex[ean];
+      if(!prod||seen[prod.code]) continue;
+      var after=cleanText.substring(em.index+13, em.index+150);
+      var qm=after.match(/(\d{1,5})[,.](\d{3})/)||after.match(/\b([1-9]\d{0,3})\b/);
       if(qm){
         var qty=parseInt(qm[1]);
         if(qty>0&&qty<5000){
-          parsed.push({code:prod.code,qty:qty});
+          parsed.push({code:prod.code, qty:qty});
           seen[prod.code]=true;
         }
       }
     }
 
-    // Chercher aussi les EAN à 8 chiffres ou codes MDM connus
+    // Chercher les codes MDM connus dans le texte
     if(!parsed.length){
-      Object.keys(codeIndex).forEach(function(code){
-        var re=new RegExp('\\b'+code+'\\b','i');
+      products.forEach(function(p){
+        if(seen[p.code]) return;
+        var re=new RegExp('\\b'+p.code.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\b','i');
         var m=cleanText.match(re);
-        if(!m||seen[code]) return;
-        var idx=cleanText.indexOf(m[0]);
-        var after=cleanText.substring(idx+code.length,idx+code.length+100);
-        var qm=after.match(/(\d{1,5})[,\.](\d{3})/)||after.match(/\b(\d{1,4})\b/);
+        if(!m) return;
+        var idx=m.index;
+        var after=cleanText.substring(idx+p.code.length, idx+p.code.length+80);
+        var qm=after.match(/(\d{1,5})[,.](\d{3})/)||after.match(/\b([1-9]\d{0,3})\b/);
         if(qm){
           var qty=parseInt(qm[1]);
           if(qty>0&&qty<5000){
-            parsed.push({code:code,qty:qty});
-            seen[code]=true;
+            parsed.push({code:p.code, qty:qty});
+            seen[p.code]=true;
           }
         }
       });
     }
   }
 
-  document.getElementById('import-log').textContent='';
+  var logEl=document.getElementById('import-log');
   if(!parsed.length){
-    document.getElementById('import-log').textContent=
-      '\u26a0 Aucun produit d\u00e9tect\u00e9 dans ce PDF.\n\n'
-      +'Causes possibles\u00a0:\n'
-      +'  \u2022 PDF scanné (image) non lisible par le navigateur\n'
-      +'  \u2022 Format de ligne non reconnu\n\n'
-      +'Solution\u00a0: exportez le fichier en Excel (.xlsx) depuis votre logiciel.';
-    document.getElementById('import-log').style.whiteSpace='pre-wrap';
+    if(logEl){
+      logEl.style.whiteSpace='pre-wrap';
+      logEl.textContent=
+        '\u26a0 Aucun produit détecté dans ce PDF.\n\n'
+        +'Causes possibles\u00a0:\n'
+        +'  \u2022 PDF scanné (image) — non lisible\n'
+        +'  \u2022 Format non reconnu\n\n'
+        +'Solutions\u00a0:\n'
+        +'  \u2022 Exportez en Excel (.xlsx) depuis votre logiciel\n'
+        +'  \u2022 Ou copiez-collez dans un fichier .txt (CODE;QTE)';
+    }
   } else {
-    document.getElementById('import-log').textContent='';
+    if(logEl) logEl.textContent='';
   }
+
   _matchAndDisplay(parsed, 'PDF\u00a0: '+filename);
 }
+
 
 
 // ── Matcher les codes contre le catalogue ─────────────────────
@@ -2937,6 +2993,15 @@ function initNotifBadge(login){
         var lastSender=data.lastSender||'';
         var lastTs=data.lastTs||0;
         var lastRead=0;
+        try{lastRead=parseInt(localStorage.getItem('mdm_lastread_'+id)||'0');}catch(e){}
+        if(lastSender!==login && lastTs>lastRead) unread++;
+      });
+      _updateBadge(unread);
+    },function(e){ console.warn('Notif badge:',e.code); });
+}
+
+
+d=0;
         try{lastRead=parseInt(localStorage.getItem('mdm_lastread_'+id)||'0');}catch(e){}
         if(lastSender!==login && lastTs>lastRead) unread++;
       });
@@ -3863,8 +3928,8 @@ function draftInit(){
       ondrop="event.preventDefault();this.classList.remove('drag');handleImportFile(event.dataTransfer.files[0])">
       <div class="import-drop-icon">&#128196;</div>
       <div class="import-drop-txt">Glissez votre fichier ici</div>
-      <div class="import-drop-sub">Excel (.xlsx, .xls) ou PDF — colonnes Code + Quantit&#233;</div>
-      <input type="file" id="import-file-input" accept=".xlsx,.xls,.pdf" style="display:none"
+      <div class="import-drop-sub">Excel (.xlsx), PDF, ou TXT (.txt) — glissez ou cliquez</div>
+      <input type="file" id="import-file-input" accept=".xlsx,.xls,.pdf,.txt,.csv" style="display:none"
         onchange="handleImportFile(this.files[0])">
     </div>
     <!-- Aide format -->
@@ -3889,107 +3954,5 @@ function draftInit(){
   </div>
 </div>
 
-<script>
-
-/* ── MDM Messagerie — Badge temps réel ── */
-(function(){
-  var _notifUnsub=null;
-  var _notifFbDb=null;
-  var _notifFbReady=false;
-
-  var FIREBASE_CONFIG={
-    apiKey:"AIzaSyB000QDa4c-vMjO1Xuimw58iiRvwgbF1zc",
-    authDomain:"mdm-bdc26.firebaseapp.com",
-    projectId:"mdm-bdc26",
-    storageBucket:"mdm-bdc26.firebasestorage.app",
-    messagingSenderId:"52658530893",
-    appId:"1:52658530893:web:166626ae4d681465ddca04"
-  };
-
-  function _initFBNotif(){
-    if(_notifFbReady) return Promise.resolve(_notifFbDb);
-    return new Promise(function(resolve,reject){
-      try{
-        if(typeof firebase==='undefined') return reject(new Error('firebase absent'));
-        if(!firebase.apps||!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
-        _notifFbDb=firebase.firestore();
-        _notifFbReady=true; resolve(_notifFbDb);
-      }catch(e){
-        try{_notifFbDb=firebase.firestore();_notifFbReady=true;resolve(_notifFbDb);}
-        catch(e2){reject(e2);}
-      }
-    });
-  }
-
-  function _getMyLogin(){
-    try{
-      var t=sessionStorage.getItem('mdm_token'); if(!t) return null;
-      var parts=t.split('.'); var raw=parts.length===3?parts[1]:t;
-      var d=JSON.parse(atob(raw.replace(/-/g,'+').replace(/_/g,'/')));
-      return d.login||null;
-    }catch(e){return null;}
-  }
-
-  function _updateBadges(count){
-    var els=[
-      document.getElementById('badge-messagerie'),
-      document.getElementById('sidebar-chat-badge'),
-      document.getElementById('chat-badge'),
-      document.getElementById('mdm-msg-badge'),
-    ];
-    els.forEach(function(el){
-      if(!el) return;
-      if(count>0){
-        el.textContent=count>99?'99+':String(count);
-        el.style.display='inline-flex';
-        el.style.alignItems='center';
-        el.style.justifyContent='center';
-      } else {
-        el.style.display='none';
-      }
-    });
-    // Fab messagerie toujours visible si connecté
-    var fab=document.getElementById('chat-fab');
-    if(fab) fab.style.display='inline-flex';
-    // Titre page
-    var base=document.title.replace(/^\(\d+\)\s*/,'');
-    document.title=count>0?'('+count+') '+base:base;
-  }
-
-  function _startNotifWatch(login){
-    _initFBNotif().then(function(db){
-      if(_notifUnsub){try{_notifUnsub();}catch(e){}}
-      _notifUnsub=db.collection('chats').orderBy('lastTs','desc').limit(100)
-        .onSnapshot(function(snap){
-          var total=0;
-          snap.docs.forEach(function(doc){
-            var parts=doc.id.split('_');
-            if(parts.indexOf(login)<0) return;
-            var unread=doc.data()['unread_'+login]||0;
-            total+=unread;
-          });
-          _updateBadges(total);
-        },function(e){console.warn('[MDM notif]',e.code);});
-    }).catch(function(){});
-  }
-
-  // Auto-démarrage
-  function _init(){
-    var login=_getMyLogin();
-    if(!login) return;
-    // Afficher le fab si présent
-    var fab=document.getElementById('chat-fab');
-    if(fab) fab.style.display='inline-flex';
-    _startNotifWatch(login);
-  }
-
-  if(document.readyState==='loading'){
-    document.addEventListener('DOMContentLoaded',_init);
-  } else {
-    setTimeout(_init,200);
-  }
-})();
-
-</script>
 </body>
 </html>

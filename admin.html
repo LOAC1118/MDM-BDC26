@@ -7,8 +7,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,200;0,400;1,200&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script>if(typeof pdfjsLib!=="undefined")pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";</script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <style>/* RESET */
@@ -287,8 +285,7 @@ code{background:var(--bg);padding:1px 4px;border-radius:3px;font-size:10px;font-
 .mdm-req{color:var(--danger)}
 #toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--text);color:#fff;padding:8px 16px;border-radius:7px;font-size:12px;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.2);opacity:0;transition:opacity .25s;white-space:nowrap;font-family:'Inter',sans-serif;pointer-events:none}
 @media(max-width:900px){.stats-grid{grid-template-columns:repeat(2,1fr)}.two-col{grid-template-columns:1fr}}
-@media(max-width:640px){.sidebar{display:none}.main{padding:14px}}
-.adm-imp-overlay{display:none;position:fixed;inset:0;background:rgba(45,32,24,.35);z-index:400;cursor:pointer}.adm-imp-overlay.open{display:block}.adm-imp-panel{position:fixed;top:0;right:0;bottom:0;width:480px;max-width:100vw;background:var(--card);border-left:1px solid var(--border);box-shadow:-8px 0 32px rgba(45,32,24,.15);z-index:401;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1)}.adm-imp-panel.open{transform:translateX(0)}.adm-imp-head{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}.adm-imp-title{font-size:14px;font-weight:500;color:var(--brown)}.adm-imp-close{width:28px;height:28px;border:none;background:none;font-size:16px;cursor:pointer;color:var(--text3);border-radius:5px}.adm-imp-close:hover{background:var(--bg)}.adm-imp-body{flex:1;overflow-y:auto;padding:16px 18px}.adm-imp-foot{padding:12px 18px;border-top:1px solid var(--border);display:none;gap:8px;align-items:center;background:var(--bg);flex-shrink:0}.adm-imp-drop{border:2px dashed var(--border);border-radius:10px;padding:28px 20px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg);margin-bottom:14px}.adm-imp-drop:hover,.adm-imp-drop.drag-over{border-color:var(--accent);background:var(--accent-l)}.adm-imp-drop.has-file{border-color:var(--accent);border-style:solid;background:var(--accent-l)}.adm-imp-drop:hover .adm-imp-drop-icon{transform:translateY(-3px)}.adm-imp-drop-title{font-size:14px;font-weight:500;color:var(--brown);margin-bottom:4px}.adm-imp-log{background:#1a1a2e;color:#a8ff78;border-radius:6px;padding:8px 12px;font-family:monospace;font-size:10px;line-height:1.8;max-height:100px;overflow-y:auto;white-space:pre-wrap;display:none;margin-bottom:10px}.adm-imp-result{display:none;margin-bottom:10px}.adm-imp-result-head{font-size:11px;font-weight:600;color:var(--brown);padding:6px 10px;background:var(--bg);border-radius:6px;margin-bottom:8px}.adm-imp-summary{display:flex;gap:14px;padding:8px 12px;background:var(--card);border:1px solid var(--border);border-radius:6px;margin-bottom:8px}.adm-imp-sum-val{font-family:'Fraunces',serif;font-weight:200;font-size:20px;color:var(--brown)}.adm-imp-sum-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.3px}.adm-imp-rows{max-height:260px;overflow-y:auto;border:1px solid var(--border);border-radius:6px}.adm-imp-row{display:flex;align-items:center;gap:8px;padding:7px 10px;border-bottom:1px solid var(--border-l);font-size:11px}.adm-imp-row:last-child{border:none}.adm-imp-row:hover{background:var(--bg)}.adm-imp-code{font-family:monospace;color:var(--brown);width:120px;flex-shrink:0}.adm-imp-qty{font-weight:600;color:var(--text);width:50px;text-align:right;flex-shrink:0}</style>
+@media(max-width:640px){.sidebar{display:none}.main{padding:14px}}</style>
 </head>
 <body>
 
@@ -323,6 +320,7 @@ code{background:var(--bg);padding:1px 4px;border-radius:3px;font-size:10px;font-
     <div class="nav-item" onclick="showPage('commandes',this)"><span class="nav-icon">&#128230;</span><span class="nav-txt"><span>Commandes</span></span><span class="nav-badge nb-green" id="badge-commandes" style="display:none">0</span></div>
     <div class="nav-item" onclick="showPage('stocks',this)"><span class="nav-icon">&#128218;</span><span class="nav-txt">Stocks</span></div>
     <div class="nav-item" onclick="showPage('promos',this)"><span class="nav-icon">&#127381;</span><span class="nav-txt">Promotions</span></div>
+    <a class="nav-item" href="performance.html" target="_blank" style="text-decoration:none;color:inherit"><span class="nav-icon">&#128200;</span><span class="nav-txt">Performance CRM</span><span style="font-size:8px;background:#2e6b47;color:#fff;padding:1px 5px;border-radius:3px;margin-left:4px;font-weight:600">NEW</span></a>
 
     <div class="nav-label-section">Communication</div>
     <div class="nav-item" onclick="showPage('messagerie',this);populateMsgDest()"><span class="nav-icon">&#128172;</span><span class="nav-txt">Messagerie</span><span class="nav-badge nb-red" id="badge-messagerie" style="display:none">0</span></div>
@@ -490,7 +488,7 @@ code{background:var(--bg);padding:1px 4px;border-radius:3px;font-size:10px;font-
     </div>
 
     <div class="page" id="page-commandes">
-<div class="page-header"><div class="page-title">Commandes</div><div class="page-sub">Commandes reçues &amp; import client</div><div class="page-actions"><button class="btn-accent" onclick="openAdmImport()">&#128196;&nbsp;Importer</button></div></div>
+<div class="page-title">Historique des commandes</div>
       <div class="page-sub">Commandes re&#231;ues via le bon de commande en ligne</div>
       <div class="info-banner">
         <span class="icon">&#128231;</span>
@@ -3968,183 +3966,6 @@ function saveActuNew(){
 
 
 
-
-
-var _admImpItems=[];
-function openAdmImport(){
-  var sel=document.getElementById('adm-imp-account');
-  if(sel&&sel.options.length<=1){
-    (comptes||[]).filter(function(c){return c.role==='client'||c.role==='user';})
-    .forEach(function(c){
-      var o=document.createElement('option');o.value=c.login;
-      o.textContent=(c.nom||c.login)+' ('+({user:'Commercial',client:'Client',admin:'Admin'}[c.role]||c.role)+')';
-      sel.appendChild(o);
-    });
-  }
-  var d=document.getElementById('adm-imp-drop');if(d)d.classList.remove('has-file','drag-over');
-  var t=document.getElementById('adm-imp-drop-title');if(t)t.textContent='Glissez votre fichier ici';
-  _admImpLog(null);
-  document.getElementById('adm-imp-result').style.display='none';
-  document.getElementById('adm-imp-foot').style.display='none';
-  document.getElementById('adm-imp-file').value='';
-  _admImpItems=[];
-  document.getElementById('adm-imp-overlay').classList.add('open');
-  document.getElementById('adm-imp-panel').classList.add('open');
-}
-function closeAdmImport(){
-  document.getElementById('adm-imp-overlay').classList.remove('open');
-  document.getElementById('adm-imp-panel').classList.remove('open');
-}
-function admHandleFile(file){
-  if(!file)return;
-  var ext=file.name.split('.').pop().toLowerCase();
-  _admImpLog('Lecture de '+file.name+'\u2026');
-  document.getElementById('adm-imp-result').style.display='none';
-  document.getElementById('adm-imp-foot').style.display='none';
-  _admImpItems=[];
-  if(ext==='xlsx'||ext==='xls')_admImpExcel(file);
-  else if(ext==='pdf')_admImpPdf(file);
-  else if(ext==='txt'||ext==='csv')_admImpTxt(file);
-  else _admImpLog('\u26a0 Format non support\u00e9 \u2014 .xlsx, .pdf ou .txt');
-}
-function _admImpLog(msg){
-  var el=document.getElementById('adm-imp-log');if(!el)return;
-  if(msg){el.style.display='block';el.textContent=msg;}else{el.style.display='none';el.textContent='';}
-}
-function _admImpDropOk(fname,n){
-  var z=document.getElementById('adm-imp-drop');if(z)z.classList.add('has-file');
-  var t=document.getElementById('adm-imp-drop-title');if(t)t.textContent='\u2705 '+n+' produits \u2014 '+fname;
-}
-function _admImpDisplay(parsed,label){
-  _admImpItems=parsed.map(function(x){return {code:x.code,qty:x.qty};});
-  var n=_admImpItems.length;
-  var h=document.getElementById('adm-imp-result-head');if(h)h.textContent=label;
-  var s=document.getElementById('adm-imp-summary');
-  if(s)s.innerHTML='<div class="adm-imp-sum-item"><div class="adm-imp-sum-val">'+n+'</div><div class="adm-imp-sum-lbl">produits</div></div>';
-  var l=document.getElementById('adm-imp-rows');
-  if(l)l.innerHTML=n?_admImpItems.map(function(it){
-    return '<div class="adm-imp-row"><span class="adm-imp-code">'+escH(it.code)+'</span><span class="adm-imp-qty">\u00d7\u00a0'+it.qty+'</span></div>';
-  }).join(''):'<div style="padding:16px;text-align:center;color:var(--text3);font-size:12px">\u26a0 Aucun produit d\u00e9tect\u00e9.</div>';
-  document.getElementById('adm-imp-result').style.display='block';
-  document.getElementById('adm-imp-foot').style.display=n>0?'flex':'none';
-}
-function _admImpExcel(file){
-  if(typeof XLSX==='undefined'){_admImpLog('\u26a0 XLSX non disponible');return;}
-  var r=new FileReader();
-  r.onload=function(e){
-    try{
-      var wb=XLSX.read(e.target.result,{type:'array'});
-      var rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''});
-      if(!rows.length){_admImpLog('\u26a0 Fichier vide');return;}
-      var keys=Object.keys(rows[0]),cK=null,qK=null;
-      var CN=['code','ref','reference','codearticle','code article','cod'];
-      var QN=['qte','quantite','quantit\u00e9','qty','colis','nb colis','nb_colis'];
-      for(var i=0;i<keys.length;i++){if(CN.indexOf(keys[i].toLowerCase().replace(/\s+/g,' ').trim())>=0){cK=keys[i];break;}}
-      for(var i=0;i<keys.length;i++){if(QN.indexOf(keys[i].toLowerCase().replace(/\s+/g,' ').trim())>=0){qK=keys[i];break;}}
-      if(!qK&&cK){for(var i=0;i<keys.length;i++){if(keys[i]===cK)continue;var nc=0;for(var ri=0;ri<Math.min(rows.length,10);ri++){if(!isNaN(parseFloat(String(rows[ri][keys[i]]||'0').replace(',','.'))))nc++;}if(nc>=2){qK=keys[i];break;}}}
-      if(!cK||!qK){_admImpLog('\u26a0 Colonnes introuvables.\nColonnes pr\u00e9sentes\u00a0: '+keys.join(', '));return;}
-      var parsed=[];
-      rows.forEach(function(row){var code=String(row[cK]||'').trim().toUpperCase();var qty=parseInt(parseFloat(String(row[qK]||'0').replace(',','.'))||0);if(code&&qty>0)parsed.push({code:code,qty:qty});});
-      _admImpLog(null);_admImpDisplay(parsed,'Excel\u00a0: '+file.name+' ('+cK+'/'+qK+')');_admImpDropOk(file.name,parsed.length);
-    }catch(err){_admImpLog('\u26a0 Erreur Excel\u00a0: '+err.message);}
-  };r.readAsArrayBuffer(file);
-}
-function _admImpPdf(file){
-  var r=new FileReader();
-  r.onload=function(e){
-    var buf=e.target.result;
-    if(typeof pdfjsLib!=='undefined'){
-      pdfjsLib.getDocument({data:new Uint8Array(buf)}).promise
-      .then(function(pdf){
-        var pp=[];for(var p=1;p<=pdf.numPages;p++)pp.push(pdf.getPage(p).then(function(pg){return pg.getTextContent();}));
-        return Promise.all(pp);
-      }).then(function(pages){
-        var txt='';pages.forEach(function(c){var lY=null;c.items.forEach(function(it){if(lY!==null&&Math.abs(it.transform[5]-lY)>3)txt+='\n';txt+=it.str;if(!it.str.endsWith(' '))txt+=' ';lY=it.transform[5];});txt+='\n';});
-        _admImpLog(null);_admImpPdfText(txt,file.name);
-      }).catch(function(err){_admImpLog('\u26a0 PDF.js: '+err.message+'\nTentative alternative\u2026');_admImpPdfManual(buf,file.name);});
-    }else{_admImpPdfManual(buf,file.name);}
-  };r.readAsArrayBuffer(file);
-}
-function _admImpPdfManual(buf,fname){
-  var bytes=new Uint8Array(buf),raw='';
-  for(var i=0;i<bytes.length;i++)raw+=String.fromCharCode(bytes[i]);
-  var text='',m,re1=/\(([^)\\]*(?:\\.[^)\\]*)*)\)\s*Tj/g;
-  while((m=re1.exec(raw))!==null)text+=m[1].replace(/\\n/g,'\n').replace(/\\\(/g,'(').replace(/\\\)/g,')')+' ';
-  if(text.trim().length<20){var run='',ascii='';for(var i=0;i<bytes.length;i++){var b=bytes[i];if(b>=32&&b<127||b===10||b===13){run+=String.fromCharCode(b);}else{if(run.length>4)ascii+=run+' ';run='';}}text=ascii;}
-  _admImpPdfText(text,fname);
-}
-function _admImpPdfText(text,fname){
-  var parsed=[],seen={};
-  text.replace(/\r\n/g,'\n').replace(/\r/g,'\n').split('\n').forEach(function(line){
-    line=line.trim();if(!line||line.length<4)return;
-    if(/^(C Article|D[ée]signation|Code Client|Total|Page\s+\d|N[°º]\s*Commande|Bon de commande|Moulin|Date|R[ée]f)/i.test(line))return;
-    var m1=line.match(/(\d{7,14})\s+([A-Za-z][A-Za-z0-9_\-]{1,25})\s+.{2,60}?\s+(\d{1,5})[,.](\d{3})\s+[\d,.]+\s+[\d,.]+/);
-    if(m1){var c=m1[2].toUpperCase(),q=parseInt(m1[3]);if(q>0&&!seen[c]){parsed.push({code:c,qty:q});seen[c]=true;return;}}
-    var m2=line.match(/\b([A-Z][A-Z0-9_\-]{2,20})\b.{0,60}?\s+(\d{1,5})[,.](\d{3})\b/);
-    if(m2){var c=m2[1].toUpperCase(),q=parseInt(m2[2]);if(q>0&&!seen[c]){parsed.push({code:c,qty:q});seen[c]=true;return;}}
-    var m3=line.match(/^([A-Z][A-Z0-9_\-]{2,20})\s+(\d{1,4})(\s|$)/);
-    if(m3){var c=m3[1].toUpperCase(),q=parseInt(m3[2]);if(q>0&&!seen[c]){parsed.push({code:c,qty:q});seen[c]=true;}}
-  });
-  if(!parsed.length)_admImpLog('\u26a0 Aucun produit d\u00e9tect\u00e9.\nSolution\u00a0: exportez en Excel (.xlsx) ou TXT.');
-  else _admImpLog(null);
-  _admImpDisplay(parsed,'PDF\u00a0: '+fname);
-  if(parsed.length)_admImpDropOk(fname,parsed.length);
-}
-function _admImpTxt(file){
-  var r=new FileReader();
-  r.onload=function(e){
-    var parsed=[];
-    e.target.result.split(/\r?\n/).forEach(function(line){
-      line=line.trim();if(!line||line.startsWith('#')||line.startsWith('//'))return;
-      var m=line.match(/^([A-Z0-9_\-]{3,20})\s*[;,|\t]\s*(\d+)/i)||line.match(/^([A-Z0-9_\-]{3,20})\s+(\d+)$/i);
-      if(!m)return;var code=m[1].trim().toUpperCase(),qty=parseInt(m[2])||0;
-      if(code&&qty>0)parsed.push({code:code,qty:qty});
-    });
-    if(!parsed.length){_admImpLog('\u26a0 Aucune ligne reconnue.\nFormat\u00a0: CODE;QTE ou CODE QTE (1 par ligne)');return;}
-    _admImpLog(null);_admImpDisplay(parsed,'TXT\u00a0: '+file.name);_admImpDropOk(file.name,parsed.length);
-  };r.readAsText(file,'UTF-8');
-}
-function admApplyImport(){
-  if(!_admImpItems.length){showToast('\u26a0 Aucun produit');return;}
-  var login=(document.getElementById('adm-imp-account')||{}).value||'';
-  var status=document.getElementById('adm-imp-status');
-  if(!login){
-    if(typeof XLSX==='undefined'){showToast('\u26a0 Choisissez un compte');return;}
-    var rows=[['Code','Qt\u00e9']];_admImpItems.forEach(function(it){rows.push([it.code,it.qty]);});
-    var ws=XLSX.utils.aoa_to_sheet(rows);var wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Import');
-    XLSX.writeFile(wb,'import-'+new Date().toISOString().slice(0,10)+'.xlsx');
-    showToast('\u2705 Excel t\u00e9l\u00e9charg\u00e9');return;
-  }
-  if(status)status.textContent='Enregistrement\u2026';
-  var articles=_admImpItems.map(function(it){return {code:it.code,libelle:it.code,qty:it.qty,puHT:0,totalHT:0,pcb:1};});
-  var order={id:Date.now(),date:new Date().toLocaleString('fr-FR'),magasin:'Import admin',mail:'',nbRefs:articles.length,nbColis:articles.reduce(function(s,x){return s+x.qty;},0),totalBrut:0,totalNet:0,articles:articles,source:'import-admin'};
-  initFirebase().then(function(db){
-    return db.collection('historique').doc(login).collection('commandes').doc(String(order.id)).set(order);
-  }).then(function(){
-    showToast('\u2705 Commande enregistr\u00e9e pour '+login);
-    if(status)status.textContent='\u2705 OK';
-    closeAdmImport();
-    if(typeof renderCommandes==='function')renderCommandes();
-  }).catch(function(e){showToast('\u26a0 '+e.message);if(status)status.textContent='\u274c '+e.message;});
-}
 </script>
-
-<div class="adm-imp-overlay" id="adm-imp-overlay" onclick="closeAdmImport()"></div>
-<div class="adm-imp-panel" id="adm-imp-panel">
-  <div class="adm-imp-head"><span class="adm-imp-title">&#128196; Importer une commande</span><button class="adm-imp-close" onclick="closeAdmImport()">&#10005;</button></div>
-  <div class="adm-imp-body">
-    <div class="fg" style="margin-bottom:14px"><label>Compte cible <span style="color:var(--text3);font-weight:300">(optionnel)</span></label><select id="adm-imp-account" class="sort-sel" style="width:100%"><option value="">-- Choisir un compte --</option></select></div>
-    <div class="adm-imp-drop" id="adm-imp-drop" onclick="document.getElementById('adm-imp-file').click()" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="event.preventDefault();this.classList.remove('drag-over');admHandleFile(event.dataTransfer.files[0])">
-      <div class="adm-imp-drop-icon" style="font-size:32px;margin-bottom:8px;transition:transform .2s">&#128196;</div>
-      <div class="adm-imp-drop-title" id="adm-imp-drop-title">Glissez votre fichier ici</div>
-      <div style="font-size:12px;color:var(--text3);margin-bottom:6px">ou <span style="color:var(--accent);font-weight:500">cliquez pour parcourir</span></div>
-      <div style="font-size:10px;color:var(--text3)">.xlsx · .xls · .pdf · .txt · .csv</div>
-      <input type="file" id="adm-imp-file" accept=".xlsx,.xls,.pdf,.txt,.csv" style="display:none" onchange="admHandleFile(this.files[0])">
-    </div>
-    <div class="adm-imp-log" id="adm-imp-log"></div>
-    <div class="adm-imp-result" id="adm-imp-result"><div class="adm-imp-result-head" id="adm-imp-result-head"></div><div class="adm-imp-summary" id="adm-imp-summary"></div><div class="adm-imp-rows" id="adm-imp-rows"></div></div>
-    <div style="margin-top:14px;padding:10px 12px;background:var(--accent-l);border-radius:7px;font-size:11px;color:var(--accent);line-height:1.8"><strong>Formats :</strong> Excel (.xlsx), PDF, TXT/CSV (<code>CODE;QTE</code>)</div>
-  </div>
-  <div class="adm-imp-foot" id="adm-imp-foot"><button class="btn-accent" onclick="admApplyImport()">&#10003; Appliquer</button><button class="btn-outline" onclick="closeAdmImport()">Annuler</button><span id="adm-imp-status" style="font-size:11px;color:var(--text3);margin-left:6px"></span></div></div>
 </body>
 </html>

@@ -1129,6 +1129,20 @@ async function loadAll(){
     _commerciaux = snapComptes.docs.map(d=>d.data()).filter(c=>c.role==='user');
     _clients     = snapComptes.docs.map(d=>d.data()).filter(c=>c.role==='client');
 
+    // Si commercial : filtrer pour ne voir que ses propres clients
+    const myRole=window._crm_myRole||'admin';
+    const myLogin=window._crm_myLogin||'';
+    if(myRole==='user'){
+      // Masquer les autres commerciaux dans le classement
+      _commerciaux=_commerciaux.filter(c=>c.login===myLogin);
+      _clients=_clients.filter(c=>c.commercial===myLogin);
+      // Adapter les titres
+      const pageTitle=document.querySelector('#page-dashboard .page-title');
+      if(pageTitle) pageTitle.textContent='Mon tableau de bord';
+      const pageSub=document.querySelector('#page-dashboard .page-sub');
+      if(pageSub) pageSub.textContent='Performance de votre portefeuille clients';
+    }
+
     document.getElementById('nb-com-badge').textContent=_commerciaux.length;
     document.getElementById('nb-com-badge').style.display=_commerciaux.length>0?'inline':'none';
     document.getElementById('imp-stat-coms').textContent=_commerciaux.length;
@@ -1924,18 +1938,52 @@ function impHandleTarif(file){
    INIT
 ════════════════════════════════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded', ()=>{
-  // Vérifier accès (admin ou user)
+  // ── Contrôle d'accès ──────────────────────────────────────
+  let _myRole='', _myLogin='';
   try{
     const t=sessionStorage.getItem('mdm_token');
-    if(t){
-      const parts=t.split('.');
-      const raw=parts.length===3?parts[1]:t;
-      const d=JSON.parse(atob(raw.replace(/-/g,'+').replace(/_/g,'/')));
-      if(d.role!=='admin'&&d.role!=='user'){
-        // Accès restreint mais on charge quand même pour la démo
+    if(!t){ window.location.href='index.html'; return; }
+    const parts=t.split('.');
+    const raw=parts.length===3?parts[1]:t;
+    const data=JSON.parse(atob(raw.replace(/-/g,'+').replace(/_/g,'/')));
+    if(!data.login){ window.location.href='index.html'; return; }
+    if(data.exp&&Date.now()>data.exp){ window.location.href='index.html'; return; }
+    _myRole=data.role||'client';
+    _myLogin=data.login||'';
+
+    // Seuls admin et commercial (user) ont accès
+    if(_myRole!=='admin'&&_myRole!=='user'){
+      window.location.href='dashboard.html';
+      return;
+    }
+
+    // Adapter le lien retour selon le rôle
+    const backBtn=document.querySelector('.topbar-back');
+    if(backBtn){
+      if(_myRole==='admin'){
+        backBtn.textContent='← Admin';
+        backBtn.href='admin.html';
+      } else {
+        backBtn.textContent='← Tableau de bord';
+        backBtn.href='dashboard.html';
       }
     }
-  }catch(e){}
+
+    // Adapter le titre
+    const titleEl=document.querySelector('.topbar-title');
+    if(titleEl&&_myRole==='user'){
+      titleEl.textContent='Performance — Mon portefeuille';
+    }
+
+    // Stocker pour usage dans les filtres
+    window._crm_myRole=_myRole;
+    window._crm_myLogin=_myLogin;
+
+  }catch(e){
+    window.location.href='index.html';
+    return;
+  }
+
   loadAll();
 });
 </script>

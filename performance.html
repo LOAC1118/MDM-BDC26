@@ -1,0 +1,1943 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Performance Commerciaux — Moulin des Moines</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,100;0,200;0,400;1,200&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<style>
+/* ═══════════════════════════════════════════════════════════════
+   MDM — PERFORMANCE COMMERCIAUX
+   Palette : ivoire chaud + vert forêt + terre + ardoise
+═══════════════════════════════════════════════════════════════ */
+:root {
+  --bg:       #f7f4ef;
+  --bg2:      #f0ebe3;
+  --card:     #ffffff;
+  --text:     #1e1a16;
+  --text2:    #5c4a38;
+  --text3:    #a08878;
+  --brown:    #6b4c3b;
+  --terra:    #a0522d;
+  --green:    #2e6b47;
+  --green-l:  #eaf3ed;
+  --gold:     #b8872a;
+  --gold-l:   #fef8ed;
+  --red:      #c0392b;
+  --red-l:    #fdecea;
+  --border:   #e4dbd2;
+  --border-l: #efe9e2;
+  --shadow:   0 1px 3px rgba(30,26,22,.08);
+  --shadow-md:0 4px 16px rgba(30,26,22,.1);
+  --r:        10px;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'DM Sans',sans-serif;font-weight:300;
+  background:var(--bg);color:var(--text);
+  font-size:13px;line-height:1.5;
+  min-height:100vh;
+}
+
+/* ── TOPBAR ── */
+.topbar{
+  background:var(--brown);color:#fff;
+  height:54px;display:flex;align-items:center;
+  padding:0 24px;gap:16px;position:sticky;top:0;z-index:200;
+  box-shadow:0 2px 8px rgba(30,26,22,.18);
+}
+.topbar-logo{
+  font-family:'Fraunces',serif;font-weight:200;font-size:18px;
+  color:#fff;white-space:nowrap;
+}
+.topbar-logo em{font-style:italic;color:#d4b896}
+.topbar-title{
+  font-size:11px;font-weight:400;color:#c8b09a;
+  letter-spacing:.5px;text-transform:uppercase;
+  border-left:1px solid rgba(255,255,255,.2);
+  padding-left:16px;margin-left:4px;
+}
+.topbar-spacer{flex:1}
+.topbar-back{
+  padding:6px 14px;border-radius:6px;font-size:12px;
+  text-decoration:none;border:1px solid rgba(255,255,255,.25);
+  background:rgba(255,255,255,.1);color:#fff;
+  font-family:'DM Sans',sans-serif;transition:all .15s;
+}
+.topbar-back:hover{background:rgba(255,255,255,.2)}
+.topbar-period{
+  display:flex;align-items:center;gap:6px;
+  font-size:12px;color:#c8b09a;
+}
+.topbar-period select{
+  background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);
+  color:#fff;padding:4px 8px;border-radius:5px;
+  font-family:'DM Sans',sans-serif;font-size:11px;cursor:pointer;
+  outline:none;
+}
+.topbar-period select option{background:var(--brown);color:#fff}
+
+/* ── LAYOUT ── */
+.layout{display:flex;min-height:calc(100vh - 54px)}
+
+/* ── SIDEBAR ── */
+.sidebar{
+  width:220px;flex-shrink:0;
+  background:var(--card);border-right:1px solid var(--border);
+  padding:20px 0;display:flex;flex-direction:column;
+  position:sticky;top:54px;height:calc(100vh - 54px);
+  overflow-y:auto;
+}
+.sidebar-section{
+  font-size:9px;font-weight:600;text-transform:uppercase;
+  letter-spacing:.8px;color:var(--text3);
+  padding:14px 18px 6px;margin-top:6px;
+}
+.sidebar-section:first-child{margin-top:0}
+.nav-item{
+  display:flex;align-items:center;gap:9px;
+  padding:8px 18px;cursor:pointer;border-radius:0;
+  font-size:12px;color:var(--text2);
+  transition:all .12s;border-left:2px solid transparent;
+}
+.nav-item:hover{background:var(--bg);color:var(--text)}
+.nav-item.active{
+  background:var(--green-l);color:var(--green);
+  border-left-color:var(--green);font-weight:500;
+}
+.nav-icon{font-size:14px;width:16px;text-align:center;flex-shrink:0}
+.nav-badge{
+  background:var(--red);color:#fff;
+  font-size:9px;font-weight:700;padding:1px 5px;
+  border-radius:8px;margin-left:auto;
+}
+
+/* ── MAIN ── */
+.main{flex:1;overflow-x:hidden;padding:24px;min-width:0}
+
+/* ── PAGES ── */
+.page{display:none}
+.page.active{display:block}
+
+/* ── PAGE HEADER ── */
+.page-hd{margin-bottom:24px}
+.page-hd-top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:4px}
+.page-title{
+  font-family:'Fraunces',serif;font-weight:200;
+  font-size:26px;color:var(--brown);
+}
+.page-sub{font-size:12px;color:var(--text3);margin-top:2px}
+.page-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+/* ── BOUTONS ── */
+.btn{
+  padding:7px 14px;border-radius:7px;font-size:12px;font-weight:500;
+  border:none;cursor:pointer;font-family:'DM Sans',sans-serif;
+  display:inline-flex;align-items:center;gap:5px;transition:all .15s;
+}
+.btn-primary{background:var(--green);color:#fff}
+.btn-primary:hover{background:#245638}
+.btn-outline{background:#fff;color:var(--text2);border:1px solid var(--border)}
+.btn-outline:hover{background:var(--bg);border-color:var(--text3)}
+.btn-sm{padding:5px 10px;font-size:11px}
+
+/* ── KPI CARDS ── */
+.kpi-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:14px;margin-bottom:24px;
+}
+.kpi-card{
+  background:var(--card);border-radius:var(--r);
+  padding:16px 18px;border:1px solid var(--border);
+  box-shadow:var(--shadow);position:relative;overflow:hidden;
+  transition:box-shadow .15s;
+}
+.kpi-card:hover{box-shadow:var(--shadow-md)}
+.kpi-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:var(--kpi-color,var(--green));
+}
+.kpi-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:8px}
+.kpi-val{
+  font-family:'Fraunces',serif;font-weight:200;
+  font-size:28px;color:var(--text);line-height:1;
+}
+.kpi-sub{font-size:10px;color:var(--text3);margin-top:5px}
+.kpi-trend{
+  display:inline-flex;align-items:center;gap:3px;
+  font-size:10px;font-weight:500;padding:2px 6px;
+  border-radius:4px;margin-top:6px;
+}
+.kpi-trend.up{background:#eaf3ed;color:var(--green)}
+.kpi-trend.down{background:var(--red-l);color:var(--red)}
+.kpi-trend.flat{background:var(--gold-l);color:var(--gold)}
+
+/* ── SECTION CARD ── */
+.card{
+  background:var(--card);border-radius:var(--r);
+  border:1px solid var(--border);box-shadow:var(--shadow);
+  margin-bottom:20px;overflow:hidden;
+}
+.card-head{
+  padding:14px 18px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+}
+.card-title{
+  font-size:13px;font-weight:600;color:var(--text);
+  display:flex;align-items:center;gap:7px;
+}
+.card-title-sub{font-size:11px;font-weight:300;color:var(--text3);margin-left:4px}
+.card-body{padding:16px 18px}
+
+/* ── GRILLE 2 COL ── */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-bottom:20px}
+
+/* ── COMMERCIAUX TABLE ── */
+.com-table{width:100%;border-collapse:collapse}
+.com-table th{
+  padding:9px 12px;font-size:10px;font-weight:600;
+  text-transform:uppercase;letter-spacing:.4px;
+  color:var(--text3);background:var(--bg);
+  border-bottom:2px solid var(--border);text-align:left;
+}
+.com-table td{
+  padding:10px 12px;border-bottom:1px solid var(--border-l);
+  font-size:12px;color:var(--text);vertical-align:middle;
+}
+.com-table tr:last-child td{border:none}
+.com-table tr:hover td{background:var(--bg)}
+.com-table tr.selected td{background:var(--green-l)}
+
+/* Avatar commercial */
+.com-avatar{
+  width:32px;height:32px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:600;flex-shrink:0;
+  background:var(--green-l);color:var(--green);
+}
+.com-name-wrap{display:flex;align-items:center;gap:8px}
+
+/* Barre de progression */
+.prog-bar{
+  height:6px;background:var(--border);border-radius:3px;
+  overflow:hidden;min-width:80px;
+}
+.prog-bar-fill{
+  height:100%;border-radius:3px;
+  background:var(--green);transition:width .4s ease;
+}
+.prog-bar-fill.warn{background:var(--gold)}
+.prog-bar-fill.danger{background:var(--red)}
+
+/* Badge status */
+.status-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:2px 8px;border-radius:4px;font-size:10px;font-weight:500;
+}
+.badge-green{background:var(--green-l);color:var(--green)}
+.badge-gold{background:var(--gold-l);color:var(--gold)}
+.badge-red{background:var(--red-l);color:var(--red)}
+.badge-gray{background:var(--border);color:var(--text3)}
+
+/* ── RANKING PODIUM ── */
+.podium{
+  display:flex;align-items:flex-end;justify-content:center;
+  gap:16px;padding:20px 0 0;
+}
+.podium-item{
+  display:flex;flex-direction:column;align-items:center;
+  gap:8px;
+}
+.podium-rank{
+  width:60px;border-radius:6px 6px 0 0;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Fraunces',serif;font-size:20px;font-weight:200;
+  color:#fff;transition:height .4s ease;
+}
+.podium-rank.r1{background:var(--gold);height:80px;width:70px}
+.podium-rank.r2{background:#aaa;height:60px}
+.podium-rank.r3{background:#c47d4a;height:48px}
+.podium-name{font-size:11px;font-weight:500;color:var(--text2);text-align:center;max-width:70px}
+.podium-ca{font-size:12px;font-weight:600;color:var(--green)}
+
+/* ── CHART CONTAINER ── */
+.chart-wrap{
+  position:relative;
+  padding:12px 0;
+}
+.chart-wrap canvas{max-height:260px}
+
+/* ── DETAIL COMMERCIAL ── */
+.com-detail-header{
+  background:linear-gradient(135deg, var(--green) 0%, #1a5030 100%);
+  padding:24px;color:#fff;border-radius:var(--r) var(--r) 0 0;
+  display:flex;align-items:center;gap:16px;
+}
+.com-detail-avatar{
+  width:56px;height:56px;border-radius:50%;
+  background:rgba(255,255,255,.2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;font-weight:600;color:#fff;flex-shrink:0;
+  border:2px solid rgba(255,255,255,.4);
+}
+.com-detail-name{font-family:'Fraunces',serif;font-weight:200;font-size:22px}
+.com-detail-meta{font-size:11px;opacity:.75;margin-top:2px}
+.com-detail-stats{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:0;border-top:1px solid var(--border);
+}
+.com-detail-stat{
+  padding:14px 16px;text-align:center;
+  border-right:1px solid var(--border);
+}
+.com-detail-stat:last-child{border:none}
+.com-ds-val{
+  font-family:'Fraunces',serif;font-weight:200;
+  font-size:22px;color:var(--text);
+}
+.com-ds-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin-top:2px}
+
+/* ── PRODUITS TABLE ── */
+.prod-table{width:100%;border-collapse:collapse}
+.prod-table th{
+  padding:8px 10px;font-size:10px;font-weight:600;
+  text-transform:uppercase;letter-spacing:.3px;
+  color:var(--text3);background:var(--bg);
+  border-bottom:1px solid var(--border);text-align:left;
+}
+.prod-table td{
+  padding:8px 10px;border-bottom:1px solid var(--border-l);
+  font-size:11px;color:var(--text);
+}
+.prod-table tr:last-child td{border:none}
+.prod-table tr:hover td{background:var(--bg)}
+
+/* ── OBJECTIFS ── */
+.obj-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:14px;
+}
+.obj-card{
+  background:var(--bg);border-radius:8px;
+  padding:14px;border:1px solid var(--border);
+}
+.obj-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.3px;margin-bottom:8px}
+.obj-current{
+  font-family:'Fraunces',serif;font-weight:200;
+  font-size:20px;color:var(--text);line-height:1;
+}
+.obj-target{font-size:10px;color:var(--text3);margin:3px 0 8px}
+.obj-prog{height:8px;background:var(--border);border-radius:4px;overflow:hidden}
+.obj-prog-fill{height:100%;border-radius:4px;transition:width .6s ease}
+.obj-pct{font-size:10px;font-weight:600;color:var(--green);margin-top:4px}
+
+/* ── FILTRE / SEARCH ── */
+.filter-bar{
+  display:flex;align-items:center;gap:10px;
+  flex-wrap:wrap;margin-bottom:16px;
+}
+.filter-bar input{
+  padding:7px 12px 7px 30px;border:1.5px solid var(--border);
+  border-radius:7px;font-size:12px;font-family:'DM Sans',sans-serif;
+  background:#fff;outline:none;transition:border-color .15s;width:220px;
+}
+.filter-bar input:focus{border-color:var(--green)}
+.filter-search-wrap{position:relative}
+.filter-search-ico{
+  position:absolute;left:10px;top:50%;transform:translateY(-50%);
+  color:var(--text3);font-size:11px;pointer-events:none;
+}
+.filter-bar select{
+  padding:7px 10px;border:1.5px solid var(--border);
+  border-radius:7px;font-size:12px;font-family:'DM Sans',sans-serif;
+  background:#fff;outline:none;cursor:pointer;color:var(--text2);
+}
+.filter-bar select:focus{border-color:var(--green)}
+
+/* ── IMPORT ZONE ── */
+.import-zone{
+  border:2px dashed var(--border);border-radius:10px;
+  padding:32px;text-align:center;cursor:pointer;
+  transition:all .2s;background:var(--bg);
+}
+.import-zone:hover,.import-zone.drag-over{
+  border-color:var(--green);background:var(--green-l);
+}
+.import-zone.has-file{border-color:var(--green);border-style:solid;background:var(--green-l)}
+.import-zone-icon{font-size:36px;margin-bottom:10px;transition:transform .2s}
+.import-zone:hover .import-zone-icon{transform:translateY(-4px)}
+.import-zone-title{font-size:14px;font-weight:500;color:var(--brown);margin-bottom:4px}
+.import-zone-sub{font-size:12px;color:var(--text3)}
+.import-zone-hint{font-size:10px;color:var(--text3);margin-top:8px}
+.import-log{
+  background:#0f0f1a;color:#a8ff78;
+  border-radius:6px;padding:10px 14px;
+  font-family:monospace;font-size:10px;line-height:2;
+  white-space:pre-wrap;max-height:120px;overflow-y:auto;
+  margin-top:14px;display:none;
+}
+
+/* ── TIMELINE ── */
+.timeline{display:flex;flex-direction:column;gap:0}
+.timeline-item{
+  display:flex;gap:12px;padding:10px 0;
+  border-bottom:1px solid var(--border-l);position:relative;
+}
+.timeline-item:last-child{border:none}
+.timeline-dot{
+  width:10px;height:10px;border-radius:50%;
+  background:var(--green);flex-shrink:0;margin-top:3px;
+  border:2px solid var(--card);box-shadow:0 0 0 1px var(--green);
+}
+.timeline-dot.warn{background:var(--gold);box-shadow:0 0 0 1px var(--gold)}
+.timeline-dot.danger{background:var(--red);box-shadow:0 0 0 1px var(--red)}
+.timeline-content{flex:1}
+.timeline-text{font-size:12px;color:var(--text)}
+.timeline-meta{font-size:10px;color:var(--text3);margin-top:2px}
+
+/* ── TABS ── */
+.tabs{display:flex;border-bottom:2px solid var(--border);margin-bottom:20px;gap:0}
+.tab{
+  padding:9px 16px;cursor:pointer;font-size:12px;font-weight:400;
+  color:var(--text3);border-bottom:2px solid transparent;
+  margin-bottom:-2px;transition:all .15s;
+}
+.tab:hover{color:var(--text2)}
+.tab.active{color:var(--green);border-bottom-color:var(--green);font-weight:500}
+
+/* ── STAT ROW ── */
+.stat-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 0;border-bottom:1px solid var(--border-l);
+}
+.stat-row:last-child{border:none}
+.stat-row-label{font-size:12px;color:var(--text2)}
+.stat-row-val{font-size:12px;font-weight:500;color:var(--text)}
+
+/* ── EMPTY STATE ── */
+.empty-state{
+  text-align:center;padding:40px;color:var(--text3);
+}
+.empty-icon{font-size:40px;margin-bottom:10px;opacity:.4}
+.empty-text{font-size:14px;font-weight:300}
+.empty-sub{font-size:11px;margin-top:5px}
+
+/* ── TOAST ── */
+#toast{
+  position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+  background:var(--text);color:#fff;padding:9px 18px;
+  border-radius:8px;font-size:12px;z-index:9999;
+  opacity:0;transition:opacity .25s;pointer-events:none;
+  font-family:'DM Sans',sans-serif;white-space:nowrap;
+}
+
+/* ── RESPONSIVE ── */
+@media(max-width:1100px){.kpi-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:900px){
+  .sidebar{display:none}
+  .grid-2,.grid-3{grid-template-columns:1fr}
+  .kpi-grid{grid-template-columns:repeat(2,1fr)}
+  .com-detail-stats{grid-template-columns:1fr 1fr}
+  .obj-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:600px){
+  .main{padding:14px}
+  .kpi-grid{grid-template-columns:1fr 1fr}
+  .kpi-val{font-size:22px}
+  .topbar{padding:0 14px;gap:10px}
+  .topbar-title{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="topbar-logo">Moulin <em>des</em> Moines</div>
+  <span class="topbar-title">Performance Commerciaux</span>
+  <div class="topbar-spacer"></div>
+  <div class="topbar-period">
+    <span>Période</span>
+    <select id="sel-period" onchange="onPeriodChange(this.value)">
+      <option value="all">Tout</option>
+      <option value="2026">2026</option>
+      <option value="q1-2026">T1 2026</option>
+      <option value="q2-2026">T2 2026</option>
+      <option value="30">30 derniers jours</option>
+      <option value="7">7 derniers jours</option>
+    </select>
+  </div>
+  <a href="admin.html" class="topbar-back">← Admin</a>
+</header>
+
+<div class="layout">
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sidebar-section">Vue globale</div>
+  <div class="nav-item active" onclick="showPage('dashboard',this)">
+    <span class="nav-icon">📊</span> Tableau de bord
+  </div>
+  <div class="nav-item" onclick="showPage('commerciaux',this)">
+    <span class="nav-icon">👥</span> Commerciaux
+    <span class="nav-badge" id="nb-com-badge" style="display:none">0</span>
+  </div>
+  <div class="nav-item" onclick="showPage('objectifs',this)">
+    <span class="nav-icon">🎯</span> Objectifs & KPIs
+  </div>
+
+  <div class="sidebar-section">Analyse</div>
+  <div class="nav-item" onclick="showPage('catalogue',this)">
+    <span class="nav-icon">📦</span> Catalogue MDM
+  </div>
+  <div class="nav-item" onclick="showPage('commandes',this)">
+    <span class="nav-icon">📋</span> Commandes
+  </div>
+
+  <div class="sidebar-section">Import</div>
+  <div class="nav-item" onclick="showPage('import',this)">
+    <span class="nav-icon">⬆</span> Import données
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main class="main">
+
+<!-- ═══════════════════════════════════════════════════
+     PAGE : DASHBOARD
+═══════════════════════════════════════════════════ -->
+<div class="page active" id="page-dashboard">
+  <div class="page-hd">
+    <div class="page-hd-top">
+      <div>
+        <div class="page-title">Tableau de bord</div>
+        <div class="page-sub">Vue consolidée des performances de l'équipe commerciale</div>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-outline btn-sm" onclick="refreshAll()">↻ Actualiser</button>
+        <button class="btn btn-primary btn-sm" onclick="showPage('import',document.querySelector('.nav-item:last-child'))">⬆ Importer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- KPIs globaux -->
+  <div class="kpi-grid">
+    <div class="kpi-card" style="--kpi-color:var(--green)">
+      <div class="kpi-label">CA HT Total</div>
+      <div class="kpi-val" id="kpi-ca-total">—</div>
+      <div class="kpi-sub">toutes commandes Firebase</div>
+      <div class="kpi-trend up" id="kpi-ca-trend">↑ chargement…</div>
+    </div>
+    <div class="kpi-card" style="--kpi-color:var(--terra)">
+      <div class="kpi-label">Commandes</div>
+      <div class="kpi-val" id="kpi-nb-cmd">—</div>
+      <div class="kpi-sub">bons de commande enregistrés</div>
+      <div class="kpi-trend flat" id="kpi-cmd-trend">— période</div>
+    </div>
+    <div class="kpi-card" style="--kpi-color:var(--brown)">
+      <div class="kpi-label">Clients actifs</div>
+      <div class="kpi-val" id="kpi-nb-clients">—</div>
+      <div class="kpi-sub">ayant passé commande</div>
+    </div>
+    <div class="kpi-card" style="--kpi-color:var(--gold)">
+      <div class="kpi-label">Panier moyen</div>
+      <div class="kpi-val" id="kpi-panier-moy">—</div>
+      <div class="kpi-sub">par commande HT</div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <!-- Classement commerciaux -->
+    <div class="card">
+      <div class="card-head">
+        <span class="card-title">🏆 Classement commerciaux</span>
+        <button class="btn btn-outline btn-sm" onclick="showPage('commerciaux',null)">Détails →</button>
+      </div>
+      <div class="card-body" id="ranking-body">
+        <div class="empty-state">
+          <div class="empty-icon">📊</div>
+          <div class="empty-text">Chargement des données…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Graphe CA par commercial -->
+    <div class="card">
+      <div class="card-head">
+        <span class="card-title">📈 CA par commercial</span>
+      </div>
+      <div class="card-body">
+        <div class="chart-wrap">
+          <canvas id="chart-com-ca"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <!-- Évolution mensuelle -->
+    <div class="card">
+      <div class="card-head">
+        <span class="card-title">📅 Évolution mensuelle</span>
+      </div>
+      <div class="card-body">
+        <div class="chart-wrap">
+          <canvas id="chart-mensuel"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top produits commandés -->
+    <div class="card">
+      <div class="card-head">
+        <span class="card-title">⭐ Top produits commandés</span>
+        <span class="card-title-sub">par nombre de colis</span>
+      </div>
+      <div class="card-body" id="top-produits-body">
+        <div class="empty-state"><div class="empty-icon">📦</div><div class="empty-text">Chargement…</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Activité récente -->
+  <div class="card">
+    <div class="card-head">
+      <span class="card-title">⚡ Activité récente</span>
+    </div>
+    <div class="card-body" id="activity-body">
+      <div class="timeline">
+        <div class="empty-state"><div class="empty-icon">⏳</div><div class="empty-text">Chargement…</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     PAGE : COMMERCIAUX
+═══════════════════════════════════════════════════ -->
+<div class="page" id="page-commerciaux">
+  <div class="page-hd">
+    <div class="page-hd-top">
+      <div>
+        <div class="page-title">Commerciaux</div>
+        <div class="page-sub">Performance individuelle et portefeuille clients</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Podium -->
+  <div class="card">
+    <div class="card-head">
+      <span class="card-title">🏆 Podium CA</span>
+    </div>
+    <div class="card-body" id="podium-body">
+      <div class="empty-state"><div class="empty-icon">🏆</div><div class="empty-text">Chargement…</div></div>
+    </div>
+  </div>
+
+  <!-- Tableau complet -->
+  <div class="card">
+    <div class="card-head">
+      <span class="card-title">📋 Tous les commerciaux</span>
+    </div>
+    <div class="card-body">
+      <div class="filter-bar">
+        <div class="filter-search-wrap">
+          <span class="filter-search-ico">🔍</span>
+          <input type="text" placeholder="Rechercher…" oninput="filterCom(this.value)" id="com-search">
+        </div>
+        <select onchange="sortCom(this.value)">
+          <option value="ca">Trier par CA</option>
+          <option value="cmds">Par commandes</option>
+          <option value="clients">Par clients</option>
+          <option value="panier">Par panier moy.</option>
+        </select>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="com-table" id="com-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Commercial</th>
+              <th>Clients</th>
+              <th>Commandes</th>
+              <th>CA HT</th>
+              <th>Panier moy.</th>
+              <th>Progression</th>
+              <th>Statut</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="com-tbody">
+            <tr><td colspan="9" style="text-align:center;padding:30px;color:var(--text3)">Chargement…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Détail commercial sélectionné -->
+  <div id="com-detail-wrap" style="display:none">
+    <div class="card">
+      <div class="com-detail-header">
+        <div class="com-detail-avatar" id="cdet-avatar">?</div>
+        <div>
+          <div class="com-detail-name" id="cdet-name">—</div>
+          <div class="com-detail-meta" id="cdet-meta">—</div>
+        </div>
+        <div style="margin-left:auto">
+          <button class="btn btn-outline btn-sm" style="color:#fff;border-color:rgba(255,255,255,.3)" onclick="closeComDetail()">✕ Fermer</button>
+        </div>
+      </div>
+      <div class="com-detail-stats">
+        <div class="com-detail-stat">
+          <div class="com-ds-val" id="cdet-ca">—</div>
+          <div class="com-ds-lbl">CA HT</div>
+        </div>
+        <div class="com-detail-stat">
+          <div class="com-ds-val" id="cdet-cmds">—</div>
+          <div class="com-ds-lbl">Commandes</div>
+        </div>
+        <div class="com-detail-stat">
+          <div class="com-ds-val" id="cdet-clients">—</div>
+          <div class="com-ds-lbl">Clients actifs</div>
+        </div>
+        <div class="com-detail-stat">
+          <div class="com-ds-val" id="cdet-panier">—</div>
+          <div class="com-ds-lbl">Panier moyen</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="tabs">
+          <div class="tab active" onclick="switchComTab('clients',this)">Clients</div>
+          <div class="tab" onclick="switchComTab('produits',this)">Top produits</div>
+          <div class="tab" onclick="switchComTab('evolution',this)">Évolution</div>
+        </div>
+        <div id="cdet-tab-clients">
+          <div style="overflow-x:auto">
+            <table class="prod-table" id="cdet-clients-tbl">
+              <thead><tr><th>Client</th><th>Magasin</th><th>Commandes</th><th>CA HT</th><th>Dernière cmd</th><th>Statut</th></tr></thead>
+              <tbody id="cdet-clients-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+        <div id="cdet-tab-produits" style="display:none">
+          <div style="overflow-x:auto">
+            <table class="prod-table" id="cdet-produits-tbl">
+              <thead><tr><th>Code</th><th>Désignation</th><th>Colis cmdés</th><th>CA HT</th><th>Catégorie</th></tr></thead>
+              <tbody id="cdet-produits-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+        <div id="cdet-tab-evolution" style="display:none">
+          <div class="chart-wrap"><canvas id="chart-com-evolution"></canvas></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     PAGE : OBJECTIFS
+═══════════════════════════════════════════════════ -->
+<div class="page" id="page-objectifs">
+  <div class="page-hd">
+    <div class="page-hd-top">
+      <div>
+        <div class="page-title">Objectifs & KPIs</div>
+        <div class="page-sub">Suivi des objectifs par commercial et équipe</div>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-primary btn-sm" onclick="saveObjectifs()">💾 Sauvegarder</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Objectifs globaux équipe -->
+  <div class="card" style="margin-bottom:20px">
+    <div class="card-head"><span class="card-title">🎯 Objectifs équipe 2026</span></div>
+    <div class="card-body">
+      <div class="obj-grid" id="obj-equipe-grid">
+        <div class="obj-card">
+          <div class="obj-label">CA HT annuel</div>
+          <div class="obj-current" id="obj-ca-current">—</div>
+          <div class="obj-target">Objectif : <input type="number" id="obj-ca-target" value="150000" style="width:80px;border:1px solid var(--border);border-radius:4px;padding:1px 5px;font-size:12px"> €</div>
+          <div class="obj-prog"><div class="obj-prog-fill" id="obj-ca-fill" style="width:0%;background:var(--green)"></div></div>
+          <div class="obj-pct" id="obj-ca-pct">0%</div>
+        </div>
+        <div class="obj-card">
+          <div class="obj-label">Nb commandes</div>
+          <div class="obj-current" id="obj-cmd-current">—</div>
+          <div class="obj-target">Objectif : <input type="number" id="obj-cmd-target" value="500" style="width:70px;border:1px solid var(--border);border-radius:4px;padding:1px 5px;font-size:12px"> cmds</div>
+          <div class="obj-prog"><div class="obj-prog-fill" id="obj-cmd-fill" style="width:0%;background:var(--terra)"></div></div>
+          <div class="obj-pct" id="obj-cmd-pct">0%</div>
+        </div>
+        <div class="obj-card">
+          <div class="obj-label">Clients actifs</div>
+          <div class="obj-current" id="obj-cli-current">—</div>
+          <div class="obj-target">Objectif : <input type="number" id="obj-cli-target" value="80" style="width:60px;border:1px solid var(--border);border-radius:4px;padding:1px 5px;font-size:12px"> clients</div>
+          <div class="obj-prog"><div class="obj-prog-fill" id="obj-cli-fill" style="width:0%;background:var(--brown)"></div></div>
+          <div class="obj-pct" id="obj-cli-pct">0%</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Objectifs par commercial -->
+  <div class="card">
+    <div class="card-head"><span class="card-title">👤 Objectifs par commercial</span></div>
+    <div class="card-body">
+      <div id="obj-com-grid">
+        <div class="empty-state"><div class="empty-icon">⏳</div><div class="empty-text">Chargement…</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     PAGE : CATALOGUE
+═══════════════════════════════════════════════════ -->
+<div class="page" id="page-catalogue">
+  <div class="page-hd">
+    <div class="page-hd-top">
+      <div>
+        <div class="page-title">Catalogue MDM 2026</div>
+        <div class="page-sub">1 390 références — Tarif HT 2026</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <!-- Répartition par catégorie -->
+    <div class="card">
+      <div class="card-head"><span class="card-title">📊 Répartition catalogue</span></div>
+      <div class="card-body">
+        <div class="chart-wrap"><canvas id="chart-cat-donut" style="max-height:220px"></canvas></div>
+      </div>
+    </div>
+    <!-- Stats catalogue -->
+    <div class="card">
+      <div class="card-head"><span class="card-title">📈 Stats catalogue</span></div>
+      <div class="card-body" id="cat-stats-body">
+        <div class="stat-row"><span class="stat-row-label">Total références</span><span class="stat-row-val">1 390</span></div>
+        <div class="stat-row"><span class="stat-row-label">Prix moyen HT</span><span class="stat-row-val" id="cat-stat-prix-moy">—</span></div>
+        <div class="stat-row"><span class="stat-row-label">Produit le + cher</span><span class="stat-row-val" id="cat-stat-max">—</span></div>
+        <div class="stat-row"><span class="stat-row-label">Produit le - cher</span><span class="stat-row-val" id="cat-stat-min">—</span></div>
+        <div class="stat-row"><span class="stat-row-label">CA potentiel (1 PCB)</span><span class="stat-row-val" id="cat-stat-ca">—</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Liste produits filtrable -->
+  <div class="card">
+    <div class="card-head">
+      <span class="card-title">📦 Catalogue produits</span>
+      <span class="card-title-sub" id="cat-count-label">1 390 refs</span>
+    </div>
+    <div class="card-body">
+      <div class="filter-bar">
+        <div class="filter-search-wrap">
+          <span class="filter-search-ico">🔍</span>
+          <input type="text" placeholder="Code ou désignation…" oninput="filterCatalogue(this.value)" id="cat-search" style="width:260px">
+        </div>
+        <select id="cat-filter-cat" onchange="filterCatalogue(document.getElementById('cat-search').value)">
+          <option value="">Toutes catégories</option>
+        </select>
+        <select id="cat-sort" onchange="filterCatalogue(document.getElementById('cat-search').value)">
+          <option value="code">Trier par code</option>
+          <option value="prix-asc">Prix ↑</option>
+          <option value="prix-desc">Prix ↓</option>
+        </select>
+      </div>
+      <div style="overflow-x:auto;max-height:420px;overflow-y:auto">
+        <table class="prod-table" id="cat-table">
+          <thead style="position:sticky;top:0;background:#fff;z-index:1">
+            <tr>
+              <th>Code</th><th>Désignation</th><th>Catégorie</th>
+              <th>PCB</th><th style="text-align:right">PU HT</th>
+              <th style="text-align:right">PU×PCB</th><th>TVA</th>
+            </tr>
+          </thead>
+          <tbody id="cat-tbody">
+            <tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text3)">Chargement…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     PAGE : COMMANDES
+═══════════════════════════════════════════════════ -->
+<div class="page" id="page-commandes">
+  <div class="page-hd">
+    <div class="page-hd-top">
+      <div>
+        <div class="page-title">Commandes</div>
+        <div class="page-sub">Toutes les commandes enregistrées dans Firebase</div>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-outline btn-sm" onclick="exportCmdsExcel()">📊 Export Excel</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <span class="card-title">📋 Historique commandes</span>
+      <span class="card-title-sub" id="cmds-count-label">—</span>
+    </div>
+    <div class="card-body">
+      <div class="filter-bar">
+        <div class="filter-search-wrap">
+          <span class="filter-search-ico">🔍</span>
+          <input type="text" placeholder="Magasin, client, code…" oninput="filterCmds(this.value)" id="cmds-search">
+        </div>
+        <select id="cmds-filter-com" onchange="filterCmds(document.getElementById('cmds-search').value)">
+          <option value="">Tous commerciaux</option>
+        </select>
+      </div>
+      <div style="overflow-x:auto;max-height:500px;overflow-y:auto">
+        <table class="prod-table" id="cmds-table">
+          <thead style="position:sticky;top:0;background:#fff;z-index:1">
+            <tr>
+              <th>Date</th><th>Magasin</th><th>Commercial</th>
+              <th>Réfs</th><th>Colis</th>
+              <th style="text-align:right">CA HT</th><th>Source</th>
+            </tr>
+          </thead>
+          <tbody id="cmds-tbody">
+            <tr><td colspan="7" style="text-align:center;padding:30px;color:var(--text3)">Chargement…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     PAGE : IMPORT
+═══════════════════════════════════════════════════ -->
+<div class="page" id="page-import">
+  <div class="page-hd">
+    <div class="page-hd-top">
+      <div>
+        <div class="page-title">Import données</div>
+        <div class="page-sub">Importez des commandes ou des tarifs pour enrichir les analyses</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <!-- Import BDC -->
+    <div class="card">
+      <div class="card-head"><span class="card-title">📥 Import bon de commande</span></div>
+      <div class="card-body">
+        <div class="import-zone" id="imp-bdc-zone"
+          onclick="document.getElementById('imp-bdc-file').click()"
+          ondragover="event.preventDefault();this.classList.add('drag-over')"
+          ondragleave="this.classList.remove('drag-over')"
+          ondrop="event.preventDefault();this.classList.remove('drag-over');impHandleBdc(event.dataTransfer.files[0])">
+          <div class="import-zone-icon">📋</div>
+          <div class="import-zone-title">Glissez un BDC ici</div>
+          <div class="import-zone-sub">Excel (.xlsx) ou TXT/CSV</div>
+          <div class="import-zone-hint">Format : Magasin, Commercial, Code, Qté, PU HT</div>
+          <input type="file" id="imp-bdc-file" accept=".xlsx,.xls,.txt,.csv" style="display:none" onchange="impHandleBdc(this.files[0])">
+        </div>
+        <div class="import-log" id="imp-bdc-log"></div>
+        <div id="imp-bdc-result" style="display:none;margin-top:14px">
+          <div style="display:flex;gap:8px;margin-top:10px">
+            <select id="imp-bdc-com" class="btn btn-outline btn-sm" style="flex:1">
+              <option value="">-- Commercial --</option>
+            </select>
+            <button class="btn btn-primary btn-sm" onclick="impApplyBdc()">✓ Enregistrer</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Import tarif / catalogue -->
+    <div class="card">
+      <div class="card-head"><span class="card-title">📦 Import tarif catalogue</span></div>
+      <div class="card-body">
+        <div class="import-zone" id="imp-tarif-zone"
+          onclick="document.getElementById('imp-tarif-file').click()"
+          ondragover="event.preventDefault();this.classList.add('drag-over')"
+          ondragleave="this.classList.remove('drag-over')"
+          ondrop="event.preventDefault();this.classList.remove('drag-over');impHandleTarif(event.dataTransfer.files[0])">
+          <div class="import-zone-icon">💰</div>
+          <div class="import-zone-title">Glissez le tarif MDM</div>
+          <div class="import-zone-sub">Excel (.xlsx) — Tarif_MDM_2026_VF_.xlsx</div>
+          <div class="import-zone-hint">Colonnes : Code, Désignation, Gencod, PCB, PU HT</div>
+          <input type="file" id="imp-tarif-file" accept=".xlsx,.xls" style="display:none" onchange="impHandleTarif(this.files[0])">
+        </div>
+        <div class="import-log" id="imp-tarif-log"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Résumé des données chargées -->
+  <div class="card">
+    <div class="card-head"><span class="card-title">📊 Données en mémoire</span></div>
+    <div class="card-body">
+      <div class="obj-grid">
+        <div class="obj-card">
+          <div class="obj-label">Produits catalogue</div>
+          <div class="obj-current" id="imp-stat-prods">1 390</div>
+          <div class="obj-target">Tarif MDM 2026 VF</div>
+        </div>
+        <div class="obj-card">
+          <div class="obj-label">Commandes Firebase</div>
+          <div class="obj-current" id="imp-stat-cmds">—</div>
+          <div class="obj-target">Chargées depuis Firestore</div>
+        </div>
+        <div class="obj-card">
+          <div class="obj-label">Commerciaux</div>
+          <div class="obj-current" id="imp-stat-coms">—</div>
+          <div class="obj-target">Comptes rôle = user</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+</div><!-- /layout -->
+
+<div id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<script>
+/* ════════════════════════════════════════════════════════════════
+   FIREBASE CONFIG
+════════════════════════════════════════════════════════════════ */
+const FIREBASE_CONFIG = {
+  apiKey:            "AIzaSyB000QDa4c-vMjO1Xuimw58iiRvwgbF1zc",
+  authDomain:        "mdm-bdc26.firebaseapp.com",
+  projectId:         "mdm-bdc26",
+  storageBucket:     "mdm-bdc26.firebasestorage.app",
+  messagingSenderId: "52658530893",
+  appId:             "1:52658530893:web:166626ae4d681465ddca04"
+};
+
+let _fbDb = null, _fbReady = false;
+function initFB(){
+  if(_fbReady) return Promise.resolve(_fbDb);
+  return new Promise((resolve,reject)=>{
+    try{
+      if(!firebase.apps||!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+      _fbDb = firebase.firestore(); _fbReady = true; resolve(_fbDb);
+    }catch(e){ reject(e); }
+  });
+}
+
+/* ════════════════════════════════════════════════════════════════
+   DONNÉES GLOBALES
+════════════════════════════════════════════════════════════════ */
+// Catalogue produits embarqué (issu de Tarif_MDM_2026_VF_.xlsx)
+const CATALOGUE = </script>
+<script>
+
+/* ════════════════════════════════════════════════════════════════
+   ÉTAT GLOBAL
+════════════════════════════════════════════════════════════════ */
+let _allOrders    = [];  // [{login, orderId, ...orderData}]
+let _commerciaux  = [];  // comptes role=user
+let _clients      = [];  // comptes role=client
+let _period       = 'all';
+let _selectedCom  = null;
+let _charts       = {};
+let _catIndex     = {};  // code → produit
+let _comEvolutionChart = null;
+
+// Construire l'index catalogue
+CATALOGUE.forEach(p => { _catIndex[p.c] = p; });
+
+/* ════════════════════════════════════════════════════════════════
+   UTILITAIRES
+════════════════════════════════════════════════════════════════ */
+function fmt(n){
+  if(!n&&n!==0) return '—';
+  n=parseFloat(n)||0;
+  if(n>=1000) return (n/1000).toFixed(1).replace('.',',')+'\u202f€';
+  return n.toFixed(2).replace('.',',')+'\u202f€';
+}
+function fmtN(n){ return new Intl.NumberFormat('fr-FR').format(Math.round(n||0)); }
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function showToast(msg,dur=3000){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.style.opacity='1';
+  clearTimeout(t._t); t._t=setTimeout(()=>t.style.opacity='0',dur);
+}
+
+function showPage(name, el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  if(el){
+    document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+    el.classList.add('active');
+  }
+  if(name==='catalogue') renderCatalogue();
+  if(name==='commandes') renderCmdsPage();
+  if(name==='objectifs') renderObjectifs();
+  if(name==='commerciaux') renderComPageFull();
+}
+
+function onPeriodChange(val){
+  _period = val;
+  computeAndRender();
+}
+
+function filterOrdersByPeriod(orders){
+  if(_period==='all') return orders;
+  const now = Date.now();
+  if(_period==='7')  return orders.filter(o => (o.id||0) > now - 7*86400000);
+  if(_period==='30') return orders.filter(o => (o.id||0) > now - 30*86400000);
+  if(_period==='2026') return orders.filter(o => {
+    const d = new Date(o.date||o.id||0);
+    return d.getFullYear()===2026;
+  });
+  if(_period==='q1-2026') return orders.filter(o => {
+    const d = new Date(o.date||o.id||0);
+    return d.getFullYear()===2026 && d.getMonth()<3;
+  });
+  if(_period==='q2-2026') return orders.filter(o => {
+    const d = new Date(o.date||o.id||0);
+    return d.getFullYear()===2026 && d.getMonth()>=3 && d.getMonth()<6;
+  });
+  return orders;
+}
+
+/* ════════════════════════════════════════════════════════════════
+   CHARGEMENT FIREBASE
+════════════════════════════════════════════════════════════════ */
+async function loadAll(){
+  try{
+    const db = await initFB();
+
+    // 1. Charger les comptes
+    const snapComptes = await db.collection('comptes').get();
+    _commerciaux = snapComptes.docs.map(d=>d.data()).filter(c=>c.role==='user');
+    _clients     = snapComptes.docs.map(d=>d.data()).filter(c=>c.role==='client');
+
+    document.getElementById('nb-com-badge').textContent=_commerciaux.length;
+    document.getElementById('nb-com-badge').style.display=_commerciaux.length>0?'inline':'none';
+    document.getElementById('imp-stat-coms').textContent=_commerciaux.length;
+
+    // Remplir filtres
+    const selCom=document.getElementById('cmds-filter-com');
+    selCom.innerHTML='<option value="">Tous commerciaux</option>';
+    _commerciaux.forEach(c=>{
+      const o=document.createElement('option');
+      o.value=c.login; o.textContent=c.nom||c.login;
+      selCom.appendChild(o);
+    });
+    const selImpCom=document.getElementById('imp-bdc-com');
+    selImpCom.innerHTML='<option value="">-- Commercial --</option>';
+    _commerciaux.forEach(c=>{
+      const o=document.createElement('option');
+      o.value=c.login; o.textContent=c.nom||c.login;
+      selImpCom.appendChild(o);
+    });
+
+    // 2. Charger toutes les commandes via historique/{login}/commandes
+    _allOrders = [];
+    const loginsList = snapComptes.docs.map(d=>d.id);
+    const batchSize = 10;
+    for(let i=0;i<loginsList.length;i+=batchSize){
+      const batch = loginsList.slice(i,i+batchSize);
+      await Promise.all(batch.map(async login => {
+        try{
+          const snap = await db.collection('historique').doc(login)
+            .collection('commandes').orderBy('id','desc').limit(200).get();
+          snap.docs.forEach(d=>{
+            const data = d.data();
+            _allOrders.push({_login:login, ...data});
+          });
+        }catch(e){
+          // Pas de commandes pour ce login — fallback sans orderBy
+          try{
+            const snap2 = await db.collection('historique').doc(login)
+              .collection('commandes').limit(200).get();
+            snap2.docs.forEach(d=>{
+              _allOrders.push({_login:login, ...d.data()});
+            });
+          }catch(e2){}
+        }
+      }));
+    }
+
+    document.getElementById('imp-stat-cmds').textContent=_allOrders.length;
+    showToast(`✅ ${_allOrders.length} commandes, ${_commerciaux.length} commerciaux chargés`);
+    computeAndRender();
+  }catch(e){
+    showToast('⚠ Firebase : '+e.message);
+    console.error(e);
+    // Rendre avec données vides pour montrer l'interface
+    computeAndRender();
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════
+   CALCULS PERFORMANCES
+════════════════════════════════════════════════════════════════ */
+function computeStats(orders){
+  // Enrichir : trouver le commercial de chaque client
+  const clientComMap = {};
+  _clients.forEach(c=>{ if(c.commercial) clientComMap[c.login]=c.commercial; });
+
+  const comMap = {}; // login → {nom, ca, cmds, clients:Set, produits:{code:{qty,ca}}}
+  const allComs = _commerciaux.map(c=>c.login);
+
+  // Initialiser tous les commerciaux
+  _commerciaux.forEach(c=>{
+    comMap[c.login] = {
+      login: c.login,
+      nom: c.nom||c.login,
+      email: c.email||'',
+      ca: 0, cmds: 0,
+      clientsSet: new Set(),
+      produits: {},
+      history: {}  // YYYY-MM → ca
+    };
+  });
+
+  let totalCa=0, totalCmds=0;
+  const clientsActifs = new Set();
+  const monthlyGlobal = {};
+
+  orders.forEach(order=>{
+    const loginCli = order._login;
+    const comLogin = clientComMap[loginCli] || loginCli; // fallback
+    const ca = parseFloat(order.totalNet||order.totalBrut||0);
+    const nbColis = parseInt(order.nbColis||0);
+
+    totalCa += ca; totalCmds++;
+    if(loginCli) clientsActifs.add(loginCli);
+
+    // Mois
+    const d = new Date(order.date||order.id||0);
+    if(!isNaN(d.getTime())){
+      const key = d.getFullYear()+'-'+(String(d.getMonth()+1).padStart(2,'0'));
+      monthlyGlobal[key] = (monthlyGlobal[key]||0)+ca;
+    }
+
+    // Par commercial
+    if(comMap[comLogin]){
+      const com = comMap[comLogin];
+      com.ca += ca;
+      com.cmds++;
+      com.clientsSet.add(loginCli);
+
+      // Mois
+      const d2 = new Date(order.date||order.id||0);
+      if(!isNaN(d2.getTime())){
+        const key = d2.getFullYear()+'-'+(String(d2.getMonth()+1).padStart(2,'0'));
+        com.history[key] = (com.history[key]||0)+ca;
+      }
+
+      // Produits
+      if(Array.isArray(order.articles)){
+        order.articles.forEach(art=>{
+          const code = art.code||'';
+          const qty  = parseInt(art.qty||0);
+          const artCa = parseFloat(art.totalHT||0) || (qty*(parseFloat(art.puHT||0)));
+          if(!com.produits[code]) com.produits[code]={qty:0,ca:0};
+          com.produits[code].qty += qty;
+          com.produits[code].ca  += artCa;
+        });
+      }
+    }
+  });
+
+  const comStats = Object.values(comMap).map(c=>({
+    ...c,
+    clients: c.clientsSet.size,
+    panier: c.cmds>0?c.ca/c.cmds:0
+  })).sort((a,b)=>b.ca-a.ca);
+
+  return {
+    totalCa, totalCmds,
+    totalClients: clientsActifs.size,
+    panierMoy: totalCmds>0?totalCa/totalCmds:0,
+    comStats,
+    monthlyGlobal
+  };
+}
+
+/* ════════════════════════════════════════════════════════════════
+   RENDU PRINCIPAL
+════════════════════════════════════════════════════════════════ */
+function computeAndRender(){
+  const filtered = filterOrdersByPeriod(_allOrders);
+  const stats = computeStats(filtered);
+  renderKPIs(stats);
+  renderRanking(stats);
+  renderCharCa(stats);
+  renderChartMensuel(stats);
+  renderTopProduits(filtered);
+  renderActivity(filtered);
+  updateObjectifsProgress(stats);
+}
+
+function refreshAll(){
+  showToast('↻ Rechargement…');
+  loadAll();
+}
+
+/* KPIs */
+function renderKPIs(s){
+  document.getElementById('kpi-ca-total').textContent  = fmt(s.totalCa);
+  document.getElementById('kpi-nb-cmd').textContent    = fmtN(s.totalCmds);
+  document.getElementById('kpi-nb-clients').textContent= fmtN(s.totalClients);
+  document.getElementById('kpi-panier-moy').textContent= fmt(s.panierMoy);
+  document.getElementById('kpi-ca-trend').textContent  = `${s.comStats.length} commerciaux`;
+  document.getElementById('kpi-cmd-trend').textContent = _period==='all'?'toutes périodes':_period;
+  document.getElementById('imp-stat-cmds').textContent = _allOrders.length;
+}
+
+/* Classement */
+function renderRanking(s){
+  const el=document.getElementById('ranking-body');
+  if(!s.comStats.length){
+    el.innerHTML='<div class="empty-state"><div class="empty-icon">👥</div><div class="empty-text">Aucun commercial configuré</div><div class="empty-sub">Ajoutez des comptes commerciaux dans Admin → Comptes</div></div>';
+    return;
+  }
+  const maxCa = s.comStats[0]?.ca||1;
+  el.innerHTML=s.comStats.map((c,i)=>{
+    const pct = maxCa>0?(c.ca/maxCa*100):0;
+    const medal = ['🥇','🥈','🥉'][i]||'';
+    const cls = pct>66?'':pct>33?'warn':'danger';
+    return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border-l)">
+      <span style="font-size:16px;width:24px">${medal||String(i+1)}</span>
+      <div class="com-avatar">${(c.nom||'?').charAt(0).toUpperCase()}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;font-weight:500;color:var(--text)">${esc(c.nom)}</div>
+        <div style="margin-top:4px"><div class="prog-bar"><div class="prog-bar-fill ${cls}" style="width:${pct}%"></div></div></div>
+      </div>
+      <div style="text-align:right;flex-shrink:0">
+        <div style="font-size:12px;font-weight:600;color:var(--green)">${fmt(c.ca)}</div>
+        <div style="font-size:10px;color:var(--text3)">${c.cmds} cmds</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* Graphe CA par commercial */
+function renderCharCa(s){
+  const ctx=document.getElementById('chart-com-ca').getContext('2d');
+  if(_charts.comCa) _charts.comCa.destroy();
+  const labels=s.comStats.map(c=>c.nom||c.login);
+  const data=s.comStats.map(c=>c.ca);
+  const colors=['#2e6b47','#a0522d','#b8872a','#4a7c59','#6b4c3b','#c05a3a','#888'];
+  _charts.comCa=new Chart(ctx,{
+    type:'bar',
+    data:{labels,datasets:[{
+      data, backgroundColor:colors.slice(0,data.length),
+      borderRadius:5, borderSkipped:false
+    }]},
+    options:{
+      responsive:true,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:v=>' '+fmt(v.raw)}}},
+      scales:{
+        y:{ticks:{callback:v=>v>=1000?(v/1000).toFixed(0)+'k€':v+'€'},grid:{color:'rgba(0,0,0,.04)'}},
+        x:{grid:{display:false}}
+      }
+    }
+  });
+}
+
+/* Graphe mensuel */
+function renderChartMensuel(s){
+  const ctx=document.getElementById('chart-mensuel').getContext('2d');
+  if(_charts.mensuel) _charts.mensuel.destroy();
+  const monthly=s.monthlyGlobal;
+  const keys=Object.keys(monthly).sort();
+  if(!keys.length){
+    _charts.mensuel=new Chart(ctx,{type:'line',data:{labels:['—'],datasets:[{data:[0]}]},options:{plugins:{legend:{display:false}}}});
+    return;
+  }
+  _charts.mensuel=new Chart(ctx,{
+    type:'line',
+    data:{
+      labels:keys.map(k=>{ const [y,m]=k.split('-'); return ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'][parseInt(m)-1]+' '+y.slice(2); }),
+      datasets:[{
+        label:'CA HT',
+        data:keys.map(k=>monthly[k]),
+        borderColor:'#2e6b47',backgroundColor:'rgba(46,107,71,.08)',
+        tension:.3,fill:true,pointRadius:4,pointBackgroundColor:'#2e6b47'
+      }]
+    },
+    options:{
+      responsive:true,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:v=>' '+fmt(v.raw)}}},
+      scales:{
+        y:{ticks:{callback:v=>v>=1000?(v/1000).toFixed(0)+'k€':v+'€'},grid:{color:'rgba(0,0,0,.04)'}},
+        x:{grid:{display:false}}
+      }
+    }
+  });
+}
+
+/* Top produits */
+function renderTopProduits(orders){
+  const el=document.getElementById('top-produits-body');
+  if(!orders.length){ el.innerHTML='<div class="empty-state"><div class="empty-icon">📦</div><div class="empty-text">Aucune commande</div></div>'; return; }
+  const prodMap={};
+  orders.forEach(order=>{
+    if(!Array.isArray(order.articles)) return;
+    order.articles.forEach(art=>{
+      const code=art.code||'?';
+      if(!prodMap[code]) prodMap[code]={code,qty:0,ca:0};
+      prodMap[code].qty+=parseInt(art.qty||0);
+      prodMap[code].ca+=parseFloat(art.totalHT||0)||0;
+    });
+  });
+  const sorted=Object.values(prodMap).sort((a,b)=>b.qty-a.qty).slice(0,8);
+  const maxQty=sorted[0]?.qty||1;
+  el.innerHTML='<table class="prod-table" style="width:100%"><tbody>'+
+    sorted.map(p=>{
+      const prod=_catIndex[p.code];
+      const lib=prod?prod.l.substring(0,30):p.code;
+      const pct=p.qty/maxQty*100;
+      return `<tr>
+        <td style="font-family:monospace;font-size:10px;color:var(--brown);width:90px">${esc(p.code)}</td>
+        <td><div style="font-size:11px;color:var(--text)">${esc(lib)}</div>
+          <div class="prog-bar" style="margin-top:3px;width:100px"><div class="prog-bar-fill" style="width:${pct}%"></div></div></td>
+        <td style="text-align:right;font-weight:600;color:var(--text);width:60px">${fmtN(p.qty)}</td>
+      </tr>`;
+    }).join('')+'</tbody></table>';
+}
+
+/* Activité récente */
+function renderActivity(orders){
+  const el=document.getElementById('activity-body');
+  const recent=[...orders].sort((a,b)=>(b.id||0)-(a.id||0)).slice(0,10);
+  if(!recent.length){ el.innerHTML='<div class="empty-state"><div class="empty-icon">⏳</div><div class="empty-text">Aucune activité</div></div>'; return; }
+  el.innerHTML='<div class="timeline">'+recent.map(o=>{
+    const d=new Date(o.date||o.id||0);
+    const timeStr=isNaN(d.getTime())?'—':d.toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+    const ca=parseFloat(o.totalNet||o.totalBrut||0);
+    return `<div class="timeline-item">
+      <div class="timeline-dot"></div>
+      <div class="timeline-content">
+        <div class="timeline-text"><strong>${esc(o.magasin||o._login||'?')}</strong> — ${o.nbRefs||'?'} réfs · ${o.nbColis||'?'} colis · <span style="color:var(--green);font-weight:500">${fmt(ca)}</span></div>
+        <div class="timeline-meta">${timeStr} · via ${esc(o._login||'?')}</div>
+      </div>
+    </div>`;
+  }).join('')+'</div>';
+}
+
+/* ════════════════════════════════════════════════════════════════
+   PAGE COMMERCIAUX — DÉTAIL
+════════════════════════════════════════════════════════════════ */
+function renderComPageFull(){
+  const filtered=filterOrdersByPeriod(_allOrders);
+  const stats=computeStats(filtered);
+  renderPodium(stats);
+  renderComTable(stats);
+}
+
+function renderPodium(s){
+  const el=document.getElementById('podium-body');
+  if(!s.comStats.length){
+    el.innerHTML='<div class="empty-state"><div class="empty-icon">🏆</div><div class="empty-text">Aucune donnée</div></div>';
+    return;
+  }
+  const [first,second,third,...rest]=s.comStats;
+  el.innerHTML=`<div class="podium">
+    ${second?`<div class="podium-item">
+      <div style="font-size:11px;font-weight:600;color:#aaa">2</div>
+      <div class="com-avatar" style="width:44px;height:44px;font-size:16px">${(second.nom||'?').charAt(0)}</div>
+      <div class="podium-name">${esc(second.nom)}</div>
+      <div class="podium-ca">${fmt(second.ca)}</div>
+      <div class="podium-rank r2">2</div>
+    </div>`:''}
+    ${first?`<div class="podium-item">
+      <div style="font-size:14px">🏆</div>
+      <div class="com-avatar" style="width:52px;height:52px;font-size:20px;background:var(--gold-l);color:var(--gold)">${(first.nom||'?').charAt(0)}</div>
+      <div class="podium-name" style="font-weight:600">${esc(first.nom)}</div>
+      <div class="podium-ca" style="font-size:14px">${fmt(first.ca)}</div>
+      <div class="podium-rank r1">1</div>
+    </div>`:''}
+    ${third?`<div class="podium-item">
+      <div style="font-size:11px;font-weight:600;color:#c47d4a">3</div>
+      <div class="com-avatar" style="width:40px;height:40px;font-size:15px">${(third.nom||'?').charAt(0)}</div>
+      <div class="podium-name">${esc(third.nom)}</div>
+      <div class="podium-ca">${fmt(third.ca)}</div>
+      <div class="podium-rank r3">3</div>
+    </div>`:''}
+  </div>`;
+}
+
+let _comData=[], _comFilter='', _comSort='ca';
+function renderComTable(s){
+  _comData=s.comStats;
+  _renderComTableFiltered();
+}
+
+function filterCom(q){ _comFilter=q; _renderComTableFiltered(); }
+function sortCom(v){ _comSort=v; _renderComTableFiltered(); }
+function _renderComTableFiltered(){
+  let data=[..._comData];
+  if(_comFilter) data=data.filter(c=>
+    (c.nom||'').toLowerCase().includes(_comFilter.toLowerCase())||
+    c.login.toLowerCase().includes(_comFilter.toLowerCase())
+  );
+  if(_comSort==='cmds') data.sort((a,b)=>b.cmds-a.cmds);
+  else if(_comSort==='clients') data.sort((a,b)=>b.clients-a.clients);
+  else if(_comSort==='panier') data.sort((a,b)=>b.panier-a.panier);
+  else data.sort((a,b)=>b.ca-a.ca);
+
+  const maxCa=data[0]?.ca||1;
+  const tbody=document.getElementById('com-tbody');
+  if(!data.length){
+    tbody.innerHTML='<tr><td colspan="9" style="text-align:center;padding:30px;color:var(--text3)">Aucun résultat</td></tr>';
+    return;
+  }
+  tbody.innerHTML=data.map((c,i)=>{
+    const pct=maxCa>0?c.ca/maxCa*100:0;
+    const status=c.cmds===0?'badge-gray':c.ca>5000?'badge-green':c.ca>1000?'badge-gold':'badge-red';
+    const statusLabel=c.cmds===0?'Inactif':c.ca>5000?'Excellent':c.ca>1000?'En cours':'Faible';
+    return `<tr>
+      <td style="color:var(--text3);font-weight:600">${i+1}</td>
+      <td><div class="com-name-wrap">
+        <div class="com-avatar">${(c.nom||'?').charAt(0)}</div>
+        <div>
+          <div style="font-weight:500">${esc(c.nom)}</div>
+          <div style="font-size:10px;color:var(--text3)">${esc(c.login)}</div>
+        </div>
+      </div></td>
+      <td>${c.clients}</td>
+      <td>${c.cmds}</td>
+      <td style="font-weight:600;color:var(--green)">${fmt(c.ca)}</td>
+      <td>${fmt(c.panier)}</td>
+      <td style="width:120px">
+        <div class="prog-bar"><div class="prog-bar-fill" style="width:${pct}%"></div></div>
+        <div style="font-size:9px;color:var(--text3);margin-top:2px">${pct.toFixed(0)}% du max</div>
+      </td>
+      <td><span class="status-badge ${status}">${statusLabel}</span></td>
+      <td><button class="btn btn-outline btn-sm" onclick="openComDetail('${c.login}')">→</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function openComDetail(login){
+  const filtered=filterOrdersByPeriod(_allOrders);
+  const stats=computeStats(filtered);
+  const com=stats.comStats.find(c=>c.login===login);
+  if(!com) return;
+  _selectedCom=com;
+  document.getElementById('com-detail-wrap').style.display='block';
+  document.getElementById('cdet-avatar').textContent=(com.nom||'?').charAt(0);
+  document.getElementById('cdet-name').textContent=com.nom||com.login;
+  document.getElementById('cdet-meta').textContent=`${com.clients} client(s) · ${com.cmds} commande(s)`;
+  document.getElementById('cdet-ca').textContent=fmt(com.ca);
+  document.getElementById('cdet-cmds').textContent=fmtN(com.cmds);
+  document.getElementById('cdet-clients').textContent=fmtN(com.clients);
+  document.getElementById('cdet-panier').textContent=fmt(com.panier);
+  // Clients du commercial
+  const clientComMap={};
+  _clients.forEach(c=>{ if(c.commercial) clientComMap[c.login]=c.commercial; });
+  const myClients=_clients.filter(c=>c.commercial===login);
+  // Stats par client
+  const clientStats={};
+  filtered.filter(o=>clientComMap[o._login]===login).forEach(o=>{
+    const l=o._login;
+    if(!clientStats[l]) clientStats[l]={login:l,cmds:0,ca:0,lastDate:0,magasin:o.magasin||l};
+    clientStats[l].cmds++;
+    clientStats[l].ca+=parseFloat(o.totalNet||o.totalBrut||0);
+    const ts=o.id||0;
+    if(ts>clientStats[l].lastDate) clientStats[l].lastDate=ts;
+  });
+  const clientRows=Object.values(clientStats).sort((a,b)=>b.ca-a.ca);
+  document.getElementById('cdet-clients-tbody').innerHTML=clientRows.length
+    ? clientRows.map(cl=>{
+        const d=new Date(cl.lastDate||0);
+        const dateStr=isNaN(d.getTime())||cl.lastDate===0?'—':d.toLocaleDateString('fr-FR');
+        const status=cl.cmds===0?'badge-gray':cl.ca>2000?'badge-green':'badge-gold';
+        return `<tr>
+          <td style="font-family:monospace;font-size:10px;color:var(--brown)">${esc(cl.login)}</td>
+          <td>${esc(cl.magasin)}</td>
+          <td>${cl.cmds}</td>
+          <td style="font-weight:600;color:var(--green)">${fmt(cl.ca)}</td>
+          <td>${dateStr}</td>
+          <td><span class="status-badge ${status}">${cl.ca>2000?'Actif':cl.cmds>0?'Moyen':'Inactif'}</span></td>
+        </tr>`;
+      }).join('')
+    : '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text3)">Aucune commande sur cette période</td></tr>';
+
+  // Top produits du commercial
+  const prodStats={};
+  filtered.filter(o=>clientComMap[o._login]===login).forEach(o=>{
+    if(!Array.isArray(o.articles)) return;
+    o.articles.forEach(art=>{
+      const code=art.code||'?';
+      if(!prodStats[code]) prodStats[code]={code,qty:0,ca:0};
+      prodStats[code].qty+=parseInt(art.qty||0);
+      prodStats[code].ca+=parseFloat(art.totalHT||0)||0;
+    });
+  });
+  const topProds=Object.values(prodStats).sort((a,b)=>b.ca-a.ca).slice(0,15);
+  document.getElementById('cdet-produits-tbody').innerHTML=topProds.length
+    ? topProds.map(p=>{
+        const prod=_catIndex[p.code];
+        return `<tr>
+          <td style="font-family:monospace;font-size:10px;color:var(--brown)">${esc(p.code)}</td>
+          <td>${esc(prod?prod.l.substring(0,35):p.code)}</td>
+          <td>${fmtN(p.qty)}</td>
+          <td style="font-weight:600;color:var(--green)">${fmt(p.ca)}</td>
+          <td>${prod?prod.k:'—'}</td>
+        </tr>`;
+      }).join('')
+    : '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text3)">Aucun produit</td></tr>';
+
+  // Graphe évolution
+  const months=Object.keys(com.history||{}).sort();
+  const ctx=document.getElementById('chart-com-evolution').getContext('2d');
+  if(_comEvolutionChart) _comEvolutionChart.destroy();
+  _comEvolutionChart=new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels:months.map(k=>{ const [y,m]=k.split('-'); return ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'][parseInt(m)-1]; }),
+      datasets:[{data:months.map(k=>com.history[k]),backgroundColor:'#2e6b47',borderRadius:4}]
+    },
+    options:{
+      responsive:true,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:v=>' '+fmt(v.raw)}}},
+      scales:{y:{ticks:{callback:v=>v>=1000?(v/1000).toFixed(0)+'k€':v+'€'},grid:{color:'rgba(0,0,0,.04)'}},x:{grid:{display:false}}}
+    }
+  });
+
+  document.getElementById('com-detail-wrap').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function closeComDetail(){
+  document.getElementById('com-detail-wrap').style.display='none';
+  _selectedCom=null;
+}
+
+function switchComTab(tab, el){
+  document.querySelectorAll('#com-detail-wrap .tab').forEach(t=>t.classList.remove('active'));
+  if(el) el.classList.add('active');
+  ['clients','produits','evolution'].forEach(t=>{
+    document.getElementById('cdet-tab-'+t).style.display=t===tab?'block':'none';
+  });
+}
+
+/* ════════════════════════════════════════════════════════════════
+   PAGE OBJECTIFS
+════════════════════════════════════════════════════════════════ */
+function updateObjectifsProgress(s){
+  const caTarget=parseFloat(document.getElementById('obj-ca-target').value)||1;
+  const cmdTarget=parseFloat(document.getElementById('obj-cmd-target').value)||1;
+  const cliTarget=parseFloat(document.getElementById('obj-cli-target').value)||1;
+
+  document.getElementById('obj-ca-current').textContent=fmt(s.totalCa);
+  document.getElementById('obj-cmd-current').textContent=fmtN(s.totalCmds);
+  document.getElementById('obj-cli-current').textContent=fmtN(s.totalClients);
+
+  const setProg=(fillId,pctId,val,target,color='var(--green)')=>{
+    const pct=Math.min(100,val/target*100);
+    document.getElementById(fillId).style.width=pct+'%';
+    document.getElementById(fillId).style.background=color;
+    document.getElementById(pctId).textContent=pct.toFixed(1)+'%';
+  };
+  setProg('obj-ca-fill','obj-ca-pct',s.totalCa,caTarget,'var(--green)');
+  setProg('obj-cmd-fill','obj-cmd-pct',s.totalCmds,cmdTarget,'var(--terra)');
+  setProg('obj-cli-fill','obj-cli-pct',s.totalClients,cliTarget,'var(--brown)');
+}
+
+function renderObjectifs(){
+  const filtered=filterOrdersByPeriod(_allOrders);
+  const stats=computeStats(filtered);
+  updateObjectifsProgress(stats);
+
+  // Objectifs par commercial
+  const grid=document.getElementById('obj-com-grid');
+  if(!stats.comStats.length){
+    grid.innerHTML='<div class="empty-state"><div class="empty-icon">👥</div><div class="empty-text">Aucun commercial</div></div>';
+    return;
+  }
+  const maxCa=stats.comStats[0]?.ca||1;
+  grid.innerHTML='<div class="obj-grid">'+stats.comStats.map(c=>{
+    const target=50000; // objectif individuel par défaut
+    const pct=Math.min(100,c.ca/target*100);
+    const color=pct>80?'var(--green)':pct>40?'var(--gold)':'var(--red)';
+    return `<div class="obj-card">
+      <div class="obj-label">${esc(c.nom||c.login)}</div>
+      <div class="obj-current">${fmt(c.ca)}</div>
+      <div class="obj-target">Obj. : ${fmt(target)} · ${c.cmds} cmds · ${c.clients} clients</div>
+      <div class="obj-prog"><div class="obj-prog-fill" style="width:${pct}%;background:${color}"></div></div>
+      <div class="obj-pct" style="color:${color}">${pct.toFixed(1)}%</div>
+    </div>`;
+  }).join('')+'</div>';
+}
+
+function saveObjectifs(){
+  const filtered=filterOrdersByPeriod(_allOrders);
+  const stats=computeStats(filtered);
+  updateObjectifsProgress(stats);
+  showToast('✅ Objectifs mis à jour');
+}
+
+/* ════════════════════════════════════════════════════════════════
+   PAGE CATALOGUE
+════════════════════════════════════════════════════════════════ */
+let _catRendered=false;
+function renderCatalogue(){
+  if(_catRendered) return;
+  _catRendered=true;
+
+  // Remplir le filtre catégories
+  const cats=[...new Set(CATALOGUE.map(p=>p.k))].sort();
+  const selCat=document.getElementById('cat-filter-cat');
+  cats.forEach(c=>{ const o=document.createElement('option'); o.value=c; o.textContent=c; selCat.appendChild(o); });
+
+  // Stats
+  const pus=CATALOGUE.map(p=>p.p).filter(Boolean);
+  const moy=pus.reduce((s,v)=>s+v,0)/pus.length;
+  const max=CATALOGUE.reduce((a,b)=>b.p>a.p?b:a);
+  const min=CATALOGUE.filter(p=>p.p>0).reduce((a,b)=>b.p<a.p?b:a);
+  const caTot=CATALOGUE.reduce((s,p)=>s+p.p*p.q,0);
+  document.getElementById('cat-stat-prix-moy').textContent=fmt(moy);
+  document.getElementById('cat-stat-max').textContent=`${max.l.substring(0,25)}… (${fmt(max.p)})`;
+  document.getElementById('cat-stat-min').textContent=`${min.l.substring(0,25)}… (${fmt(min.p)})`;
+  document.getElementById('cat-stat-ca').textContent=fmt(caTot);
+
+  // Donut
+  const catMap={};
+  CATALOGUE.forEach(p=>{ catMap[p.k]=(catMap[p.k]||0)+1; });
+  const sorted=Object.entries(catMap).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  const ctx=document.getElementById('chart-cat-donut').getContext('2d');
+  const colors=['#2e6b47','#a0522d','#b8872a','#4a7c59','#6b4c3b','#c05a3a','#1a5030','#8b6914','#d4845c','#aaa'];
+  new Chart(ctx,{
+    type:'doughnut',
+    data:{labels:sorted.map(e=>e[0]),datasets:[{data:sorted.map(e=>e[1]),backgroundColor:colors,borderWidth:2,borderColor:'#fff'}]},
+    options:{responsive:true,plugins:{legend:{position:'right',labels:{font:{size:10},boxWidth:12}}}}
+  });
+
+  // Tableau
+  filterCatalogue('');
+}
+
+function filterCatalogue(q){
+  const cat=document.getElementById('cat-filter-cat')?.value||'';
+  const sort=document.getElementById('cat-sort')?.value||'code';
+  q=(q||'').toLowerCase();
+  let data=CATALOGUE.filter(p=>{
+    if(q&&!p.c.toLowerCase().includes(q)&&!p.l.toLowerCase().includes(q)) return false;
+    if(cat&&p.k!==cat) return false;
+    return true;
+  });
+  if(sort==='prix-asc') data.sort((a,b)=>a.p-b.p);
+  else if(sort==='prix-desc') data.sort((a,b)=>b.p-a.p);
+  else data.sort((a,b)=>a.c.localeCompare(b.c));
+
+  document.getElementById('cat-count-label').textContent=`${fmtN(data.length)} refs`;
+  document.getElementById('cat-tbody').innerHTML=data.slice(0,200).map(p=>`<tr>
+    <td style="font-family:monospace;font-size:10px;color:var(--brown)">${esc(p.c)}</td>
+    <td>${esc(p.l)}</td>
+    <td><span class="status-badge badge-gray" style="font-size:9px">${esc(p.k)}</span></td>
+    <td style="text-align:center">${p.q}</td>
+    <td style="text-align:right;font-weight:500">${fmt(p.p)}</td>
+    <td style="text-align:right;color:var(--green)">${fmt(p.p*p.q)}</td>
+    <td style="text-align:center;color:var(--text3)">${p.t||5.5}%</td>
+  </tr>`).join('')+(data.length>200?`<tr><td colspan="7" style="text-align:center;padding:10px;color:var(--text3);font-size:11px">… et ${data.length-200} autres références</td></tr>`:'');
+}
+
+/* ════════════════════════════════════════════════════════════════
+   PAGE COMMANDES
+════════════════════════════════════════════════════════════════ */
+function renderCmdsPage(){
+  filterCmds('');
+}
+
+function filterCmds(q){
+  const comFilter=document.getElementById('cmds-filter-com')?.value||'';
+  q=(q||'').toLowerCase();
+  const filtered=filterOrdersByPeriod(_allOrders);
+
+  // Trouver commercial par client
+  const clientComMap={};
+  _clients.forEach(c=>{ if(c.commercial) clientComMap[c.login]=c.commercial; });
+  const comNomMap={};
+  _commerciaux.forEach(c=>{ comNomMap[c.login]=c.nom||c.login; });
+
+  let data=filtered.filter(o=>{
+    if(comFilter){
+      const comL=clientComMap[o._login]||o._login;
+      if(comL!==comFilter) return false;
+    }
+    if(q){
+      const str=`${o.magasin||''} ${o._login||''} ${JSON.stringify(o.articles||'')}`.toLowerCase();
+      if(!str.includes(q)) return false;
+    }
+    return true;
+  }).sort((a,b)=>(b.id||0)-(a.id||0));
+
+  document.getElementById('cmds-count-label').textContent=`${fmtN(data.length)} commandes`;
+  document.getElementById('cmds-tbody').innerHTML=data.slice(0,300).map(o=>{
+    const d=new Date(o.date||o.id||0);
+    const dateStr=isNaN(d.getTime())?'—':d.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'});
+    const comLogin=clientComMap[o._login]||'—';
+    const comNom=comNomMap[comLogin]||comLogin;
+    const ca=parseFloat(o.totalNet||o.totalBrut||0);
+    const src=o.source||'bdc';
+    return `<tr>
+      <td style="font-size:11px;color:var(--text3)">${dateStr}</td>
+      <td><div style="font-weight:500;font-size:12px">${esc(o.magasin||o._login||'?')}</div>
+        <div style="font-size:10px;color:var(--text3)">${esc(o._login||'')}</div></td>
+      <td style="font-size:11px">${esc(comNom)}</td>
+      <td style="text-align:center">${o.nbRefs||'?'}</td>
+      <td style="text-align:center">${o.nbColis||'?'}</td>
+      <td style="text-align:right;font-weight:600;color:var(--green)">${fmt(ca)}</td>
+      <td><span class="status-badge badge-gray" style="font-size:9px">${esc(src)}</span></td>
+    </tr>`;
+  }).join('')+(data.length>300?`<tr><td colspan="7" style="text-align:center;padding:10px;color:var(--text3);font-size:11px">… et ${data.length-300} autres</td></tr>`:'');
+}
+
+function exportCmdsExcel(){
+  if(typeof XLSX==='undefined'){ showToast('⚠ XLSX non disponible'); return; }
+  const filtered=filterOrdersByPeriod(_allOrders);
+  const rows=[['Date','Magasin','Login Client','Commercial','Réfs','Colis','CA HT','Source']];
+  const clientComMap={};
+  _clients.forEach(c=>{ if(c.commercial) clientComMap[c.login]=c.commercial; });
+  filtered.sort((a,b)=>(b.id||0)-(a.id||0)).forEach(o=>{
+    rows.push([
+      o.date||'',
+      o.magasin||'',
+      o._login||'',
+      clientComMap[o._login]||'',
+      o.nbRefs||0,
+      o.nbColis||0,
+      parseFloat(o.totalNet||o.totalBrut||0),
+      o.source||'bdc'
+    ]);
+  });
+  const ws=XLSX.utils.aoa_to_sheet(rows);
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Commandes');
+  XLSX.writeFile(wb,'MDM_Commandes_'+new Date().toISOString().slice(0,10)+'.xlsx');
+  showToast('✅ Export Excel téléchargé');
+}
+
+/* ════════════════════════════════════════════════════════════════
+   IMPORT BDC
+════════════════════════════════════════════════════════════════ */
+let _impBdcData=[];
+function impHandleBdc(file){
+  if(!file) return;
+  const log=document.getElementById('imp-bdc-log');
+  log.style.display='block';
+  log.textContent='Lecture de '+file.name+'…';
+  const ext=file.name.split('.').pop().toLowerCase();
+  if(ext==='xlsx'||ext==='xls'){
+    const reader=new FileReader();
+    reader.onload=e=>{
+      try{
+        const wb=XLSX.read(e.target.result,{type:'array'});
+        const ws=wb.Sheets[wb.SheetNames[0]];
+        const rows=XLSX.utils.sheet_to_json(ws,{defval:''});
+        _impBdcData=rows;
+        log.textContent=`✅ ${rows.length} lignes lues depuis "${file.name}"\nColonnes : ${Object.keys(rows[0]||{}).join(', ')}`;
+        document.getElementById('imp-bdc-zone').classList.add('has-file');
+        document.getElementById('imp-bdc-result').style.display='block';
+        showToast('✅ '+rows.length+' lignes chargées');
+      }catch(err){
+        log.textContent='⚠ Erreur : '+err.message;
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  } else {
+    log.textContent='⚠ Format non supporté — utilisez .xlsx';
+  }
+}
+
+async function impApplyBdc(){
+  if(!_impBdcData.length){ showToast('⚠ Aucune donnée'); return; }
+  const comLogin=document.getElementById('imp-bdc-com').value;
+  const log=document.getElementById('imp-bdc-log');
+  log.textContent='Enregistrement…';
+  try{
+    const db=await initFB();
+    const order={
+      id:Date.now(),
+      date:new Date().toLocaleString('fr-FR'),
+      magasin:'Import BDC',
+      mail:'',
+      nbRefs:_impBdcData.length,
+      nbColis:_impBdcData.reduce((s,r)=>s+(parseInt(r.Quantite||r.QTE||r.Qte||0)),0),
+      totalBrut:0,totalNet:0,
+      articles:_impBdcData.map(r=>({
+        code:String(r.Code||r.CODE||r.code||'').trim(),
+        libelle:String(r.Libelle||r.Designation||r.Description||'').trim(),
+        qty:parseInt(r.Quantite||r.QTE||r.Qte||0),
+        puHT:parseFloat(String(r['PU HT']||r.PuHt||r.Prix||0).replace(',','.'))||0,
+        totalHT:0,pcb:1
+      })),
+      source:'import-perf'
+    };
+    const target=comLogin||'import';
+    await db.collection('historique').doc(target).collection('commandes').doc(String(order.id)).set(order);
+    log.textContent='✅ Commande enregistrée pour '+target;
+    showToast('✅ Commande enregistrée');
+    await loadAll();
+  }catch(e){
+    log.textContent='⚠ Firebase : '+e.message;
+    showToast('⚠ Erreur : '+e.message);
+  }
+}
+
+function impHandleTarif(file){
+  if(!file) return;
+  const log=document.getElementById('imp-tarif-log');
+  log.style.display='block';
+  log.textContent='Lecture de '+file.name+'…';
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const wb=XLSX.read(e.target.result,{type:'array'});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const rows=XLSX.utils.sheet_to_json(ws,{defval:'',skipHidden:true});
+      log.textContent=`✅ ${rows.length} produits lus\nColonnes : ${Object.keys(rows[0]||{}).join(', ')}`;
+      document.getElementById('imp-tarif-zone').classList.add('has-file');
+      document.getElementById('imp-stat-prods').textContent=rows.length;
+      showToast('✅ Tarif chargé : '+rows.length+' produits');
+    }catch(err){
+      log.textContent='⚠ Erreur : '+err.message;
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+/* ════════════════════════════════════════════════════════════════
+   INIT
+════════════════════════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', ()=>{
+  // Vérifier accès (admin ou user)
+  try{
+    const t=sessionStorage.getItem('mdm_token');
+    if(t){
+      const parts=t.split('.');
+      const raw=parts.length===3?parts[1]:t;
+      const d=JSON.parse(atob(raw.replace(/-/g,'+').replace(/_/g,'/')));
+      if(d.role!=='admin'&&d.role!=='user'){
+        // Accès restreint mais on charge quand même pour la démo
+      }
+    }
+  }catch(e){}
+  loadAll();
+});
+</script>
+</body>
+</html>

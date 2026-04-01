@@ -284,12 +284,54 @@ table.tbl tr:hover td,.md-tbl tr:hover td,.grp-table tr:hover td{background:var(
 code{background:var(--bg);padding:1px 4px;border-radius:3px;font-size:10px;font-family:monospace;color:var(--brown)}
 .mdm-req{color:var(--danger)}
 #toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--text);color:#fff;padding:8px 16px;border-radius:7px;font-size:12px;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.2);opacity:0;transition:opacity .25s;white-space:nowrap;font-family:'Inter',sans-serif;pointer-events:none}
-@media(max-width:900px){.stats-grid{grid-template-columns:repeat(2,1fr)}.two-col{grid-template-columns:1fr}}
-@media(max-width:640px){.sidebar{display:none}.main{padding:14px}}</style>
+.two-col{grid-template-columns:1fr}}
+.main{padding:14px}}
+/* ══ TOPBAR ADMIN HARMONISÉ ══ */
+:root{ --mdm-brown:#5c4438; --mdm-green:#3a6b4a; }
+.topbar{ background:var(--mdm-brown)!important; border-bottom:none!important; box-shadow:0 2px 8px rgba(40,24,16,.22)!important; }
+.logo{ font-family:'Fraunces',serif!important; font-weight:200!important; color:#fff!important; font-size:17px!important; }
+.logo em{ color:#d4b08a!important; }
+.logo sup{ font-size:9px; color:rgba(255,255,255,.45); }
+.search-wrap input{ background:rgba(255,255,255,.12)!important; border-color:rgba(255,255,255,.2)!important; color:#fff!important; }
+.search-wrap input::placeholder{ color:rgba(255,255,255,.4)!important; }
+.search-ico{ color:rgba(255,255,255,.4)!important; }
+/* Hamburger admin */
+.adm-hamburger{ display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:5px;flex-shrink:0 }
+.adm-hamburger span{ display:block;width:19px;height:2px;background:rgba(255,255,255,.8);border-radius:2px;transition:all .22s }
+.adm-hamburger.is-open span:nth-child(1){ transform:translateY(7px) rotate(45deg);background:#fff }
+.adm-hamburger.is-open span:nth-child(2){ opacity:0 }
+.adm-hamburger.is-open span:nth-child(3){ transform:translateY(-7px) rotate(-45deg);background:#fff }
+.adm-sidebar-overlay{ display:none;position:fixed;inset:0;background:rgba(40,24,16,.4);z-index:150;cursor:pointer }
+.adm-sidebar-overlay.is-open{ display:block }
+/* Sidebar admin harmonisée */
+.sidebar{ background:#fff!important; border-right:1px solid #e6ddd4!important; }
+.nav-label-section{ font-size:9px!important;font-weight:700!important;text-transform:uppercase!important;letter-spacing:.9px!important;color:#b09888!important;padding:14px 14px 5px!important; }
+.nav-item{ border-left:2px solid transparent!important;border-radius:0!important;font-size:12px!important;color:#7a6050!important;padding:8px 14px!important; }
+.nav-item:hover{ background:#f7f4ef!important;color:#3d2e24!important;border-left-color:#e6ddd4!important; }
+.nav-item.active{ background:#edf5f0!important;color:#3a6b4a!important;border-left-color:#3a6b4a!important; }
+.nav-icon{ width:18px;text-align:center;flex-shrink:0;font-size:14px!important; }
+/* Responsive admin */
+@media(max-width:900px){ .stats-grid{grid-template-columns:repeat(2,1fr)}.two-col{grid-template-columns:1fr}.fg-row{grid-template-columns:1fr} }
+@media(max-width:768px){
+  :root{ --topbar:52px }
+  .adm-hamburger{ display:flex!important }
+  .sidebar{ position:fixed!important;top:var(--topbar);left:0;bottom:0;z-index:200;transform:translateX(-100%);transition:transform .26s cubic-bezier(.4,0,.2,1) }
+  .sidebar.is-open{ transform:translateX(0);box-shadow:6px 0 24px rgba(40,24,16,.18) }
+  .zone{ display:block!important }
+  .main{ padding:14px!important }
+  .topbar{ padding:0 12px!important;gap:8px!important }
+  .search-wrap{ display:none!important }
+}
+@media(max-width:480px){
+  .stats-grid{grid-template-columns:1fr 1fr}.stat-val{font-size:20px}.page-title{font-size:17px}
+  .toolbar{flex-direction:column;align-items:stretch}
+}
+</style>
 </head>
 <body>
 
 <header class="topbar">
+  <button class="adm-hamburger" id="adm-hb" onclick="admToggleSidebar()" aria-label="Menu"><span></span><span></span><span></span></button>
   <div class="logo">Moulin <em>des</em> Moines <sup>Admin</sup></div>
   <div class="search-wrap">
     <span class="search-ico">&#128269;</span>
@@ -320,7 +362,7 @@ code{background:var(--bg);padding:1px 4px;border-radius:3px;font-size:10px;font-
     <div class="nav-item" onclick="showPage('commandes',this)"><span class="nav-icon">&#128230;</span><span class="nav-txt"><span>Commandes</span></span><span class="nav-badge nb-green" id="badge-commandes" style="display:none">0</span></div>
     <div class="nav-item" onclick="showPage('stocks',this)"><span class="nav-icon">&#128218;</span><span class="nav-txt">Stocks</span></div>
     <div class="nav-item" onclick="showPage('promos',this)"><span class="nav-icon">&#127381;</span><span class="nav-txt">Promotions</span></div>
-    <a class="nav-item" href="performance.html" target="_blank" style="text-decoration:none;color:inherit"><span class="nav-icon">&#128200;</span><span class="nav-txt">Performance CRM</span><span style="font-size:8px;background:#2e6b47;color:#fff;padding:1px 5px;border-radius:3px;margin-left:4px;font-weight:600">NEW</span></a>
+    <a class="nav-item" href="performance.html" target="_blank" style="text-decoration:none;color:inherit"><span class="nav-icon">&#128200;</span><span class="nav-txt">Performance CRM</span><span style="font-size:8px;background:#3a6b4a;color:#fff;padding:1px 5px;border-radius:3px;margin-left:4px;font-weight:700">NEW</span></a>
 
     <div class="nav-label-section">Communication</div>
     <div class="nav-item" onclick="showPage('messagerie',this);populateMsgDest()"><span class="nav-icon">&#128172;</span><span class="nav-txt">Messagerie</span><span class="nav-badge nb-red" id="badge-messagerie" style="display:none">0</span></div>
@@ -929,10 +971,13 @@ code{background:var(--bg);padding:1px 4px;border-radius:3px;font-size:10px;font-
   <!-- Fin modal -->
 
 <div style="text-align:center;padding:10px;font-size:10px;color:#64748b;border-top:1px solid var(--border)">&copy; 2026 Moulin des Moines &nbsp;&middot;&nbsp; <a href="mentions-legales.html" style="color:inherit;opacity:.7;text-decoration:none">Mentions l&eacute;gales &amp; RGPD</a></div>
+<div class="adm-sidebar-overlay" id="adm-overlay" onclick="admToggleSidebar()"></div>
 <div id="toast"></div>
 <div id="toast"></div>
 
-<script>
+<script>function admToggleSidebar(){var sb=document.querySelector('.sidebar'),ov=document.getElementById('adm-overlay'),hb=document.getElementById('adm-hb');if(!sb)return;var open=sb.classList.toggle('is-open');if(ov)ov.classList.toggle('is-open',open);if(hb)hb.classList.toggle('is-open',open);document.body.style.overflow=open&&window.innerWidth<=768?'hidden':'';}
+function admCloseSidebar(){var sb=document.querySelector('.sidebar'),ov=document.getElementById('adm-overlay'),hb=document.getElementById('adm-hb');if(sb)sb.classList.remove('is-open');if(ov)ov.classList.remove('is-open');if(hb)hb.classList.remove('is-open');document.body.style.overflow='';}
+
 
 // ── Utilitaires manquants ────────────────────────────────────
 function fmtCA(n){
@@ -3545,7 +3590,12 @@ function _generatePromoHTML(){
     +'  if(btn){btn.disabled=false;btn.innerHTML="\\u2709 Envoyer la commande";}\n'
     +'  window.location.href=url;\n'
     +'}\n'
-    +'<\/script>\n</body>\n</html>';
+    +'<\/script>\n<script>
+
+(function(){var FC={apiKey:"AIzaSyB000QDa4c-vMjO1Xuimw58iiRvwgbF1zc",authDomain:"mdm-bdc26.firebaseapp.com",projectId:"mdm-bdc26",storageBucket:"mdm-bdc26.firebasestorage.app",messagingSenderId:"52658530893",appId:"1:52658530893:web:166626ae4d681465ddca04"};var _ndb=null,_nr=false;function _iF(){if(_nr)return Promise.resolve(_ndb);return new Promise(function(r,j){try{if(!firebase.apps||!firebase.apps.length)firebase.initializeApp(FC);_ndb=firebase.firestore();_nr=true;r(_ndb);}catch(e){try{_ndb=firebase.firestore();_nr=true;r(_ndb);}catch(e2){j(e2);}}});}function _gL(){try{var t=sessionStorage.getItem('mdm_token');if(!t)return null;var p=t.split('.');var raw=p.length===3?p[1]:t;var d=JSON.parse(atob(raw.replace(/-/g,'+').replace(/_/g,'/')));return d.login||null;}catch(e){return null;}}function _badge(login){_iF().then(function(db){db.collection('chats').orderBy('lastTs','desc').limit(100).onSnapshot(function(snap){var n=0;snap.docs.forEach(function(doc){var parts=doc.id.split('_');if(parts.indexOf(login)<0)return;n+=doc.data()['unread_'+login]||0;});var el=document.getElementById('badge-messagerie');if(el){if(n>0){el.textContent=n>99?'99+':String(n);el.style.display='inline';}else{el.style.display='none';}}var base=document.title.replace(/^\(\d+\)\s*/,'');document.title=n>0?'('+n+') '+base:base;},function(){});}).catch(function(){});}function _init(){var l=_gL();if(!l)return;_badge(l);}if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',_init);}else{setTimeout(_init,200);}})();
+
+</script>
+</body>\n</html>';
 
   return HTML;
 }
@@ -3910,6 +3960,8 @@ async function pushStockToGithub() {
 }
 
 window.addEventListener('DOMContentLoaded',function(){
+  document.querySelectorAll('.nav-item').forEach(function(it){it.addEventListener('click',function(){if(window.innerWidth<=768)admCloseSidebar();});});
+
   loadComptes();
   loadActus();
   loadInscriptions();

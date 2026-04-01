@@ -647,6 +647,159 @@ tbody tr.has-qty td.td-qty input{background:#ffe0b2;border-color:var(--terra)}
 .import-panel-foot{padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:8px;flex-shrink:0}
 .import-overlay{position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:299;display:none}
 .import-overlay.open{display:block}
+
+
+/* ════════════════════════════════════════════════════════════
+   MDM NAVIGATION UNIFIÉE v2
+════════════════════════════════════════════════════════════ */
+:root {
+  --mdm-h: 56px;
+  --mdm-sb: 224px;
+  --mdm-brown: #5c4438;
+  --mdm-green: #3a6b4a;
+  --mdm-green-l: #edf5f0;
+  --mdm-terra: #9b5a3c;
+  --mdm-bg: #f7f4ef;
+  --mdm-card: #ffffff;
+  --mdm-border: #e6ddd4;
+  --mdm-border-l: #ede9e3;
+  --mdm-text: #3d2e24;
+  --mdm-text2: #7a6050;
+  --mdm-text3: #b09888;
+  --mdm-danger: #c0392b;
+}
+.mdm-topbar {
+  position: sticky; top: 0; z-index: 300;
+  height: var(--mdm-h);
+  background: var(--mdm-brown);
+  display: flex; align-items: center;
+  padding: 0 16px; gap: 12px;
+  box-shadow: 0 2px 8px rgba(40,24,16,.22);
+  flex-shrink: 0;
+}
+.mdm-topbar-hamburger {
+  display: none; flex-direction: column; gap: 5px;
+  background: none; border: none; cursor: pointer;
+  padding: 5px; flex-shrink: 0;
+}
+.mdm-topbar-hamburger span {
+  display: block; width: 19px; height: 2px;
+  background: rgba(255,255,255,.75); border-radius: 2px;
+  transition: all .22s;
+}
+.mdm-topbar-hamburger.open span:nth-child(1){ transform:translateY(7px) rotate(45deg); background:#fff }
+.mdm-topbar-hamburger.open span:nth-child(2){ opacity:0 }
+.mdm-topbar-hamburger.open span:nth-child(3){ transform:translateY(-7px) rotate(-45deg); background:#fff }
+.mdm-topbar-logo {
+  font-family:'Fraunces',serif; font-weight:200; font-size:17px;
+  color:#fff; white-space:nowrap; text-decoration:none;
+}
+.mdm-topbar-logo em { font-style:italic; color:#d4b08a; }
+.mdm-topbar-page {
+  font-size:11px; font-weight:400; color:rgba(255,255,255,.5);
+  border-left:1px solid rgba(255,255,255,.18); padding-left:12px;
+  margin-left:4px; white-space:nowrap;
+}
+.mdm-topbar-spacer { flex:1; min-width:0; }
+.mdm-topbar-actions { display:flex; align-items:center; gap:8px; flex-shrink:0; }
+.mdm-topbar-user {
+  font-size:11px; color:rgba(255,255,255,.65);
+  white-space:nowrap; max-width:120px;
+  overflow:hidden; text-overflow:ellipsis;
+}
+.mdm-topbar-btn {
+  padding:5px 12px; border-radius:6px; font-size:11px;
+  border:1px solid rgba(255,255,255,.22);
+  background:rgba(255,255,255,.1); color:rgba(255,255,255,.9);
+  cursor:pointer; font-family:inherit;
+  transition:all .14s; text-decoration:none;
+  display:inline-flex; align-items:center; gap:5px; white-space:nowrap;
+}
+.mdm-topbar-btn:hover { background:rgba(255,255,255,.2); }
+.mdm-topbar-btn.accent { background:var(--mdm-green); border-color:var(--mdm-green); color:#fff; }
+.mdm-topbar-btn.accent:hover { background:#2d5a3c; }
+.mdm-topbar-badge {
+  background:var(--mdm-danger); color:#fff;
+  font-size:9px; font-weight:700;
+  width:16px; height:16px; border-radius:50%;
+  display:none; align-items:center; justify-content:center;
+  position:absolute; top:-4px; right:-4px;
+}
+.mdm-topbar-msg-wrap { position:relative; }
+.mdm-layout { display:flex; min-height:calc(100vh - var(--mdm-h)); }
+.mdm-sidebar {
+  width:var(--mdm-sb); flex-shrink:0;
+  background:var(--mdm-card);
+  border-right:1px solid var(--mdm-border);
+  display:flex; flex-direction:column;
+  position:sticky; top:var(--mdm-h);
+  height:calc(100vh - var(--mdm-h));
+  overflow-y:auto; overflow-x:hidden;
+  transition:transform .26s cubic-bezier(.4,0,.2,1);
+}
+.mdm-sb-user {
+  padding:14px 16px 12px;
+  border-bottom:1px solid var(--mdm-border-l); flex-shrink:0;
+}
+.mdm-sb-user-name {
+  font-size:13px; font-weight:500; color:var(--mdm-text);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.mdm-sb-user-role {
+  font-size:10px; color:var(--mdm-text3);
+  margin-top:2px; display:inline-flex; align-items:center; gap:5px;
+}
+.mdm-sb-user-dot { width:6px; height:6px; border-radius:50%; background:var(--mdm-green); flex-shrink:0; }
+.mdm-sb-scroll { flex:1; overflow-y:auto; padding-bottom:8px; }
+.mdm-sb-section {
+  font-size:9px; font-weight:700; text-transform:uppercase;
+  letter-spacing:.9px; color:var(--mdm-text3); padding:14px 14px 5px;
+}
+.mdm-sb-item {
+  display:flex; align-items:center; gap:9px;
+  padding:8px 14px; cursor:pointer;
+  font-size:12px; color:var(--mdm-text2);
+  border-left:2px solid transparent;
+  transition:all .12s; text-decoration:none; margin:0 0 1px;
+}
+.mdm-sb-item:hover { background:var(--mdm-bg); color:var(--mdm-text); border-left-color:var(--mdm-border); }
+.mdm-sb-item.active { background:var(--mdm-green-l); color:var(--mdm-green); border-left-color:var(--mdm-green); font-weight:500; }
+.mdm-sb-item.danger { color:#b03030; }
+.mdm-sb-item.danger:hover { background:#fdf0f0; border-left-color:var(--mdm-danger); }
+.mdm-sb-icon { font-size:14px; width:18px; text-align:center; flex-shrink:0; }
+.mdm-sb-label { flex:1; }
+.mdm-sb-badge {
+  font-size:9px; font-weight:700; padding:1px 5px;
+  border-radius:8px; min-width:16px; text-align:center; flex-shrink:0; display:none;
+}
+.mdm-sb-badge.red { background:var(--mdm-danger); color:#fff; display:inline; }
+.mdm-sb-badge.green { background:var(--mdm-green); color:#fff; display:inline; }
+.mdm-sb-badge.gray { background:var(--mdm-border); color:var(--mdm-text3); display:inline; }
+.mdm-sb-badge.new { background:var(--mdm-green); color:#fff; font-size:8px; padding:1px 4px; display:inline; }
+.mdm-sb-sep { height:1px; background:var(--mdm-border-l); margin:6px 14px; }
+.mdm-sb-footer { border-top:1px solid var(--mdm-border-l); padding:8px 0 6px; flex-shrink:0; }
+.mdm-sb-overlay {
+  display:none; position:fixed; inset:0;
+  background:rgba(40,24,16,.4); z-index:290; cursor:pointer;
+}
+.mdm-sb-overlay.open { display:block; }
+.mdm-main { flex:1; min-width:0; overflow-x:hidden; }
+@media(max-width:768px){
+  .mdm-topbar-hamburger { display:flex; }
+  .mdm-topbar-page { display:none; }
+  .mdm-topbar-user { display:none; }
+  .mdm-sidebar {
+    position:fixed !important; top:0; left:0; bottom:0;
+    z-index:295; transform:translateX(-100%);
+    box-shadow:none; height:100vh !important;
+  }
+  .mdm-sidebar.open { transform:translateX(0); box-shadow:6px 0 24px rgba(40,24,16,.18); }
+  .mdm-main { width:100%; }
+}
+@media(max-width:480px){
+  :root { --mdm-h:50px; }
+  .mdm-topbar-logo { font-size:15px; }
+}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -661,113 +814,53 @@ tbody tr.has-qty td.td-qty input{background:#ffe0b2;border-color:var(--terra)}
 
 
 
-<header style="background:var(--bg-beige);border-bottom:1px solid var(--border);padding:0 20px 0 16px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;gap:16px;font-family:'Inter',sans-serif">
 
-  <!-- Gauche : toggle + logo -->
-  <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
-    <button class="mdm-menu-toggle no-print" onclick="openSidebar()" title="Menu" style="display:none;background:none;border:none;cursor:pointer;padding:6px;color:var(--text);font-size:18px;line-height:1">&#9776;</button>
-    <a href="commande.html" style="font-family:'Fraunces',serif;font-size:19px;font-weight:200;color:var(--text);letter-spacing:-.3px;text-decoration:none;white-space:nowrap">
-      Moulin <span style="color:var(--accent)">des</span> Moines
-    </a>
-    <span style="font-size:10px;font-weight:300;color:var(--text-muted);padding-left:10px;border-left:1px solid var(--border);white-space:nowrap">Bon de Commande 2026</span>
+<header class="mdm-topbar" id="mdm-topbar">
+  <button class="mdm-topbar-hamburger" id="mdm-hamburger" onclick="mdmToggleSidebar()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+  <a href="dashboard.html" class="mdm-topbar-logo">Moulin <em>des</em> Moines</a>
+  <span class="mdm-topbar-page">Bon de commande</span>
+  <div class="mdm-topbar-spacer"></div>
+  <div class="mdm-topbar-actions">
+    <span class="mdm-topbar-user" id="mdm-topbar-user"></span>
+    <a href="admin.html" class="mdm-topbar-btn accent" id="mdm-btn-admin" style="display:none">&#9881; Admin</a>
+    <button class="mdm-topbar-btn" onclick="draftSave&&draftSave(true)" title="Sauvegarder brouillon">&#128190; Brouillon</button><button class="mdm-topbar-btn" id="btn-send-topbar" onclick="openModal&&openModal()" title="Envoyer">&#9993; Envoyer</button>
+    <div class="mdm-topbar-msg-wrap">
+      <a href="messagerie.html" class="mdm-topbar-btn" title="Messagerie">&#128172;<span class="mdm-topbar-badge" id="mdm-topbar-badge"></span></a>
+    </div>
   </div>
-
-  <!-- Centre : infos utilisateur compactes -->
-  <div style="display:flex;align-items:center;gap:8px;overflow:hidden;min-width:0">
-    <span id="user-info" style="font-size:12px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px"></span>
-    <span id="groupement-info" style="display:none;font-size:10px;font-weight:400;color:var(--accent);background:var(--accent-light);padding:2px 8px;border-radius:10px;white-space:nowrap;flex-shrink:0"><span id="groupement-name"></span></span>
-    <span id="commercial-info" style="display:none;font-size:10px;font-weight:300;color:var(--text-muted);white-space:nowrap;flex-shrink:0"><span id="commercial-name"></span></span>
-  </div>
-
-  <!-- Droite : actions -->
-  <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <button class="no-print" id="btn-admin" onclick="window.location.href='admin.html'" style="display:none;font-size:11px;font-weight:400;padding:6px 11px;border-radius:6px;border:1px solid var(--border);background:var(--bg-card);color:var(--text);cursor:pointer;font-family:inherit;white-space:nowrap">&#9881; Admin</button>
-    <button class="no-print" id="btn-new-client" onclick="openNewClientModal()" style="display:none;font-size:11px;font-weight:400;padding:6px 11px;border-radius:6px;border:1px solid var(--border);background:var(--bg-card);color:var(--accent);cursor:pointer;font-family:inherit;white-space:nowrap">&#43; Client</button>
-    <button class="no-print" onclick="openImportPanel()" style="font-size:11px;font-weight:500;padding:7px 12px;border-radius:6px;border:1px solid var(--border);background:var(--bg-card);color:var(--brown);cursor:pointer;font-family:inherit;white-space:nowrap;margin-right:4px">&#128196;&nbsp;Importer</button>
-    <button class="no-print" onclick="openModal()" style="font-size:12px;font-weight:500;padding:7px 16px;border-radius:6px;border:none;background:var(--accent);color:#fff;cursor:pointer;font-family:inherit;white-space:nowrap">Envoyer la commande</button>
-    <a href="messagerie.html?back=commande.html" id="chat-fab" class="no-print" title="Messagerie" style="display:none;position:relative;padding:7px 10px;border-radius:6px;font-size:14px;text-decoration:none;border:1px solid var(--border);background:var(--bg-card);color:var(--text);align-items:center;gap:4px">&#128172;<span id="chat-badge" style="position:absolute;top:-5px;right:-5px;background:#c0392b;color:#fff;font-size:9px;font-weight:600;padding:2px 5px;border-radius:10px;min-width:16px;text-align:center;display:none"></span></a>
-  </div>
-
 </header>
 <div class="mdm-layout">
 
+
+<div class="mdm-sb-overlay" id="mdm-sb-overlay" onclick="mdmCloseSidebar()"></div>
 <nav class="mdm-sidebar" id="mdm-sidebar">
-  <!-- User -->
-  <div class="mdm-sidebar-user-block">
-    <div class="mdm-sidebar-user" id="sidebar-user-name"></div>
-    <div class="mdm-sidebar-role" id="sidebar-user-role"></div>
+  <div class="mdm-sb-user">
+    <div class="mdm-sb-user-name" id="mdm-sb-name">—</div>
+    <div class="mdm-sb-user-role"><span class="mdm-sb-user-dot"></span><span id="mdm-sb-role">—</span></div>
   </div>
-
-  <div class="mdm-sidebar-scroll">
-
-    <!-- COMPTE -->
-    <div class="mdm-nav-section">Compte</div>
-    <a class="mdm-nav-item" href="#" onclick="showProfilModal();return false">
-      <span class="mdm-nav-icon">&#128100;</span>
-      <span class="mdm-nav-label">Mon profil</span>
-    </a>
-    <a class="mdm-nav-item" id="nav-chat" href="#" onclick="chatToggle();return false">
-      <span class="mdm-nav-icon">&#128172;</span>
-      <span class="mdm-nav-label">Messagerie</span>
-      <span class="mdm-nav-badge red" id="sidebar-chat-badge"></span>
-    </a>
-
-    <!-- NAVIGATION -->
-    <div class="mdm-nav-section">Navigation</div>
-    <a class="mdm-nav-item" href="dashboard.html">
-      <span class="mdm-nav-icon">&#127968;</span>
-      <span class="mdm-nav-label">Tableau de bord</span>
-    </a>
-    <a class="mdm-nav-item active" id="nav-commande" href="commande.html">
-      <span class="mdm-nav-icon">&#128221;</span>
-      <span class="mdm-nav-label">Bon de commande</span>
-    </a>
-    <a class="mdm-nav-item no-print" href="mes-commandes.html">
-      <span class="mdm-nav-icon">&#128230;</span>
-      <span class="mdm-nav-label">Mes commandes</span>
-    </a>
-
-    <!-- COMMANDE -->
-    <div class="mdm-nav-section">Commande</div>
-    <a class="mdm-nav-item no-print" href="#" onclick="draftSave(true);closeSidebar();return false">
-      <span class="mdm-nav-icon">&#128190;</span>
-      <span class="mdm-nav-label">Sauvegarder brouillon</span>
-    </a>
-    <a class="mdm-nav-item no-print" href="#" onclick="draftClear();closeSidebar();return false">
-      <span class="mdm-nav-icon">&#128465;</span>
-      <span class="mdm-nav-label">Effacer brouillon</span>
-    </a>
-    <a class="mdm-nav-item no-print" href="#" onclick="doPrint();return false">
-      <span class="mdm-nav-icon">&#128424;</span>
-      <span class="mdm-nav-label">Exporter PDF</span>
-    </a>
-    <a class="mdm-nav-item no-print" href="#" onclick="exportExcel();return false">
-      <span class="mdm-nav-icon">&#128202;</span>
-      <span class="mdm-nav-label">Exporter Excel</span>
-    </a>
-
-    <!-- AIDE -->
-    <div class="mdm-nav-section">Notes</div>
-    <a class="mdm-nav-item" href="notes.html">
-      <span class="mdm-nav-icon">&#128203;</span>
-      <span class="mdm-nav-label">Mes notes</span>
-    </a>
-    <div class="mdm-nav-section">Aide</div>
-    <a class="mdm-nav-item" href="tutoriel.html">
-      <span class="mdm-nav-icon">&#128218;</span>
-      <span class="mdm-nav-label">Guide d&apos;utilisation</span>
-    </a>
-
+  <div class="mdm-sb-scroll">
+    <div class="mdm-sb-section">Navigation</div>
+    <a class="mdm-sb-item" href="dashboard.html"><span class="mdm-sb-icon">&#127968;</span><span class="mdm-sb-label">Tableau de bord</span></a>
+    <a class="mdm-sb-item active" href="commande.html"><span class="mdm-sb-icon">&#128221;</span><span class="mdm-sb-label">Bon de commande</span></a>
+    <a class="mdm-sb-item" href="mes-commandes.html"><span class="mdm-sb-icon">&#128230;</span><span class="mdm-sb-label">Mes commandes</span></a>
+    <a class="mdm-sb-item" href="messagerie.html"><span class="mdm-sb-icon">&#128172;</span><span class="mdm-sb-label">Messagerie</span><span class="mdm-sb-badge" id="sb-msg-badge"></span></a>
+    <a class="mdm-sb-item" id="nav-mes-clients" href="clients.html" style="display:none"><span class="mdm-sb-icon">&#128101;</span><span class="mdm-sb-label">Mes clients</span></a>
+    <a class="mdm-sb-item" id="nav-performance" href="performance.html" style="display:none"><span class="mdm-sb-icon">&#128200;</span><span class="mdm-sb-label">Performance CRM</span><span class="mdm-sb-badge new">NEW</span></a>
+    <div class="mdm-sb-sep"></div>
+    <div class="mdm-sb-section">Outils</div>
+    <a class="mdm-sb-item" href="commande.html?import=1"><span class="mdm-sb-icon">&#128196;</span><span class="mdm-sb-label">Importer une commande</span></a>
+    <a class="mdm-sb-item" href="notes.html"><span class="mdm-sb-icon">&#128203;</span><span class="mdm-sb-label">Mes notes</span></a>
+    <a class="mdm-sb-item" href="actus.html"><span class="mdm-sb-icon">&#128226;</span><span class="mdm-sb-label">Actualit&eacute;s MDM</span></a>
+    <div class="mdm-sb-sep"></div>
+    <div class="mdm-sb-section">Compte</div>
+    <a class="mdm-sb-item" href="#" onclick="mdmShowProfil();return false"><span class="mdm-sb-icon">&#128100;</span><span class="mdm-sb-label">Mon profil</span></a>
+    <a class="mdm-sb-item" href="tutoriel.html"><span class="mdm-sb-icon">&#128218;</span><span class="mdm-sb-label">Guide d&apos;utilisation</span></a>
   </div>
-
-  <!-- DÉCONNEXION en bas -->
-  <div class="mdm-sidebar-footer">
-    <a class="mdm-nav-item no-print" href="#" onclick="logout();return false">
-      <span class="mdm-nav-icon">&#x23FB;</span>
-      <span class="mdm-nav-label">D&eacute;connexion</span>
-    </a>
+  <div class="mdm-sb-footer">
+    <a class="mdm-sb-item danger" href="#" onclick="mdmLogout();return false"><span class="mdm-sb-icon">&#x23FB;</span><span class="mdm-sb-label">D&eacute;connexion</span></a>
   </div>
-
 </nav>
 <div class="mdm-sidebar-overlay" id="mdm-overlay" onclick="closeSidebar()"></div>
 
@@ -2506,48 +2599,12 @@ function handleImportFile(file){
     _parseExcelImport(file);
   } else if(ext==='pdf'){
     _parsePdfImport(file);
-  } else if(ext==='txt'||ext==='csv'){
-    _parseTxtImport(file);
   } else {
-    document.getElementById('import-log').textContent='⚠ Format non supporté. Utilisez .xlsx, .pdf ou .txt';
+    document.getElementById('import-log').textContent='\u26a0 Format non support\u00e9. Utilisez .xlsx ou .pdf';
   }
 }
 
 // ── Parse Excel ───────────────────────────────────────────────
-
-function _parseTxtImport(file){
-  var log=document.getElementById('import-log');
-  if(log) log.textContent='Lecture du fichier texte\u2026';
-  var reader=new FileReader();
-  reader.onload=function(e){
-    try{
-      var lines=e.target.result.split(/\r?\n/);
-      var parsed=[];
-      lines.forEach(function(line){
-        line=line.trim();
-        if(!line||line.startsWith('#')||line.startsWith('//')) return;
-        // Formats : CODE;QTE  CODE,QTE  CODE QTE  CODE|QTE  CODE\tQTE
-        var m=line.match(/^([A-Z0-9_\-]{3,20})\s*[;,|\t]\s*(\d+)/i)
-              ||line.match(/^([A-Z0-9_\-]{3,20})\s+(\d+)$/i);
-        if(!m) return;
-        var code=m[1].trim().toUpperCase(), qty=parseInt(m[2])||0;
-        if(code&&qty>0) parsed.push({code:code,qty:qty});
-      });
-      if(!parsed.length){
-        if(log){
-          log.style.whiteSpace='pre-wrap';
-          log.textContent='\u26a0 Aucune ligne reconnue.\nFormat attendu (1 par ligne) :\n  CODE123;5\n  CODE123 5\n  CODE123,5';
-        }
-        return;
-      }
-      if(log) log.textContent='';
-      _matchAndDisplay(parsed,'TXT\u00a0: '+file.name);
-    }catch(err){
-      if(log) log.textContent='\u26a0 Erreur TXT\u00a0: '+err.message;
-    }
-  };
-  reader.readAsText(file,'UTF-8');
-}
 function _parseExcelImport(file){
   if(typeof XLSX==='undefined'){
     document.getElementById('import-log').textContent='\u26a0 Librairie Excel non charg\u00e9e.';
@@ -2621,64 +2678,21 @@ async
 // ── Lecture PDF sans PDF.js (extraction texte brut) ───────────
 async function _parsePdfImport(file){
   var log=document.getElementById('import-log');
-  if(!log) return;
-  log.style.whiteSpace='pre-wrap';
   log.textContent='Lecture du PDF\u2026';
-
-  // PDF.js si disponible (meilleure extraction)
-  if(typeof pdfjsLib!=='undefined'){
-    var r=new FileReader();
-    r.onload=function(e){
-      pdfjsLib.getDocument({data:new Uint8Array(e.target.result)}).promise
-      .then(function(pdf){
-        var pp=[];
-        for(var p=1;p<=pdf.numPages;p++)
-          pp.push(pdf.getPage(p).then(function(pg){return pg.getTextContent();}));
-        return Promise.all(pp);
-      }).then(function(pages){
-        var txt='';
-        pages.forEach(function(content){
-          var lastY=null;
-          content.items.forEach(function(item){
-            if(lastY!==null&&Math.abs(item.transform[5]-lastY)>3) txt+='\n';
-            txt+=item.str;
-            if(!item.str.endsWith(' ')) txt+=' ';
-            lastY=item.transform[5];
-          });
-          txt+='\n';
-        });
-        log.textContent='';
-        _parsePdfText(txt, file.name);
-      }).catch(function(err){
-        log.textContent='\u26a0 PDF.js: '+err.message+'\nTentative alternative\u2026';
-        _parsePdfFallback(file);
-      });
-    };
-    r.readAsArrayBuffer(file);
-    return;
-  }
-  // Fallback : extraction manuelle
-  _parsePdfFallback(file);
-}
-
-function _parsePdfFallback(file){
-  var log=document.getElementById('import-log');
-  var reader=new FileReader();
-  reader.onload=function(e){
-    try{
-      var text=_extractPdfRawText(e.target.result);
-      if(!text||text.trim().length<10){
-        if(log) log.textContent='\u26a0 PDF illisible (probablement scanné).\nUtilisez Excel (.xlsx) ou TXT.';
-        return;
-      }
-      if(log) log.textContent='';
-      _parsePdfText(text, file.name);
-    }catch(err){
-      if(log) log.textContent='\u26a0 Erreur PDF\u00a0: '+err.message;
+  log.style.whiteSpace='pre-wrap';
+  try{
+    var arrayBuffer=await file.arrayBuffer();
+    // Extraire le texte brut du PDF (tokens /BT ... ET et Tj/TJ)
+    var text=_extractPdfRawText(arrayBuffer);
+    if(!text||text.trim().length<20){
+      log.textContent='\u26a0 Impossible d\u2019extraire le texte de ce PDF.\nEssayez de convertir en Excel.';
+      return;
     }
-  };
-  reader.onerror=function(){if(log) log.textContent='\u26a0 Impossible de lire le fichier.';};
-  reader.readAsArrayBuffer(file);
+    log.textContent='';
+    _parsePdfText(text, file.name);
+  }catch(err){
+    log.textContent='\u26a0 Erreur PDF\u00a0: '+err.message;
+  }
 }
 
 function _extractPdfRawText(buffer){
@@ -3942,8 +3956,8 @@ function draftInit(){
       ondrop="event.preventDefault();this.classList.remove('drag');handleImportFile(event.dataTransfer.files[0])">
       <div class="import-drop-icon">&#128196;</div>
       <div class="import-drop-txt">Glissez votre fichier ici</div>
-      <div class="import-drop-sub">Excel, PDF, TXT/CSV — glissez ou cliquez</div>
-      <input type="file" id="import-file-input" accept=".xlsx,.xls,.pdf,.txt,.csv" style="display:none"
+      <div class="import-drop-sub">Excel (.xlsx, .xls) ou PDF — colonnes Code + Quantit&#233;</div>
+      <input type="file" id="import-file-input" accept=".xlsx,.xls,.pdf" style="display:none"
         onchange="handleImportFile(this.files[0])">
     </div>
     <!-- Aide format -->
@@ -3968,5 +3982,37 @@ function draftInit(){
   </div>
 </div>
 
+<script>
+
+/* ══ MDM NAV UNIFIÉ ══════════════════════════════════════ */
+(function(){
+  'use strict';
+  var FC={apiKey:"AIzaSyB000QDa4c-vMjO1Xuimw58iiRvwgbF1zc",authDomain:"mdm-bdc26.firebaseapp.com",projectId:"mdm-bdc26",storageBucket:"mdm-bdc26.firebasestorage.app",messagingSenderId:"52658530893",appId:"1:52658530893:web:166626ae4d681465ddca04"};
+  var _ndb=null,_nr=false,_nu=null;
+  function _iF(){if(_nr)return Promise.resolve(_ndb);return new Promise(function(r,j){try{if(typeof firebase==='undefined')return j(new Error('Firebase absent'));if(!firebase.apps||!firebase.apps.length)firebase.initializeApp(FC);_ndb=firebase.firestore();_nr=true;r(_ndb);}catch(e){try{_ndb=firebase.firestore();_nr=true;r(_ndb);}catch(e2){j(e2);}}});}
+  function _gU(){try{var t=sessionStorage.getItem('mdm_token');if(!t)return null;var p=t.split('.');var raw=p.length===3?p[1]:t;return JSON.parse(atob(raw.replace(/-/g,'+').replace(/_/g,'/')));}catch(e){return null;}}
+  function _badge(login){_iF().then(function(db){if(_nu){try{_nu();}catch(e){}} _nu=db.collection('chats').orderBy('lastTs','desc').limit(100).onSnapshot(function(snap){var n=0;snap.docs.forEach(function(doc){var parts=doc.id.split('_');if(parts.indexOf(login)<0)return;n+=doc.data()['unread_'+login]||0;});['sb-msg-badge','mdm-topbar-badge','sidebar-chat-badge','chat-badge','mdm-msg-badge'].forEach(function(id){var el=document.getElementById(id);if(!el)return;if(n>0){el.textContent=n>99?'99+':String(n);el.style.display='inline-flex';el.style.alignItems='center';el.style.justifyContent='center';}else{el.style.display='none';}});var base=document.title.replace(/^\(\d+\)\s*/,'');document.title=n>0?'('+n+') '+base:base;},function(){});}).catch(function(){});}
+  function _role(user){
+    var role=user.role||'client',login=user.login||'';
+    var nm=document.getElementById('mdm-sb-name');if(nm)nm.textContent=user.nom||login;
+    var rl=document.getElementById('mdm-sb-role');if(rl)rl.textContent=role==='admin'?'Administrateur':role==='user'?'Commercial':'Client';
+    var tu=document.getElementById('mdm-topbar-user');if(tu)tu.textContent=user.nom||login;
+    var nc=document.getElementById('nav-mes-clients');if(nc)nc.style.display=(role==='user'||role==='admin')?'flex':'none';
+    var np=document.getElementById('nav-performance');if(np)np.style.display=(role==='user'||role==='admin')?'flex':'none';
+    var ab=document.getElementById('mdm-btn-admin');if(ab)ab.style.display=role==='admin'?'inline-flex':'none';
+    /* Compat ancienne sidebar */
+    var sn=document.getElementById('sidebar-user-name');if(sn)sn.textContent=user.nom||login;
+    var sr=document.getElementById('sidebar-user-role');if(sr)sr.textContent=role==='admin'?'Admin':role==='user'?'Commercial':'Client';
+  }
+  window.mdmToggleSidebar=function(){var sb=document.getElementById('mdm-sidebar'),ov=document.getElementById('mdm-sb-overlay'),hb=document.getElementById('mdm-hamburger');if(!sb)return;var open=sb.classList.toggle('open');if(ov)ov.classList.toggle('open',open);if(hb)hb.classList.toggle('open',open);document.body.style.overflow=open&&window.innerWidth<=768?'hidden':'';};
+  window.mdmCloseSidebar=function(){var sb=document.getElementById('mdm-sidebar'),ov=document.getElementById('mdm-sb-overlay'),hb=document.getElementById('mdm-hamburger');if(sb)sb.classList.remove('open');if(ov)ov.classList.remove('open');if(hb)hb.classList.remove('open');document.body.style.overflow='';};
+  window.mdmShowProfil=function(){if(typeof showProfilModal==='function')showProfilModal();else if(typeof showProfil==='function')showProfil();};
+  window.mdmLogout=function(){if(typeof logout==='function')logout();else{sessionStorage.removeItem('mdm_token');window.location.href='index.html';}};
+  function _bind(){document.querySelectorAll('.mdm-sb-item').forEach(function(el){el.addEventListener('click',function(){if(window.innerWidth<=768)window.mdmCloseSidebar();});});}
+  function _init(){var user=_gU();if(!user||!user.login)return;_role(user);_badge(user.login);_bind();}
+  if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',_init);}else{_init();setTimeout(_bind,500);}
+})();
+
+</script>
 </body>
 </html>

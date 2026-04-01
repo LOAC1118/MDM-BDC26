@@ -650,8 +650,6 @@ tbody tr.has-qty td.td-qty input{background:#ffe0b2;border-color:var(--terra)}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script>if(typeof pdfjsLib!=="undefined") pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";</script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -910,7 +908,16 @@ tbody tr.has-qty td.td-qty input{background:#ffe0b2;border-color:var(--terra)}
     <div class="fg"><label>Commentaire</label><textarea id="m-comment" placeholder="Informations compl&#233;mentaires, contraintes de livraison..."></textarea></div>
     <div class="alert" id="modal-alert"></div>
     <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeModal()">Annu
+      <button class="btn-cancel" onclick="closeModal()">Annuler</button>
+      <button class="btn btn-green" id="btn-send" onclick="sendOrder()">
+        <span class="spinner" id="spinner"></span>
+        <span id="send-label">&#128228; Envoyer la commande</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
 
 
 
@@ -2499,12 +2506,48 @@ function handleImportFile(file){
     _parseExcelImport(file);
   } else if(ext==='pdf'){
     _parsePdfImport(file);
+  } else if(ext==='txt'||ext==='csv'){
+    _parseTxtImport(file);
   } else {
-    document.getElementById('import-log').textContent='\u26a0 Format non support\u00e9. Utilisez .xlsx ou .pdf';
+    document.getElementById('import-log').textContent='⚠ Format non supporté. Utilisez .xlsx, .pdf ou .txt';
   }
 }
 
 // ── Parse Excel ───────────────────────────────────────────────
+
+function _parseTxtImport(file){
+  var log=document.getElementById('import-log');
+  if(log) log.textContent='Lecture du fichier texte\u2026';
+  var reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      var lines=e.target.result.split(/\r?\n/);
+      var parsed=[];
+      lines.forEach(function(line){
+        line=line.trim();
+        if(!line||line.startsWith('#')||line.startsWith('//')) return;
+        // Formats : CODE;QTE  CODE,QTE  CODE QTE  CODE|QTE  CODE\tQTE
+        var m=line.match(/^([A-Z0-9_\-]{3,20})\s*[;,|\t]\s*(\d+)/i)
+              ||line.match(/^([A-Z0-9_\-]{3,20})\s+(\d+)$/i);
+        if(!m) return;
+        var code=m[1].trim().toUpperCase(), qty=parseInt(m[2])||0;
+        if(code&&qty>0) parsed.push({code:code,qty:qty});
+      });
+      if(!parsed.length){
+        if(log){
+          log.style.whiteSpace='pre-wrap';
+          log.textContent='\u26a0 Aucune ligne reconnue.\nFormat attendu (1 par ligne) :\n  CODE123;5\n  CODE123 5\n  CODE123,5';
+        }
+        return;
+      }
+      if(log) log.textContent='';
+      _matchAndDisplay(parsed,'TXT\u00a0: '+file.name);
+    }catch(err){
+      if(log) log.textContent='\u26a0 Erreur TXT\u00a0: '+err.message;
+    }
+  };
+  reader.readAsText(file,'UTF-8');
+}
 function _parseExcelImport(file){
   if(typeof XLSX==='undefined'){
     document.getElementById('import-log').textContent='\u26a0 Librairie Excel non charg\u00e9e.';
@@ -2570,55 +2613,6 @@ function _parseExcelImport(file){
   };
   reader.readAsArrayBuffer(file);
 }
-function _parsePdfWithPdfjs(file){
-  var log=document.getElementById('import-log');
-  var reader=new FileReader();
-  reader.onload=function(e){
-    var typedArray=new Uint8Array(e.target.result);
-    pdfjsLib.getDocument({data:typedArray}).promise.then(function(pdf){
-      var maxPages=pdf.numPages;
-      var pagesPromises=[];
-      for(var p=1;p<=maxPages;p++){
-        pagesPromises.push(pdf.getPage(p).then(function(page){
-          return page.getTextContent();
-        }));
-      }
-      return Promise.all(pagesPromises);
-    }).then(function(pagesContent){
-      // Assembler tout le texte page par page
-      var fullText='';
-      pagesContent.forEach(function(content){
-        var pageText='';
-        var lastY=null;
-        content.items.forEach(function(item){
-          // Saut de ligne si changement de Y significatif
-          if(lastY!==null && Math.abs(item.transform[5]-lastY)>3){
-            pageText+='\n';
-          }
-          pageText+=item.str;
-          // Espace si pas déjà
-          if(!item.str.endsWith(' ')) pageText+=' ';
-          lastY=item.transform[5];
-        });
-        fullText+=pageText+'\n';
-      });
-      if(log) log.textContent='';
-      _parsePdfText(fullText, file.name);
-    }).catch(function(err){
-      if(log) log.textContent='\u26a0 PDF.js error\u00a0: '+err.message+'\nTentative avec méthode alternative\u2026';
-      // Fallback méthode manuelle
-      var r2=new FileReader();
-      r2.onload=function(e2){
-        var text=_extractPdfRawText(e2.target.result);
-        _parsePdfText(text, file.name);
-      };
-      r2.readAsArrayBuffer(file);
-    });
-  };
-  reader.readAsArrayBuffer(file);
-}
-
-
 
 // ── Parse PDF ─────────────────────────────────────────────────
 async 
@@ -2631,31 +2625,61 @@ async function _parsePdfImport(file){
   log.style.whiteSpace='pre-wrap';
   log.textContent='Lecture du PDF\u2026';
 
-  // Essayer PDF.js d'abord (meilleure extraction)
+  // PDF.js si disponible (meilleure extraction)
   if(typeof pdfjsLib!=='undefined'){
-    _parsePdfWithPdfjs(file);
+    var r=new FileReader();
+    r.onload=function(e){
+      pdfjsLib.getDocument({data:new Uint8Array(e.target.result)}).promise
+      .then(function(pdf){
+        var pp=[];
+        for(var p=1;p<=pdf.numPages;p++)
+          pp.push(pdf.getPage(p).then(function(pg){return pg.getTextContent();}));
+        return Promise.all(pp);
+      }).then(function(pages){
+        var txt='';
+        pages.forEach(function(content){
+          var lastY=null;
+          content.items.forEach(function(item){
+            if(lastY!==null&&Math.abs(item.transform[5]-lastY)>3) txt+='\n';
+            txt+=item.str;
+            if(!item.str.endsWith(' ')) txt+=' ';
+            lastY=item.transform[5];
+          });
+          txt+='\n';
+        });
+        log.textContent='';
+        _parsePdfText(txt, file.name);
+      }).catch(function(err){
+        log.textContent='\u26a0 PDF.js: '+err.message+'\nTentative alternative\u2026';
+        _parsePdfFallback(file);
+      });
+    };
+    r.readAsArrayBuffer(file);
     return;
   }
+  // Fallback : extraction manuelle
+  _parsePdfFallback(file);
+}
 
-  // Fallback : FileReader + extraction manuelle
+function _parsePdfFallback(file){
+  var log=document.getElementById('import-log');
   var reader=new FileReader();
   reader.onload=function(e){
     try{
       var text=_extractPdfRawText(e.target.result);
       if(!text||text.trim().length<10){
-        log.textContent='\u26a0 PDF illisible (probablement scanné).\nUtilisez Excel (.xlsx) ou TXT.';
+        if(log) log.textContent='\u26a0 PDF illisible (probablement scanné).\nUtilisez Excel (.xlsx) ou TXT.';
         return;
       }
-      log.textContent='';
+      if(log) log.textContent='';
       _parsePdfText(text, file.name);
     }catch(err){
-      log.textContent='\u26a0 Erreur PDF\u00a0: '+err.message;
+      if(log) log.textContent='\u26a0 Erreur PDF\u00a0: '+err.message;
     }
   };
-  reader.onerror=function(){ log.textContent='\u26a0 Impossible de lire le fichier.'; };
+  reader.onerror=function(){if(log) log.textContent='\u26a0 Impossible de lire le fichier.';};
   reader.readAsArrayBuffer(file);
 }
-
 
 function _extractPdfRawText(buffer){
   // Lire les octets du PDF comme string
@@ -2708,7 +2732,10 @@ function _extractPdfRawText(buffer){
 
 function _parsePdfText(text, filename){
   var products=(typeof PRODUCTS!=='undefined'?PRODUCTS:[])||[];
-  var eanIndex={}, codeIndex={};
+
+  // Index par EAN (priorité) et par code MDM
+  var eanIndex={};
+  var codeIndex={};
   products.forEach(function(p){
     codeIndex[p.code.toUpperCase()]=p;
     if(p.ean){
@@ -2717,129 +2744,125 @@ function _parsePdfText(text, filename){
     }
   });
 
-  var parsed=[], seen={};
-  var cleanText=text.replace(/\r\n/g,'\n').replace(/\r/g,'\n');
-  var lines=cleanText.split('\n');
+  var parsed=[];
+  var seen={};
 
-  // ── Patterns reconnus ──────────────────────────────────────
+  // ── Nettoyer le texte ──────────────────────────────────────
+  // Remplacer les retours chariot multiples par un seul
+  var cleanText=text.replace(/\r\n/g,'\n').replace(/\r/g,'\n');
+
+  // ── Méthode 1 : parser ligne par ligne (format BDC MDM) ────
+  // Format: EAN CODE_MDM DESIGNATION... QTE,000 PRIX TOTAL
+  var lines=cleanText.split('\n');
   lines.forEach(function(line){
     line=line.trim();
-    if(!line||line.length<4) return;
-    // Ignorer entêtes / pieds de page
-    if(/^(C Article|D[ée]signation|Code Client|Total|Page\s+\d|N[°º]\s*Commande|Bon de commande|Moulin|Date|Référence)/i.test(line)) return;
+    if(!line||line.length<8) return;
 
-    // FORMAT 1 : EAN CODE_MDM ... QTE,000 PRIX TOTAL  (BDC MDM standard)
-    var m1=line.match(/(\d{7,14})\s+([A-Za-z][A-Za-z0-9_\-]{1,25})\s+.{2,60}?\s+(\d{1,5})[,.](\d{3})\s+[\d,.]+\s+[\d,.]+/);
-    if(m1){
-      var ean=m1[1], code=m1[2].toUpperCase(), qty=parseInt(m1[3]);
-      if(qty>0 && !seen[code]){
-        var prod=codeIndex[code]||eanIndex[ean];
-        parsed.push({code:prod?prod.code:code, qty:qty});
-        seen[prod?prod.code:code]=true;
-        return;
-      }
-    }
+    // Ignorer lignes d'en-tête / pied de page
+    if(/^(C Article|D.signation|Cde |Code Client|Total Commande|N. Commande|\d+\/\d+$)/i.test(line)) return;
 
-    // FORMAT 2 : CODE_MDM ... QTE,000  (sans EAN)
-    var m2=line.match(/\b([A-Z][A-Z0-9_\-]{2,20})\b.{0,60}?\s+(\d{1,5})[,.](\d{3})\b/);
-    if(m2){
-      var code=m2[1].toUpperCase(), qty=parseInt(m2[2]);
-      if(qty>0 && codeIndex[code] && !seen[code]){
-        parsed.push({code:code, qty:qty});
-        seen[code]=true;
-        return;
-      }
-    }
-
-    // FORMAT 3 : CODE suivi de quantité entière (format simple : "ABCDEF 5")
-    var m3=line.match(/^([A-Z][A-Z0-9_\-]{2,20})\s+(\d{1,4})(\s|$)/);
-    if(m3){
-      var code=m3[1].toUpperCase(), qty=parseInt(m3[2]);
-      if(qty>0 && codeIndex[code] && !seen[code]){
-        parsed.push({code:code, qty:qty});
-        seen[code]=true;
-        return;
-      }
-    }
-
-    // FORMAT 4 : EAN seul sur la ligne, quantité sur la même ligne ou suivante
-    var m4=line.match(/\b(\d{13})\b/);
-    if(m4){
-      var ean=m4[1], prod=eanIndex[ean];
-      if(prod && !seen[prod.code]){
-        // Chercher quantité sur la ligne
-        var rest=line.replace(ean,'');
-        var qm=rest.match(/(\d{1,5})[,.](\d{3})/)||rest.match(/\b(\d{1,4})\b/);
-        if(qm){
-          var qty=parseInt(qm[1]);
-          if(qty>0){
-            parsed.push({code:prod.code, qty:qty});
-            seen[prod.code]=true;
+    // Pattern principal : EAN (7-13 chiffres) + CODE + ... + QTE,000 + PRIX + TOTAL
+    var m=line.match(/(\d{7,13})\s+([A-Za-z][A-Za-z0-9_\-]{1,25})\s+.{3,60}?\s+(\d{1,5})[,\.](\d{3})\s+[\d,\.]+\s+[\d,\.]+/);
+    if(m){
+      var ean=m[1], codeMDM=m[2].toUpperCase(), qty=parseInt(m[3]);
+      if(qty>0){
+        // Chercher d'abord par code MDM
+        if(codeIndex[codeMDM]&&!seen[codeMDM]){
+          parsed.push({code:codeMDM,qty:qty});
+          seen[codeMDM]=true; return;
+        }
+        // Sinon par EAN
+        if(eanIndex[ean]&&!seen[ean]){
+          var prod=eanIndex[ean];
+          if(!seen[prod.code]){
+            parsed.push({code:prod.code,qty:qty});
+            seen[prod.code]=true; return;
           }
         }
+        // Code inconnu mais noter quand même
+        if(!seen[codeMDM]){
+          parsed.push({code:codeMDM,qty:qty});
+          seen[codeMDM]=true;
+        }
       }
+      return;
+    }
+
+    // Pattern EAN seul (pas de code MDM séparé) : EAN EAN DESIGNATION QTE,000 PRIX TOTAL
+    var m2=line.match(/(\d{7,13})\s+\d{7,13}\s+.{3,60}?\s+(\d{1,5})[,\.](\d{3})\s+[\d,\.]+\s+[\d,\.]+/);
+    if(m2){
+      var ean=m2[1], qty=parseInt(m2[2]);
+      if(qty>0&&eanIndex[ean]&&!seen[ean]){
+        var prod=eanIndex[ean];
+        if(!seen[prod.code]){
+          parsed.push({code:prod.code,qty:qty});
+          seen[prod.code]=true;
+        }
+      }
+      return;
     }
   });
 
-  // ── Scan global si rien trouvé ─────────────────────────────
+  // ── Méthode 2 : scan global du texte pour EAN connus ───────
+  // Si méthode 1 n'a rien trouvé (ex: PDF où le texte est concaténé sans \n)
   if(!parsed.length){
-    // Chercher les EAN 13 chiffres dans tout le texte
-    var eanRe=/\b(\d{13})\b/g, em;
-    while((em=eanRe.exec(cleanText))!==null){
-      var ean=em[1], prod=eanIndex[ean];
-      if(!prod||seen[prod.code]) continue;
-      var after=cleanText.substring(em.index+13, em.index+150);
-      var qm=after.match(/(\d{1,5})[,.](\d{3})/)||after.match(/\b([1-9]\d{0,3})\b/);
+    // Chercher tous les EAN de 13 chiffres dans le texte brut
+    var eanPattern=/\b(\d{13})\b/g;
+    var em;
+    while((em=eanPattern.exec(cleanText))!==null){
+      var ean=em[1];
+      var prod=eanIndex[ean];
+      if(!prod) continue;
+      if(seen[prod.code]) continue;
+
+      // Chercher un nombre de quantité proche (dans les 80 chars suivants)
+      var after=cleanText.substring(em.index+13,em.index+200);
+      // Chercher QTE,000 ou QTE.000 (format MDM)
+      var qm=after.match(/(\d{1,5})[,\.](\d{3})\b/);
+      if(!qm) qm=after.match(/\b(\d{1,4})\b/);
       if(qm){
         var qty=parseInt(qm[1]);
         if(qty>0&&qty<5000){
-          parsed.push({code:prod.code, qty:qty});
+          parsed.push({code:prod.code,qty:qty});
           seen[prod.code]=true;
         }
       }
     }
 
-    // Chercher les codes MDM connus dans le texte
+    // Chercher aussi les EAN à 8 chiffres ou codes MDM connus
     if(!parsed.length){
-      products.forEach(function(p){
-        if(seen[p.code]) return;
-        var re=new RegExp('\\b'+p.code.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\b','i');
+      Object.keys(codeIndex).forEach(function(code){
+        var re=new RegExp('\\b'+code+'\\b','i');
         var m=cleanText.match(re);
-        if(!m) return;
-        var idx=m.index;
-        var after=cleanText.substring(idx+p.code.length, idx+p.code.length+80);
-        var qm=after.match(/(\d{1,5})[,.](\d{3})/)||after.match(/\b([1-9]\d{0,3})\b/);
+        if(!m||seen[code]) return;
+        var idx=cleanText.indexOf(m[0]);
+        var after=cleanText.substring(idx+code.length,idx+code.length+100);
+        var qm=after.match(/(\d{1,5})[,\.](\d{3})/)||after.match(/\b(\d{1,4})\b/);
         if(qm){
           var qty=parseInt(qm[1]);
           if(qty>0&&qty<5000){
-            parsed.push({code:p.code, qty:qty});
-            seen[p.code]=true;
+            parsed.push({code:code,qty:qty});
+            seen[code]=true;
           }
         }
       });
     }
   }
 
-  var logEl=document.getElementById('import-log');
+  document.getElementById('import-log').textContent='';
   if(!parsed.length){
-    if(logEl){
-      logEl.style.whiteSpace='pre-wrap';
-      logEl.textContent=
-        '\u26a0 Aucun produit détecté dans ce PDF.\n\n'
-        +'Causes possibles\u00a0:\n'
-        +'  \u2022 PDF scanné (image) — non lisible\n'
-        +'  \u2022 Format non reconnu\n\n'
-        +'Solutions\u00a0:\n'
-        +'  \u2022 Exportez en Excel (.xlsx) depuis votre logiciel\n'
-        +'  \u2022 Ou copiez-collez dans un fichier .txt (CODE;QTE)';
-    }
+    document.getElementById('import-log').textContent=
+      '\u26a0 Aucun produit d\u00e9tect\u00e9 dans ce PDF.\n\n'
+      +'Causes possibles\u00a0:\n'
+      +'  \u2022 PDF scanné (image) non lisible par le navigateur\n'
+      +'  \u2022 Format de ligne non reconnu\n\n'
+      +'Solution\u00a0: exportez le fichier en Excel (.xlsx) depuis votre logiciel.';
+    document.getElementById('import-log').style.whiteSpace='pre-wrap';
   } else {
-    if(logEl) logEl.textContent='';
+    document.getElementById('import-log').textContent='';
   }
-
   _matchAndDisplay(parsed, 'PDF\u00a0: '+filename);
 }
-
 
 
 // ── Matcher les codes contre le catalogue ─────────────────────
@@ -2993,15 +3016,6 @@ function initNotifBadge(login){
         var lastSender=data.lastSender||'';
         var lastTs=data.lastTs||0;
         var lastRead=0;
-        try{lastRead=parseInt(localStorage.getItem('mdm_lastread_'+id)||'0');}catch(e){}
-        if(lastSender!==login && lastTs>lastRead) unread++;
-      });
-      _updateBadge(unread);
-    },function(e){ console.warn('Notif badge:',e.code); });
-}
-
-
-d=0;
         try{lastRead=parseInt(localStorage.getItem('mdm_lastread_'+id)||'0');}catch(e){}
         if(lastSender!==login && lastTs>lastRead) unread++;
       });
@@ -3928,7 +3942,7 @@ function draftInit(){
       ondrop="event.preventDefault();this.classList.remove('drag');handleImportFile(event.dataTransfer.files[0])">
       <div class="import-drop-icon">&#128196;</div>
       <div class="import-drop-txt">Glissez votre fichier ici</div>
-      <div class="import-drop-sub">Excel (.xlsx), PDF, ou TXT (.txt) — glissez ou cliquez</div>
+      <div class="import-drop-sub">Excel, PDF, TXT/CSV — glissez ou cliquez</div>
       <input type="file" id="import-file-input" accept=".xlsx,.xls,.pdf,.txt,.csv" style="display:none"
         onchange="handleImportFile(this.files[0])">
     </div>

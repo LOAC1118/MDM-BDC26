@@ -648,157 +648,98 @@ tbody tr.has-qty td.td-qty input{background:#ffe0b2;border-color:var(--terra)}
 .import-overlay{position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:299;display:none}
 .import-overlay.open{display:block}
 
+/* ════ BDC RESPONSIVE ════════════════════════════════════════ */
+@media(max-width:900px){
+  .totals-bar{left:0!important;padding:0 12px!important;gap:8px!important}
+  .search-bar{padding:8px 12px;margin:6px 12px;border-radius:8px}
+  th.col-ean,td.col-ean,th.col-origine,td.col-origine,
+  th.col-certif,td.col-certif,th.col-poids,td.col-poids,
+  th.col-tva,td.col-tva,th.col-uvc,td.col-uvc{display:none!important}
+  thead th,th{padding:7px 9px!important;font-size:9px!important}
+  td{padding:8px 9px!important;font-size:11px!important}
+  .td-qty input{width:56px!important;font-size:14px!important}
+  .modal{max-width:calc(100vw - 20px)!important;padding:20px!important}
+}
+@media(max-width:600px){
+  .bdc-table-wrap{display:none!important}
+  .bdc-cards-wrap{display:block!important}
+  .search-bar{margin:6px 10px;padding:8px 10px;flex-direction:column;align-items:stretch;gap:8px}
+  .search-bar input{width:100%!important;font-size:16px!important;border-radius:8px;padding:10px 12px}
+  .search-modes{display:flex;gap:4px;flex-wrap:wrap}
+  .mode-btn{flex:1;min-width:56px;font-size:11px!important;padding:6px 4px!important;text-align:center}
+  .totals-bar{left:0!important;height:auto!important;padding:6px 10px!important;flex-wrap:nowrap!important;overflow-x:auto!important;-webkit-overflow-scrolling:touch}
+  .totals-bar::-webkit-scrollbar{display:none}
+  .total-item{min-width:60px;flex-shrink:0;padding:0 6px}
+  .total-label{font-size:8px!important}
+  .total-value{font-size:13px!important}
+  .totals-sep{display:none!important}
+  .modal-bg{align-items:flex-end!important;padding:0!important}
+  .modal{border-radius:18px 18px 0 0!important;max-width:100%!important;width:100%!important;padding:20px 14px 32px!important;max-height:90vh!important;overflow-y:auto!important}
+  .modal h2{font-size:16px!important}
+  .import-panel{width:100%!important;left:0!important}
+  .btn-send-mobile{display:flex!important}
+}
 
-/* ════════════════════════════════════════════════════════════
-   MDM NAVIGATION UNIFIÉE v2
-════════════════════════════════════════════════════════════ */
-:root {
-  --mdm-h: 56px;
-  --mdm-sb: 224px;
-  --mdm-brown: #5c4438;
-  --mdm-green: #3a6b4a;
-  --mdm-green-l: #edf5f0;
-  --mdm-terra: #9b5a3c;
-  --mdm-bg: #f7f4ef;
-  --mdm-card: #ffffff;
-  --mdm-border: #e6ddd4;
-  --mdm-border-l: #ede9e3;
-  --mdm-text: #3d2e24;
-  --mdm-text2: #7a6050;
-  --mdm-text3: #b09888;
-  --mdm-danger: #c0392b;
+/* ════ CARTES PRODUIT ════════════════════════════════════════ */
+.bdc-cards-wrap{display:none;padding:0 10px 80px}
+.bdc-card{
+  background:#fff;border:1.5px solid var(--border);border-radius:10px;
+  padding:12px 13px;margin-bottom:8px;display:none;flex-direction:column;gap:8px;
+  position:relative;transition:border-color .15s,box-shadow .15s;
 }
-.mdm-topbar {
-  position: sticky; top: 0; z-index: 300;
-  height: var(--mdm-h);
-  background: var(--mdm-brown);
-  display: flex; align-items: center;
-  padding: 0 16px; gap: 12px;
-  box-shadow: 0 2px 8px rgba(40,24,16,.22);
-  flex-shrink: 0;
+.bdc-card.visible{display:flex}
+.bdc-card.has-qty{border-color:var(--accent);box-shadow:0 2px 10px rgba(74,124,89,.12)}
+.bdc-card-dot{
+  position:absolute;top:10px;right:10px;width:7px;height:7px;
+  border-radius:50%;background:var(--accent);display:none;
 }
-.mdm-topbar-hamburger {
-  display: none; flex-direction: column; gap: 5px;
-  background: none; border: none; cursor: pointer;
-  padding: 5px; flex-shrink: 0;
+.bdc-card.has-qty .bdc-card-dot{display:block}
+.bdc-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.bdc-card-lib{font-size:13px;font-weight:400;color:var(--text);line-height:1.3;flex:1}
+.bdc-card-code{font-family:monospace;font-size:9px;color:var(--text-secondary);margin-top:2px}
+.bdc-card-certif{
+  font-size:9px;font-weight:600;background:#e8f5e9;color:#2e7d32;
+  padding:2px 6px;border-radius:4px;flex-shrink:0;align-self:flex-start;white-space:nowrap;
 }
-.mdm-topbar-hamburger span {
-  display: block; width: 19px; height: 2px;
-  background: rgba(255,255,255,.75); border-radius: 2px;
-  transition: all .22s;
+.bdc-card-meta{display:flex;gap:10px;flex-wrap:wrap;align-items:center;font-size:11px;color:var(--text-secondary)}
+.bdc-card-prix{font-size:15px;font-weight:600;color:var(--green)}
+.bdc-card-prix-barre{font-size:10px;text-decoration:line-through;color:#bbb;margin-left:3px}
+.bdc-card-stock-ok{color:#2e7d32;font-size:10px}
+.bdc-card-stock-low{color:#e65100;font-size:10px;font-weight:600}
+.bdc-card-stock-out{color:#c62828;font-size:10px;font-weight:600}
+.bdc-card-qty-row{display:flex;align-items:center;gap:10px;margin-top:2px}
+.bdc-card-qty-label{font-size:11px;color:var(--text-secondary);flex-shrink:0}
+.bdc-card-qty-controls{
+  display:flex;align-items:center;
+  border:1.5px solid var(--border);border-radius:8px;overflow:hidden;
 }
-.mdm-topbar-hamburger.open span:nth-child(1){ transform:translateY(7px) rotate(45deg); background:#fff }
-.mdm-topbar-hamburger.open span:nth-child(2){ opacity:0 }
-.mdm-topbar-hamburger.open span:nth-child(3){ transform:translateY(-7px) rotate(-45deg); background:#fff }
-.mdm-topbar-logo {
-  font-family:'Fraunces',serif; font-weight:200; font-size:17px;
-  color:#fff; white-space:nowrap; text-decoration:none;
+.bdc-qty-btn{
+  width:38px;height:38px;border:none;background:var(--bg);
+  color:var(--text);font-size:20px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  font-weight:300;transition:background .12s;
 }
-.mdm-topbar-logo em { font-style:italic; color:#d4b08a; }
-.mdm-topbar-page {
-  font-size:11px; font-weight:400; color:rgba(255,255,255,.5);
-  border-left:1px solid rgba(255,255,255,.18); padding-left:12px;
-  margin-left:4px; white-space:nowrap;
+.bdc-qty-btn:active{background:var(--border)}
+.bdc-qty-btn.inc{background:var(--accent-light);color:var(--accent)}
+.bdc-qty-btn.inc:active{background:#c8e6c9}
+.bdc-card-qty-inp{
+  width:52px;height:38px;border:none;
+  border-left:1px solid var(--border);border-right:1px solid var(--border);
+  text-align:center;font-size:15px;font-weight:500;color:var(--text);background:#fff;
+  -moz-appearance:textfield;
 }
-.mdm-topbar-spacer { flex:1; min-width:0; }
-.mdm-topbar-actions { display:flex; align-items:center; gap:8px; flex-shrink:0; }
-.mdm-topbar-user {
-  font-size:11px; color:rgba(255,255,255,.65);
-  white-space:nowrap; max-width:120px;
-  overflow:hidden; text-overflow:ellipsis;
-}
-.mdm-topbar-btn {
-  padding:5px 12px; border-radius:6px; font-size:11px;
-  border:1px solid rgba(255,255,255,.22);
-  background:rgba(255,255,255,.1); color:rgba(255,255,255,.9);
-  cursor:pointer; font-family:inherit;
-  transition:all .14s; text-decoration:none;
-  display:inline-flex; align-items:center; gap:5px; white-space:nowrap;
-}
-.mdm-topbar-btn:hover { background:rgba(255,255,255,.2); }
-.mdm-topbar-btn.accent { background:var(--mdm-green); border-color:var(--mdm-green); color:#fff; }
-.mdm-topbar-btn.accent:hover { background:#2d5a3c; }
-.mdm-topbar-badge {
-  background:var(--mdm-danger); color:#fff;
-  font-size:9px; font-weight:700;
-  width:16px; height:16px; border-radius:50%;
-  display:none; align-items:center; justify-content:center;
-  position:absolute; top:-4px; right:-4px;
-}
-.mdm-topbar-msg-wrap { position:relative; }
-.mdm-layout { display:flex; min-height:calc(100vh - var(--mdm-h)); }
-.mdm-sidebar {
-  width:var(--mdm-sb); flex-shrink:0;
-  background:var(--mdm-card);
-  border-right:1px solid var(--mdm-border);
-  display:flex; flex-direction:column;
-  position:sticky; top:var(--mdm-h);
-  height:calc(100vh - var(--mdm-h));
-  overflow-y:auto; overflow-x:hidden;
-  transition:transform .26s cubic-bezier(.4,0,.2,1);
-}
-.mdm-sb-user {
-  padding:14px 16px 12px;
-  border-bottom:1px solid var(--mdm-border-l); flex-shrink:0;
-}
-.mdm-sb-user-name {
-  font-size:13px; font-weight:500; color:var(--mdm-text);
-  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-}
-.mdm-sb-user-role {
-  font-size:10px; color:var(--mdm-text3);
-  margin-top:2px; display:inline-flex; align-items:center; gap:5px;
-}
-.mdm-sb-user-dot { width:6px; height:6px; border-radius:50%; background:var(--mdm-green); flex-shrink:0; }
-.mdm-sb-scroll { flex:1; overflow-y:auto; padding-bottom:8px; }
-.mdm-sb-section {
-  font-size:9px; font-weight:700; text-transform:uppercase;
-  letter-spacing:.9px; color:var(--mdm-text3); padding:14px 14px 5px;
-}
-.mdm-sb-item {
-  display:flex; align-items:center; gap:9px;
-  padding:8px 14px; cursor:pointer;
-  font-size:12px; color:var(--mdm-text2);
-  border-left:2px solid transparent;
-  transition:all .12s; text-decoration:none; margin:0 0 1px;
-}
-.mdm-sb-item:hover { background:var(--mdm-bg); color:var(--mdm-text); border-left-color:var(--mdm-border); }
-.mdm-sb-item.active { background:var(--mdm-green-l); color:var(--mdm-green); border-left-color:var(--mdm-green); font-weight:500; }
-.mdm-sb-item.danger { color:#b03030; }
-.mdm-sb-item.danger:hover { background:#fdf0f0; border-left-color:var(--mdm-danger); }
-.mdm-sb-icon { font-size:14px; width:18px; text-align:center; flex-shrink:0; }
-.mdm-sb-label { flex:1; }
-.mdm-sb-badge {
-  font-size:9px; font-weight:700; padding:1px 5px;
-  border-radius:8px; min-width:16px; text-align:center; flex-shrink:0; display:none;
-}
-.mdm-sb-badge.red { background:var(--mdm-danger); color:#fff; display:inline; }
-.mdm-sb-badge.green { background:var(--mdm-green); color:#fff; display:inline; }
-.mdm-sb-badge.gray { background:var(--mdm-border); color:var(--mdm-text3); display:inline; }
-.mdm-sb-badge.new { background:var(--mdm-green); color:#fff; font-size:8px; padding:1px 4px; display:inline; }
-.mdm-sb-sep { height:1px; background:var(--mdm-border-l); margin:6px 14px; }
-.mdm-sb-footer { border-top:1px solid var(--mdm-border-l); padding:8px 0 6px; flex-shrink:0; }
-.mdm-sb-overlay {
-  display:none; position:fixed; inset:0;
-  background:rgba(40,24,16,.4); z-index:290; cursor:pointer;
-}
-.mdm-sb-overlay.open { display:block; }
-.mdm-main { flex:1; min-width:0; overflow-x:hidden; }
-@media(max-width:768px){
-  .mdm-topbar-hamburger { display:flex; }
-  .mdm-topbar-page { display:none; }
-  .mdm-topbar-user { display:none; }
-  .mdm-sidebar {
-    position:fixed !important; top:0; left:0; bottom:0;
-    z-index:295; transform:translateX(-100%);
-    box-shadow:none; height:100vh !important;
-  }
-  .mdm-sidebar.open { transform:translateX(0); box-shadow:6px 0 24px rgba(40,24,16,.18); }
-  .mdm-main { width:100%; }
-}
-@media(max-width:480px){
-  :root { --mdm-h:50px; }
-  .mdm-topbar-logo { font-size:15px; }
+.bdc-card-qty-inp::-webkit-outer-spin-button,.bdc-card-qty-inp::-webkit-inner-spin-button{-webkit-appearance:none}
+.bdc-card-qty-inp:focus{outline:none;background:var(--accent-light)}
+.bdc-card-uvc{font-size:11px;color:var(--text-secondary);flex-shrink:0}
+.bdc-card-total{font-size:13px;font-weight:600;color:var(--accent);margin-left:auto}
+
+/* Bouton envoyer flottant mobile */
+.btn-send-mobile{
+  display:none;position:fixed;bottom:62px;right:14px;
+  width:56px;height:56px;border-radius:50%;
+  background:var(--accent);color:#fff;border:none;cursor:pointer;
+  align-items:center;justify-content:center;font-size:22px;
+  box-shadow:0 4px 16px rgba(74,124,89,.4);z-index:88;
 }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -814,53 +755,113 @@ tbody tr.has-qty td.td-qty input{background:#ffe0b2;border-color:var(--terra)}
 
 
 
+<header style="background:var(--bg-beige);border-bottom:1px solid var(--border);padding:0 20px 0 16px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;gap:16px;font-family:'Inter',sans-serif">
 
-<header class="mdm-topbar" id="mdm-topbar">
-  <button class="mdm-topbar-hamburger" id="mdm-hamburger" onclick="mdmToggleSidebar()" aria-label="Menu">
-    <span></span><span></span><span></span>
-  </button>
-  <a href="dashboard.html" class="mdm-topbar-logo">Moulin <em>des</em> Moines</a>
-  <span class="mdm-topbar-page">Bon de commande</span>
-  <div class="mdm-topbar-spacer"></div>
-  <div class="mdm-topbar-actions">
-    <span class="mdm-topbar-user" id="mdm-topbar-user"></span>
-    <a href="admin.html" class="mdm-topbar-btn accent" id="mdm-btn-admin" style="display:none">&#9881; Admin</a>
-    <button class="mdm-topbar-btn" onclick="draftSave&&draftSave(true)" title="Sauvegarder brouillon">&#128190; Brouillon</button><button class="mdm-topbar-btn" id="btn-send-topbar" onclick="openModal&&openModal()" title="Envoyer">&#9993; Envoyer</button>
-    <div class="mdm-topbar-msg-wrap">
-      <a href="messagerie.html" class="mdm-topbar-btn" title="Messagerie">&#128172;<span class="mdm-topbar-badge" id="mdm-topbar-badge"></span></a>
-    </div>
+  <!-- Gauche : toggle + logo -->
+  <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
+    <button class="mdm-menu-toggle no-print" onclick="openSidebar()" title="Menu" style="display:none;background:none;border:none;cursor:pointer;padding:6px;color:var(--text);font-size:18px;line-height:1">&#9776;</button>
+    <a href="commande.html" style="font-family:'Fraunces',serif;font-size:19px;font-weight:200;color:var(--text);letter-spacing:-.3px;text-decoration:none;white-space:nowrap">
+      Moulin <span style="color:var(--accent)">des</span> Moines
+    </a>
+    <span style="font-size:10px;font-weight:300;color:var(--text-muted);padding-left:10px;border-left:1px solid var(--border);white-space:nowrap">Bon de Commande 2026</span>
   </div>
+
+  <!-- Centre : infos utilisateur compactes -->
+  <div style="display:flex;align-items:center;gap:8px;overflow:hidden;min-width:0">
+    <span id="user-info" style="font-size:12px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px"></span>
+    <span id="groupement-info" style="display:none;font-size:10px;font-weight:400;color:var(--accent);background:var(--accent-light);padding:2px 8px;border-radius:10px;white-space:nowrap;flex-shrink:0"><span id="groupement-name"></span></span>
+    <span id="commercial-info" style="display:none;font-size:10px;font-weight:300;color:var(--text-muted);white-space:nowrap;flex-shrink:0"><span id="commercial-name"></span></span>
+  </div>
+
+  <!-- Droite : actions -->
+  <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+    <button class="no-print" id="btn-admin" onclick="window.location.href='admin.html'" style="display:none;font-size:11px;font-weight:400;padding:6px 11px;border-radius:6px;border:1px solid var(--border);background:var(--bg-card);color:var(--text);cursor:pointer;font-family:inherit;white-space:nowrap">&#9881; Admin</button>
+    <button class="no-print" id="btn-new-client" onclick="openNewClientModal()" style="display:none;font-size:11px;font-weight:400;padding:6px 11px;border-radius:6px;border:1px solid var(--border);background:var(--bg-card);color:var(--accent);cursor:pointer;font-family:inherit;white-space:nowrap">&#43; Client</button>
+    <button class="no-print" onclick="openImportPanel()" style="font-size:11px;font-weight:500;padding:7px 12px;border-radius:6px;border:1px solid var(--border);background:var(--bg-card);color:var(--brown);cursor:pointer;font-family:inherit;white-space:nowrap;margin-right:4px">&#128196;&nbsp;Importer</button>
+    <button class="no-print" onclick="openModal()" style="font-size:12px;font-weight:500;padding:7px 16px;border-radius:6px;border:none;background:var(--accent);color:#fff;cursor:pointer;font-family:inherit;white-space:nowrap">Envoyer la commande</button>
+    <a href="messagerie.html?back=commande.html" id="chat-fab" class="no-print" title="Messagerie" style="display:none;position:relative;padding:7px 10px;border-radius:6px;font-size:14px;text-decoration:none;border:1px solid var(--border);background:var(--bg-card);color:var(--text);align-items:center;gap:4px">&#128172;<span id="chat-badge" style="position:absolute;top:-5px;right:-5px;background:#c0392b;color:#fff;font-size:9px;font-weight:600;padding:2px 5px;border-radius:10px;min-width:16px;text-align:center;display:none"></span></a>
+  </div>
+
 </header>
 <div class="mdm-layout">
 
-
-<div class="mdm-sb-overlay" id="mdm-sb-overlay" onclick="mdmCloseSidebar()"></div>
 <nav class="mdm-sidebar" id="mdm-sidebar">
-  <div class="mdm-sb-user">
-    <div class="mdm-sb-user-name" id="mdm-sb-name">—</div>
-    <div class="mdm-sb-user-role"><span class="mdm-sb-user-dot"></span><span id="mdm-sb-role">—</span></div>
+  <!-- User -->
+  <div class="mdm-sidebar-user-block">
+    <div class="mdm-sidebar-user" id="sidebar-user-name"></div>
+    <div class="mdm-sidebar-role" id="sidebar-user-role"></div>
   </div>
-  <div class="mdm-sb-scroll">
-    <div class="mdm-sb-section">Navigation</div>
-    <a class="mdm-sb-item" href="dashboard.html"><span class="mdm-sb-icon">&#127968;</span><span class="mdm-sb-label">Tableau de bord</span></a>
-    <a class="mdm-sb-item active" href="commande.html"><span class="mdm-sb-icon">&#128221;</span><span class="mdm-sb-label">Bon de commande</span></a>
-    <a class="mdm-sb-item" href="mes-commandes.html"><span class="mdm-sb-icon">&#128230;</span><span class="mdm-sb-label">Mes commandes</span></a>
-    <a class="mdm-sb-item" href="messagerie.html"><span class="mdm-sb-icon">&#128172;</span><span class="mdm-sb-label">Messagerie</span><span class="mdm-sb-badge" id="sb-msg-badge"></span></a>
-    <a class="mdm-sb-item" id="nav-mes-clients" href="clients.html" style="display:none"><span class="mdm-sb-icon">&#128101;</span><span class="mdm-sb-label">Mes clients</span></a>
-    <a class="mdm-sb-item" id="nav-performance" href="performance.html" style="display:none"><span class="mdm-sb-icon">&#128200;</span><span class="mdm-sb-label">Performance CRM</span><span class="mdm-sb-badge new">NEW</span></a>
-    <div class="mdm-sb-sep"></div>
-    <div class="mdm-sb-section">Outils</div>
-    <a class="mdm-sb-item" href="commande.html?import=1"><span class="mdm-sb-icon">&#128196;</span><span class="mdm-sb-label">Importer une commande</span></a>
-    <a class="mdm-sb-item" href="notes.html"><span class="mdm-sb-icon">&#128203;</span><span class="mdm-sb-label">Mes notes</span></a>
-    <a class="mdm-sb-item" href="actus.html"><span class="mdm-sb-icon">&#128226;</span><span class="mdm-sb-label">Actualit&eacute;s MDM</span></a>
-    <div class="mdm-sb-sep"></div>
-    <div class="mdm-sb-section">Compte</div>
-    <a class="mdm-sb-item" href="#" onclick="mdmShowProfil();return false"><span class="mdm-sb-icon">&#128100;</span><span class="mdm-sb-label">Mon profil</span></a>
-    <a class="mdm-sb-item" href="tutoriel.html"><span class="mdm-sb-icon">&#128218;</span><span class="mdm-sb-label">Guide d&apos;utilisation</span></a>
+
+  <div class="mdm-sidebar-scroll">
+
+    <!-- COMPTE -->
+    <div class="mdm-nav-section">Compte</div>
+    <a class="mdm-nav-item" href="#" onclick="showProfilModal();return false">
+      <span class="mdm-nav-icon">&#128100;</span>
+      <span class="mdm-nav-label">Mon profil</span>
+    </a>
+    <a class="mdm-nav-item" id="nav-chat" href="#" onclick="chatToggle();return false">
+      <span class="mdm-nav-icon">&#128172;</span>
+      <span class="mdm-nav-label">Messagerie</span>
+      <span class="mdm-nav-badge red" id="sidebar-chat-badge"></span>
+    </a>
+
+    <!-- NAVIGATION -->
+    <div class="mdm-nav-section">Navigation</div>
+    <a class="mdm-nav-item" href="dashboard.html">
+      <span class="mdm-nav-icon">&#127968;</span>
+      <span class="mdm-nav-label">Tableau de bord</span>
+    </a>
+    <a class="mdm-nav-item active" id="nav-commande" href="commande.html">
+      <span class="mdm-nav-icon">&#128221;</span>
+      <span class="mdm-nav-label">Bon de commande</span>
+    </a>
+    <a class="mdm-nav-item no-print" href="mes-commandes.html">
+      <span class="mdm-nav-icon">&#128230;</span>
+      <span class="mdm-nav-label">Mes commandes</span>
+    </a>
+
+    <!-- COMMANDE -->
+    <div class="mdm-nav-section">Commande</div>
+    <a class="mdm-nav-item no-print" href="#" onclick="draftSave(true);closeSidebar();return false">
+      <span class="mdm-nav-icon">&#128190;</span>
+      <span class="mdm-nav-label">Sauvegarder brouillon</span>
+    </a>
+    <a class="mdm-nav-item no-print" href="#" onclick="draftClear();closeSidebar();return false">
+      <span class="mdm-nav-icon">&#128465;</span>
+      <span class="mdm-nav-label">Effacer brouillon</span>
+    </a>
+    <a class="mdm-nav-item no-print" href="#" onclick="doPrint();return false">
+      <span class="mdm-nav-icon">&#128424;</span>
+      <span class="mdm-nav-label">Exporter PDF</span>
+    </a>
+    <a class="mdm-nav-item no-print" href="#" onclick="exportExcel();return false">
+      <span class="mdm-nav-icon">&#128202;</span>
+      <span class="mdm-nav-label">Exporter Excel</span>
+    </a>
+
+    <!-- AIDE -->
+    <div class="mdm-nav-section">Notes</div>
+    <a class="mdm-nav-item" href="notes.html">
+      <span class="mdm-nav-icon">&#128203;</span>
+      <span class="mdm-nav-label">Mes notes</span>
+    </a>
+    <div class="mdm-nav-section">Aide</div>
+    <a class="mdm-nav-item" href="tutoriel.html">
+      <span class="mdm-nav-icon">&#128218;</span>
+      <span class="mdm-nav-label">Guide d&apos;utilisation</span>
+    </a>
+
   </div>
-  <div class="mdm-sb-footer">
-    <a class="mdm-sb-item danger" href="#" onclick="mdmLogout();return false"><span class="mdm-sb-icon">&#x23FB;</span><span class="mdm-sb-label">D&eacute;connexion</span></a>
+
+  <!-- DÉCONNEXION en bas -->
+  <div class="mdm-sidebar-footer">
+    <a class="mdm-nav-item no-print" href="#" onclick="logout();return false">
+      <span class="mdm-nav-icon">&#x23FB;</span>
+      <span class="mdm-nav-label">D&eacute;connexion</span>
+    </a>
   </div>
+
 </nav>
 <div class="mdm-sidebar-overlay" id="mdm-overlay" onclick="closeSidebar()"></div>
 
@@ -902,115 +903,7 @@ tbody tr.has-qty td.td-qty input{background:#ffe0b2;border-color:var(--terra)}
   </div>
 
   <div class="search-bar no-print">
-    <input type="text" id="search-input" placeholder="Rechercher un produit (d&#233;signation, code article, EAN...)" oninput="doSearch()">
-    <div class="search-modes">
-      <button class="mode-btn active" data-mode="all"     onclick="setMode(this)">Tout</button>
-      <button class="mode-btn"        data-mode="libelle"  onclick="setMode(this)">D&#233;signation</button>
-      <button class="mode-btn"        data-mode="code"     onclick="setMode(this)">Code</button>
-      <button class="mode-btn"        data-mode="ean"      onclick="setMode(this)">EAN</button>
-    </div>
-    <span class="search-count" id="search-count"></span>
-    <button class="btn-clear" onclick="clearSearch()">&#10005; Effacer</button>
-  </div>
-
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>Code</th>
-          <th class="th-lib">D&#233;signation</th>
-          <th>EAN / Gencod</th>
-          <th>Origine</th>
-          <th>Certif.</th>
-          <th>PCB</th>
-          <th>Poids</th>
-          <th>TVA</th>
-          <th>Votre prix HT</th>
-          <th class="no-print th-stock">Stock</th>
-          <th class="no-print">Qt&#233; (colis)</th>
-          <th class="no-print">UVC</th>
-          <th>Total HT</th>
-        </tr>
-      </thead>
-      <tbody id="tbody"></tbody>
-    </table>
-  </div>
-
-  <div id="recap-print"></div>
-
-</div>
-
-<div class="totals-bar no-print">
-
-  <!-- Métriques -->
-  <div style="display:flex;align-items:center;gap:20px;flex:1">
-    <div class="total-item">
-      <div class="total-label">R&eacute;f.</div>
-      <div class="total-value" id="nb-refs">0</div>
-    </div>
-    <div class="totals-sep"></div>
-    <div class="total-item">
-      <div class="total-label">Colis</div>
-      <div class="total-value" id="nb-colis">0</div>
-    </div>
-    <div class="totals-sep"></div>
-    <div class="total-item">
-      <div class="total-label">UVC</div>
-      <div class="total-value" id="nb-uvc">0</div>
-    </div>
-    <div class="totals-sep"></div>
-    <div class="total-item">
-      <div class="total-label">Total HT brut</div>
-      <div class="total-value" id="total-brut">0,00&nbsp;&euro;</div>
-    </div>
-    <div class="totals-sep"></div>
-    <div class="total-item">
-      <div class="total-label">Remise</div>
-      <div class="total-value" id="total-remise">0,00&nbsp;&euro;</div>
-    </div>
-    <div class="totals-sep"></div>
-    <div class="total-item">
-      <div class="total-label">Total HT net</div>
-      <div class="total-value accent" id="total-net">0,00&nbsp;&euro;</div>
-    </div>
-    <div class="total-item" id="franco-bar-item" style="display:none">
-      <div class="totals-sep"></div>
-      <div class="total-label">Franco</div>
-      <div class="total-value" id="franco-bar-val" style="font-size:12px;font-family:'Inter',sans-serif;font-weight:300"></div>
-    </div>
-  </div>
-
-  <!-- Actions -->
-  <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
-    <button onclick="doPrint()" style="padding:7px 14px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:11px;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap;transition:background .15s" onmouseover="this.style.background='var(--bg-beige)'" onmouseout="this.style.background='var(--bg)'">PDF</button>
-    <button onclick="exportExcel()" style="padding:7px 14px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--accent);font-size:11px;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap;transition:background .15s" onmouseover="this.style.background='var(--accent-light)'" onmouseout="this.style.background='var(--bg)'">Excel</button>
-    <button onclick="openModal()" style="padding:7px 18px;border-radius:6px;border:none;background:var(--accent);color:#fff;font-size:12px;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap;transition:background .15s" onmouseover="this.style.background='var(--accent-hover)'" onmouseout="this.style.background='var(--accent)'">Envoyer la commande</button>
-  </div>
-
-</div>
-
-
-<!-- MODAL HISTORIQUE -->
-
-<div class="modal-bg" id="modal" onclick="if(event.target===this)closeModal()">
-  <div class="modal">
-    <h2>&#128231; Envoyer la commande</h2>
-    <p>Votre commande sera transmise &#224; l&#8217;&#233;quipe Moulin des Moines par email.</p>
-    <div class="fg"><label>Magasin / Soci&#233;t&#233; *</label><input type="text" id="m-magasin" placeholder="Nom du magasin"></div>
-    <div class="fg"><label>Votre email *</label><input type="email" id="m-email" placeholder="votre@email.fr"></div>
-    <div class="fg"><label>Commentaire</label><textarea id="m-comment" placeholder="Informations compl&#233;mentaires, contraintes de livraison..."></textarea></div>
-    <div class="alert" id="modal-alert"></div>
-    <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeModal()">Annuler</button>
-      <button class="btn btn-green" id="btn-send" onclick="sendOrder()">
-        <span class="spinner" id="spinner"></span>
-        <span id="send-label">&#128228; Envoyer la commande</span>
-      </button>
-    </div>
-  </div>
-</div>
-
-<script>
+    <input type="text" id="search-input" placeholder="Rechercher un produit (d&#233;signation, code arti
 
 
 
@@ -1473,12 +1366,12 @@ function buildTable(){
     rows += '<tr class="' + hasQty + '" data-code="' + dCode + '" data-libelle="' + dLibelle + '" data-ean="' + dEan + '">';
     rows += '<td class="td-code">' + escHtml(p.code) + "</td>";
     rows += '<td class="td-lib">'  + escHtml(p.libelle) + "</td>";
-    rows += '<td style="font-size:10px;color:#888;font-family:monospace">' + escHtml(p.ean) + "</td>";
-    rows += '<td style="font-size:11px;color:#888">' + escHtml(p.origine) + "</td>";
-    rows += '<td class="td-certif">' + escHtml((p.certif||"").trim()) + "</td>";
+    rows += '<td class="col-ean" style="font-size:10px;color:#888;font-family:monospace">' + escHtml(p.ean) + "</td>";
+    rows += '<td class="col-origine" style="font-size:11px;color:#888">' + escHtml(p.origine) + "</td>";
+    rows += '<td class="td-certif col-certif">' + escHtml((p.certif||"").trim()) + "</td>";
     rows += "<td>" + (p.pcb||"") + "</td>";
-    rows += '<td style="font-size:11px">' + (p.poids ? p.poids+" kg" : "") + "</td>";
-    rows += '<td style="font-size:11px">' + (p.tva ? p.tva+"%" : "") + "</td>";
+    rows += '<td class="col-poids" style="font-size:11px">' + (p.poids ? p.poids+" kg" : "") + "</td>";
+    rows += '<td class="col-tva" style="font-size:11px">' + (p.tva ? p.tva+"%" : "") + "</td>";
     var codeUpB=(p.code||'').toUpperCase();
     var grpRB=grpRemisesProduitsMap[codeUpB];
     var prixNet=getPrixNet(p);
@@ -1511,7 +1404,7 @@ function buildTable(){
     rows += '<td class="td-stock no-print">' + stkHtml + '</td>';
     rows += '<td class="td-qty no-print"><input type="number" min="0" step="1" value="' + (qty||"") + '" placeholder="0" data-code="' + dCode + '" data-pcb="' + (p.pcb||1) + '" oninput="onQty(this)" onchange="onQty(this)"></td>';
     var uvcVal = qty > 0 ? qty * (p.pcb||1) : '';
-    rows += '<td class="td-uvc no-print" id="uvc-' + dCode + '" style="font-size:12px;font-weight:300;color:var(--text-secondary);text-align:center">' + (uvcVal||'—') + '</td>';
+    rows += '<td class="td-uvc col-uvc no-print" id="uvc-' + dCode + '" style="font-size:12px;font-weight:300;color:var(--text-secondary);text-align:center">' + (uvcVal||'—') + '</td>';
     rows += '<td class="td-total" id="t-' + dCode + '">' + totalStr + "</td>";
     rows += "</tr>";
   }
@@ -3038,6 +2931,283 @@ function initNotifBadge(login){
 }
 
 
+
+/* ══ CARTES MOBILE ══ */
+function buildCards(){
+  var wrap=document.getElementById('bdc-cards');
+  if(!wrap) return;
+  var html='';
+  var PRODS=window.PRODUCTS||[];
+  for(var i=0;i<PRODS.length;i++){
+    var p=PRODS[i];
+    var qty=qtys[p.code]||0;
+    var pcb=parseFloat(p.pcb)||1;
+    var prixNet=typeof getPrixNet==='function'?getPrixNet(p):p.pu_ht;
+    var total=qty?prixNet*qty*pcb:0;
+    var dCode=escHtml(p.code);
+    var uvc=qty>0?qty*pcb:'';
+    var prixHtml='<span class="bdc-card-prix">'+fmt4(prixNet)+'</span>';
+    if(prixNet<p.pu_ht) prixHtml+='<span class="bdc-card-prix-barre">'+fmt4(p.pu_ht)+'</span>';
+    var stk=p.stock!==undefined&&p.stock!==null?p.stock:null;
+    var stkHtml='';
+    if(stk===null)stkHtml='';
+    else if(stk<=0)stkHtml='<span class="bdc-card-stock-out">\u26a0 Rupture</span>';
+    else if(stk<=5)stkHtml='<span class="bdc-card-stock-low">Stock\u00a0'+stk+'</span>';
+    else stkHtml='<span class="bdc-card-stock-ok">\u2713 En stock</span>';
+    var certifHtml=p.certif?'<span class="bdc-card-certif">'+escHtml(p.certif.trim())+'</span>':'';
+    html+='<div class="bdc-card'+(qty>0?' has-qty':'')+' visible" id="card-'+dCode+'"'
+      +' data-code="'+dCode+'" data-libelle="'+escHtml((p.libelle||'').toLowerCase())+'"'
+      +' data-ean="'+escHtml((p.ean||'').toLowerCase())+'">'
+      +'<div class="bdc-card-dot"></div>'
+      +'<div class="bdc-card-head">'
+      +'<div style="flex:1">'
+      +'<div class="bdc-card-lib">'+escHtml(p.libelle)+'</div>'
+      +'<div class="bdc-card-code">'+dCode+(p.ean?' \u00b7 '+escHtml(String(p.ean).substring(0,13)):'')+'</div>'
+      +'</div>'
+      +certifHtml
+      +'</div>'
+      +'<div class="bdc-card-meta">'
+      +prixHtml
+      +'<span style="font-size:10px">PCB\u00a0'+pcb+'</span>'
+      +(p.origine?'<span style="font-size:10px">'+escHtml(p.origine)+'</span>':'')
+      +stkHtml
+      +'</div>'
+      +'<div class="bdc-card-qty-row">'
+      +'<span class="bdc-card-qty-label">Colis\u00a0:</span>'
+      +'<div class="bdc-card-qty-controls">'
+      +'<button type="button" class="bdc-qty-btn dec" onclick="cardQtyDec(\''+dCode+'\')">\u2212</button>'
+      +'<input type="number" class="bdc-card-qty-inp" id="card-q-'+dCode+'"'
+      +' value="'+(qty||'')+'" placeholder="0" min="0" step="1"'
+      +' data-code="'+dCode+'" data-pcb="'+pcb+'"'
+      +' oninput="onCardQty(this)" onchange="onCardQty(this)">'
+      +'<button type="button" class="bdc-qty-btn inc" onclick="cardQtyInc(\''+dCode+'\')">\uff0b</button>'
+      +'</div>'
+      +'<span class="bdc-card-uvc" id="card-uvc-'+dCode+'">'+(uvc?uvc+'\u00a0UVC':'')+'</span>'
+      +'<span class="bdc-card-total" id="card-t-'+dCode+'">'+(qty?fmt2(total):'')+'</span>'
+      +'</div>'
+      +'</div>';
+  }
+  wrap.innerHTML=html;
+}
+
+function onCardQty(inp){
+  var code=inp.dataset.code;
+  var val=parseInt(inp.value)||0;
+  inp.value=val||'';
+  qtys[code]=val;
+  var pcb=parseFloat(inp.dataset.pcb)||1;
+  var tblInp=document.getElementById('q-'+code);
+  if(tblInp){tblInp.value=val||'';}
+  var uvcEl=document.getElementById('card-uvc-'+code);
+  if(uvcEl)uvcEl.textContent=val>0?val*pcb+'\u00a0UVC':'';
+  var prod=(window.PRODUCTS||[]).find(function(p){return p.code===code;});
+  var prixNet=prod&&typeof getPrixNet==='function'?getPrixNet(prod):0;
+  var total=val?prixNet*val*pcb:0;
+  var totEl=document.getElementById('card-t-'+code);
+  if(totEl)totEl.textContent=val?fmt2(total):'';
+  var card=document.getElementById('card-'+code);
+  if(card)card.classList.toggle('has-qty',val>0);
+  updateTotals();
+}
+
+function cardQtyInc(code){
+  var inp=document.getElementById('card-q-'+code);
+  if(!inp)return;
+  inp.value=(parseInt(inp.value)||0)+1;
+  onCardQty(inp);
+}
+function cardQtyDec(code){
+  var inp=document.getElementById('card-q-'+code);
+  if(!inp)return;
+  var v=Math.max(0,(parseInt(inp.value)||0)-1);
+  inp.value=v||'';
+  onCardQty(inp);
+}
+
+function syncCardsFilter(){
+  var q=((document.getElementById('search-input')||{}).value||'').toLowerCase().trim();
+  var activeMode=document.querySelector('.mode-btn.active');
+  var mode=activeMode&&activeMode.dataset?activeMode.dataset.mode:'all';
+  document.querySelectorAll('.bdc-card').forEach(function(card){
+    var match=!q||(card.dataset.libelle||'').indexOf(q)>=0
+              ||(card.dataset.ean||'').indexOf(q)>=0
+              ||(card.dataset.code||'').toLowerCase().indexOf(q)>=0;
+    if(mode==='qty'&&!card.classList.contains('has-qty'))match=false;
+    card.classList.toggle('visible',match);
+  });
+}
+
+/* Rebuild cartes après buildTable + sync filtres */
+document.addEventListener('DOMContentLoaded',function(){
+  var tbody=document.getElementById('tbody');
+  if(tbody){
+    new MutationObserver(function(){
+      if(window.innerWidth<=600) buildCards();
+    }).observe(tbody,{childList:true});
+  }
+  /* Observer resize */
+  window.addEventListener('resize',function(){
+    var cards=document.getElementById('bdc-cards');
+    if(window.innerWidth<=600&&cards&&cards.children.length===0) buildCards();
+  });
+  /* Sync filtre */
+  var inp=document.getElementById('search-input');
+  if(inp) inp.addEventListener('input',function(){setTimeout(syncCardsFilter,50);});
+  document.querySelectorAll('.mode-btn').forEach(function(btn){
+    btn.addEventListener('click',function(){setTimeout(syncCardsFilter,60);});
+  });
+  /* Build au démarrage si mobile */
+  if(window.innerWidth<=600) setTimeout(buildCards,800);
+});
+
+      qty:item.qty,
+      libelle:prod?prod.libelle:'— non trouv\u00e9',
+      found:!!prod,
+      product:prod||null
+    });
+  });
+
+  var found=_importItems.filter(function(x){return x.found;}).length;
+  var notFound=_importItems.length-found;
+
+  // Afficher r\u00e9sum\u00e9
+  var sumEl=document.getElementById('import-summary');
+  sumEl.innerHTML='<div class="import-sum-item"><div class="import-sum-val">'+_importItems.length+'</div><div class="import-sum-lbl">Lignes</div></div>'
+    +'<div class="import-sum-item"><div class="import-sum-val" style="color:var(--accent)">'+found+'</div><div class="import-sum-lbl">Trouv\u00e9s</div></div>'
+    +(notFound>0?'<div class="import-sum-item"><div class="import-sum-val" style="color:var(--danger)">'+notFound+'</div><div class="import-sum-lbl">Inconnus</div></div>':'');
+
+  // Afficher lignes
+  var headEl=document.getElementById('import-result-head');
+  headEl.textContent=sourceLabel;
+
+  var listEl=document.getElementById('import-rows-list');
+  if(!_importItems.length){
+    listEl.innerHTML='<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:12px">\u26a0 Aucun produit d\u00e9tect\u00e9 dans ce fichier.</div>';
+    document.getElementById('import-result').style.display='block';
+    return;
+  }
+
+  listEl.innerHTML=_importItems.map(function(item){
+    return '<div class="import-row">'
+      +'<span class="import-row-code">'+item.code+'</span>'
+      +'<span class="import-row-lib">'+item.libelle+'</span>'
+      +'<span class="import-row-qty">'+item.qty+'</span>'
+      +'<span class="import-row-status '+(item.found?'ok':'notfound')+'">'+(item.found?'\u2713':'?')+'</span>'
+      +'</div>';
+  }).join('');
+
+  document.getElementById('import-result').style.display='block';
+
+  if(found>0){
+    document.getElementById('import-panel-foot').style.display='flex';
+  }
+}
+
+// ── Appliquer l'import dans le BDC ───────────────────────────
+function applyImport(){
+  var products=window.PRODUCTS||[];
+  var applied=0;
+
+  // D'abord remettre toutes les quantit\u00e9s \u00e0 0
+  for(var i=0;i<products.length;i++){
+    var p=products[i];
+    qtys[p.code]=0;
+    var inp=document.getElementById('q-'+p.code);
+    if(inp) inp.value='';
+    var uvcEl=document.getElementById('u-'+p.code);
+    if(uvcEl) uvcEl.textContent='';
+    var totEl=document.getElementById('t-'+p.code);
+    if(totEl) totEl.textContent='';
+    var rowEl=document.getElementById('row-'+p.code);
+    if(rowEl) rowEl.classList.remove('has-qty');
+  }
+
+  // Appliquer les quantit\u00e9s import\u00e9es
+  _importItems.forEach(function(item){
+    if(!item.found||!item.product) return;
+    var p=item.product;
+    qtys[p.code]=item.qty;
+    applied++;
+    var inp=document.getElementById('q-'+p.code);
+    if(inp){ inp.value=item.qty; }
+    var pcb=parseFloat(p.pcb)||1;
+    var uvcEl=document.getElementById('u-'+p.code);
+    if(uvcEl) uvcEl.textContent=item.qty*pcb;
+    var net=getPrixNet(p)*item.qty*pcb;
+    var totEl=document.getElementById('t-'+p.code);
+    if(totEl) totEl.textContent=fmt2(net);
+    var rowEl=document.getElementById('row-'+p.code);
+    if(rowEl) rowEl.classList.add('has-qty');
+  });
+
+  updateTotals();
+
+  // Scroll vers la premi\u00e8re ligne import\u00e9e
+  var firstCode=_importItems.find(function(x){return x.found;});
+  if(firstCode){
+    var rowEl=document.getElementById('row-'+firstCode.code);
+    if(rowEl) setTimeout(function(){rowEl.scrollIntoView({behavior:'smooth',block:'center'});},200);
+  }
+
+  closeImportPanel();
+
+  // Toast + ouvrir modal d'envoi
+  showToast('\u2705 '+applied+' produits import\u00e9s — v\u00e9rifiez et envoyez la commande');
+  setTimeout(function(){ openModal(); }, 600);
+}
+
+
+
+
+
+function initNotifBadge(login){
+  if(!login) return;
+  var fab=document.getElementById('chat-fab');
+  if(fab) fab.style.display='inline-flex';
+  var db=null;
+  try{
+    if(typeof firebase==='undefined') return;
+    if(!firebase.apps||!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+    db=firebase.firestore();
+  }catch(e){ try{db=firebase.firestore();}catch(e2){return;} }
+  if(!db) return;
+
+  function _updateBadge(n){
+    var badge=document.getElementById('chat-badge');
+    if(!badge) return;
+    if(n>0){
+      badge.textContent=n>99?'99+':String(n);
+      badge.style.display='flex';
+      badge.style.alignItems='center';
+      badge.style.justifyContent='center';
+      if(document.title.indexOf('\u25cf')<0) document.title='\u25cf '+document.title;
+    } else {
+      badge.style.display='none';
+      document.title=document.title.replace('\u25cf ','');
+    }
+  }
+
+  window._notifUnsub && window._notifUnsub();
+  window._notifUnsub=db.collection('chats')
+    .orderBy('lastTs','desc').limit(50)
+    .onSnapshot(function(snap){
+      var unread=0;
+      snap.docs.forEach(function(doc){
+        var id=doc.id;
+        var parts=id.split('_');
+        if(parts.indexOf(login)<0) return;
+        var data=doc.data();
+        var lastSender=data.lastSender||'';
+        var lastTs=data.lastTs||0;
+        var lastRead=0;
+        try{lastRead=parseInt(localStorage.getItem('mdm_lastread_'+id)||'0');}catch(e){}
+        if(lastSender!==login && lastTs>lastRead) unread++;
+      });
+      _updateBadge(unread);
+    },function(e){ console.warn('Notif badge:',e.code); });
+}
+
+
 </script>
 <div id="modal-new-client" onclick="if(event.target===this)closeNewClientModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;align-items:center;justify-content:center;padding:20px">
 <div class="modal-nc">
@@ -3982,37 +4152,6 @@ function draftInit(){
   </div>
 </div>
 
-<script>
-
-/* ══ MDM NAV UNIFIÉ ══════════════════════════════════════ */
-(function(){
-  'use strict';
-  var FC={apiKey:"AIzaSyB000QDa4c-vMjO1Xuimw58iiRvwgbF1zc",authDomain:"mdm-bdc26.firebaseapp.com",projectId:"mdm-bdc26",storageBucket:"mdm-bdc26.firebasestorage.app",messagingSenderId:"52658530893",appId:"1:52658530893:web:166626ae4d681465ddca04"};
-  var _ndb=null,_nr=false,_nu=null;
-  function _iF(){if(_nr)return Promise.resolve(_ndb);return new Promise(function(r,j){try{if(typeof firebase==='undefined')return j(new Error('Firebase absent'));if(!firebase.apps||!firebase.apps.length)firebase.initializeApp(FC);_ndb=firebase.firestore();_nr=true;r(_ndb);}catch(e){try{_ndb=firebase.firestore();_nr=true;r(_ndb);}catch(e2){j(e2);}}});}
-  function _gU(){try{var t=sessionStorage.getItem('mdm_token');if(!t)return null;var p=t.split('.');var raw=p.length===3?p[1]:t;return JSON.parse(atob(raw.replace(/-/g,'+').replace(/_/g,'/')));}catch(e){return null;}}
-  function _badge(login){_iF().then(function(db){if(_nu){try{_nu();}catch(e){}} _nu=db.collection('chats').orderBy('lastTs','desc').limit(100).onSnapshot(function(snap){var n=0;snap.docs.forEach(function(doc){var parts=doc.id.split('_');if(parts.indexOf(login)<0)return;n+=doc.data()['unread_'+login]||0;});['sb-msg-badge','mdm-topbar-badge','sidebar-chat-badge','chat-badge','mdm-msg-badge'].forEach(function(id){var el=document.getElementById(id);if(!el)return;if(n>0){el.textContent=n>99?'99+':String(n);el.style.display='inline-flex';el.style.alignItems='center';el.style.justifyContent='center';}else{el.style.display='none';}});var base=document.title.replace(/^\(\d+\)\s*/,'');document.title=n>0?'('+n+') '+base:base;},function(){});}).catch(function(){});}
-  function _role(user){
-    var role=user.role||'client',login=user.login||'';
-    var nm=document.getElementById('mdm-sb-name');if(nm)nm.textContent=user.nom||login;
-    var rl=document.getElementById('mdm-sb-role');if(rl)rl.textContent=role==='admin'?'Administrateur':role==='user'?'Commercial':'Client';
-    var tu=document.getElementById('mdm-topbar-user');if(tu)tu.textContent=user.nom||login;
-    var nc=document.getElementById('nav-mes-clients');if(nc)nc.style.display=(role==='user'||role==='admin')?'flex':'none';
-    var np=document.getElementById('nav-performance');if(np)np.style.display=(role==='user'||role==='admin')?'flex':'none';
-    var ab=document.getElementById('mdm-btn-admin');if(ab)ab.style.display=role==='admin'?'inline-flex':'none';
-    /* Compat ancienne sidebar */
-    var sn=document.getElementById('sidebar-user-name');if(sn)sn.textContent=user.nom||login;
-    var sr=document.getElementById('sidebar-user-role');if(sr)sr.textContent=role==='admin'?'Admin':role==='user'?'Commercial':'Client';
-  }
-  window.mdmToggleSidebar=function(){var sb=document.getElementById('mdm-sidebar'),ov=document.getElementById('mdm-sb-overlay'),hb=document.getElementById('mdm-hamburger');if(!sb)return;var open=sb.classList.toggle('open');if(ov)ov.classList.toggle('open',open);if(hb)hb.classList.toggle('open',open);document.body.style.overflow=open&&window.innerWidth<=768?'hidden':'';};
-  window.mdmCloseSidebar=function(){var sb=document.getElementById('mdm-sidebar'),ov=document.getElementById('mdm-sb-overlay'),hb=document.getElementById('mdm-hamburger');if(sb)sb.classList.remove('open');if(ov)ov.classList.remove('open');if(hb)hb.classList.remove('open');document.body.style.overflow='';};
-  window.mdmShowProfil=function(){if(typeof showProfilModal==='function')showProfilModal();else if(typeof showProfil==='function')showProfil();};
-  window.mdmLogout=function(){if(typeof logout==='function')logout();else{sessionStorage.removeItem('mdm_token');window.location.href='index.html';}};
-  function _bind(){document.querySelectorAll('.mdm-sb-item').forEach(function(el){el.addEventListener('click',function(){if(window.innerWidth<=768)window.mdmCloseSidebar();});});}
-  function _init(){var user=_gU();if(!user||!user.login)return;_role(user);_badge(user.login);_bind();}
-  if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',_init);}else{_init();setTimeout(_bind,500);}
-})();
-
-</script>
+<button class="btn-send-mobile" id="btn-send-mobile" onclick="openModal()" title="Envoyer la commande">&#9993;</button>
 </body>
 </html>

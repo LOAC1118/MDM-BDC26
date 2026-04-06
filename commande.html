@@ -648,98 +648,211 @@ tbody tr.has-qty td.td-qty input{background:#ffe0b2;border-color:var(--terra)}
 .import-overlay{position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:299;display:none}
 .import-overlay.open{display:block}
 
-/* ════ BDC RESPONSIVE ════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════
+   BON DE COMMANDE — RESPONSIVE
+   Tablette ≤ 900px : tableau simplifié
+   Mobile   ≤ 600px : cartes produit
+══════════════════════════════════════════════════════════ */
+
+/* ── TABLETTE (≤ 900px) ─────────────────────────────────── */
 @media(max-width:900px){
-  .totals-bar{left:0!important;padding:0 12px!important;gap:8px!important}
-  .search-bar{padding:8px 12px;margin:6px 12px;border-radius:8px}
-  th.col-ean,td.col-ean,th.col-origine,td.col-origine,
-  th.col-certif,td.col-certif,th.col-poids,td.col-poids,
-  th.col-tva,td.col-tva,th.col-uvc,td.col-uvc{display:none!important}
-  thead th,th{padding:7px 9px!important;font-size:9px!important}
-  td{padding:8px 9px!important;font-size:11px!important}
-  .td-qty input{width:56px!important;font-size:14px!important}
+  .totals-bar{left:0!important;padding:0 10px!important}
+  .search-bar{margin:6px 10px;padding:8px 10px;border-radius:8px}
+  .search-bar input{font-size:15px}
+
+  /* Masquer colonnes non essentielles */
+  .col-hide-tab{display:none!important}
+
+  /* Table compacte */
+  thead th{padding:7px 8px!important;font-size:9px!important}
+  td{padding:7px 8px!important;font-size:11px!important}
+
+  /* Input quantité : plus grand pour le touch */
+  .td-qty input{
+    width:58px!important;height:36px!important;
+    font-size:15px!important;text-align:center;
+    -moz-appearance:textfield;
+  }
+  .td-qty input::-webkit-outer-spin-button,
+  .td-qty input::-webkit-inner-spin-button{-webkit-appearance:none}
+
+  /* Totals bar */
+  .totals-bar{
+    height:auto!important;padding:7px 10px!important;
+    flex-wrap:wrap!important;gap:6px!important;
+  }
+  .total-label{font-size:9px!important}
+  .total-value{font-size:14px!important}
+
+  /* Modal */
   .modal{max-width:calc(100vw - 20px)!important;padding:20px!important}
 }
+
+/* ── MOBILE (≤ 600px) ───────────────────────────────────── */
 @media(max-width:600px){
-  .bdc-table-wrap{display:none!important}
-  .bdc-cards-wrap{display:block!important}
-  .search-bar{margin:6px 10px;padding:8px 10px;flex-direction:column;align-items:stretch;gap:8px}
-  .search-bar input{width:100%!important;font-size:16px!important;border-radius:8px;padding:10px 12px}
-  .search-modes{display:flex;gap:4px;flex-wrap:wrap}
-  .mode-btn{flex:1;min-width:56px;font-size:11px!important;padding:6px 4px!important;text-align:center}
-  .totals-bar{left:0!important;height:auto!important;padding:6px 10px!important;flex-wrap:nowrap!important;overflow-x:auto!important;-webkit-overflow-scrolling:touch}
+  /* Cacher le tableau, montrer les cartes */
+  .table-wrap{display:none!important}
+  .bdc-cards{display:block!important}
+
+  /* Search */
+  .search-bar{
+    flex-direction:column!important;align-items:stretch!important;
+    gap:8px!important;padding:10px 12px!important;margin:6px 10px!important;
+  }
+  .search-bar input{
+    font-size:16px!important;
+    padding:10px 12px!important;
+    border-radius:8px!important;
+    width:100%!important;
+  }
+  .search-modes{gap:4px;flex-wrap:wrap}
+  .mode-btn{
+    flex:1;min-width:56px;
+    font-size:11px!important;padding:7px 4px!important;
+    text-align:center;border-radius:6px;
+  }
+
+  /* Totals bar scroll horizontal */
+  .totals-bar{
+    left:0!important;height:auto!important;
+    padding:5px 10px!important;
+    flex-wrap:nowrap!important;overflow-x:auto!important;
+    -webkit-overflow-scrolling:touch;scrollbar-width:none;
+  }
   .totals-bar::-webkit-scrollbar{display:none}
-  .total-item{min-width:60px;flex-shrink:0;padding:0 6px}
+  .total-item{min-width:58px;flex-shrink:0;padding:0 5px}
   .total-label{font-size:8px!important}
-  .total-value{font-size:13px!important}
+  .total-value{font-size:12px!important}
   .totals-sep{display:none!important}
+
+  /* Modal → bottom sheet */
   .modal-bg{align-items:flex-end!important;padding:0!important}
-  .modal{border-radius:18px 18px 0 0!important;max-width:100%!important;width:100%!important;padding:20px 14px 32px!important;max-height:90vh!important;overflow-y:auto!important}
+  .modal{
+    border-radius:18px 18px 0 0!important;
+    max-width:100%!important;width:100%!important;
+    padding:20px 14px 32px!important;
+    max-height:90vh!important;overflow-y:auto!important;
+  }
   .modal h2{font-size:16px!important}
-  .import-panel{width:100%!important;left:0!important}
-  .btn-send-mobile{display:flex!important}
+
+  /* Import panel */
+  .import-panel{width:100%!important;left:0!important;right:0!important}
+
+  /* FAB envoyer */
+  #fab-send{display:flex!important}
 }
 
 /* ════ CARTES PRODUIT ════════════════════════════════════════ */
-.bdc-cards-wrap{display:none;padding:0 10px 80px}
+.bdc-cards{
+  display:none;
+  padding:0 10px 90px;
+}
+
 .bdc-card{
-  background:#fff;border:1.5px solid var(--border);border-radius:10px;
-  padding:12px 13px;margin-bottom:8px;display:none;flex-direction:column;gap:8px;
-  position:relative;transition:border-color .15s,box-shadow .15s;
+  background:#fff;
+  border:1.5px solid var(--border);
+  border-radius:11px;
+  padding:12px 13px 11px;
+  margin-bottom:9px;
+  position:relative;
 }
-.bdc-card.visible{display:flex}
-.bdc-card.has-qty{border-color:var(--accent);box-shadow:0 2px 10px rgba(74,124,89,.12)}
+.bdc-card.has-qty{
+  border-color:var(--accent);
+  box-shadow:0 2px 10px rgba(74,124,89,.13);
+}
+
+/* Indicateur panier */
 .bdc-card-dot{
-  position:absolute;top:10px;right:10px;width:7px;height:7px;
-  border-radius:50%;background:var(--accent);display:none;
+  position:absolute;top:11px;right:11px;
+  width:7px;height:7px;border-radius:50%;
+  background:var(--accent);opacity:0;transition:opacity .2s;
 }
-.bdc-card.has-qty .bdc-card-dot{display:block}
-.bdc-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
-.bdc-card-lib{font-size:13px;font-weight:400;color:var(--text);line-height:1.3;flex:1}
-.bdc-card-code{font-family:monospace;font-size:9px;color:var(--text-secondary);margin-top:2px}
-.bdc-card-certif{
-  font-size:9px;font-weight:600;background:#e8f5e9;color:#2e7d32;
-  padding:2px 6px;border-radius:4px;flex-shrink:0;align-self:flex-start;white-space:nowrap;
+.bdc-card.has-qty .bdc-card-dot{opacity:1}
+
+/* Nom produit */
+.bdc-card-name{
+  font-size:13px;font-weight:400;color:var(--text);
+  line-height:1.3;margin-bottom:3px;padding-right:18px;
 }
-.bdc-card-meta{display:flex;gap:10px;flex-wrap:wrap;align-items:center;font-size:11px;color:var(--text-secondary)}
-.bdc-card-prix{font-size:15px;font-weight:600;color:var(--green)}
-.bdc-card-prix-barre{font-size:10px;text-decoration:line-through;color:#bbb;margin-left:3px}
-.bdc-card-stock-ok{color:#2e7d32;font-size:10px}
-.bdc-card-stock-low{color:#e65100;font-size:10px;font-weight:600}
-.bdc-card-stock-out{color:#c62828;font-size:10px;font-weight:600}
-.bdc-card-qty-row{display:flex;align-items:center;gap:10px;margin-top:2px}
-.bdc-card-qty-label{font-size:11px;color:var(--text-secondary);flex-shrink:0}
-.bdc-card-qty-controls{
+.bdc-card-sub{
+  font-size:10px;color:var(--text-muted);font-family:monospace;
+  margin-bottom:8px;
+}
+
+/* Badges */
+.bdc-card-badges{
+  display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px;align-items:center;
+}
+.bdc-badge{
+  font-size:9px;font-weight:600;padding:2px 6px;border-radius:4px;
+}
+.bdc-badge-bio{background:#e8f5e9;color:#2e7d32}
+.bdc-badge-stock-ok{background:#e8f5e9;color:#2e7d32}
+.bdc-badge-stock-low{background:#fff3e0;color:#e65100}
+.bdc-badge-stock-out{background:#fde8e8;color:#c62828}
+.bdc-badge-promo{background:#fce4ec;color:#c62828}
+.bdc-badge-special{background:#e3f2fd;color:#1565c0}
+
+/* Prix */
+.bdc-card-prix-wrap{
+  display:flex;align-items:baseline;gap:6px;margin-bottom:10px;
+}
+.bdc-card-prix{font-size:16px;font-weight:600;color:var(--green)}
+.bdc-card-prix-barre{font-size:11px;text-decoration:line-through;color:#bbb}
+.bdc-card-pcb{font-size:10px;color:var(--text-secondary)}
+
+/* Saisie quantité */
+.bdc-card-qty-row{
+  display:flex;align-items:center;gap:10px;
+}
+.bdc-card-qty-label{
+  font-size:11px;color:var(--text-secondary);white-space:nowrap;
+}
+.bdc-qty-ctrl{
   display:flex;align-items:center;
-  border:1.5px solid var(--border);border-radius:8px;overflow:hidden;
+  border:1.5px solid var(--border);
+  border-radius:9px;overflow:hidden;
+  flex-shrink:0;
 }
-.bdc-qty-btn{
-  width:38px;height:38px;border:none;background:var(--bg);
+.bdc-qty-minus,.bdc-qty-plus{
+  width:40px;height:40px;
+  border:none;background:var(--bg);
   color:var(--text);font-size:20px;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;flex-shrink:0;
-  font-weight:300;transition:background .12s;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;transition:background .12s;user-select:none;
+  -webkit-tap-highlight-color:transparent;
 }
-.bdc-qty-btn:active{background:var(--border)}
-.bdc-qty-btn.inc{background:var(--accent-light);color:var(--accent)}
-.bdc-qty-btn.inc:active{background:#c8e6c9}
-.bdc-card-qty-inp{
-  width:52px;height:38px;border:none;
-  border-left:1px solid var(--border);border-right:1px solid var(--border);
-  text-align:center;font-size:15px;font-weight:500;color:var(--text);background:#fff;
+.bdc-qty-minus:active{background:#e0e0e0}
+.bdc-qty-plus{background:var(--accent-light);color:var(--accent);font-weight:400}
+.bdc-qty-plus:active{background:#c8e6c9}
+.bdc-qty-num{
+  width:50px;height:40px;
+  border:none;
+  border-left:1px solid var(--border);
+  border-right:1px solid var(--border);
+  text-align:center;
+  font-size:15px;font-weight:500;color:var(--text);
+  background:#fff;
   -moz-appearance:textfield;
 }
-.bdc-card-qty-inp::-webkit-outer-spin-button,.bdc-card-qty-inp::-webkit-inner-spin-button{-webkit-appearance:none}
-.bdc-card-qty-inp:focus{outline:none;background:var(--accent-light)}
-.bdc-card-uvc{font-size:11px;color:var(--text-secondary);flex-shrink:0}
-.bdc-card-total{font-size:13px;font-weight:600;color:var(--accent);margin-left:auto}
+.bdc-qty-num::-webkit-outer-spin-button,
+.bdc-qty-num::-webkit-inner-spin-button{-webkit-appearance:none}
+.bdc-qty-num:focus{outline:none;background:var(--accent-light)}
+.bdc-card-uvc{font-size:11px;color:var(--text-secondary)}
+.bdc-card-total{
+  font-size:13px;font-weight:600;color:var(--accent);
+  margin-left:auto;
+}
 
-/* Bouton envoyer flottant mobile */
-.btn-send-mobile{
-  display:none;position:fixed;bottom:62px;right:14px;
+/* FAB envoyer commande */
+#fab-send{
+  display:none;
+  position:fixed;bottom:64px;right:14px;z-index:88;
   width:56px;height:56px;border-radius:50%;
   background:var(--accent);color:#fff;border:none;cursor:pointer;
   align-items:center;justify-content:center;font-size:22px;
-  box-shadow:0 4px 16px rgba(74,124,89,.4);z-index:88;
+  box-shadow:0 4px 18px rgba(74,124,89,.4);
+  -webkit-tap-highlight-color:transparent;
 }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -887,23 +1000,7 @@ tbody tr.has-qty td.td-qty input{background:#ffe0b2;border-color:var(--terra)}
     <div style="margin-top:14px" id="bloc-remise">
       <div style="font-size:10px;font-weight:600;color:var(--brown);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Remise groupement</div>
       <div class="remise-section" id="remise-section-badges">
-        <button class="remise-badge active" onclick="setRemise(0,this)">Aucune remise</button>
-        <button class="remise-badge" onclick="setRemise(5,this)">&minus;5 %</button>
-        <button class="remise-badge" onclick="setRemise(10,this)">&minus;10 %</button>
-        <button class="remise-badge" onclick="setRemise(15,this)">&minus;15 %</button>
-        <button class="remise-badge" onclick="setRemise(20,this)">&minus;20 %</button>
-        <input type="number" id="remise-custom" min="0" max="99" step="0.5" placeholder="Autre %" style="width:90px;padding:6px 10px;border:1.5px solid #d0c0b0;border-radius:6px;font-family:Outfit,sans-serif;font-size:13px;background:var(--cream)" oninput="setRemise(parseFloat(this.value)||0,null)">
-      </div>
-      <!-- Affichage fixe pour les clients (remise du compte, non modifiable) -->
-      <div id="remise-client-fixe" style="display:none">
-        <span id="remise-client-badge" style="display:inline-flex;align-items:center;gap:6px;padding:7px 16px;border-radius:20px;background:var(--green);color:#fff;font-size:13px;font-weight:700"></span>
-        <span style="font-size:11px;color:#a08070;margin-left:8px">Remise groupement appliqu&#233;e automatiquement</span>
-      </div>
-    </div>
-  </div>
-
-  <div class="search-bar no-print">
-    <input type="text" id="search-input" placeholder="Rechercher un produit (d&#233;signation, code arti
+        <button class="remise-badge active" onclick="setRemise(0,this)">Aucune
 
 
 
@@ -1366,12 +1463,12 @@ function buildTable(){
     rows += '<tr class="' + hasQty + '" data-code="' + dCode + '" data-libelle="' + dLibelle + '" data-ean="' + dEan + '">';
     rows += '<td class="td-code">' + escHtml(p.code) + "</td>";
     rows += '<td class="td-lib">'  + escHtml(p.libelle) + "</td>";
-    rows += '<td class="col-ean" style="font-size:10px;color:#888;font-family:monospace">' + escHtml(p.ean) + "</td>";
-    rows += '<td class="col-origine" style="font-size:11px;color:#888">' + escHtml(p.origine) + "</td>";
-    rows += '<td class="td-certif col-certif">' + escHtml((p.certif||"").trim()) + "</td>";
+    rows += '<td class="col-hide-tab" style="font-size:10px;color:#888;font-family:monospace">' + escHtml(p.ean) + "</td>";
+    rows += '<td class="col-hide-tab" style="font-size:11px;color:#888">' + escHtml(p.origine) + "</td>";
+    rows += '<td class="td-certif col-hide-tab">' + escHtml((p.certif||"").trim()) + "</td>";
     rows += "<td>" + (p.pcb||"") + "</td>";
-    rows += '<td class="col-poids" style="font-size:11px">' + (p.poids ? p.poids+" kg" : "") + "</td>";
-    rows += '<td class="col-tva" style="font-size:11px">' + (p.tva ? p.tva+"%" : "") + "</td>";
+    rows += '<td class="col-hide-tab" style="font-size:11px">' + (p.poids ? p.poids+" kg" : "") + "</td>";
+    rows += '<td class="col-hide-tab" style="font-size:11px">' + (p.tva ? p.tva+"%" : "") + "</td>";
     var codeUpB=(p.code||'').toUpperCase();
     var grpRB=grpRemisesProduitsMap[codeUpB];
     var prixNet=getPrixNet(p);
@@ -1404,7 +1501,7 @@ function buildTable(){
     rows += '<td class="td-stock no-print">' + stkHtml + '</td>';
     rows += '<td class="td-qty no-print"><input type="number" min="0" step="1" value="' + (qty||"") + '" placeholder="0" data-code="' + dCode + '" data-pcb="' + (p.pcb||1) + '" oninput="onQty(this)" onchange="onQty(this)"></td>';
     var uvcVal = qty > 0 ? qty * (p.pcb||1) : '';
-    rows += '<td class="td-uvc col-uvc no-print" id="uvc-' + dCode + '" style="font-size:12px;font-weight:300;color:var(--text-secondary);text-align:center">' + (uvcVal||'—') + '</td>';
+    rows += '<td class="td-uvc col-hide-tab no-print" id="uvc-' + dCode + '" style="font-size:12px;font-weight:300;color:var(--text-secondary);text-align:center">' + (uvcVal||'—') + '</td>';
     rows += '<td class="td-total" id="t-' + dCode + '">' + totalStr + "</td>";
     rows += "</tr>";
   }
@@ -2932,134 +3029,275 @@ function initNotifBadge(login){
 
 
 
-/* ══ CARTES MOBILE ══ */
+
+/* ══ CARTES MOBILE — s'appuie sur buildTable existant ══════ */
+(function(){
+'use strict';
+
+/* Construire une carte depuis un produit PRODUCTS[i] */
+function _buildCard(p){
+  var code=p.code||'';
+  var qty=typeof qtys!=='undefined'?qtys[code]||0:0;
+  var pcb=parseFloat(p.pcb)||1;
+  var prixNet=typeof getPrixNet==='function'?getPrixNet(p):p.pu_ht;
+  var total=qty?prixNet*qty*pcb:0;
+  var dCode=code.replace(/"/g,'&quot;');
+
+  // Badges
+  var badges='';
+  if(p.certif&&p.certif.trim()) badges+='<span class="bdc-badge bdc-badge-bio">'+escHtml(p.certif.trim())+'</span>';
+  var stk=p.stock!==undefined&&p.stock!==null?p.stock:null;
+  if(stk===null){}
+  else if(stk<=0) badges+='<span class="bdc-badge bdc-badge-stock-out">\u26a0 Rupture</span>';
+  else if(stk<=5) badges+='<span class="bdc-badge bdc-badge-stock-low">Stock\u00a0'+stk+'</span>';
+  else badges+='<span class="bdc-badge bdc-badge-stock-ok">\u2713 En stock</span>';
+
+  // Prix
+  var grpRB=typeof grpRemisesProduitsMap!=='undefined'?grpRemisesProduitsMap[(code||'').toUpperCase()]:null;
+  var prixHtml='<span class="bdc-card-prix">'+escHtml(fmt4(prixNet))+'</span>';
+  if(prixNet<p.pu_ht) prixHtml+='<span class="bdc-card-prix-barre">'+escHtml(fmt4(p.pu_ht))+'</span>';
+  if(grpRB){
+    if(grpRB.prixHT>0) badges+='<span class="bdc-badge bdc-badge-special">Prix sp\u00e9cial</span>';
+    else if(grpRB.remise>0) badges+='<span class="bdc-badge bdc-badge-promo">-'+grpRB.remise+'%</span>';
+  }
+
+  var uvc=qty>0?qty*pcb:'';
+
+  var html='<div class="bdc-card'+(qty>0?' has-qty':'')+'"'
+    +' id="bdc-card-'+dCode+'"'
+    +' data-code="'+dCode+'"'
+    +' data-libelle="'+escHtml((p.libelle||'').toLowerCase())+'"'
+    +' data-ean="'+escHtml((p.ean||'').toLowerCase())+'">'
+    +'<div class="bdc-card-dot"></div>'
+    +'<div class="bdc-card-name">'+escHtml(p.libelle)+'</div>'
+    +'<div class="bdc-card-sub">'+escHtml(code)+(p.ean?' \u00b7 '+escHtml(String(p.ean).substring(0,13)):'')+'</div>'
+    +(badges?'<div class="bdc-card-badges">'+badges+'</div>':'')
+    +'<div class="bdc-card-prix-wrap">'
+    +prixHtml
+    +'<span class="bdc-card-pcb">PCB\u00a0'+pcb+(p.origine?' \u00b7 '+escHtml(p.origine):'')+'</span>'
+    +'</div>'
+    +'<div class="bdc-card-qty-row">'
+    +'<span class="bdc-card-qty-label">Colis\u00a0:</span>'
+    +'<div class="bdc-qty-ctrl">'
+    +'<button type="button" class="bdc-qty-minus" data-code="'+dCode+'">\u2212</button>'
+    +'<input type="number" class="bdc-qty-num" id="cq-'+dCode+'"'
+    +' value="'+(qty||'')+'" placeholder="0" min="0" step="1"'
+    +' data-code="'+dCode+'" data-pcb="'+pcb+'">'
+    +'<button type="button" class="bdc-qty-plus" data-code="'+dCode+'">\uff0b</button>'
+    +'</div>'
+    +'<span class="bdc-card-uvc" id="cu-'+dCode+'">'+(uvc?uvc+'\u00a0UVC':'')+'</span>'
+    +'<span class="bdc-card-total" id="ct-'+dCode+'">'+(qty?fmt2(total):'')+'</span>'
+    +'</div>'
+    +'</div>';
+  return html;
+}
+
+/* Construire toutes les cartes */
 function buildCards(){
   var wrap=document.getElementById('bdc-cards');
   if(!wrap) return;
-  var html='';
   var PRODS=window.PRODUCTS||[];
-  for(var i=0;i<PRODS.length;i++){
-    var p=PRODS[i];
-    var qty=qtys[p.code]||0;
-    var pcb=parseFloat(p.pcb)||1;
-    var prixNet=typeof getPrixNet==='function'?getPrixNet(p):p.pu_ht;
-    var total=qty?prixNet*qty*pcb:0;
-    var dCode=escHtml(p.code);
-    var uvc=qty>0?qty*pcb:'';
-    var prixHtml='<span class="bdc-card-prix">'+fmt4(prixNet)+'</span>';
-    if(prixNet<p.pu_ht) prixHtml+='<span class="bdc-card-prix-barre">'+fmt4(p.pu_ht)+'</span>';
-    var stk=p.stock!==undefined&&p.stock!==null?p.stock:null;
-    var stkHtml='';
-    if(stk===null)stkHtml='';
-    else if(stk<=0)stkHtml='<span class="bdc-card-stock-out">\u26a0 Rupture</span>';
-    else if(stk<=5)stkHtml='<span class="bdc-card-stock-low">Stock\u00a0'+stk+'</span>';
-    else stkHtml='<span class="bdc-card-stock-ok">\u2713 En stock</span>';
-    var certifHtml=p.certif?'<span class="bdc-card-certif">'+escHtml(p.certif.trim())+'</span>':'';
-    html+='<div class="bdc-card'+(qty>0?' has-qty':'')+' visible" id="card-'+dCode+'"'
-      +' data-code="'+dCode+'" data-libelle="'+escHtml((p.libelle||'').toLowerCase())+'"'
-      +' data-ean="'+escHtml((p.ean||'').toLowerCase())+'">'
-      +'<div class="bdc-card-dot"></div>'
-      +'<div class="bdc-card-head">'
-      +'<div style="flex:1">'
-      +'<div class="bdc-card-lib">'+escHtml(p.libelle)+'</div>'
-      +'<div class="bdc-card-code">'+dCode+(p.ean?' \u00b7 '+escHtml(String(p.ean).substring(0,13)):'')+'</div>'
-      +'</div>'
-      +certifHtml
-      +'</div>'
-      +'<div class="bdc-card-meta">'
-      +prixHtml
-      +'<span style="font-size:10px">PCB\u00a0'+pcb+'</span>'
-      +(p.origine?'<span style="font-size:10px">'+escHtml(p.origine)+'</span>':'')
-      +stkHtml
-      +'</div>'
-      +'<div class="bdc-card-qty-row">'
-      +'<span class="bdc-card-qty-label">Colis\u00a0:</span>'
-      +'<div class="bdc-card-qty-controls">'
-      +'<button type="button" class="bdc-qty-btn dec" onclick="cardQtyDec(\''+dCode+'\')">\u2212</button>'
-      +'<input type="number" class="bdc-card-qty-inp" id="card-q-'+dCode+'"'
-      +' value="'+(qty||'')+'" placeholder="0" min="0" step="1"'
-      +' data-code="'+dCode+'" data-pcb="'+pcb+'"'
-      +' oninput="onCardQty(this)" onchange="onCardQty(this)">'
-      +'<button type="button" class="bdc-qty-btn inc" onclick="cardQtyInc(\''+dCode+'\')">\uff0b</button>'
-      +'</div>'
-      +'<span class="bdc-card-uvc" id="card-uvc-'+dCode+'">'+(uvc?uvc+'\u00a0UVC':'')+'</span>'
-      +'<span class="bdc-card-total" id="card-t-'+dCode+'">'+(qty?fmt2(total):'')+'</span>'
-      +'</div>'
-      +'</div>';
-  }
+  if(!PRODS.length) return;
+  var html='';
+  for(var i=0;i<PRODS.length;i++) html+=_buildCard(PRODS[i]);
   wrap.innerHTML=html;
+  /* Attacher les events */
+  wrap.addEventListener('input',_onCardInput);
+  wrap.addEventListener('click',_onCardClick);
 }
 
-function onCardQty(inp){
+/* Gestion saisie dans une carte */
+function _onCardInput(e){
+  var inp=e.target;
+  if(!inp.classList.contains('bdc-qty-num')) return;
+  _syncCard(inp);
+}
+function _onCardClick(e){
+  var btn=e.target.closest('.bdc-qty-minus,.bdc-qty-plus');
+  if(!btn) return;
+  var code=btn.dataset.code;
+  var inp=document.getElementById('cq-'+code);
+  if(!inp) return;
+  var v=parseInt(inp.value)||0;
+  if(btn.classList.contains('bdc-qty-plus')) v++;
+  else v=Math.max(0,v-1);
+  inp.value=v||'';
+  _syncCard(inp);
+}
+
+function _syncCard(inp){
   var code=inp.dataset.code;
   var val=parseInt(inp.value)||0;
   inp.value=val||'';
-  qtys[code]=val;
   var pcb=parseFloat(inp.dataset.pcb)||1;
-  var tblInp=document.getElementById('q-'+code);
-  if(tblInp){tblInp.value=val||'';}
-  var uvcEl=document.getElementById('card-uvc-'+code);
-  if(uvcEl)uvcEl.textContent=val>0?val*pcb+'\u00a0UVC':'';
-  var prod=(window.PRODUCTS||[]).find(function(p){return p.code===code;});
+
+  /* Sync qtys global (partagé avec buildTable) */
+  if(val>0) qtys[code]=val; else delete qtys[code];
+
+  /* Sync l'input du tableau desktop */
+  var tblInp=document.querySelector('input[data-code="'+code+'"]');
+  if(tblInp&&tblInp.id!==inp.id){
+    tblInp.value=val||'';
+    /* Déclencher onQty du tableau */
+    if(typeof onQty==='function') onQty(tblInp);
+  }
+
+  /* Mise à jour UVC + total de la carte */
+  var uvcEl=document.getElementById('cu-'+code);
+  if(uvcEl) uvcEl.textContent=val>0?val*pcb+'\u00a0UVC':'';
+
+  var prod=null;
+  var PRODS=window.PRODUCTS||[];
+  for(var i=0;i<PRODS.length;i++){if(PRODS[i].code===code){prod=PRODS[i];break;}}
   var prixNet=prod&&typeof getPrixNet==='function'?getPrixNet(prod):0;
   var total=val?prixNet*val*pcb:0;
-  var totEl=document.getElementById('card-t-'+code);
-  if(totEl)totEl.textContent=val?fmt2(total):'';
-  var card=document.getElementById('card-'+code);
-  if(card)card.classList.toggle('has-qty',val>0);
-  updateTotals();
+  var totEl=document.getElementById('ct-'+code);
+  if(totEl) totEl.textContent=val?fmt2(total):'';
+
+  /* Classe has-qty */
+  var card=document.getElementById('bdc-card-'+code);
+  if(card) card.classList.toggle('has-qty',val>0);
+
+  /* updateTotals global */
+  if(typeof updateTotals==='function') updateTotals();
 }
 
-function cardQtyInc(code){
-  var inp=document.getElementById('card-q-'+code);
-  if(!inp)return;
-  inp.value=(parseInt(inp.value)||0)+1;
-  onCardQty(inp);
-}
-function cardQtyDec(code){
-  var inp=document.getElementById('card-q-'+code);
-  if(!inp)return;
-  var v=Math.max(0,(parseInt(inp.value)||0)-1);
-  inp.value=v||'';
-  onCardQty(inp);
-}
-
-function syncCardsFilter(){
+/* Filtrage cartes (synchronisé avec la barre de recherche) */
+function _filterCards(){
   var q=((document.getElementById('search-input')||{}).value||'').toLowerCase().trim();
-  var activeMode=document.querySelector('.mode-btn.active');
-  var mode=activeMode&&activeMode.dataset?activeMode.dataset.mode:'all';
-  document.querySelectorAll('.bdc-card').forEach(function(card){
-    var match=!q||(card.dataset.libelle||'').indexOf(q)>=0
-              ||(card.dataset.ean||'').indexOf(q)>=0
-              ||(card.dataset.code||'').toLowerCase().indexOf(q)>=0;
-    if(mode==='qty'&&!card.classList.contains('has-qty'))match=false;
-    card.classList.toggle('visible',match);
+  var activeBtn=document.querySelector('.mode-btn.active');
+  var mode=activeBtn&&activeBtn.dataset?activeBtn.dataset.mode:'all';
+  var cards=document.querySelectorAll('.bdc-card');
+  var visible=0;
+  cards.forEach(function(card){
+    var match=!q||
+      (card.dataset.libelle||'').indexOf(q)>=0||
+      (card.dataset.ean||'').indexOf(q)>=0||
+      (card.dataset.code||'').toLowerCase().indexOf(q)>=0;
+    if(mode==='qty'&&!card.classList.contains('has-qty')) match=false;
+    card.style.display=match?'':'none';
+    if(match) visible++;
   });
 }
 
-/* Rebuild cartes après buildTable + sync filtres */
-document.addEventListener('DOMContentLoaded',function(){
-  var tbody=document.getElementById('tbody');
-  if(tbody){
-    new MutationObserver(function(){
-      if(window.innerWidth<=600) buildCards();
-    }).observe(tbody,{childList:true});
-  }
-  /* Observer resize */
-  window.addEventListener('resize',function(){
-    var cards=document.getElementById('bdc-cards');
-    if(window.innerWidth<=600&&cards&&cards.children.length===0) buildCards();
+/* Sync cartes depuis table (après rebuild table) */
+function _syncCardsFromTable(){
+  var PRODS=window.PRODUCTS||[];
+  PRODS.forEach(function(p){
+    var code=p.code;
+    var qty=typeof qtys!=='undefined'?qtys[code]||0:0;
+    var cardInp=document.getElementById('cq-'+code);
+    if(!cardInp) return;
+    cardInp.value=qty||'';
+    var card=document.getElementById('bdc-card-'+code);
+    if(card) card.classList.toggle('has-qty',qty>0);
+    var pcb=parseFloat(p.pcb)||1;
+    var uvcEl=document.getElementById('cu-'+code);
+    if(uvcEl) uvcEl.textContent=qty>0?qty*pcb+'\u00a0UVC':'';
+    var prixNet=typeof getPrixNet==='function'?getPrixNet(p):p.pu_ht;
+    var totEl=document.getElementById('ct-'+code);
+    if(totEl) totEl.textContent=qty?fmt2(prixNet*qty*pcb):'';
   });
-  /* Sync filtre */
-  var inp=document.getElementById('search-input');
-  if(inp) inp.addEventListener('input',function(){setTimeout(syncCardsFilter,50);});
-  document.querySelectorAll('.mode-btn').forEach(function(btn){
-    btn.addEventListener('click',function(){setTimeout(syncCardsFilter,60);});
-  });
-  /* Build au démarrage si mobile */
-  if(window.innerWidth<=600) setTimeout(buildCards,800);
-});
+}
 
+/* Observer le tbody pour rebuild les cartes après buildTable */
+function _watchTable(){
+  var tbody=document.getElementById('tbody');
+  if(!tbody) return;
+  var built=false;
+  var obs=new MutationObserver(function(mutations){
+    /* Vérifier que des vraies lignes ont été insérées */
+    for(var i=0;i<mutations.length;i++){
+      if(mutations[i].addedNodes.length>0){
+        if(!built){
+          built=true;
+          setTimeout(function(){
+            buildCards();
+            /* Re-attacher filtrage */
+            _filterCards();
+          },0);
+        } else {
+          /* Rebuild partiel : sync seulement */
+          setTimeout(_syncCardsFromTable,0);
+        }
+        break;
+      }
+    }
+  });
+  obs.observe(tbody,{childList:true});
+}
+
+/* Attacher au filtre de recherche */
+function _attachSearch(){
+  var inp=document.getElementById('search-input');
+  if(inp){
+    inp.addEventListener('input',function(){ setTimeout(_filterCards,50); });
+  }
+  document.querySelectorAll('.mode-btn').forEach(function(btn){
+    btn.addEventListener('click',function(){ setTimeout(_filterCards,60); });
+  });
+}
+
+/* Init */
+function _init(){
+  _watchTable();
+  _attachSearch();
+  /* Si table déjà construite (PRODUCTS chargés) */
+  var tbody=document.getElementById('tbody');
+  if(tbody&&tbody.children.length>0){
+    buildCards();
+  }
+}
+
+if(document.readyState==='loading'){
+  document.addEventListener('DOMContentLoaded',_init);
+} else {
+  _init();
+}
+
+/* Exposer pour debug */
+window._buildCards=buildCards;
+
+})();
+h(/(\d{1,5})[,\.](\d{3})/)||after.match(/\b(\d{1,4})\b/);
+        if(qm){
+          var qty=parseInt(qm[1]);
+          if(qty>0&&qty<5000){
+            parsed.push({code:code,qty:qty});
+            seen[code]=true;
+          }
+        }
+      });
+    }
+  }
+
+  document.getElementById('import-log').textContent='';
+  if(!parsed.length){
+    document.getElementById('import-log').textContent=
+      '\u26a0 Aucun produit d\u00e9tect\u00e9 dans ce PDF.\n\n'
+      +'Causes possibles\u00a0:\n'
+      +'  \u2022 PDF scanné (image) non lisible par le navigateur\n'
+      +'  \u2022 Format de ligne non reconnu\n\n'
+      +'Solution\u00a0: exportez le fichier en Excel (.xlsx) depuis votre logiciel.';
+    document.getElementById('import-log').style.whiteSpace='pre-wrap';
+  } else {
+    document.getElementById('import-log').textContent='';
+  }
+  _matchAndDisplay(parsed, 'PDF\u00a0: '+filename);
+}
+
+
+// ── Matcher les codes contre le catalogue ─────────────────────
+function _matchAndDisplay(parsed, sourceLabel){
+  var products=window.PRODUCTS||[];
+  var codeIndex={};
+  products.forEach(function(p){ codeIndex[p.code.toUpperCase()]=p; });
+
+  _importItems=[];
+  parsed.forEach(function(item){
+    var prod=codeIndex[item.code.toUpperCase()];
+    _importItems.push({
+      code:item.code,
       qty:item.qty,
       libelle:prod?prod.libelle:'— non trouv\u00e9',
       found:!!prod,
@@ -4152,6 +4390,6 @@ function draftInit(){
   </div>
 </div>
 
-<button class="btn-send-mobile" id="btn-send-mobile" onclick="openModal()" title="Envoyer la commande">&#9993;</button>
+<button id="fab-send" onclick="openModal()" title="Envoyer la commande">&#9993;</button>
 </body>
 </html>

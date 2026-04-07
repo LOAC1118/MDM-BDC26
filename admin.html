@@ -286,45 +286,34 @@ code{background:var(--bg);padding:1px 4px;border-radius:3px;font-size:10px;font-
 #toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--text);color:#fff;padding:8px 16px;border-radius:7px;font-size:12px;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.2);opacity:0;transition:opacity .25s;white-space:nowrap;font-family:'Inter',sans-serif;pointer-events:none}
 @media(max-width:900px){.stats-grid{grid-template-columns:repeat(2,1fr)}.two-col{grid-template-columns:1fr}}
 @media(max-width:640px){.main{padding:14px}}
-/* ══ ADMIN MOBILE ══════════════════════════════════════════ */
-.adm-hb{
-  display:none;flex-direction:column;gap:5px;
-  background:none;border:none;cursor:pointer;
-  padding:6px;flex-shrink:0;
-}
-.adm-hb span{display:block;width:18px;height:2px;background:rgba(255,255,255,.8);border-radius:2px;transition:all .22s}
-.adm-hb.open span:nth-child(1){transform:translateY(7px) rotate(45deg);background:#fff}
+/* ══ ADMIN MOBILE ══ */
+.adm-hb{display:none;flex-direction:column;justify-content:center;gap:5px;background:none;border:none;cursor:pointer;padding:6px 8px;flex-shrink:0}
+.adm-hb span{display:block;width:18px;height:2px;background:rgba(255,255,255,.85);border-radius:2px;transition:all .22s}
+.adm-hb.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
 .adm-hb.open span:nth-child(2){opacity:0}
-.adm-hb.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg);background:#fff}
-.adm-sb-overlay{display:none;position:fixed;inset:0;background:rgba(40,24,16,.42);z-index:150;cursor:pointer}
-.adm-sb-overlay.open{display:block}
+.adm-hb.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+.adm-sb-ov{display:none;position:fixed;inset:0;background:rgba(40,24,16,.45);z-index:150;cursor:pointer}
+.adm-sb-ov.open{display:block}
 @media(max-width:768px){
   .adm-hb{display:flex!important}
-  .sidebar{
-    position:fixed;top:0;left:0;bottom:0;
-    z-index:200;height:100vh;
-    transform:translateX(-100%);
-    transition:transform .26s cubic-bezier(.4,0,.2,1);
-    box-shadow:none;
-  }
-  .sidebar.open{transform:translateX(0);box-shadow:6px 0 24px rgba(40,24,16,.2)}
+  .sidebar{position:fixed!important;top:0;left:0;bottom:0;height:100vh!important;z-index:200;transform:translateX(-100%);transition:transform .26s cubic-bezier(.4,0,.2,1)}
+  .sidebar.adm-open{transform:translateX(0);box-shadow:8px 0 24px rgba(40,24,16,.22)}
   .zone{display:block!important}
   .main{padding:14px!important}
-  .topbar{padding:0 12px!important;gap:8px!important}
+  .topbar{padding:0 10px!important;gap:6px!important}
   .search-wrap{display:none!important}
+}
+@media(max-width:900px){
   .stats-grid{grid-template-columns:repeat(2,1fr)!important}
   .two-col{grid-template-columns:1fr!important}
   .fg-row{grid-template-columns:1fr!important}
-}
-@media(max-width:480px){
-  .stats-grid{grid-template-columns:1fr 1fr!important}
 }
 </style>
 </head>
 <body>
 
 <header class="topbar">
-  <button class="adm-hb" id="adm-hb" onclick="admToggle()" aria-label="Menu"><span></span><span></span><span></span></button>
+  <button class="adm-hb" id="adm-hb" onclick="admHbToggle()" aria-label="Menu"><span></span><span></span><span></span></button>
   <div class="logo">Moulin <em>des</em> Moines <sup>Admin</sup></div>
   <div class="search-wrap">
     <span class="search-ico">&#128269;</span>
@@ -964,7 +953,6 @@ code{background:var(--bg);padding:1px 4px;border-radius:3px;font-size:10px;font-
   <!-- Fin modal -->
 
 <div style="text-align:center;padding:10px;font-size:10px;color:#64748b;border-top:1px solid var(--border)">&copy; 2026 Moulin des Moines &nbsp;&middot;&nbsp; <a href="mentions-legales.html" style="color:inherit;opacity:.7;text-decoration:none">Mentions l&eacute;gales &amp; RGPD</a></div>
-<div class="adm-sb-overlay" id="adm-overlay" onclick="admToggle()"></div>
 <div id="toast"></div>
 <div id="toast"></div>
 
@@ -3946,28 +3934,31 @@ async function pushStockToGithub() {
 }
 
 window.
-/* ══ ADMIN MOBILE — hamburger ══ */
-function admToggle(){
-  var sb=document.querySelector('.sidebar'),
-      ov=document.getElementById('adm-overlay'),
-      hb=document.getElementById('adm-hb');
-  if(!sb) return;
-  var open=sb.classList.toggle('open');
-  if(ov) ov.classList.toggle('open',open);
-  if(hb) hb.classList.toggle('open',open);
-  document.body.style.overflow=(open&&window.innerWidth<=768)?'hidden':'';
+/* ══ ADMIN HAMBURGER MOBILE ══ */
+function admHbToggle(){
+  var sb=document.querySelector('.sidebar');
+  var ov=document.getElementById('adm-sb-ov');
+  var hb=document.getElementById('adm-hb');
+  if(!sb)return;
+  var isOpen=sb.classList.toggle('adm-open');
+  if(ov)ov.classList.toggle('open',isOpen);
+  if(hb)hb.classList.toggle('open',isOpen);
+  document.body.style.overflow=(isOpen&&window.innerWidth<=768)?'hidden':'';
 }
-function admClose(){
-  var sb=document.querySelector('.sidebar'),ov=document.getElementById('adm-overlay'),hb=document.getElementById('adm-hb');
-  if(sb)sb.classList.remove('open');
+function admHbClose(){
+  var sb=document.querySelector('.sidebar');
+  if(sb)sb.classList.remove('adm-open');
+  var ov=document.getElementById('adm-sb-ov');
   if(ov)ov.classList.remove('open');
+  var hb=document.getElementById('adm-hb');
   if(hb)hb.classList.remove('open');
   document.body.style.overflow='';
 }
 addEventListener('DOMContentLoaded',function(){
-  // Fermer sidebar mobile au clic nav-item
   document.querySelectorAll('.nav-item').forEach(function(el){
-    el.addEventListener('click',function(){if(window.innerWidth<=768)admClose();});
+    el.addEventListener('click',function(){
+      if(window.innerWidth<=768)admHbClose();
+    });
   });
   loadComptes();
   loadActus();
@@ -4026,5 +4017,6 @@ function saveActuNew(){
 
 
 </script>
+<div class="adm-sb-ov" id="adm-sb-ov" onclick="admHbClose()"></div>
 </body>
 </html>

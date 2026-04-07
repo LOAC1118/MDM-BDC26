@@ -647,70 +647,6 @@ tbody tr.has-qty td.td-qty input{background:#ffe0b2;border-color:var(--terra)}
 .import-panel-foot{padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:8px;flex-shrink:0}
 .import-overlay{position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:299;display:none}
 .import-overlay.open{display:block}
-
-/* ════ BDC RESPONSIVE ════════════════════════════════════ */
-@media(max-width:900px){
-  .totals-bar{left:0!important}
-  .col-tab-hide{display:none!important}
-  thead th,th{padding:7px 8px!important;font-size:9px!important}
-  td{padding:7px 8px!important;font-size:11px!important}
-  .td-qty input{width:56px!important;height:36px!important;font-size:15px!important;-moz-appearance:textfield}
-  .td-qty input::-webkit-outer-spin-button,.td-qty input::-webkit-inner-spin-button{-webkit-appearance:none}
-  .totals-bar{height:auto!important;padding:7px 10px!important;flex-wrap:wrap!important;gap:6px!important}
-  .total-label{font-size:9px!important}.total-value{font-size:14px!important}
-  .modal{max-width:calc(100vw - 20px)!important;padding:20px!important}
-}
-@media(max-width:600px){
-  .bdc-tbl-wrap{display:none!important}
-  .bdc-cards{display:block!important}
-  .search-bar{flex-direction:column!important;align-items:stretch!important;gap:8px!important;padding:10px!important;margin:6px 10px!important}
-  .search-bar input{font-size:16px!important;padding:10px 12px!important;border-radius:8px!important;width:100%!important}
-  .search-modes{gap:4px;flex-wrap:wrap}
-  .mode-btn{flex:1;min-width:54px;font-size:11px!important;padding:7px 4px!important;text-align:center;border-radius:6px}
-  .totals-bar{height:auto!important;padding:5px 10px!important;flex-wrap:nowrap!important;overflow-x:auto!important;-webkit-overflow-scrolling:touch;scrollbar-width:none}
-  .totals-bar::-webkit-scrollbar{display:none}
-  .total-item{min-width:58px;flex-shrink:0;padding:0 5px}
-  .total-label{font-size:8px!important}.total-value{font-size:12px!important}
-  .totals-sep{display:none!important}
-  .modal-bg{align-items:flex-end!important;padding:0!important}
-  .modal{border-radius:18px 18px 0 0!important;max-width:100%!important;width:100%!important;padding:20px 14px 32px!important;max-height:90vh!important;overflow-y:auto!important}
-  .modal h2{font-size:16px!important}
-  #bdc-fab{display:flex!important}
-}
-/* Cartes produit */
-.bdc-cards{display:none;padding:4px 10px 88px}
-.bdc-card{background:#fff;border:1.5px solid var(--border);border-radius:11px;padding:12px 13px 10px;margin-bottom:8px;position:relative}
-.bdc-card.has-qty{border-color:var(--accent);box-shadow:0 2px 10px rgba(74,124,89,.13)}
-.bdc-card-dot{position:absolute;top:11px;right:11px;width:7px;height:7px;border-radius:50%;background:var(--accent);opacity:0;transition:opacity .2s}
-.bdc-card.has-qty .bdc-card-dot{opacity:1}
-.bdc-card-name{font-size:13px;font-weight:400;color:var(--text);line-height:1.3;margin-bottom:2px;padding-right:18px}
-.bdc-card-meta{font-size:10px;color:var(--text-muted);font-family:monospace;margin-bottom:7px}
-.bdc-card-badges{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:7px}
-.bdc-badge{font-size:9px;font-weight:600;padding:2px 6px;border-radius:4px}
-.bdc-badge-bio{background:#e8f5e9;color:#2e7d32}
-.bdc-badge-ok{background:#e8f5e9;color:#2e7d32}
-.bdc-badge-low{background:#fff3e0;color:#e65100}
-.bdc-badge-out{background:#fde8e8;color:#c62828}
-.bdc-badge-promo{background:#fce4ec;color:#c62828}
-.bdc-badge-special{background:#e3f2fd;color:#1565c0}
-.bdc-card-prix-row{display:flex;align-items:baseline;gap:7px;margin-bottom:10px}
-.bdc-prix{font-size:16px;font-weight:600;color:var(--green)}
-.bdc-prix-barre{font-size:11px;text-decoration:line-through;color:#bbb}
-.bdc-pcb{font-size:10px;color:var(--text-secondary)}
-.bdc-card-qty-row{display:flex;align-items:center;gap:10px}
-.bdc-qty-label{font-size:11px;color:var(--text-secondary);white-space:nowrap}
-.bdc-qty-ctrl{display:flex;align-items:center;border:1.5px solid var(--border);border-radius:9px;overflow:hidden;flex-shrink:0}
-.bdc-qty-minus,.bdc-qty-plus{width:40px;height:40px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:300;transition:background .1s;-webkit-tap-highlight-color:transparent;user-select:none}
-.bdc-qty-minus{background:var(--bg);color:var(--text)}
-.bdc-qty-minus:active{background:#ddd}
-.bdc-qty-plus{background:var(--accent-light);color:var(--accent)}
-.bdc-qty-plus:active{background:#b2d8b8}
-.bdc-qty-num{width:50px;height:40px;border:none;border-left:1px solid var(--border);border-right:1px solid var(--border);text-align:center;font-size:15px;font-weight:500;color:var(--text);background:#fff;-moz-appearance:textfield}
-.bdc-qty-num::-webkit-outer-spin-button,.bdc-qty-num::-webkit-inner-spin-button{-webkit-appearance:none}
-.bdc-qty-num:focus{outline:none;background:var(--accent-light)}
-.bdc-card-uvc{font-size:11px;color:var(--text-secondary)}
-.bdc-card-total{font-size:13px;font-weight:600;color:var(--accent);margin-left:auto}
-#bdc-fab{display:none;position:fixed;bottom:64px;right:14px;z-index:88;width:56px;height:56px;border-radius:50%;background:var(--accent);color:#fff;border:none;cursor:pointer;align-items:center;justify-content:center;font-size:22px;box-shadow:0 4px 18px rgba(74,124,89,.4);-webkit-tap-highlight-color:transparent}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -884,18 +820,18 @@ tbody tr.has-qty td.td-qty input{background:#ffe0b2;border-color:var(--terra)}
     <button class="btn-clear" onclick="clearSearch()">&#10005; Effacer</button>
   </div>
 
-  <div class="table-wrap bdc-tbl-wrap">
+  <div class="table-wrap">
     <table>
       <thead>
         <tr>
           <th>Code</th>
           <th class="th-lib">D&#233;signation</th>
-          <th class="col-tab-hide">EAN / Gencod</th>
-          <th class="col-tab-hide">Origine</th>
-          <th class="col-tab-hide">Certif.</th>
+          <th>EAN / Gencod</th>
+          <th>Origine</th>
+          <th>Certif.</th>
           <th>PCB</th>
-          <th class="col-tab-hide">Poids</th>
-          <th class="col-tab-hide">TVA</th>
+          <th>Poids</th>
+          <th>TVA</th>
           <th>Votre prix HT</th>
           <th class="no-print th-stock">Stock</th>
           <th class="no-print">Qt&#233; (colis)</th>
@@ -919,8 +855,6 @@ tbody tr.has-qty td.td-qty input{background:#ffe0b2;border-color:var(--terra)}
       <div class="total-label">R&eacute;f.</div>
       <div class="total-value" id="nb-refs">0</div>
     </div>
-<div class="bdc-cards" id="bdc-cards"></div>
-
     <div class="totals-sep"></div>
     <div class="total-item">
       <div class="total-label">Colis</div>
@@ -1446,12 +1380,12 @@ function buildTable(){
     rows += '<tr class="' + hasQty + '" data-code="' + dCode + '" data-libelle="' + dLibelle + '" data-ean="' + dEan + '">';
     rows += '<td class="td-code">' + escHtml(p.code) + "</td>";
     rows += '<td class="td-lib">'  + escHtml(p.libelle) + "</td>";
-    rows += '<td class="col-tab-hide" style="font-size:10px;color:#888;font-family:monospace">' + escHtml(p.ean) + "</td>";
-    rows += '<td class="col-tab-hide" style="font-size:11px;color:#888">' + escHtml(p.origine) + "</td>";
-    rows += '<td class="td-certif col-tab-hide">' + escHtml((p.certif||"").trim()) + "</td>";
+    rows += '<td style="font-size:10px;color:#888;font-family:monospace">' + escHtml(p.ean) + "</td>";
+    rows += '<td style="font-size:11px;color:#888">' + escHtml(p.origine) + "</td>";
+    rows += '<td class="td-certif">' + escHtml((p.certif||"").trim()) + "</td>";
     rows += "<td>" + (p.pcb||"") + "</td>";
-    rows += '<td class="col-tab-hide" style="font-size:11px">' + (p.poids ? p.poids+" kg" : "") + "</td>";
-    rows += '<td class="col-tab-hide" style="font-size:11px">' + (p.tva ? p.tva+"%" : "") + "</td>";
+    rows += '<td style="font-size:11px">' + (p.poids ? p.poids+" kg" : "") + "</td>";
+    rows += '<td style="font-size:11px">' + (p.tva ? p.tva+"%" : "") + "</td>";
     var codeUpB=(p.code||'').toUpperCase();
     var grpRB=grpRemisesProduitsMap[codeUpB];
     var prixNet=getPrixNet(p);
@@ -1484,7 +1418,7 @@ function buildTable(){
     rows += '<td class="td-stock no-print">' + stkHtml + '</td>';
     rows += '<td class="td-qty no-print"><input type="number" min="0" step="1" value="' + (qty||"") + '" placeholder="0" data-code="' + dCode + '" data-pcb="' + (p.pcb||1) + '" oninput="onQty(this)" onchange="onQty(this)"></td>';
     var uvcVal = qty > 0 ? qty * (p.pcb||1) : '';
-    rows += '<td class="td-uvc col-tab-hide no-print" id="uvc-' + dCode + '" style="font-size:12px;font-weight:300;color:var(--text-secondary);text-align:center">' + (uvcVal||'—') + '</td>';
+    rows += '<td class="td-uvc no-print" id="uvc-' + dCode + '" style="font-size:12px;font-weight:300;color:var(--text-secondary);text-align:center">' + (uvcVal||'—') + '</td>';
     rows += '<td class="td-total" id="t-' + dCode + '">' + totalStr + "</td>";
     rows += "</tr>";
   }
@@ -2045,7 +1979,36 @@ function exportExcel() {
 }
 
 // INIT
-buildTable();
+/* ══ CHARGEMENT STOCKS FIREBASE ══ */
+function _loadStocksAndBuild() {
+  if (typeof initFirebase !== 'function') {
+    buildTable();
+    return;
+  }
+  initFirebase().then(function(db) {
+    return db.collection('stocks').doc('catalogue').get();
+  }).then(function(doc) {
+    if (doc.exists) {
+      var stockData = doc.data();
+      var n = 0;
+      if (window.PRODUCTS) {
+        window.PRODUCTS.forEach(function(p) {
+          if (stockData.hasOwnProperty(p.code)) {
+            p.stock = stockData[p.code];
+            n++;
+          }
+        });
+      }
+      if (n > 0) console.log('[MDM] ' + n + ' stocks charg\u00e9s depuis Firebase');
+    }
+    buildTable();
+  }).catch(function(e) {
+    console.warn('[MDM] Stocks Firebase:', e.message);
+    buildTable();
+  });
+}
+
+_loadStocksAndBuild();
 document.getElementById("search-count").textContent=PRODUCTS.length+" produits";
 
 // ============================================================
@@ -3955,212 +3918,5 @@ function draftInit(){
   </div>
 </div>
 
-<button id="bdc-fab" onclick="if(typeof openModal==='function')openModal()" title="Envoyer">&#9993;</button>
-<script>
-/* ══ BDC MOBILE — script séparé, sans modifier le JS existant ══ */
-(function(){
-'use strict';
-
-function _esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-
-function _prixNet(p){
-  if(typeof getPrixNet==='function') return getPrixNet(p);
-  var r=typeof remise!=='undefined'?remise:0;
-  return p.pu_ht*(1-r/100);
-}
-
-function _fmt2(n){
-  if(typeof fmt2==='function') return fmt2(n);
-  return n.toFixed(2).replace('.',',')+'&nbsp;\u20ac';
-}
-function _fmt4(n){
-  if(typeof fmt4==='function') return fmt4(n);
-  return n.toFixed(4).replace(/\.?0+$/,'').replace('.',',')+'&nbsp;\u20ac';
-}
-
-/* ── Construction d'une carte ────────────────────────── */
-function _card(p){
-  var code=p.code||'';
-  var Q=typeof qtys!=='undefined'?qtys[code]||0:0;
-  var pcb=parseFloat(p.pcb)||1;
-  var pn=_prixNet(p);
-  var tot=Q?pn*Q*pcb:0;
-  var sc=_esc(code);
-
-  /* badges */
-  var bg='';
-  if(p.certif&&p.certif.trim()) bg+='<span class="bdc-badge bdc-badge-bio">'+_esc(p.certif.trim())+'</span>';
-  if(p.stock!==undefined&&p.stock!==null){
-    if(p.stock<=0)       bg+='<span class="bdc-badge bdc-badge-out">\u26a0 Rupture</span>';
-    else if(p.stock<=5)  bg+='<span class="bdc-badge bdc-badge-low">Stock\u00a0'+p.stock+'</span>';
-    else                 bg+='<span class="bdc-badge bdc-badge-ok">\u2713 Stock OK</span>';
-  }
-  var grpR=typeof grpRemisesProduitsMap!=='undefined'?grpRemisesProduitsMap[code.toUpperCase()]:null;
-  if(grpR){
-    if(grpR.prixHT>0)    bg+='<span class="bdc-badge bdc-badge-special">Prix sp\u00e9cial</span>';
-    else if(grpR.remise>0) bg+='<span class="bdc-badge bdc-badge-promo">-'+grpR.remise+'%</span>';
-  }
-
-  /* prix */
-  var ph='<span class="bdc-prix">'+_fmt4(pn)+'</span>';
-  if(pn<p.pu_ht) ph+='<span class="bdc-prix-barre">'+_fmt4(p.pu_ht)+'</span>';
-
-  return '<div class="bdc-card'+(Q?' has-qty':'')+'" id="bc-'+sc+'"'
-    +' data-code="'+sc+'"'
-    +' data-lib="'+_esc((p.libelle||'').toLowerCase())+'"'
-    +' data-ean="'+_esc((p.ean||'').toLowerCase())+'">'
-    +'<div class="bdc-card-dot"></div>'
-    +'<div class="bdc-card-name">'+_esc(p.libelle)+'</div>'
-    +'<div class="bdc-card-meta">'+sc+(p.ean?' \u00b7 '+_esc(String(p.ean).substring(0,13)):'')+'</div>'
-    +(bg?'<div class="bdc-card-badges">'+bg+'</div>':'')
-    +'<div class="bdc-card-prix-row">'+ph
-    +'<span class="bdc-pcb">PCB\u00a0'+pcb+(p.origine?' \u00b7 '+_esc(p.origine):'')+'</span>'
-    +'</div>'
-    +'<div class="bdc-card-qty-row">'
-    +'<span class="bdc-qty-label">Colis\u00a0:</span>'
-    +'<div class="bdc-qty-ctrl">'
-    +'<button type="button" class="bdc-qty-minus" data-c="'+sc+'">\u2212</button>'
-    +'<input type="number" inputmode="numeric" class="bdc-qty-num" id="bi-'+sc+'"'
-    +' value="'+(Q||'')+'" placeholder="0" min="0" step="1"'
-    +' data-c="'+sc+'" data-p="'+pcb+'">'
-    +'<button type="button" class="bdc-qty-plus" data-c="'+sc+'">\uff0b</button>'
-    +'</div>'
-    +'<span class="bdc-card-uvc" id="bu-'+sc+'">'+(Q?Q*pcb+'\u00a0UVC':'')+'</span>'
-    +'<span class="bdc-card-total" id="bt-'+sc+'">'+(Q?_fmt2(tot):'')+'</span>'
-    +'</div>'
-    +'</div>';
-}
-
-/* ── Construire toutes les cartes ────────────────────── */
-function buildCards(){
-  var w=document.getElementById('bdc-cards');
-  if(!w) return;
-  var P=window.PRODUCTS;
-  if(!P||!P.length) return;
-  var h='';
-  for(var i=0;i<P.length;i++) h+=_card(P[i]);
-  w.innerHTML=h;
-}
-
-/* ── Sync une carte avec la table et les totaux ──────── */
-function _sync(code,val,pcb){
-  val=parseInt(val)||0; pcb=parseFloat(pcb)||1;
-
-  /* 1. qtys global */
-  if(val>0) qtys[code]=val; else delete qtys[code];
-
-  /* 2. Sync input table desktop */
-  var all=document.querySelectorAll('input[data-code]');
-  for(var i=0;i<all.length;i++){
-    if(all[i].dataset.code===code&&!all[i].classList.contains('bdc-qty-num')){
-      all[i].value=val||'';
-      /* MAJ ligne table */
-      var tr=all[i].closest('tr');
-      if(tr) tr.className=tr.className.replace(/\bhas-qty\b/,'').trim()+(val?' has-qty':'');
-      var uv=document.getElementById('uvc-'+code);
-      if(uv) uv.textContent=val?val*pcb:'—';
-      var tc=document.getElementById('t-'+code);
-      var P=window.PRODUCTS;
-      for(var j=0;j<P.length;j++){
-        if(P[j].code===code){
-          if(tc) tc.textContent=val?_fmt2(_prixNet(P[j])*val*pcb):'';
-          break;
-        }
-      }
-      break;
-    }
-  }
-
-  /* 3. MAJ carte */
-  var uc=document.getElementById('bu-'+code);
-  if(uc) uc.textContent=val?val*pcb+'\u00a0UVC':'';
-  var tc2=document.getElementById('bt-'+code);
-  var P2=window.PRODUCTS;
-  for(var k=0;k<P2.length;k++){
-    if(P2[k].code===code){
-      if(tc2) tc2.textContent=val?_fmt2(_prixNet(P2[k])*val*pcb):'';
-      break;
-    }
-  }
-  var card=document.getElementById('bc-'+code);
-  if(card) card.classList.toggle('has-qty',val>0);
-
-  /* 4. Totaux globaux */
-  if(typeof updateTotals==='function') updateTotals();
-}
-
-/* ── Events (délégation sur le wrapper) ──────────────── */
-function _events(w){
-  w.addEventListener('input',function(e){
-    var inp=e.target;
-    if(!inp.classList.contains('bdc-qty-num')) return;
-    _sync(inp.dataset.c, inp.value, inp.dataset.p);
-  },{passive:true});
-  w.addEventListener('click',function(e){
-    var btn=e.target.closest('[data-c]');
-    if(!btn||(!btn.classList.contains('bdc-qty-minus')&&!btn.classList.contains('bdc-qty-plus'))) return;
-    var code=btn.dataset.c;
-    var inp=document.getElementById('bi-'+code);
-    if(!inp) return;
-    var v=parseInt(inp.value)||0;
-    v=btn.classList.contains('bdc-qty-plus')?v+1:Math.max(0,v-1);
-    inp.value=v||'';
-    _sync(code,v,inp.dataset.p);
-  });
-}
-
-/* ── Filtre cartes (sync avec la barre de recherche) ─── */
-function _filter(){
-  var q=((document.getElementById('search-input')||{}).value||'').toLowerCase().trim();
-  var mb=document.querySelector('.mode-btn.active');
-  var mode=mb&&mb.dataset?mb.dataset.mode:'all';
-  document.querySelectorAll('.bdc-card').forEach(function(cd){
-    var ok=!q||(cd.dataset.lib||'').indexOf(q)>=0
-             ||(cd.dataset.ean||'').indexOf(q)>=0
-             ||(cd.dataset.code||'').toLowerCase().indexOf(q)>=0;
-    if(mode==='qty'&&!cd.classList.contains('has-qty')) ok=false;
-    cd.style.display=ok?'':'none';
-  });
-}
-
-/* ── Observer tbody pour reconstruire après buildTable ── */
-function _watch(){
-  var tbody=document.getElementById('tbody');
-  if(!tbody) return;
-  var done=false;
-  new MutationObserver(function(){
-    if(done||!tbody.children.length) return;
-    done=true;
-    var w=document.getElementById('bdc-cards');
-    if(w&&!w.children.length){ buildCards(); _events(w); }
-  }).observe(tbody,{childList:true});
-}
-
-/* ── Init ─────────────────────────────────────────────── */
-function _init(){
-  _watch();
-  /* Attacher recherche */
-  var si=document.getElementById('search-input');
-  if(si) si.addEventListener('input',function(){setTimeout(_filter,50);},{passive:true});
-  document.querySelectorAll('.mode-btn').forEach(function(b){
-    b.addEventListener('click',function(){setTimeout(_filter,60);},{passive:true});
-  });
-  /* Si tbody déjà rempli */
-  var tbody=document.getElementById('tbody');
-  if(tbody&&tbody.children.length){
-    var w=document.getElementById('bdc-cards');
-    if(w&&!w.children.length){ buildCards(); _events(w); }
-  }
-}
-
-if(document.readyState==='loading'){
-  document.addEventListener('DOMContentLoaded',_init);
-} else {
-  /* Le script est après le DOMContentLoaded — init directement */
-  setTimeout(_init,0);
-}
-
-})();
-</script>
 </body>
 </html>

@@ -9,13 +9,10 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<style>
-/* ════════════════════════════════════════════════════════
-   ADMIN MDM 2026 — CSS PROPRE (reconstruit)
-════════════════════════════════════════════════════════ */
+<style>/* RESET */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{height:100%}
 
+/* VARIABLES */
 :root{
   --bg:#f5f2ee;--card:#fff;--text:#2d2018;--text2:#7a6655;--text3:#b09a8a;
   --accent:#4a7c59;--accent-l:#edf5ef;--terra:#a0522d;--terra-l:#fdf0e8;
@@ -26,362 +23,333 @@ html{height:100%}
   --r:8px;--sidebar:220px;--topbar:54px;
 }
 
+/* LAYOUT — body=flex colonne, zone=flex rangée */
+html{height:100%;overflow:hidden}
 body{
-  font-family:'Inter',sans-serif;font-weight:300;font-size:13px;
-  background:var(--bg);color:var(--text);line-height:1.5;
-  height:100%;display:flex;flex-direction:column;
+  font-family:'Inter',sans-serif;font-size:13px;font-weight:300;
+  color:var(--text);background:var(--bg);
+  height:100vh;display:flex;flex-direction:column;overflow:hidden;
 }
-
-/* ── TOPBAR ── */
 .topbar{
   height:var(--topbar);min-height:var(--topbar);flex-shrink:0;
-  background:var(--brown);
-  display:flex;align-items:center;padding:0 16px;gap:12px;
-  z-index:200;box-shadow:0 2px 8px rgba(45,32,24,.25);
-  position:sticky;top:0;
+  background:var(--card);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 18px;gap:14px;z-index:200;
 }
-.logo{
-  font-family:'Fraunces',serif;font-weight:200;font-size:18px;
-  color:#fff;white-space:nowrap;
-}
-.logo em{font-style:italic;color:#d4b896}
-.logo sup{font-size:9px;color:rgba(255,255,255,.5);margin-left:3px}
-.topbar-spacer{flex:1}
-.topbar-user{font-size:11px;color:rgba(255,255,255,.65);white-space:nowrap}
-.logout-btn{
-  padding:5px 12px;border-radius:6px;font-size:11px;
-  border:1px solid rgba(255,255,255,.25);
-  background:rgba(255,255,255,.1);color:#fff;
-  cursor:pointer;font-family:'Inter',sans-serif;
-  transition:all .14s;
-}
-.logout-btn:hover{background:rgba(255,255,255,.2)}
-.search-wrap{
-  position:relative;flex-shrink:0;
-}
-.search-ico{position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:12px;color:rgba(255,255,255,.4);pointer-events:none}
-#global-search{
-  padding:6px 10px 6px 28px;border-radius:7px;
-  border:1px solid rgba(255,255,255,.2);
-  background:rgba(255,255,255,.12);color:#fff;
-  font-size:12px;font-family:'Inter',sans-serif;
-  width:200px;outline:none;
-}
-#global-search::placeholder{color:rgba(255,255,255,.4)}
-#global-search:focus{border-color:rgba(255,255,255,.4);background:rgba(255,255,255,.18)}
-#global-search-results{
-  position:absolute;top:calc(100% + 6px);right:0;
-  width:280px;background:#fff;border-radius:8px;
-  box-shadow:var(--shadow-md);border:1px solid var(--border);
-  z-index:300;display:none;max-height:300px;overflow-y:auto;
-}
-#global-search-results.open{display:block}
-
-/* Hamburger */
-.adm-hb{
-  display:none;flex-direction:column;gap:5px;
-  background:none;border:none;cursor:pointer;
-  padding:6px;flex-shrink:0;-webkit-tap-highlight-color:transparent;
-}
-.adm-hb span{display:block;width:19px;height:2px;background:rgba(255,255,255,.85);border-radius:2px;transition:all .22s}
-.adm-hb.is-open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
-.adm-hb.is-open span:nth-child(2){opacity:0}
-.adm-hb.is-open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
-
-/* Overlay mobile */
-.adm-sb-ov{
-  display:none;position:fixed;inset:0;
-  background:rgba(40,24,16,.45);z-index:149;cursor:pointer;
-}
-.adm-sb-ov.is-open{display:block}
-
-/* ── ZONE (sidebar + main) ── */
-.zone{
-  flex:1;display:flex;overflow:hidden;min-height:0;
-}
-
-/* ── SIDEBAR ── */
+.zone{flex:1;display:flex;overflow:hidden;min-height:0}
 .sidebar{
   width:var(--sidebar);min-width:var(--sidebar);flex-shrink:0;
   background:var(--card);border-right:1px solid var(--border);
   overflow-y:auto;display:flex;flex-direction:column;padding:8px 0 16px;
-  /* PAS de display:none ici */
 }
-.nav-label-section{
-  font-size:9px;font-weight:700;text-transform:uppercase;
-  letter-spacing:.9px;color:var(--text3);padding:14px 14px 5px;
-}
-.nav-item{
-  display:flex;align-items:center;gap:9px;
-  padding:8px 14px;cursor:pointer;
-  color:var(--text2);font-size:12px;
-  border-left:2px solid transparent;transition:all .12s;
-  -webkit-tap-highlight-color:transparent;
-  user-select:none;
-}
-.nav-item:hover{background:var(--bg);color:var(--text);border-left-color:var(--border)}
+.main{flex:1;overflow-y:auto;overflow-x:hidden;padding:22px 26px;min-width:0}
+
+/* TOPBAR */
+.logo{font-family:'Fraunces',serif;font-weight:200;font-size:16px;color:var(--brown);white-space:nowrap;flex-shrink:0}
+.logo em{font-style:italic;color:var(--terra)}
+.logo sup{font-size:8px;font-weight:700;background:var(--terra);color:#fff;padding:1px 5px;border-radius:3px;margin-left:4px;vertical-align:middle}
+.search-wrap{flex:1;max-width:360px;position:relative}
+.search-wrap input{width:100%;padding:6px 10px 6px 30px;border:1.5px solid var(--border);border-radius:6px;font-size:12px;font-family:inherit;background:var(--bg);color:var(--text);outline:none;transition:border-color .15s}
+.search-wrap input:focus{border-color:var(--accent);background:#fff}
+.search-ico{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:12px;pointer-events:none}
+.search-drop{position:absolute;top:calc(100% + 3px);left:0;right:0;background:#fff;border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow-md);z-index:300;max-height:260px;overflow-y:auto;display:none}
+.search-drop.open{display:block}
+.adm-sri,.search-item{padding:8px 12px;font-size:12px;cursor:pointer;border-bottom:1px solid var(--border-l);display:flex;align-items:center;gap:8px}
+.adm-sri:last-child,.search-item:last-child{border:none}
+.adm-sri:hover,.search-item:hover{background:var(--bg)}
+.adm-sr-badge{font-size:9px;padding:2px 6px;border-radius:3px;font-weight:600;text-transform:uppercase}
+.adm-sr-badge.client{background:#fff3e0;color:#e65100}
+.adm-sr-badge.user{background:var(--accent-l);color:var(--accent)}
+.adm-sr-badge.admin{background:#f3e5f5;color:#7b1fa2}
+.spacer{flex:1}
+.user-info{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2)}
+.avatar{width:28px;height:28px;border-radius:50%;background:var(--terra);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+.logout-btn{padding:5px 10px;border-radius:5px;font-size:11px;font-weight:500;cursor:pointer;font-family:inherit;border:1px solid var(--border);background:var(--bg);color:var(--text2);transition:all .15s}
+.logout-btn:hover{background:var(--danger-l);color:var(--danger);border-color:var(--danger)}
+
+/* SIDEBAR NAV */
+.nav-label-section{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.9px;color:var(--text3);padding:12px 14px 4px}
+.nav-item{display:flex;align-items:center;gap:9px;padding:7px 14px;cursor:pointer;color:var(--text2);font-size:12px;border-left:2px solid transparent;transition:all .12s}
+.nav-item:hover{background:var(--bg);color:var(--text)}
 .nav-item.active{background:var(--accent-l);color:var(--accent);border-left-color:var(--accent);font-weight:500}
 .nav-icon{font-size:14px;width:18px;text-align:center;flex-shrink:0}
 .nav-txt{flex:1}
-.nav-badge{
-  font-size:9px;font-weight:700;padding:1px 6px;border-radius:10px;
-  flex-shrink:0;display:none;
-}
-.nb-gray{background:var(--border);color:var(--text3);display:inline}
+.nav-badge{font-size:9px;font-weight:700;padding:1px 5px;border-radius:8px;min-width:16px;text-align:center}
+.nb-gray{background:#e2d8d0;color:var(--text2)}
 .nb-red{background:var(--danger);color:#fff}
 .nb-green{background:var(--green);color:#fff}
-.nb-orange{background:#e67e22;color:#fff}
+.nb-orange{background:#f59e0b;color:#fff}
 
-/* ── MAIN ── */
-.main{
-  flex:1;overflow-y:auto;overflow-x:hidden;
-  padding:22px 26px;min-width:0;
-}
-
-/* ── PAGES ── */
+/* PAGES */
 .page{display:none}
 .page.active{display:block}
+.page-title{font-family:'Fraunces',serif;font-weight:200;font-size:22px;color:var(--brown);margin-bottom:2px}
+.page-sub{font-size:11px;color:var(--text3);margin-bottom:14px}
+.page-header{margin-bottom:16px}
+.page-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px;align-items:center}
 
-/* ── PAGE HEADER ── */
-.page-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:20px}
-.page-title{font-family:'Fraunces',serif;font-weight:200;font-size:24px;color:var(--brown)}
-.page-sub{font-size:12px;color:var(--text3);margin-top:3px}
-.page-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.stat-card,.stat{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;position:relative;overflow:hidden}
+.stat-card::before,.stat::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.stat-card.c-terra::before,.stat.s-terra::before{background:var(--terra)}
+.stat-card.c-accent::before,.stat.s-accent::before{background:var(--accent)}
+.stat-card.c-brown::before,.stat.s-brown::before{background:var(--brown)}
+.stat-card.c-gold::before,.stat.s-warn::before{background:var(--warn)}
+.stat-label,.stat-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:5px}
+.stat-value,.stat-val{font-family:'Fraunces',serif;font-weight:200;font-size:26px;color:var(--text);line-height:1}
+.stat-sub{font-size:10px;color:var(--text3);margin-top:2px}
 
-/* ── BOUTONS ── */
-.btn{
-  padding:7px 14px;border-radius:7px;font-size:12px;font-weight:500;
-  border:none;cursor:pointer;font-family:'Inter',sans-serif;
-  display:inline-flex;align-items:center;gap:5px;transition:all .14s;
-}
-.btn-primary{background:var(--accent);color:#fff}
-.btn-primary:hover{background:#3a6447}
-.btn-danger{background:var(--danger);color:#fff}
-.btn-outline{background:#fff;color:var(--text2);border:1px solid var(--border)}
-.btn-outline:hover{background:var(--bg)}
-.btn-sm{padding:5px 10px;font-size:11px}
-.btn-add{padding:6px 12px;border-radius:6px;font-size:11px;font-weight:500;border:none;cursor:pointer;font-family:'Inter',sans-serif;background:var(--accent);color:#fff;display:inline-flex;align-items:center;gap:4px;transition:all .14s}
-.btn-add:hover{background:#3a6447}
+/* CARDS */
+.section-card,.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);margin-bottom:12px;overflow:hidden}
+.section-card-title,.card-head{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;font-size:11px;font-weight:600;color:var(--brown);border-bottom:1px solid var(--border-l)}
+.card-title{font-size:12px;font-weight:600;color:var(--brown)}
 
-/* ── STATS GRID ── */
-.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
-.stat-card{background:var(--card);border-radius:var(--r);padding:16px 18px;border:1px solid var(--border);box-shadow:var(--shadow)}
-.stat-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:6px}
-.stat-val{font-family:'Fraunces',serif;font-weight:200;font-size:26px;color:var(--text)}
-.stat-sub{font-size:10px;color:var(--text3);margin-top:3px}
+/* TABLEAUX */
+.tbl-wrap{overflow-x:auto}
+table.tbl,.md-tbl,.grp-table{width:100%;border-collapse:collapse;font-size:12px}
+table.tbl th,.md-tbl th,.grp-table th{padding:7px 11px;text-align:left;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--text3);border-bottom:1.5px solid var(--border);background:var(--bg)}
+table.tbl td,.md-tbl td,.grp-table td{padding:8px 11px;border-bottom:1px solid var(--border-l);color:var(--text2);vertical-align:middle}
+table.tbl tr:hover td,.md-tbl tr:hover td,.grp-table tr:hover td{background:var(--bg)}
 
-/* ── SECTION CARD ── */
-.section-card{background:var(--card);border-radius:var(--r);border:1px solid var(--border);box-shadow:var(--shadow);margin-bottom:16px;overflow:hidden}
-.section-card-title{padding:12px 16px;border-bottom:1px solid var(--border);font-size:12px;font-weight:600;color:var(--text);display:flex;align-items:center;justify-content:space-between;gap:10px}
+/* BOUTONS */
+.btn,.btn-add,.btn-action{display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:6px;font-size:11px;font-weight:500;cursor:pointer;font-family:inherit;border:1px solid transparent;transition:all .13s;white-space:nowrap}
+.btn-primary,.btn-add{background:var(--terra);color:#fff;border-color:var(--terra)}
+.btn-primary:hover,.btn-add:hover{background:#8a4825}
+.btn-accent{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn-accent:hover{background:#3a6347}
+.btn-outline,.btn-action{background:transparent;color:var(--text2);border-color:var(--border)}
+.btn-outline:hover,.btn-action:hover{background:var(--bg);color:var(--text)}
+.btn-danger,.btn-action.btn-del{background:var(--danger-l);color:var(--danger);border-color:#f5c6cb}
+.btn-action.btn-edit{background:var(--accent-l);color:var(--accent);border-color:rgba(74,124,89,.3)}
+.btn-sm{padding:3px 9px;font-size:10px}
 
-/* ── TABLEAU ── */
-.data-table{width:100%;border-collapse:collapse}
-.data-table th{padding:9px 12px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--text3);background:var(--bg);border-bottom:2px solid var(--border);text-align:left;white-space:nowrap}
-.data-table td{padding:10px 12px;font-size:12px;border-bottom:1px solid var(--border-l);color:var(--text);vertical-align:middle}
-.data-table tr:last-child td{border:none}
-.data-table tr:hover td{background:var(--bg)}
+/* BADGES */
+.badge,.role-badge,.remise-pill{display:inline-flex;align-items:center;padding:2px 7px;border-radius:4px;font-size:9px;font-weight:700;text-transform:uppercase}
+.badge-client,.role-badge.role-client{background:#fff3e0;color:#e65100}
+.badge-user,.role-badge.role-user{background:var(--accent-l);color:var(--accent)}
+.badge-admin,.role-badge.role-admin{background:#f3e5f5;color:#7b1fa2}
+.remise-pill{background:var(--terra-l);color:var(--terra)}
+.badge-ok{background:var(--green-l);color:var(--green)}
 
-/* ── ROLE BADGE ── */
-.role-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600}
-.role-admin{background:#fde8e8;color:#c0392b}
-.role-user{background:#e8f0fd;color:#2563eb}
-.role-client{background:var(--green-l);color:var(--green)}
-
-/* ── FORMULAIRE ── */
-.modal-bg{display:none;position:fixed;inset:0;background:rgba(45,32,24,.4);z-index:1000;align-items:center;justify-content:center}
-.modal-bg.open{display:flex}
-.modal{background:var(--card);border-radius:12px;padding:24px;max-width:560px;width:90%;box-shadow:0 10px 40px rgba(0,0,0,.2);max-height:90vh;overflow-y:auto}
-.modal h2{font-family:'Fraunces',serif;font-weight:200;font-size:20px;color:var(--brown);margin-bottom:18px}
-.fg{margin-bottom:14px}
-.fg label{display:block;font-size:11px;font-weight:600;color:var(--text3);margin-bottom:5px;text-transform:uppercase;letter-spacing:.4px}
-.fg input,.fg select,.fg textarea{
-  width:100%;padding:8px 10px;border-radius:6px;
-  border:1.5px solid var(--border);font-size:12px;
-  font-family:'Inter',sans-serif;outline:none;
-  background:#fff;color:var(--text);transition:border-color .14s;
-}
+/* FORMULAIRES */
+.fg{display:flex;flex-direction:column;gap:4px;margin-bottom:11px}
+.fg label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.3px;color:var(--text3)}
+.fg input,.fg select,.fg textarea{padding:8px 11px;border:1.5px solid var(--border);border-radius:6px;font-family:inherit;font-size:12px;background:#fff;color:var(--text);outline:none;transition:border-color .15s}
 .fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--accent)}
-.fg-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid var(--border-l)}
+.fg .hint{font-size:10px;color:var(--text3)}
+.fg-row{display:grid;grid-template-columns:1fr 1fr;gap:11px}
 
-/* ── TOAST ── */
-#toast{
-  position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
-  background:var(--text);color:#fff;padding:9px 18px;
-  border-radius:8px;font-size:12px;z-index:9999;
-  opacity:0;transition:opacity .25s;pointer-events:none;
-  font-family:'Inter',sans-serif;white-space:nowrap;
-}
+/* TOOLBAR */
+.toolbar{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:12px}
+.tb-search{position:relative;flex:1;min-width:160px;max-width:280px}
+.tb-search input{width:100%;padding:6px 9px 6px 27px;border:1.5px solid var(--border);border-radius:6px;font-size:12px;font-family:inherit;background:#fff;outline:none}
+.tb-search input:focus{border-color:var(--accent)}
+.tb-ico{position:absolute;left:8px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:11px}
+.filter-pills{display:flex;gap:3px;flex-wrap:wrap}
+.pill,.filtre-role{padding:3px 9px;border-radius:4px;font-size:10px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:var(--bg);color:var(--text2);transition:all .13s}
+.pill.active,.filtre-role.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.sort-sel,.sort-select{padding:5px 9px;border:1.5px solid var(--border);border-radius:6px;font-size:11px;font-family:inherit;background:#fff;color:var(--text2);outline:none}
 
-/* ── UTILITAIRES ── */
-.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
-.info-banner{background:var(--accent-l);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--accent);display:flex;gap:10px;align-items:flex-start;margin-bottom:16px}
-.empty-state{text-align:center;padding:40px;color:var(--text3)}
-.empty-state .icon{font-size:36px;margin-bottom:8px;opacity:.5}
-.sort-sel{padding:5px 8px;border:1px solid var(--border);border-radius:6px;font-size:11px;font-family:'Inter',sans-serif;outline:none;background:#fff;cursor:pointer}
-.search-input-bar{padding:7px 12px;border:1.5px solid var(--border);border-radius:7px;font-size:12px;font-family:'Inter',sans-serif;outline:none;width:220px;transition:border-color .14s}
-.search-input-bar:focus{border-color:var(--accent)}
-.toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+/* INFOS / ALERTES */
+.info-box,.info-banner{display:flex;gap:9px;padding:9px 12px;border-radius:6px;font-size:11px;line-height:1.6;margin-bottom:12px;align-items:flex-start}
+.info-box.warn,.info-banner{background:var(--warn-l);border:1px solid #fde68a;color:var(--warn)}
+.info-box.ok,.info-banner.green{background:var(--green-l);border:1px solid #a7d7bc;color:var(--green)}
+.info-box.info{background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8}
+.info-banner .icon{font-size:14px;flex-shrink:0}
 
-/* ── MESSAGERIE ── */
-.msg-layout{display:flex;gap:0;height:100%;min-height:400px;border-radius:var(--r);border:1px solid var(--border);overflow:hidden;background:var(--card)}
-.msg-convs-panel{width:260px;flex-shrink:0;border-right:1px solid var(--border);display:flex;flex-direction:column}
-.msg-chat-panel{flex:1;display:flex;flex-direction:column;min-width:0}
-.msg-conv-row{padding:10px 12px;cursor:pointer;border-bottom:1px solid var(--border-l);transition:background .1s}
+/* DROP ZONE */
+.drop-zone,.grp-rp-drop{border:2px dashed var(--border);border-radius:var(--r);padding:22px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg)}
+.drop-zone:hover,.grp-rp-drop:hover{border-color:var(--accent);background:var(--accent-l)}
+
+/* LOG */
+.log-box{background:#1a1a2e;color:#a8ff78;border-radius:6px;padding:10px 12px;font-family:monospace;font-size:10px;line-height:1.8;max-height:130px;overflow-y:auto;white-space:pre-wrap;display:none;margin-top:8px}
+.result-box{background:var(--green-l);border:1.5px solid #a7d7bc;border-radius:var(--r);padding:10px 12px;font-size:11px;color:var(--green);line-height:1.8;display:none;margin-top:8px}
+
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(45,32,24,.4);z-index:1000;display:none;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto}
+.modal-bg.open{display:flex}
+.modal{background:#fff;border-radius:12px;width:100%;max-width:660px;box-shadow:0 20px 60px rgba(45,32,24,.2)}
+.modal-actions{display:flex;gap:7px;justify-content:flex-end;margin-top:16px;padding-top:12px;border-top:1px solid var(--border)}
+.modal-tabs{display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:16px}
+.modal-tab{padding:7px 12px;font-size:11px;font-weight:500;cursor:pointer;border:none;background:none;color:var(--text3);border-bottom:2px solid transparent;margin-bottom:-1px;font-family:inherit;transition:all .13s}
+.modal-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.modal-pane{display:none}
+.modal-pane.active{display:block}
+.modal-section{margin-bottom:16px}
+.modal-alert{padding:7px 10px;border-radius:5px;font-size:10px;margin-bottom:10px}
+.modal-alert.error{background:var(--danger-l);color:var(--danger)}
+.modal-alert.ok{background:var(--green-l);color:var(--green)}
+.btn-save{background:var(--terra);color:#fff;border:none;padding:8px 20px;border-radius:6px;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer}
+.pwd-wrap{display:flex;gap:5px}
+.pwd-wrap input{flex:1}
+.pwd-generate,.pwd-gen{padding:0 9px;border:1.5px solid var(--border);border-radius:6px;background:var(--bg);font-size:10px;cursor:pointer;font-family:inherit;color:var(--text2);white-space:nowrap}
+.remise-chips{display:flex;gap:3px;flex-wrap:wrap;margin-top:5px}
+.remise-chip{padding:2px 8px;border-radius:4px;font-size:10px;cursor:pointer;border:1px solid var(--border);background:var(--bg);color:var(--text2);transition:all .13s}
+.remise-chip.active,.remise-chip:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+/* GROUPEMENTS */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.grp-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;margin-bottom:10px}
+.grp-card:hover{box-shadow:var(--shadow-md)}
+.grp-card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.grp-card-name{font-size:13px;font-weight:500;color:var(--brown)}
+.grp-card-meta{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.grp-chip-cli{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:3px;font-size:10px;background:#f0ebe5;color:var(--brown)}
+.grp-chip-franco{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:3px;font-size:10px;background:#e0f0ff;color:#0369a1}
+.grp-tranches{display:flex;flex-direction:column;gap:3px}
+.grp-tranche{display:flex;align-items:center;gap:10px;padding:5px 8px;background:var(--bg);border-radius:5px;font-size:11px}
+.grp-tranche-range{color:var(--text2);flex:1}
+.grp-tranche-pct{color:var(--accent);font-weight:700;font-size:12px}
+.grp-no-tranche{font-size:11px;color:var(--text3);font-style:italic}
+.grp-tr-row{display:grid;grid-template-columns:1fr 1fr 90px 28px;gap:7px;align-items:center;margin-bottom:5px}
+.grp-tr-row input{width:100%;padding:6px 9px;border:1.5px solid var(--border);border-radius:5px;font-family:inherit;font-size:11px;background:#fff;outline:none}
+.grp-tr-row input:focus{border-color:var(--accent)}
+.grp-tr-del{width:26px;height:26px;border:none;background:var(--danger-l);color:var(--danger);border-radius:5px;cursor:pointer;font-size:12px}
+.tranche-header{display:grid;grid-template-columns:1fr 1fr 90px 28px;gap:7px;padding:0 2px;margin-bottom:3px}
+.tranche-header span{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;color:var(--text3)}
+
+/* PROMOS */
+.promo-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.promo-card-icon{font-size:20px;flex-shrink:0}
+.promo-card-/* removed */
+.promo-card-title{font-size:12px;font-weight:500;color:var(--text);margin-bottom:2px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.promo-card-meta{font-size:10px;color:var(--text3)}
+.promo-badge{font-size:8px;padding:1px 6px;border-radius:3px;font-weight:600}
+.promo-badge.active{background:var(--green-l);color:var(--green)}
+.promo-badge.expired{background:#f0ebe5;color:var(--text3)}
+.promo-card-actions{display:flex;gap:4px;flex-shrink:0}
+.promo-stat-bar,.promo-stats-bar{display:flex;gap:16px;padding:8px 14px;background:var(--bg);border-radius:6px;margin-bottom:12px}
+.promo-stat,.promo-stat-item{text-align:center}
+.promo-stat-val{font-size:16px;font-weight:600;color:var(--brown)}
+.promo-stat-lbl{font-size:9px;color:var(--text3)}
+.promo-client-check{display:flex;align-items:center;gap:7px;padding:5px 0;font-size:11px;border-bottom:1px solid var(--border-l);cursor:pointer}
+
+/* INSCRIPTIONS */
+.inscr-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:10px}
+.inscr-card.pending{border-color:#fbbf24}
+.inscr-card-header{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border-l)}
+.inscr-status{font-size:9px;font-weight:600;padding:2px 7px;border-radius:3px;text-transform:uppercase}
+.inscr-status.pending{background:var(--warn-l);color:var(--warn)}
+.inscr-status.done{background:var(--green-l);color:var(--green)}
+
+/* ACTUALITÉS */
+.actu-card-n{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:10px}
+.actu-card-n-top{display:flex;align-items:center;gap:7px;padding:9px 12px;border-bottom:1px solid var(--border-l)}
+.actu-card-n-/* removed */
+.actu-card-n-foot{display:flex;gap:5px;padding:7px 12px;border-top:1px solid var(--border-l)}
+.actu-tb{font-size:8px;font-weight:700;text-transform:uppercase;padding:2px 6px;border-radius:3px}
+.actu-tb.info{background:var(--accent-l);color:var(--accent)}
+.actu-tb.promo{background:var(--terra-l);color:var(--terra)}
+.actu-tb.alerte{background:var(--danger-l);color:var(--danger)}
+.actu-sp{font-size:10px;padding:2px 7px;border-radius:3px}
+.actu-sp.on{background:var(--green-l);color:var(--green)}
+.actu-sp.off{background:#f0ebe5;color:var(--text3)}
+.actu-preview,.actu-preview-block{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:12px;margin-top:10px}
+.actu-type-btn,.btn-actu-edit,.btn-actu-toggle{padding:4px 10px;border-radius:5px;font-size:10px;cursor:pointer;border:1px solid var(--border);background:var(--bg);color:var(--text2);font-family:inherit;transition:all .13s}
+.btn-actu-del{padding:4px 10px;border-radius:5px;font-size:10px;cursor:pointer;background:var(--danger-l);color:var(--danger);border:1px solid #f5c6cb;font-family:inherit}
+
+/* GITHUB */
+.github-status{font-size:10px;padding:5px 10px;border-radius:5px;margin-top:7px}
+.github-status.ok{background:var(--green-l);color:var(--green)}
+.github-status.err{background:var(--danger-l);color:var(--danger)}
+.github-status.loading{background:var(--warn-l);color:var(--warn)}
+
+/* MESSAGERIE ADMIN */
+.msg-layout{display:grid;grid-template-columns:260px 1fr;height:calc(100vh - var(--topbar) - 80px);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;background:var(--card)}
+.msg-conv-col{border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.msg-conv-col-head{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.msg-conv-col-title{font-size:12px;font-weight:600;color:var(--brown)}
+.msg-conv-list{flex:1;overflow-y:auto}
+.msg-conv-row{padding:9px 12px;cursor:pointer;border-bottom:1px solid var(--border-l);transition:background .1s}
 .msg-conv-row:hover{background:var(--bg)}
 .msg-conv-row.active{background:var(--accent-l)}
-.msg-conv-row.unread{font-weight:500}
-.msg-conv-row-header{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:2px}
-.msg-conv-row-name{font-size:12px;color:var(--text);font-weight:400}
-.msg-conv-row-time{font-size:10px;color:var(--text3)}
-.msg-conv-row-preview{font-size:11px;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.msg-unread-pill{background:var(--danger);color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:8px}
-.msg-chat-messages{flex:1;overflow-y:auto;padding:14px}
-.msg-compose{padding:10px 12px;border-top:1px solid var(--border);display:flex;gap:8px;align-items:flex-end}
-.msg-compose textarea{flex:1;padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;font-size:12px;font-family:'Inter',sans-serif;resize:none;outline:none;max-height:80px}
-.msg-compose textarea:focus{border-color:var(--accent)}
+.msg-conv-row.unread{background:#fef9f0}
+.msg-conv-row-header{display:flex;align-items:center;gap:5px;margin-bottom:2px}
+.msg-conv-row-name{font-size:12px;font-weight:500;color:var(--text);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.msg-conv-row-time{font-size:10px;color:var(--text3);flex-shrink:0}
+.msg-conv-row-preview{font-size:11px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.msg-unread-pill{background:var(--danger);color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:8px;flex-shrink:0}
+.msg-chat-col{display:flex;flex-direction:column;overflow:hidden}
+.msg-chat-head{padding:10px 16px;border-bottom:1px solid var(--border);font-size:13px;font-weight:500;color:var(--brown);flex-shrink:0}
+.msg-chat-messages{flex:1;overflow-y:auto;padding:14px 16px}
+.msg-chat-input{flex-shrink:0;padding:10px 14px;border-top:1px solid var(--border);display:none;gap:8px;align-items:center}
+.msg-chat-input input{flex:1;padding:8px 12px;border:1.5px solid var(--border);border-radius:20px;font-family:inherit;font-size:12px;outline:none}
+.msg-chat-input input:focus{border-color:var(--accent)}
+.msg-chat-input button{padding:7px 16px;background:var(--accent);color:#fff;border:none;border-radius:20px;cursor:pointer;font-family:inherit;font-size:12px}
+.msg-new-panel{display:none;padding:10px 12px;background:var(--bg);border-bottom:1px solid var(--border)}
+.msg-new-panel select{width:100%;padding:6px 9px;border:1.5px solid var(--border);border-radius:6px;font-family:inherit;font-size:12px;margin-bottom:7px;outline:none}
 
-/* ── PROMO ── */
-.promo-drop-zone{border:2px dashed var(--border);border-radius:10px;padding:24px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg);margin-bottom:14px}
-.promo-drop-zone:hover{border-color:var(--accent);background:var(--accent-l)}
-.promo-drop-zone.has-file{border-color:var(--accent);border-style:solid;background:var(--accent-l)}
-
-/* ── IMPORT COMMANDE ── */
-.adm-imp-overlay{display:none;position:fixed;inset:0;background:rgba(45,32,24,.35);z-index:400;cursor:pointer}
-.adm-imp-overlay.open{display:block}
-.adm-imp-panel{position:fixed;top:0;right:0;bottom:0;width:480px;max-width:100vw;background:var(--card);border-left:1px solid var(--border);box-shadow:-8px 0 32px rgba(45,32,24,.15);z-index:401;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1)}
-.adm-imp-panel.open{transform:translateX(0)}
-.adm-imp-head{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
-.adm-imp-title{font-size:14px;font-weight:500;color:var(--brown)}
-.adm-imp-close{width:28px;height:28px;border:none;background:none;font-size:16px;cursor:pointer;color:var(--text3);border-radius:5px}
-.adm-imp-close:hover{background:var(--bg)}
-.adm-imp-body{flex:1;overflow-y:auto;padding:16px 18px}
-.adm-imp-foot{padding:12px 18px;border-top:1px solid var(--border);display:none;gap:8px;align-items:center;background:var(--bg);flex-shrink:0}
-.adm-imp-drop{border:2px dashed var(--border);border-radius:10px;padding:28px 20px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg);margin-bottom:14px}
-.adm-imp-drop:hover,.adm-imp-drop.drag-over{border-color:var(--accent);background:var(--accent-l)}
-.adm-imp-drop.has-file{border-color:var(--accent);border-style:solid;background:var(--accent-l)}
-.adm-imp-drop-title{font-size:14px;font-weight:500;color:var(--brown);margin-bottom:4px}
-.adm-imp-log{background:#1a1a2e;color:#a8ff78;border-radius:6px;padding:8px 12px;font-family:monospace;font-size:10px;line-height:1.8;max-height:100px;overflow-y:auto;white-space:pre-wrap;display:none;margin-bottom:10px}
-.adm-imp-result{display:none;margin-bottom:10px}
-.adm-imp-result-head{font-size:11px;font-weight:600;color:var(--brown);padding:6px 10px;background:var(--bg);border-radius:6px;margin-bottom:8px}
-.adm-imp-rows{max-height:260px;overflow-y:auto;border:1px solid var(--border);border-radius:6px}
-.adm-imp-row{display:flex;align-items:center;gap:8px;padding:7px 10px;border-bottom:1px solid var(--border-l);font-size:11px}
-.adm-imp-row:last-child{border:none}
-.adm-imp-row:hover{background:var(--bg)}
-.adm-imp-code{font-family:monospace;color:var(--brown);width:120px;flex-shrink:0}
-.adm-imp-qty{font-weight:600;color:var(--text);width:50px;text-align:right;flex-shrink:0}
-
-/* ── RESPONSIVE ── */
-@media(max-width:900px){
-  .stats-grid{grid-template-columns:repeat(2,1fr)}
-  .two-col{grid-template-columns:1fr}
-  .fg-row{grid-template-columns:1fr}
-}
+/* DIVERS */
+.empty-state{text-align:center;padding:30px 16px;color:var(--text3);font-size:12px}
+code{background:var(--bg);padding:1px 4px;border-radius:3px;font-size:10px;font-family:monospace;color:var(--brown)}
+.mdm-req{color:var(--danger)}
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--text);color:#fff;padding:8px 16px;border-radius:7px;font-size:12px;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.2);opacity:0;transition:opacity .25s;white-space:nowrap;font-family:'Inter',sans-serif;pointer-events:none}
+@media(max-width:900px){.stats-grid{grid-template-columns:repeat(2,1fr)}.two-col{grid-template-columns:1fr}}
+@media(max-width:640px){.main{padding:14px}}
+.adm-hb{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:6px;flex-shrink:0}
+.adm-hb span{display:block;width:19px;height:2px;background:rgba(255,255,255,.85);border-radius:2px;transition:all .22s}
+.adm-hb.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.adm-hb.open span:nth-child(2){opacity:0}
+.adm-hb.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+.adm-sb-ov{display:none;position:fixed;inset:0;background:rgba(40,24,16,.4);z-index:149;cursor:pointer}
+.adm-sb-ov.open{display:block}
 @media(max-width:768px){
   .adm-hb{display:flex!important}
-  .search-wrap{display:none}
-  .sidebar{
-    position:fixed!important;top:0;left:0;bottom:0;
-    height:100vh!important;z-index:200;
-    transform:translateX(-100%);
-    transition:transform .26s cubic-bezier(.4,0,.2,1);
-    box-shadow:none;
-  }
-  .sidebar.is-open{transform:translateX(0);box-shadow:8px 0 28px rgba(40,24,16,.2)}
+  .sidebar{position:fixed!important;top:0;left:0;bottom:0;height:100vh!important;z-index:200;transform:translateX(-100%);transition:transform .26s cubic-bezier(.4,0,.2,1)}
+  .sidebar.open{transform:translateX(0);box-shadow:8px 0 28px rgba(40,24,16,.2)}
   .zone{display:block!important}
   .main{padding:14px!important}
   .topbar{padding:0 12px!important;gap:8px!important}
+  .search-wrap{display:none!important}
 }
-@media(max-width:480px){
-  .stats-grid{grid-template-columns:1fr 1fr}
-  .page-title{font-size:20px}
-  .main{padding:10px!important}
-}
+@media(max-width:640px){.main{padding:10px!important}}
 </style>
 </head>
 <body>
 
-<!-- TOPBAR -->
 <header class="topbar">
-  <button class="adm-hb" id="adm-hb" onclick="admToggle()" aria-label="Menu">
-    <span></span><span></span><span></span>
-  </button>
+  <button class="adm-hb" id="adm-hb" onclick="admT()" aria-label="Menu"><span></span><span></span><span></span></button>
   <div class="logo">Moulin <em>des</em> Moines <sup>Admin</sup></div>
   <div class="search-wrap">
     <span class="search-ico">&#128269;</span>
     <input type="text" id="global-search" placeholder="Rechercher un compte…" autocomplete="off"
       oninput="globalSearch(this.value)"
-      onblur="setTimeout(function(){document.getElementById('global-search-results').classList.remove('open');},200)">
-    <div id="global-search-results"></div>
+      onblur="setTimeout(function(){document.getElementById('global-search-results').classList.remove('open')},200)">
+    <div class="search-drop" id="global-search-results"></div>
   </div>
-  <div class="topbar-spacer"></div>
-  <span class="topbar-user">Administrateur</span>
-  <button class="logout-btn" onclick="logout()">D&eacute;connexion</button>
+  <div class="spacer"></div>
+  <div class="user-info">
+    <div class="avatar" id="sidebar-avatar">A</div>
+    <span id="admin-name" style="font-weight:400">Administrateur</span>
+    <button class="logout-btn" onclick="logout()">D&eacute;connexion</button>
+  </div>
 </header>
 
-<!-- Overlay sidebar mobile -->
-<div class="adm-sb-ov" id="adm-sb-ov" onclick="admToggle()"></div>
-
 <div class="zone">
-
-  <!-- SIDEBAR -->
-  <nav class="sidebar" id="adm-sidebar">
+  <nav class="sidebar">
     <div class="nav-label-section">Vue g&eacute;n&eacute;rale</div>
-    <div class="nav-item active" onclick="showPage('dashboard',this)">
-      <span class="nav-icon">&#128200;</span><span class="nav-txt">Tableau de bord</span>
-    </div>
+    <div class="nav-item active" onclick="showPage('dashboard',this)"><span class="nav-icon">&#128200;</span><span class="nav-txt">Tableau de bord</span></div>
 
     <div class="nav-label-section">Clients &amp; Comptes</div>
-    <div class="nav-item" onclick="showPage('comptes',this)">
-      <span class="nav-icon">&#128101;</span><span class="nav-txt">Comptes</span>
-      <span class="nav-badge nb-gray" id="badge-comptes">0</span>
-    </div>
-    <div class="nav-item" onclick="showPage('inscriptions',this)">
-      <span class="nav-icon">&#128203;</span><span class="nav-txt">Inscriptions</span>
-      <span class="nav-badge nb-red" id="badge-inscriptions" style="display:none">0</span>
-    </div>
-    <div class="nav-item" onclick="showPage('groupements',this)">
-      <span class="nav-icon">&#127991;</span><span class="nav-txt">Groupements</span>
-      <span class="nav-badge nb-gray" id="badge-groupements" style="display:none">0</span>
-    </div>
+    <div class="nav-item" onclick="showPage('comptes',this)"><span class="nav-icon">&#128101;</span><span class="nav-txt">Comptes</span><span class="nav-badge nb-gray" id="badge-comptes">0</span></div>
+    <div class="nav-item" onclick="showPage('inscriptions',this)"><span class="nav-icon">&#128203;</span><span class="nav-txt">Inscriptions</span><span class="nav-badge nb-red" id="badge-inscriptions" style="display:none">0</span></div>
+    <div class="nav-item" onclick="showPage('groupements',this)"><span class="nav-icon">&#127991;</span><span class="nav-txt">Groupements</span><span class="nav-badge nb-gray" id="badge-groupements" style="display:none">0</span></div>
 
     <div class="nav-label-section">Commandes &amp; Stocks</div>
-    <div class="nav-item" onclick="showPage('commandes',this)">
-      <span class="nav-icon">&#128230;</span><span class="nav-txt">Commandes</span>
-      <span class="nav-badge nb-green" id="badge-commandes" style="display:none">0</span>
-    </div>
-    <div class="nav-item" onclick="showPage('commandes',this);openAdmImport()">
-      <span class="nav-icon">&#128196;</span><span class="nav-txt">Importer commande</span>
-    </div>
-    <div class="nav-item" onclick="showPage('stocks',this)">
-      <span class="nav-icon">&#128218;</span><span class="nav-txt">Stocks</span>
-    </div>
-    <div class="nav-item" onclick="showPage('promos',this)">
-      <span class="nav-icon">&#127381;</span><span class="nav-txt">Promotions</span>
-    </div>
-    <div class="nav-item" onclick="window.open('performance.html','_blank')">
-      <span class="nav-icon">&#128200;</span><span class="nav-txt">Performance CRM</span>
-      <span style="font-size:8px;background:#3a6b4a;color:#fff;padding:1px 5px;border-radius:3px;margin-left:4px;font-weight:700">NEW</span>
-    </div>
+    <div class="nav-item" onclick="showPage('commandes',this)"><span class="nav-icon">&#128230;</span><span class="nav-txt"><span>Commandes</span></span><span class="nav-badge nb-green" id="badge-commandes" style="display:none">0</span></div>
+    <div class="nav-item" onclick="showPage('stocks',this)"><span class="nav-icon">&#128218;</span><span class="nav-txt">Stocks</span></div>
+    <div class="nav-item" onclick="showPage('promos',this)"><span class="nav-icon">&#127381;</span><span class="nav-txt">Promotions</span></div>
 
     <div class="nav-label-section">Communication</div>
-    <div class="nav-item" onclick="showPage('messagerie',this);populateMsgDest()">
-      <span class="nav-icon">&#128172;</span><span class="nav-txt">Messagerie</span>
-      <span class="nav-badge nb-red" id="badge-messagerie" style="display:none">0</span>
-    </div>
-    <div class="nav-item" onclick="showPage('actualites',this)">
-      <span class="nav-icon">&#128226;</span><span class="nav-txt">Actualit&eacute;s</span>
-      <span class="nav-badge nb-orange" id="badge-actus" style="display:none">0</span>
-    </div>
+    <div class="nav-item" onclick="showPage('messagerie',this);populateMsgDest()"><span class="nav-icon">&#128172;</span><span class="nav-txt">Messagerie</span><span class="nav-badge nb-red" id="badge-messagerie" style="display:none">0</span></div>
+    <div class="nav-item" onclick="showPage('actualites',this)"><span class="nav-icon">&#128226;</span><span class="nav-txt">Actualit&eacute;s</span><span class="nav-badge nb-orange" id="badge-actus" style="display:none">0</span></div>
 
     <div class="nav-label-section">Syst&egrave;me</div>
-    <div class="nav-item" onclick="showPage('parametres',this)">
-      <span class="nav-icon">&#9881;</span><span class="nav-txt">Param&egrave;tres</span>
-    </div>
+    <div class="nav-item" onclick="showPage('parametres',this)"><span class="nav-icon">&#9881;</span><span class="nav-txt">Param&egrave;tres</span></div>
   </nav>
 
-  <!-- MAIN CONTENT -->
-  <main class="main" id="adm-main">
+  <main class="main">
+
     <div class="page active" id="page-dashboard">
 <div class="page-header">
       <div class="page-title">Tableau de bord</div>
@@ -418,8 +386,7 @@ body{
     
     </div>
 
-    <div class="page"
-<div class="page" id="page-comptes">
+    <div class="page" id="page-comptes">
 <div class="page-header">
       <div class="page-title">Comptes</div>
       <div class="page-sub">Clients, commerciaux et administrateurs</div>
@@ -459,8 +426,7 @@ body{
     </div>
     </div>
 
-    <div class="page"
-<div class="page" id="page-inscriptions">
+    <div class="page" id="page-inscriptions">
 <div class="page-title">Demandes d&#8217;inscription</div>
       <div class="page-sub">Nouvelles demandes re&#231;ues via le formulaire d&#8217;inscription en ligne</div>
 
@@ -475,8 +441,7 @@ body{
       <div id="inscriptions-list"></div>
     </div>
 
-    <div class="page"
-<div class="page" id="page-groupements">
+    <div class="page" id="page-groupements">
 <div class="page-title">Groupements</div>
     <div class="page-sub">D&eacute;finissez les groupements et leurs conditions commerciales&nbsp;&mdash; appliqu&eacute;es automatiquement aux comptes clients</div>
 
@@ -540,8 +505,7 @@ body{
     <div id="grp-cards"></div>
     </div>
 
-    <div class="page"
-<div class="page" id="page-commandes">
+    <div class="page" id="page-commandes">
 <div class="page-title">Historique des commandes</div>
       <div class="page-sub">Commandes re&#231;ues via le bon de commande en ligne</div>
       <div class="info-banner">
@@ -565,8 +529,7 @@ body{
     
     </div>
 
-    <div class="page"
-<div class="page" id="page-stocks">
+    <div class="page" id="page-stocks">
 <div class="page-header">
       <div class="page-title">Mise &#224; jour des stocks</div>
       <div class="page-sub">Importez votre export stock &mdash; publication automatique sur GitHub Pages</div>
@@ -579,8 +542,7 @@ body{
     
     </div>
 
-    <div class="page"
-<div class="page" id="page-promos">
+    <div class="page" id="page-promos">
 <div class="page-title">Bons de commande promotionnels</div>
     <div class="page-sub">Cr&eacute;ez, publiez et suivez vos bons de commande th&eacute;matiques</div>
 
@@ -733,8 +695,7 @@ body{
     
     </div>
 
-    <div class="page"
-<div class="page" id="page-messagerie">
+    <div class="page" id="page-messagerie">
 <div class="page-title">Messagerie</div>
       <div class="page-sub">Discussions en temps r&eacute;el avec tous les comptes</div>
       <div class="msg-layout">
@@ -766,8 +727,7 @@ body{
     
     </div>
 
-    <div class="page"
-<div class="page" id="page-actualites">
+    <div class="page" id="page-actualites">
 <div class="page-title">Actualit&eacute;s</div>
     <div class="page-sub">Messages affich&eacute;s sur le tableau de bord des clients</div>
 
@@ -828,8 +788,7 @@ body{
     
     </div>
 
-    <div class="page"
-<div class="page" id="page-parametres">
+    <div class="page" id="page-parametres">
 <div class="page-title">Param&#232;tres</div>
       <div class="page-sub">Configuration et export des fichiers</div>
 
@@ -991,168 +950,7 @@ body{
 <div id="toast"></div>
 <div id="toast"></div>
 
-
-</body>
-</html>
-
-  </main>
-
-</div><!-- /zone -->
-
-<!-- MODAL COMPTE -->
-<div class="modal-bg" id="modal-compte" onclick="if(event.target===this)closeModal()">
-  <div class="modal">
-    <h2 id="modal-titre">Nouveau compte</h2>
-    <div class="fg-row">
-      <div class="fg"><label>Login *</label><input type="text" id="f-login" placeholder="login_unique" autocomplete="off"></div>
-      <div class="fg"><label>Mot de passe *</label><input type="password" id="f-password" autocomplete="new-password"></div>
-    </div>
-    <div class="fg"><label>Nom / Magasin *</label><input type="text" id="f-nom" placeholder="Nom affiché"></div>
-    <div class="fg-row">
-      <div class="fg"><label>R&ocirc;le</label>
-        <select id="f-role" onchange="toggleRoleFields()">
-          <option value="client">Client</option>
-          <option value="user">Commercial</option>
-          <option value="admin">Admin</option>
-        </select>
-      </div>
-      <div class="fg"><label>Remise (%)</label><input type="number" id="f-remise" min="0" max="100" value="0" step="0.5"></div>
-    </div>
-    <div class="fg-row">
-      <div class="fg"><label>Email</label><input type="email" id="f-email" placeholder="email@magasin.fr"></div>
-      <div class="fg"><label>T&eacute;l&eacute;phone</label><input type="text" id="f-tel" placeholder="06 xx xx xx xx"></div>
-    </div>
-    <div class="fg" id="fg-commercial"><label>Commercial r&eacute;f&eacute;rent</label>
-      <select id="f-commercial"><option value="">-- Aucun --</option></select>
-    </div>
-    <div class="fg" id="fg-groupement"><label>Groupement</label>
-      <select id="f-groupement"><option value="">-- Aucun --</option></select>
-    </div>
-    <div class="fg"><label>N° client</label><input type="text" id="f-numclient" placeholder="Référence interne"></div>
-    <div class="fg"><label>Adresse</label><input type="text" id="f-adresse" placeholder="Adresse du magasin"></div>
-    <div class="fg"><label>Notes</label><textarea id="f-notes" rows="2" placeholder="Informations complémentaires"></textarea></div>
-    <div class="modal-actions">
-      <button class="btn btn-outline btn-sm" onclick="closeModal()">Annuler</button>
-      <button class="btn btn-primary btn-sm" onclick="saveCompte()">Enregistrer</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL PROMO -->
-<div class="modal-bg" id="modal-promo" onclick="if(event.target===this)closePromoModal()">
-  <div class="modal" style="max-width:700px">
-    <h2>Promotion</h2>
-    <div class="fg"><label>Nom de la promotion</label><input type="text" id="promo-nom" placeholder="Ex: Offre été 2026"></div>
-    <div class="fg"><label>Slug (identifiant URL)</label><input type="text" id="promo-slug" placeholder="offre-ete-2026"></div>
-    <div class="fg"><label>Fichier produits (Excel)</label>
-      <div class="promo-drop-zone" id="promo-drop-zone"
-        onclick="document.getElementById('promo-file-input').click()"
-        ondragover="event.preventDefault();this.classList.add('has-file')"
-        ondragleave="this.classList.remove('has-file')"
-        ondrop="event.preventDefault();handlePromoFile(event.dataTransfer.files[0])">
-        <div style="font-size:28px;margin-bottom:6px">&#128196;</div>
-        <div id="promo-upload-title" style="font-size:13px;color:var(--brown);font-weight:500">Glissez un fichier Excel ici</div>
-        <div style="font-size:11px;color:var(--text3);margin-top:4px">ou cliquez pour parcourir (.xlsx)</div>
-        <input type="file" id="promo-file-input" accept=".xlsx,.xls" style="display:none" onchange="handlePromoFile(this.files[0])">
-      </div>
-    </div>
-    <div id="promo-preview" style="display:none">
-      <table class="data-table" style="margin-bottom:12px">
-        <thead><tr><th>Code</th><th>D&eacute;signation</th><th>PU HT</th><th>Remise</th><th>Prix promo</th></tr></thead>
-        <tbody id="promo-preview-tbody"></tbody>
-      </table>
-      <div id="promo-nb-produits" style="font-size:11px;color:var(--text3);margin-bottom:8px"></div>
-    </div>
-    <div class="fg"><label>Remise (%)</label><input type="number" id="promo-remise-info" min="0" max="100" step="0.5" value="0"></div>
-    <div class="fg"><label>Destinataires</label>
-      <select id="promo-dest-groupement">
-        <option value="">Tous les clients</option>
-        <option value="groupement">Par groupement</option>
-        <option value="selection">S&eacute;lection manuelle</option>
-      </select>
-    </div>
-    <div id="promo-dest-grp-select" style="display:none" class="fg">
-      <select id="promo-dest-grp-sel"><option value="">-- Choisir groupement --</option></select>
-    </div>
-    <div id="promo-dest-selection" style="display:none" class="fg">
-      <div id="promo-clients-list" style="max-height:160px;overflow-y:auto;border:1px solid var(--border);border-radius:6px;padding:8px"></div>
-    </div>
-    <div id="promo-dest-info" style="font-size:11px;color:var(--text3);margin:6px 0"></div>
-    <div id="promo-log" style="display:none;background:#1a1a2e;color:#a8ff78;border-radius:6px;padding:8px;font-family:monospace;font-size:10px;line-height:1.8;white-space:pre-wrap;max-height:80px;overflow-y:auto;margin-bottom:10px"></div>
-    <div class="modal-actions">
-      <button class="btn btn-outline btn-sm" onclick="closePromoModal()">Annuler</button>
-      <button class="btn btn-outline btn-sm" id="promo-download-btn" onclick="downloadPromo()" style="display:none">&#128229; T&eacute;l&eacute;charger</button>
-      <button class="btn btn-primary btn-sm" id="promo-publish-btn" onclick="publishPromo()">Publier</button>
-    </div>
-    <div id="promo-status" style="font-size:11px;color:var(--text3);text-align:right;margin-top:6px"></div>
-  </div>
-</div>
-
-<!-- PANNEAU IMPORT COMMANDE -->
-<div class="adm-imp-overlay" id="adm-imp-overlay" onclick="closeAdmImport()"></div>
-<div class="adm-imp-panel" id="adm-imp-panel">
-  <div class="adm-imp-head">
-    <span class="adm-imp-title">&#128196;&nbsp;Importer une commande</span>
-    <button class="adm-imp-close" onclick="closeAdmImport()">&#10005;</button>
-  </div>
-  <div class="adm-imp-body">
-    <div class="fg" style="margin-bottom:14px">
-      <label>Compte cible <span style="color:var(--text3);font-weight:300">(optionnel)</span></label>
-      <select id="adm-imp-account" class="sort-sel" style="width:100%"><option value="">-- Choisir un compte --</option></select>
-    </div>
-    <div class="adm-imp-drop" id="adm-imp-drop"
-      onclick="document.getElementById('adm-imp-file').click()"
-      ondragover="event.preventDefault();this.classList.add('drag-over')"
-      ondragleave="this.classList.remove('drag-over')"
-      ondrop="event.preventDefault();this.classList.remove('drag-over');admHandleFile(event.dataTransfer.files[0])">
-      <div style="font-size:32px;margin-bottom:8px">&#128196;</div>
-      <div class="adm-imp-drop-title" id="adm-imp-drop-title">Glissez votre fichier ici</div>
-      <div style="font-size:12px;color:var(--text3);margin-bottom:6px">ou <span style="color:var(--accent);font-weight:500">cliquez pour parcourir</span></div>
-      <div style="font-size:10px;color:var(--text3)">.xlsx &nbsp;&bull;&nbsp; .xls &nbsp;&bull;&nbsp; .txt &nbsp;&bull;&nbsp; .csv</div>
-      <input type="file" id="adm-imp-file" accept=".xlsx,.xls,.txt,.csv" style="display:none" onchange="admHandleFile(this.files[0])">
-    </div>
-    <div class="adm-imp-log" id="adm-imp-log"></div>
-    <div class="adm-imp-result" id="adm-imp-result">
-      <div class="adm-imp-result-head" id="adm-imp-result-head"></div>
-      <div class="adm-imp-rows" id="adm-imp-rows"></div>
-    </div>
-    <div style="margin-top:14px;padding:10px 12px;background:var(--accent-l);border-radius:7px;font-size:11px;color:var(--accent);line-height:1.8">
-      <strong>Formats&nbsp;:</strong> Excel (.xlsx), TXT/CSV (<code>CODE;QTE</code>)
-    </div>
-  </div>
-  <div class="adm-imp-foot" id="adm-imp-foot">
-    <button class="btn btn-primary btn-sm" onclick="admApplyImport()">&#10003;&nbsp;Appliquer</button>
-    <button class="btn btn-outline btn-sm" onclick="closeAdmImport()">Annuler</button>
-    <span id="adm-imp-status" style="font-size:11px;color:var(--text3);margin-left:6px"></span>
-  </div>
-</div>
-
-<div id="toast"></div>
-
 <script>
-
-/* ══ ADMIN HAMBURGER ══ */
-function admToggle(){
-  var sb=document.getElementById('adm-sidebar'),
-      ov=document.getElementById('adm-sb-ov'),
-      hb=document.getElementById('adm-hb');
-  if(!sb)return;
-  var o=sb.classList.toggle('is-open');
-  if(ov)ov.classList.toggle('is-open',o);
-  if(hb)hb.classList.toggle('is-open',o);
-  document.body.style.overflow=(o&&window.innerWidth<=768)?'hidden':'';
-}
-function admClose(){
-  var sb=document.getElementById('adm-sidebar'),
-      ov=document.getElementById('adm-sb-ov'),
-      hb=document.getElementById('adm-hb');
-  if(sb)sb.classList.remove('is-open');
-  if(ov)ov.classList.remove('is-open');
-  if(hb)hb.classList.remove('is-open');
-  document.body.style.overflow='';
-}
-
-
 
 // ── Utilitaires manquants ────────────────────────────────────
 function fmtCA(n){
@@ -4130,10 +3928,6 @@ async function pushStockToGithub() {
 }
 
 window.addEventListener('DOMContentLoaded',function(){
-  // Fermer sidebar mobile au clic
-  document.querySelectorAll('.nav-item').forEach(function(el){
-    el.addEventListener('click',function(){if(window.innerWidth<=768)admClose();});
-  });
   loadComptes();
   loadActus();
   loadInscriptions();
@@ -4190,110 +3984,10 @@ function saveActuNew(){
 
 
 
-
-
-/* ══ IMPORT COMMANDE ADMIN ══ */
-var _admImpItems=[];
-function openAdmImport(){
-  var sel=document.getElementById('adm-imp-account');
-  if(sel&&sel.options.length<=1){
-    (comptes||[]).filter(function(c){return c.role==='client'||c.role==='user';}).forEach(function(c){
-      var o=document.createElement('option');o.value=c.login;
-      o.textContent=(c.nom||c.login)+' ('+(c.role==='user'?'Commercial':'Client')+')';
-      sel.appendChild(o);
-    });
-  }
-  var d=document.getElementById('adm-imp-drop');if(d)d.classList.remove('has-file','drag-over');
-  var t=document.getElementById('adm-imp-drop-title');if(t)t.textContent='Glissez votre fichier ici';
-  var l=document.getElementById('adm-imp-log');if(l){l.style.display='none';l.textContent='';}
-  var r=document.getElementById('adm-imp-result');if(r)r.style.display='none';
-  var ft=document.getElementById('adm-imp-foot');if(ft)ft.style.display='none';
-  var inp=document.getElementById('adm-imp-file');if(inp)inp.value='';
-  _admImpItems=[];
-  document.getElementById('adm-imp-overlay').classList.add('open');
-  document.getElementById('adm-imp-panel').classList.add('open');
-}
-function closeAdmImport(){
-  document.getElementById('adm-imp-overlay').classList.remove('open');
-  document.getElementById('adm-imp-panel').classList.remove('open');
-}
-function admHandleFile(file){
-  if(!file)return;
-  var ext=file.name.split('.').pop().toLowerCase();
-  var l=document.getElementById('adm-imp-log');
-  if(l){l.style.display='block';l.textContent='Lecture…';}
-  _admImpItems=[];
-  if(ext==='xlsx'||ext==='xls') _admImpExcel(file);
-  else if(ext==='txt'||ext==='csv') _admImpTxt(file);
-  else if(l) l.textContent='⚠ Format non supporté';
-}
-function _admLog(msg){var l=document.getElementById('adm-imp-log');if(!l)return;if(msg){l.style.display='block';l.textContent=msg;}else{l.style.display='none';l.textContent='';}}
-function _admImpDropOk(fname,n){var z=document.getElementById('adm-imp-drop');if(z)z.classList.add('has-file');var t=document.getElementById('adm-imp-drop-title');if(t)t.textContent='✅ '+n+' produits — '+fname;}
-function _admImpDisplay(items,label){
-  _admImpItems=items;var n=items.length;
-  var h=document.getElementById('adm-imp-result-head');if(h)h.textContent=label;
-  var rows=document.getElementById('adm-imp-rows');
-  if(rows)rows.innerHTML=n?items.map(function(it){return '<div class="adm-imp-row"><span class="adm-imp-code">'+escH(it.code)+'</span><span class="adm-imp-qty">×'+it.qty+'</span></div>';}).join(''):'<div style="padding:14px;text-align:center;color:var(--text3)">Aucun produit détecté</div>';
-  var r=document.getElementById('adm-imp-result');if(r)r.style.display='block';
-  var ft=document.getElementById('adm-imp-foot');if(ft)ft.style.display=n>0?'flex':'none';
-}
-function _admImpExcel(file){
-  if(typeof XLSX==='undefined'){_admLog('⚠ XLSX non disponible');return;}
-  var reader=new FileReader();
-  reader.onload=function(e){
-    try{
-      var wb=XLSX.read(e.target.result,{type:'array'});
-      var rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''});
-      if(!rows.length){_admLog('⚠ Fichier vide');return;}
-      var keys=Object.keys(rows[0]),cK=null,qK=null;
-      var CN=['code','ref','reference','codearticle','code article'];
-      var QN=['qte','quantite','quantité','qty','colis','nb colis'];
-      for(var i=0;i<keys.length;i++){if(CN.indexOf(keys[i].toLowerCase().replace(/\s+/g,' ').trim())>=0){cK=keys[i];break;}}
-      for(var i=0;i<keys.length;i++){if(QN.indexOf(keys[i].toLowerCase().replace(/\s+/g,' ').trim())>=0){qK=keys[i];break;}}
-      if(!qK&&cK){for(var i=0;i<keys.length;i++){if(keys[i]===cK)continue;var nc=0;for(var r=0;r<Math.min(rows.length,10);r++){if(!isNaN(parseFloat(String(rows[r][keys[i]]||'0').replace(',','.'))))nc++;}if(nc>=2){qK=keys[i];break;}}}
-      if(!cK||!qK){_admLog('⚠ Colonnes introuvables.
-Colonnes : '+keys.join(', '));return;}
-      var parsed=[];
-      rows.forEach(function(row){var code=String(row[cK]||'').trim().toUpperCase();var qty=parseInt(parseFloat(String(row[qK]||'0').replace(',','.'))||0);if(code&&qty>0)parsed.push({code:code,qty:qty});});
-      _admLog(null);_admImpDisplay(parsed,'Excel : '+file.name);_admImpDropOk(file.name,parsed.length);
-    }catch(err){_admLog('⚠ Erreur : '+err.message);}
-  };reader.readAsArrayBuffer(file);
-}
-function _admImpTxt(file){
-  var reader=new FileReader();
-  reader.onload=function(e){
-    var parsed=[];
-    e.target.result.split(/?
-/).forEach(function(line){
-      line=line.trim();if(!line||line.startsWith('#'))return;
-      var m=line.match(/^([A-Z0-9_\-]{3,20})\s*[;,|\t]\s*(\d+)/i)||line.match(/^([A-Z0-9_\-]{3,20})\s+(\d+)$/i);
-      if(!m)return;var code=m[1].trim().toUpperCase(),qty=parseInt(m[2])||0;
-      if(code&&qty>0)parsed.push({code:code,qty:qty});
-    });
-    if(!parsed.length){_admLog('⚠ Aucune ligne reconnue.
-Format : CODE;QTE');return;}
-    _admLog(null);_admImpDisplay(parsed,'TXT : '+file.name);_admImpDropOk(file.name,parsed.length);
-  };reader.readAsText(file,'UTF-8');
-}
-function admApplyImport(){
-  if(!_admImpItems.length){showToast('⚠ Aucun produit');return;}
-  var login=(document.getElementById('adm-imp-account')||{}).value||'';
-  var status=document.getElementById('adm-imp-status');
-  if(!login){
-    if(typeof XLSX!=='undefined'){
-      var rows=[['Code','Qté']];_admImpItems.forEach(function(it){rows.push([it.code,it.qty]);});
-      var ws=XLSX.utils.aoa_to_sheet(rows);var wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Import');
-      XLSX.writeFile(wb,'import-'+new Date().toISOString().slice(0,10)+'.xlsx');
-      showToast('✅ Excel téléchargé');
-    }else showToast('⚠ Choisissez un compte pour Firebase');
-    return;
-  }
-  if(status)status.textContent='Enregistrement…';
-  var articles=_admImpItems.map(function(it){return{code:it.code,libelle:it.code,qty:it.qty,puHT:0,totalHT:0,pcb:1};});
-  var order={id:Date.now(),date:new Date().toLocaleString('fr-FR'),magasin:'Import admin',mail:'',nbRefs:articles.length,nbColis:articles.reduce(function(s,a){return s+a.qty;},0),totalBrut:0,totalNet:0,articles:articles,source:'import-admin'};
-  initFirebase().then(function(db){return db.collection('historique').doc(login).collection('commandes').doc(String(order.id)).set(order);}).then(function(){showToast('✅ Commande enregistrée pour '+login);if(status)status.textContent='✅ OK';closeAdmImport();if(typeof renderCommandes==='function')renderCommandes();}).catch(function(e){showToast('⚠ '+e.message);if(status)status.textContent='❌ '+e.message;});
-}
-
+</script>
+<div class="adm-sb-ov" id="adm-sb-ov" onclick="admT()"></div>
+<script>
+function admT(){var sb=document.querySelector('.sidebar'),ov=document.getElementById('adm-sb-ov'),hb=document.getElementById('adm-hb');if(!sb)return;var o=sb.classList.toggle('open');if(ov)ov.classList.toggle('open',o);if(hb)hb.classList.toggle('open',o);document.body.style.overflow=(o&&window.innerWidth<=768)?'hidden':'';}
 </script>
 </body>
 </html>

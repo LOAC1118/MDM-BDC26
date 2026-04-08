@@ -285,11 +285,34 @@ code{background:var(--bg);padding:1px 4px;border-radius:3px;font-size:10px;font-
 .mdm-req{color:var(--danger)}
 #toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--text);color:#fff;padding:8px 16px;border-radius:7px;font-size:12px;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.2);opacity:0;transition:opacity .25s;white-space:nowrap;font-family:'Inter',sans-serif;pointer-events:none}
 @media(max-width:900px){.stats-grid{grid-template-columns:repeat(2,1fr)}.two-col{grid-template-columns:1fr}}
-@media(max-width:640px){.main{padding:14px}}</style>
+@media(max-width:640px){.main{padding:14px}}
+.adm-hb{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:6px;flex-shrink:0}
+.adm-hb span{display:block;width:19px;height:2px;background:rgba(255,255,255,.85);border-radius:2px;transition:all .22s}
+.adm-hb.io span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.adm-hb.io span:nth-child(2){opacity:0}
+.adm-hb.io span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+.adm-ov{display:none;position:fixed;inset:0;background:rgba(40,24,16,.42);z-index:149;cursor:pointer}
+.adm-ov.io{display:block}
+@media(max-width:768px){
+  .adm-hb{display:flex!important}
+  .sidebar{position:fixed!important;top:0;left:0;bottom:0;height:100vh!important;z-index:200;transform:translateX(-100%);transition:transform .26s cubic-bezier(.4,0,.2,1)}
+  .sidebar.io{transform:translateX(0);box-shadow:8px 0 28px rgba(40,24,16,.2)}
+  .zone{display:block!important}
+  .main{padding:14px!important}
+  .topbar{padding:0 12px!important;gap:8px!important}
+  .search-wrap{display:none!important}
+}
+@media(max-width:900px){
+  .stats-grid{grid-template-columns:repeat(2,1fr)!important}
+  .two-col{grid-template-columns:1fr!important}
+  .fg-row{grid-template-columns:1fr!important}
+}
+</style>
 </head>
 <body>
 
 <header class="topbar">
+  <button class="adm-hb" id="adm-hb" onclick="admT()" aria-label="Menu"><span></span><span></span><span></span></button>
   <div class="logo">Moulin <em>des</em> Moines <sup>Admin</sup></div>
   <div class="search-wrap">
     <span class="search-ico">&#128269;</span>
@@ -320,6 +343,7 @@ code{background:var(--bg);padding:1px 4px;border-radius:3px;font-size:10px;font-
     <div class="nav-item" onclick="showPage('commandes',this)"><span class="nav-icon">&#128230;</span><span class="nav-txt"><span>Commandes</span></span><span class="nav-badge nb-green" id="badge-commandes" style="display:none">0</span></div>
     <div class="nav-item" onclick="showPage('stocks',this)"><span class="nav-icon">&#128218;</span><span class="nav-txt">Stocks</span></div>
     <div class="nav-item" onclick="showPage('promos',this)"><span class="nav-icon">&#127381;</span><span class="nav-txt">Promotions</span></div>
+    <div class="nav-item" onclick="window.open('performance.html','_blank')"><span class="nav-icon">&#128200;</span><span class="nav-txt">Performance CRM</span><span style="font-size:8px;background:#3a6b4a;color:#fff;padding:1px 5px;border-radius:3px;margin-left:4px;font-weight:700">NEW</span></div>
 
     <div class="nav-label-section">Communication</div>
     <div class="nav-item" onclick="showPage('messagerie',this);populateMsgDest()"><span class="nav-icon">&#128172;</span><span class="nav-txt">Messagerie</span><span class="nav-badge nb-red" id="badge-messagerie" style="display:none">0</span></div>
@@ -3814,37 +3838,41 @@ function handleStockFile(file) {
   reader.readAsArrayBuffer(file);
 }
 
-function pushStockToGithub() {
-  if (!Object.keys(_stockData).length) {
-    showToast('\u26a0 Chargez d\'abord un fichier stock');
-    return;
-  }
-  var logEl = document.getElementById('stock-log');
-  var btn   = document.getElementById('stock-push-btn');
-  if (logEl) { logEl.style.display='block'; logEl.innerHTML=''; }
-  if (btn)   { btn.disabled=true; btn.style.opacity='0.6'; }
-  stockStatus('Sauvegarde dans Firebase\u2026','loading');
-  stockLog('Connexion Firebase\u2026');
+async function pushStockToGithub() {
+  if (!Object.keys(_stockData).length) { showToast('\u26a0 Chargez d\'abord un fichier stock'); return; }
 
-  initFirebase().then(function(db) {
-    var batch = db.batch();
-    var ref   = db.collection('stocks').doc('catalogue');
-    batch.set(ref, _stockData);
-    return batch.commit();
-  }).then(function() {
-    var n = Object.keys(_stockData).length;
-    stockStatus('\u2705 ' + n + ' stocks sauvegard\u00e9s','ok');
-    stockLog('\u2705 ' + n + ' r\u00e9f\u00e9rences stock\u00e9es dans Firebase (collection stocks/catalogue)','ok');
-    stockLog('\ud83d\udd04 Le bon de commande chargera les stocks en temps r\u00e9el','ok');
-    showToast('\u2705 ' + n + ' stocks mis \u00e0 jour dans Firebase');
-    if (btn) { btn.disabled=false; btn.style.opacity='1'; }
-  }).catch(function(e) {
-    stockStatus('Erreur Firebase','err');
-    stockLog('\u274c ' + e.message,'err');
-    showToast('\u274c Firebase : ' + e.message);
-    if (btn) { btn.disabled=false; btn.style.opacity='1'; }
-  });
-}\]]+)/g, function(match, code, middle, oldStock) {
+  saveGhConfig();
+  var cfg = ghConfig();
+  // Le stock va dans commande.html (pas index.html)
+  var stockFile = cfg.user + '/' + cfg.repo + '/contents/commande.html';
+  var logEl = document.getElementById('stock-log');
+  if (logEl) { logEl.style.display='block'; logEl.innerHTML=''; }
+
+  stockStatus('Lecture de commande.html...', 'loading');
+  stockLog('Connexion GitHub...');
+
+  try {
+    // 1. Lire commande.html sur GitHub
+    var res = await fetch(
+      'https://api.github.com/repos/'+cfg.user+'/'+cfg.repo+'/contents/commande.html?ref='+cfg.branch+'&t='+Date.now(),
+      {headers:{'Authorization':'token '+cfg.token,'Accept':'application/vnd.github.v3+json'},cache:'no-store'}
+    );
+    if (res.status === 401) throw new Error('Token invalide (401)');
+    if (res.status === 404) throw new Error('commande.html introuvable sur '+cfg.user+'/'+cfg.repo);
+    if (res.status !== 200) throw new Error('Lecture GitHub HTTP ' + res.status);
+
+    var sd = await res.json();
+    var sha = sd.sha;
+    stockLog('commande.html lu (SHA\u00a0: '+sha.substring(0,8)+'...)', 'ok');
+
+    // 2. D\u00e9coder le HTML
+    var html = decodeURIComponent(escape(atob(sd.content.replace(/\n/g,''))));
+
+    // 3. Injecter les stocks dans le tableau PRODUCTS
+    // Pattern : {"code":"XXX",...,"stock":N} ou {"code":"XXX",...,"stock":null}
+    var updated = 0;
+    var notFound = 0;
+    var newHtml = html.replace(/"code"\s*:\s*"([^"]+)"([^}]*)"stock"\s*:\s*([^,}\]]+)/g, function(match, code, middle, oldStock) {
       if (_stockData.hasOwnProperty(code)) {
         updated++;
         return '"code":"'+code+'"'+middle+'"stock":'+_stockData[code];
@@ -3961,6 +3989,11 @@ function saveActuNew(){
 
 
 
+</script>
+<div class="adm-ov" id="adm-ov" onclick="admT()"></div>
+<script>
+function admT(){var sb=document.querySelector('.sidebar'),ov=document.getElementById('adm-ov'),hb=document.getElementById('adm-hb');if(!sb)return;var o=sb.classList.toggle('io');if(ov)ov.classList.toggle('io',o);if(hb)hb.classList.toggle('io',o);document.body.style.overflow=(o&&window.innerWidth<=768)?'hidden':'';}
+document.addEventListener('DOMContentLoaded',function(){document.querySelectorAll('.nav-item').forEach(function(el){el.addEventListener('click',function(){if(window.innerWidth<=768){var sb=document.querySelector('.sidebar'),ov=document.getElementById('adm-ov'),hb=document.getElementById('adm-hb');if(sb)sb.classList.remove('io');if(ov)ov.classList.remove('io');if(hb)hb.classList.remove('io');document.body.style.overflow='';}});});});
 </script>
 </body>
 </html>

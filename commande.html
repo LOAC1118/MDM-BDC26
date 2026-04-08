@@ -647,9 +647,136 @@ tbody tr.has-qty td.td-qty input{background:#ffe0b2;border-color:var(--terra)}
 .import-panel-foot{padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:8px;flex-shrink:0}
 .import-overlay{position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:299;display:none}
 .import-overlay.open{display:block}
+
+/* ══ MODULE IMPORT COMMANDE v2 ══ */
+.import-overlay{display:none;position:fixed;inset:0;background:rgba(45,32,24,.38);z-index:300;cursor:pointer}
+.import-overlay.open{display:block}
+.import-panel{
+  position:fixed;top:0;right:0;bottom:0;width:520px;max-width:100vw;
+  background:#fff;border-left:1px solid #e5dcd5;
+  box-shadow:-8px 0 40px rgba(45,32,24,.14);
+  z-index:301;display:flex;flex-direction:column;
+  transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);
+}
+.import-panel.open{transform:translateX(0)}
+.import-panel-head{
+  padding:16px 20px;border-bottom:1px solid #e5dcd5;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-shrink:0;background:#fff;
+}
+.import-panel-title{font-size:15px;font-weight:500;color:#6b4c3b;display:flex;align-items:center;gap:8px}
+.import-close{width:30px;height:30px;border:none;background:none;font-size:17px;cursor:pointer;color:#b09a8a;border-radius:6px;display:flex;align-items:center;justify-content:center}
+.import-close:hover{background:#f5f2ee;color:#6b4c3b}
+
+/* Onglets */
+.import-tabs{display:flex;border-bottom:1px solid #e5dcd5;padding:0 20px;gap:0;flex-shrink:0}
+.import-tab{
+  padding:10px 16px;font-size:12px;font-weight:400;color:#b09a8a;
+  border-bottom:2px solid transparent;margin-bottom:-1px;cursor:pointer;
+  display:flex;align-items:center;gap:6px;transition:all .15s;
+  -webkit-tap-highlight-color:transparent;
+}
+.import-tab:hover{color:#6b4c3b}
+.import-tab.active{color:#4a7c59;border-bottom-color:#4a7c59;font-weight:500}
+.import-tab-icon{font-size:14px}
+.import-tab-content{display:none;flex:1;overflow-y:auto;padding:18px 20px}
+.import-tab-content.active{display:flex;flex-direction:column;gap:14px}
+
+/* Drop zone */
+.import-drop{
+  border:2px dashed #e5dcd5;border-radius:10px;
+  padding:30px 20px;text-align:center;cursor:pointer;
+  transition:all .2s;background:#f5f2ee;
+}
+.import-drop:hover,.import-drop.drag{border-color:#4a7c59;background:#edf5ef}
+.import-drop.has-file{border-color:#4a7c59;border-style:solid;background:#edf5ef}
+.import-drop-icon{font-size:36px;margin-bottom:10px;transition:transform .2s}
+.import-drop:hover .import-drop-icon{transform:translateY(-4px)}
+.import-drop-title{font-size:14px;font-weight:500;color:#6b4c3b;margin-bottom:4px}
+.import-drop-sub{font-size:11px;color:#b09a8a}
+.import-drop-hint{font-size:10px;color:#b09a8a;margin-top:6px}
+
+/* Log */
+.import-log{
+  background:#0f1117;color:#7ecfff;border-radius:7px;
+  padding:10px 12px;font-family:monospace;font-size:10px;
+  line-height:1.9;max-height:90px;overflow-y:auto;white-space:pre-wrap;
+  display:none;
+}
+.import-log.visible{display:block}
+.import-log .ok{color:#a8ff78}
+.import-log .err{color:#ff6b6b}
+.import-log .warn{color:#ffd93d}
+
+/* Résultats */
+.import-result{display:none}
+.import-result.visible{display:block}
+.import-result-label{font-size:11px;font-weight:600;color:#7a6655;margin-bottom:8px;padding:6px 10px;background:#f5f2ee;border-radius:6px}
+.import-summary{display:flex;gap:16px;margin-bottom:12px}
+.import-sum-item{text-align:center;flex:1;background:#f5f2ee;border-radius:8px;padding:10px 8px}
+.import-sum-val{font-size:22px;font-weight:300;font-family:'Fraunces',serif;color:#2d2018}
+.import-sum-val.green{color:#2e7d47}
+.import-sum-val.red{color:#c0392b}
+.import-sum-val.orange{color:#b45309}
+.import-sum-lbl{font-size:9px;text-transform:uppercase;letter-spacing:.5px;color:#b09a8a;margin-top:2px}
+
+.import-rows{max-height:260px;overflow-y:auto;border:1px solid #e5dcd5;border-radius:8px}
+.import-row{
+  display:flex;align-items:center;gap:8px;
+  padding:7px 10px;border-bottom:1px solid #f0ebe8;font-size:11px;
+}
+.import-row:last-child{border:none}
+.import-row:hover{background:#f5f2ee}
+.import-row-code{font-family:monospace;color:#6b4c3b;width:100px;flex-shrink:0;font-size:11px}
+.import-row-lib{flex:1;color:#2d2018;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.import-row-qty{font-weight:600;color:#2d2018;width:40px;text-align:right;flex-shrink:0}
+.import-row-status{width:20px;text-align:center;flex-shrink:0;font-size:13px}
+.import-row-status.ok{color:#2e7d47}
+.import-row-status.notfound{color:#c0392b}
+.import-row-status.partial{color:#b45309}
+
+/* Aide TXT */
+.import-help{background:#f0f7f2;border-radius:8px;padding:12px 14px;font-size:11px;color:#2e7d47;line-height:1.8}
+.import-help code{background:rgba(46,125,71,.12);padding:1px 5px;border-radius:3px;font-size:10px}
+.import-field-map{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.import-field-row{display:flex;flex-direction:column;gap:3px}
+.import-field-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:#b09a8a}
+.import-field-input{padding:6px 8px;border:1.5px solid #e5dcd5;border-radius:6px;font-size:12px;font-family:inherit;outline:none}
+.import-field-input:focus{border-color:#4a7c59}
+
+/* Footer */
+.import-panel-foot{
+  padding:14px 20px;border-top:1px solid #e5dcd5;
+  display:none;gap:8px;background:#fff;flex-shrink:0;align-items:center;
+}
+.import-panel-foot.visible{display:flex}
+.import-btn-apply{
+  flex:1;padding:10px;border:none;background:#4a7c59;color:#fff;
+  border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;
+  font-family:inherit;transition:background .14s;
+}
+.import-btn-apply:hover{background:#3a6447}
+.import-btn-cancel{
+  padding:10px 16px;border:1.5px solid #e5dcd5;background:#fff;
+  color:#7a6655;border-radius:8px;font-size:12px;cursor:pointer;
+  font-family:inherit;transition:all .14s;
+}
+.import-btn-cancel:hover{background:#f5f2ee}
+.import-send-after{display:flex;align-items:center;gap:6px;font-size:11px;color:#7a6655;margin-left:auto}
+.import-send-after input{width:15px;height:15px;cursor:pointer}
+
+/* Responsive */
+@media(max-width:600px){
+  .import-panel{width:100vw}
+  .import-tabs{padding:0 12px}
+  .import-tab{padding:9px 10px;font-size:11px}
+  .import-tab-content{padding:14px}
+}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>if(typeof pdfjsLib!=="undefined")pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";</script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -1979,36 +2106,7 @@ function exportExcel() {
 }
 
 // INIT
-/* ══ CHARGEMENT STOCKS FIREBASE ══ */
-function _loadStocksAndBuild() {
-  if (typeof initFirebase !== 'function') {
-    buildTable();
-    return;
-  }
-  initFirebase().then(function(db) {
-    return db.collection('stocks').doc('catalogue').get();
-  }).then(function(doc) {
-    if (doc.exists) {
-      var stockData = doc.data();
-      var n = 0;
-      if (window.PRODUCTS) {
-        window.PRODUCTS.forEach(function(p) {
-          if (stockData.hasOwnProperty(p.code)) {
-            p.stock = stockData[p.code];
-            n++;
-          }
-        });
-      }
-      if (n > 0) console.log('[MDM] ' + n + ' stocks charg\u00e9s depuis Firebase');
-    }
-    buildTable();
-  }).catch(function(e) {
-    console.warn('[MDM] Stocks Firebase:', e.message);
-    buildTable();
-  });
-}
-
-_loadStocksAndBuild();
+buildTable();
 document.getElementById("search-count").textContent=PRODUCTS.length+" produits";
 
 // ============================================================
@@ -2505,422 +2603,469 @@ function presenceStopWatch(){
 // IMPORT COMMANDE (Excel / PDF)
 // ══════════════════════════════════════════════════════════════
 
-var _importItems = []; // [{code, qty, libelle, found}]
 
-function openImportPanel(){
+/* ══════════════════════════════════════════════════════════════
+   MODULE IMPORT COMMANDE v2
+   Onglets : Excel · PDF · TXT/CSV · Saisie manuelle
+══════════════════════════════════════════════════════════════ */
+
+var _importItems = [];
+var _importTab   = 'excel';
+
+/* ── Onglets ────────────────────────────────────────────────── */
+function switchImportTab(tab) {
+  _importTab = tab;
+  ['excel','pdf','txt','manuel'].forEach(function(t) {
+    var btn  = document.getElementById('itab-'+t);
+    var cont = document.getElementById('icontent-'+t);
+    if (btn)  btn.classList.toggle('active', t===tab);
+    if (cont) cont.classList.toggle('active', t===tab);
+  });
+}
+
+/* ── Ouvrir / Fermer ─────────────────────────────────────────── */
+function openImportPanel() {
+  _resetImport();
   document.getElementById('import-panel').classList.add('open');
   document.getElementById('import-overlay').classList.add('open');
-  // Reset
-  document.getElementById('import-result').style.display='none';
-  document.getElementById('import-panel-foot').style.display='none';
-  document.getElementById('import-log').textContent='';
-  document.getElementById('import-file-input').value='';
-  _importItems=[];
+  document.body.style.overflow='hidden';
 }
-
-function closeImportPanel(){
+function closeImportPanel() {
   document.getElementById('import-panel').classList.remove('open');
   document.getElementById('import-overlay').classList.remove('open');
+  document.body.style.overflow='';
 }
 
-function handleImportFile(file){
-  if(!file) return;
-  var ext=file.name.split('.').pop().toLowerCase();
-  document.getElementById('import-log').textContent='Lecture du fichier\u2026';
-  document.getElementById('import-result').style.display='none';
-  document.getElementById('import-panel-foot').style.display='none';
-  _importItems=[];
-
-  if(ext==='xlsx'||ext==='xls'){
-    _parseExcelImport(file);
-  } else if(ext==='pdf'){
-    _parsePdfImport(file);
-  } else {
-    document.getElementById('import-log').textContent='\u26a0 Format non support\u00e9. Utilisez .xlsx ou .pdf';
-  }
+function _resetImport() {
+  _importItems = [];
+  ['excel','pdf','txt','manuel'].forEach(function(t) {
+    var l = document.getElementById('import-log-'+t);
+    var r = document.getElementById('import-result-'+t);
+    var d = document.getElementById('import-drop-'+t);
+    var ti= document.getElementById('import-drop-'+t+'-title');
+    if (l) { l.className='import-log'; l.textContent=''; }
+    if (r) { r.className='import-result'; }
+    if (d) d.classList.remove('has-file','drag');
+    if (ti && t!=='manuel') ti.textContent = {
+      excel:'Glissez votre fichier Excel',
+      pdf:  'Glissez votre bon de commande PDF',
+      txt:  'Glissez votre fichier texte'
+    }[t]||'';
+  });
+  var ta = document.getElementById('import-textarea');
+  if (ta) ta.value='';
+  var foot = document.getElementById('import-panel-foot');
+  if (foot) foot.className='import-panel-foot';
+  // Reset inputs file
+  ['import-file-excel','import-file-pdf','import-file-txt'].forEach(function(id) {
+    var el=document.getElementById(id); if(el) el.value='';
+  });
 }
 
-// ── Parse Excel ───────────────────────────────────────────────
-function _parseExcelImport(file){
-  if(typeof XLSX==='undefined'){
-    document.getElementById('import-log').textContent='\u26a0 Librairie Excel non charg\u00e9e.';
-    return;
+/* ── Dispatcher fichier ──────────────────────────────────────── */
+function handleImportFile(file, mode) {
+  if (!file) return;
+  var ext = file.name.split('.').pop().toLowerCase();
+  mode = mode || _importTab;
+
+  // Auto-détection si mode non forcé
+  if (!mode) {
+    if (ext==='pdf') mode='pdf';
+    else if (ext==='txt'||ext==='csv'||ext==='tsv') mode='txt';
+    else mode='excel';
   }
-  var reader=new FileReader();
-  reader.onload=function(e){
-    try{
-      var wb=XLSX.read(e.target.result,{type:'array'});
-      var ws=wb.Sheets[wb.SheetNames[0]];
-      var rows=XLSX.utils.sheet_to_json(ws,{defval:''});
-      if(!rows.length){ document.getElementById('import-log').textContent='\u26a0 Fichier vide.'; return; }
 
-      var allKeys=Object.keys(rows[0]);
+  _logImport(mode, 'Lecture de '+file.name+'\u2026');
+  _showResult(mode, false);
+  _setDropOk(mode, null);
 
-      // D\u00e9tection colonne Code
-      var codeKey=null;
-      var CODE_NAMES=['code','ref','reference','codearticle','code article','code produit','codeproduit','article','cod'];
-      for(var ki=0;ki<allKeys.length;ki++){
-        var kl=allKeys[ki].toLowerCase().replace(/\s+/g,' ').trim();
-        if(CODE_NAMES.indexOf(kl)>=0){codeKey=allKeys[ki];break;}
-      }
+  if (mode==='pdf') _parsePdf(file);
+  else if (mode==='txt') _parseTxt(file);
+  else _parseExcel(file);
+}
 
-      // D\u00e9tection colonne Quantit\u00e9
-      var qtyKey=null;
-      var QTY_NAMES=['qte','quantite','quantit\u00e9','qty','colis','nb colis','nb_colis','quantitecolis','coliscommandes','qte colis','qtyorder','ordered'];
-      for(var ki=0;ki<allKeys.length;ki++){
-        var kl2=allKeys[ki].toLowerCase().replace(/\s+/g,' ').trim();
-        if(QTY_NAMES.indexOf(kl2)>=0){qtyKey=allKeys[ki];break;}
-      }
-      // Fallback : premi\u00e8re colonne num\u00e9rique > 0
-      if(!qtyKey&&codeKey){
-        for(var ki=0;ki<allKeys.length;ki++){
-          if(allKeys[ki]===codeKey) continue;
-          var numCount=0;
-          for(var ri=0;ri<Math.min(rows.length,10);ri++){
-            var v=parseFloat(String(rows[ri][allKeys[ki]]||'0').replace(',','.'));
-            if(!isNaN(v)&&v>0) numCount++;
-          }
-          if(numCount>=2){qtyKey=allKeys[ki];break;}
-        }
-      }
+/* ── LOG et UI helpers ───────────────────────────────────────── */
+function _logImport(tab, msg, cls) {
+  var el = document.getElementById('import-log-'+tab);
+  if (!el) return;
+  el.classList.add('visible');
+  var span = document.createElement('span');
+  if (cls) span.className=cls;
+  span.textContent = msg + '\n';
+  el.appendChild(span);
+  el.scrollTop = el.scrollHeight;
+}
+function _logClear(tab) {
+  var el=document.getElementById('import-log-'+tab);
+  if (el) { el.className='import-log'; el.textContent=''; }
+}
+function _setDropOk(tab, filename) {
+  var d = document.getElementById('import-drop-'+tab);
+  var t = document.getElementById('import-drop-'+tab+'-title');
+  if (d) { if(filename) d.classList.add('has-file'); else d.classList.remove('has-file'); }
+  if (t && filename) t.textContent = '\u2705 '+filename;
+}
+function _showResult(tab, show) {
+  var r = document.getElementById('import-result-'+tab);
+  if (r) r.className = 'import-result' + (show?' visible':'');
+}
+function _setFoot(show) {
+  var f = document.getElementById('import-panel-foot');
+  if (f) f.className = 'import-panel-foot' + (show?' visible':'');
+}
 
-      if(!codeKey||!qtyKey){
-        document.getElementById('import-log').textContent=
-          '\u26a0 Colonnes non trouv\u00e9es.\nColonnes disponibles\u00a0: '+allKeys.join(', ')
-          +'\nNommez vos colonnes\u00a0: Code + Qte';
-        return;
-      }
+/* ── Excel ───────────────────────────────────────────────────── */
+function _parseExcel(file) {
+  var tab = 'excel';
+  if (typeof XLSX==='undefined') { _logImport(tab,'\u26a0 Librairie Excel non disponible','err'); return; }
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var wb   = XLSX.read(e.target.result, {type:'array'});
+      var ws   = wb.Sheets[wb.SheetNames[0]];
+      var rows = XLSX.utils.sheet_to_json(ws, {defval:''});
+      if (!rows.length) { _logImport(tab,'\u26a0 Fichier vide.','err'); return; }
 
-      var parsed=[];
-      rows.forEach(function(row){
-        var code=String(row[codeKey]||'').trim().toUpperCase();
-        var qty=parseInt(parseFloat(String(row[qtyKey]||'0').replace(',','.'))||0);
-        if(code&&qty>0) parsed.push({code:code,qty:qty});
+      var allKeys = Object.keys(rows[0]);
+      _logClear(tab);
+      _logImport(tab, 'Colonnes\u00a0: ' + allKeys.join(', '));
+
+      var CODE_NAMES = ['code','ref','reference','codearticle','code article',
+                        'code produit','codeproduit','article','cod'];
+      var QTY_NAMES  = ['qte','quantite','quantit\u00e9','qty','colis','nb colis',
+                        'nb_colis','quantitecolis','coliscommandes','qte colis',
+                        'qtyorder','ordered','nbcolis'];
+      var codeKey=null, qtyKey=null;
+
+      allKeys.forEach(function(k) {
+        var kl = k.toLowerCase().replace(/\s+/g,' ').trim();
+        if (!codeKey && CODE_NAMES.indexOf(kl)>=0) codeKey=k;
+        if (!qtyKey  && QTY_NAMES.indexOf(kl)>=0)  qtyKey=k;
       });
 
-      document.getElementById('import-log').textContent='';
-      _matchAndDisplay(parsed,'Excel\u00a0: '+file.name+' (col. '+codeKey+' / '+qtyKey+')');
-    }catch(err){
-      document.getElementById('import-log').textContent='\u26a0 Erreur lecture Excel\u00a0: '+err.message;
+      // Fallback qty : 1ère colonne numérique hors code
+      if (!qtyKey && codeKey) {
+        allKeys.forEach(function(k) {
+          if (qtyKey||k===codeKey) return;
+          var nc=0;
+          rows.slice(0,10).forEach(function(r){
+            if (!isNaN(parseFloat(String(r[k]||'0').replace(',','.')))&&parseFloat(String(r[k]||'0').replace(',','.'))||0>0) nc++;
+          });
+          if (nc>=2) qtyKey=k;
+        });
+      }
+
+      if (!codeKey) { _logImport(tab,'\u274c Colonne Code introuvable\nRenommez la colonne en "Code"','err'); return; }
+      if (!qtyKey)  { _logImport(tab,'\u274c Colonne Quantit\u00e9 introuvable\nRenommez la colonne en "Qte"','err'); return; }
+
+      _logImport(tab, '\u2705 Code\u00a0: '+codeKey+' | Qt\u00e9\u00a0: '+qtyKey, 'ok');
+
+      var parsed=[];
+      rows.forEach(function(row) {
+        var code = String(row[codeKey]||'').trim().toUpperCase();
+        var qty  = parseInt(parseFloat(String(row[qtyKey]||'0').replace(',','.'))||0);
+        if (code && qty>0) parsed.push({code:code, qty:qty});
+      });
+      _matchAndDisplay(parsed, 'Excel\u00a0: '+file.name, tab);
+      _setDropOk(tab, file.name+' — '+parsed.length+' produits d\u00e9tect\u00e9s');
+    } catch(err) {
+      _logImport(tab, '\u274c Erreur\u00a0: '+err.message, 'err');
     }
   };
   reader.readAsArrayBuffer(file);
 }
 
-// ── Parse PDF ─────────────────────────────────────────────────
-async 
-
-
-// ── Lecture PDF sans PDF.js (extraction texte brut) ───────────
-async function _parsePdfImport(file){
-  var log=document.getElementById('import-log');
-  log.textContent='Lecture du PDF\u2026';
-  log.style.whiteSpace='pre-wrap';
-  try{
-    var arrayBuffer=await file.arrayBuffer();
-    // Extraire le texte brut du PDF (tokens /BT ... ET et Tj/TJ)
-    var text=_extractPdfRawText(arrayBuffer);
-    if(!text||text.trim().length<20){
-      log.textContent='\u26a0 Impossible d\u2019extraire le texte de ce PDF.\nEssayez de convertir en Excel.';
-      return;
+/* ── PDF ─────────────────────────────────────────────────────── */
+function _parsePdf(file) {
+  var tab = 'pdf';
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var buf = e.target.result;
+    if (typeof pdfjsLib !== 'undefined') {
+      _logImport(tab, 'Extraction PDF avec PDF.js\u2026');
+      pdfjsLib.getDocument({data: new Uint8Array(buf)}).promise
+        .then(function(pdf) {
+          _logImport(tab, pdf.numPages+' page(s) d\u00e9tect\u00e9e(s)');
+          var pages=[];
+          for (var p=1; p<=pdf.numPages; p++) pages.push(pdf.getPage(p).then(function(pg){return pg.getTextContent();}));
+          return Promise.all(pages);
+        })
+        .then(function(contents) {
+          var text='';
+          contents.forEach(function(content){
+            var lastY=null;
+            content.items.forEach(function(item){
+              if (lastY!==null && Math.abs(item.transform[5]-lastY)>3) text+='\n';
+              text+=item.str;
+              if (!item.str.endsWith(' ')) text+=' ';
+              lastY=item.transform[5];
+            });
+            text+='\n';
+          });
+          _parsePdfText(text, file.name, tab);
+        })
+        .catch(function(err){
+          _logImport(tab, 'PDF.js: '+err.message+' — tentative alternative\u2026', 'warn');
+          _parsePdfRaw(buf, file.name, tab);
+        });
+    } else {
+      _logImport(tab, 'Extraction alternative (sans PDF.js)\u2026');
+      _parsePdfRaw(buf, file.name, tab);
     }
-    log.textContent='';
-    _parsePdfText(text, file.name);
-  }catch(err){
-    log.textContent='\u26a0 Erreur PDF\u00a0: '+err.message;
-  }
+  };
+  reader.onerror = function() { _logImport('pdf','\u274c Impossible de lire le fichier','err'); };
+  reader.readAsArrayBuffer(file);
 }
 
-function _extractPdfRawText(buffer){
-  // Lire les octets du PDF comme string
-  var bytes=new Uint8Array(buffer);
-  var raw='';
-  for(var i=0;i<bytes.length;i++) raw+=String.fromCharCode(bytes[i]);
-
-  // Extraire les chaînes entre parenthèses dans les blocs BT/ET
-  var text='';
-  // Pattern: (texte) Tj ou [(texte)] TJ
+function _parsePdfRaw(buf, fname, tab) {
+  var bytes=new Uint8Array(buf), raw='';
+  for (var i=0;i<bytes.length;i++) raw+=String.fromCharCode(bytes[i]);
+  var text='', m;
   var re1=/\(([^)\\]*(?:\\.[^)\\]*)*)\)\s*Tj/g;
-  var re2=/\(([^)\\]*(?:\\.[^)\\]*)*)\)/g;
-  var m;
-
-  // Méthode 1 : extraire tous les Tj
-  while((m=re1.exec(raw))!==null){
-    var s=m[1].replace(/\\n/g,'\n').replace(/\\r/g,'').replace(/\\t/g,' ')
-               .replace(/\\\(/g,'(').replace(/\\\)/g,')').replace(/\\\\/g,'\\');
-    text+=s+' ';
-  }
-
-  // Si méthode 1 vide, essayer méthode 2 (toutes les chaînes entre parenthèses)
-  if(text.trim().length<20){
-    text='';
-    while((m=re2.exec(raw))!==null){
-      var s=m[1].replace(/\\n/g,'\n').replace(/\\\(/g,'(').replace(/\\\)/g,')');
-      if(s.length>0&&s.length<200) text+=s+' ';
-    }
-  }
-
-  // Méthode 3 : chercher les streams décompressés (texte lisible en clair)
-  if(text.trim().length<20){
-    // Chercher les blocs lisibles ASCII dans le buffer
-    var ascii='';
-    var run='';
-    for(var i=0;i<bytes.length;i++){
+  while ((m=re1.exec(raw))!==null)
+    text+=m[1].replace(/\\n/g,'\n').replace(/\\\(/g,'(').replace(/\\\)/g,')')+' ';
+  if (text.trim().length<20) {
+    var run='', ascii='';
+    for (var i=0;i<bytes.length;i++){
       var b=bytes[i];
-      if(b>=32&&b<127||b===10||b===13){
-        run+=String.fromCharCode(b);
-      } else {
-        if(run.length>4) ascii+=run+' ';
-        run='';
-      }
+      if (b>=32&&b<127||b===10||b===13) run+=String.fromCharCode(b);
+      else { if(run.length>4)ascii+=run+' '; run=''; }
     }
     text=ascii;
   }
-
-  return text;
+  _parsePdfText(text, fname, tab);
 }
 
-function _parsePdfText(text, filename){
-  var products=(typeof PRODUCTS!=='undefined'?PRODUCTS:[])||[];
+function _parsePdfText(text, fname, tab) {
+  var parsed=[], seen={};
+  var lines=text.replace(/\r\n/g,'\n').replace(/\r/g,'\n').split('\n');
+  var SKIP_RE=/^(code article|d[ée]signation|code client|total|page\s+\d|n[°º]\s*commande|bon de commande|moulin|date|référence|description|libellé|article|désignation)/i;
 
-  // Index par EAN (priorité) et par code MDM
-  var eanIndex={};
-  var codeIndex={};
-  products.forEach(function(p){
-    codeIndex[p.code.toUpperCase()]=p;
-    if(p.ean){
-      var ean=String(p.ean).replace(/\s/g,'').trim();
-      if(ean) eanIndex[ean]=p;
+  lines.forEach(function(line) {
+    line=line.trim();
+    if (!line||line.length<3) return;
+    if (SKIP_RE.test(line)) return;
+
+    // Format BDC MDM standard : EAN CODE ...libelle... QTE,000 PRIX TOTAL
+    var m1=line.match(/(\d{7,14})\s+([A-Za-z][A-Za-z0-9_\-]{1,25})\s+.{2,60}?\s+(\d{1,5})[,.](\d{3})\s+[\d,.]+\s+[\d,.]+/);
+    if (m1) {
+      var c=m1[2].toUpperCase(), q=parseInt(m1[3]);
+      if (q>0&&!seen[c]) { parsed.push({code:c,qty:q}); seen[c]=true; return; }
+    }
+    // Pattern CODE ... QTE,000
+    var m2=line.match(/\b([A-Z][A-Z0-9_\-]{2,20})\b.{0,60}?\s+(\d{1,5})[,.](\d{3})\b/);
+    if (m2) {
+      var c=m2[1].toUpperCase(), q=parseInt(m2[2]);
+      if (q>0&&!seen[c]) { parsed.push({code:c,qty:q}); seen[c]=true; return; }
+    }
+    // Pattern CODE QTE (entier simple)
+    var m3=line.match(/^([A-Z][A-Z0-9_\-]{2,20})\s+(\d{1,4})(\s|$)/);
+    if (m3) {
+      var c=m3[1].toUpperCase(), q=parseInt(m3[2]);
+      if (q>0&&!seen[c]) { parsed.push({code:c,qty:q}); seen[c]=true; return; }
+    }
+    // Pattern "code = XXX" "qte = N"
+    var m4=line.match(/(?:code|ref)\s*[=:]\s*([A-Z][A-Z0-9_\-]{2,20}).*?(?:qte|quantit|qty)\s*[=:]\s*(\d+)/i);
+    if (m4) {
+      var c=m4[1].toUpperCase(), q=parseInt(m4[2]);
+      if (q>0&&!seen[c]) { parsed.push({code:c,qty:q}); seen[c]=true; }
     }
   });
 
+  if (!parsed.length) {
+    _logImport(tab, '\u26a0 Aucun produit d\u00e9tect\u00e9.\nCauses possibles\u00a0: PDF scanné (image), format inconnu.\nSolution\u00a0: exportez en Excel ou utilisez l\'onglet Saisie manuelle.', 'warn');
+  } else {
+    _logImport(tab, '\u2705 '+parsed.length+' produits d\u00e9tect\u00e9s', 'ok');
+  }
+  _matchAndDisplay(parsed, 'PDF\u00a0: '+fname, tab);
+  if (parsed.length) _setDropOk(tab, fname+' — '+parsed.length+' produits');
+}
+
+/* ── TXT / CSV ───────────────────────────────────────────────── */
+function _parseTxt(file) {
+  var tab = 'txt';
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var lines = e.target.result.split(/\r?\n/);
+      var parsed = [], skipped=0;
+      var SKIP=/^(code|ref|article|designation|lib|description|qte|qty|quantit)/i;
+      var SEP_RE=/^([A-Z0-9_\-]{2,25})\s*[;,|\t]\s*(\d+)/i;
+      var SPC_RE=/^([A-Z0-9_\-]{2,25})\s+(\d+)$/i;
+
+      lines.forEach(function(line) {
+        line=line.trim();
+        if (!line||line.startsWith('#')||line.startsWith('//')) return;
+        if (SKIP.test(line)) return; // entêtes
+        var m = line.match(SEP_RE)||line.match(SPC_RE);
+        if (!m) { skipped++; return; }
+        var code=m[1].trim().toUpperCase(), qty=parseInt(m[2])||0;
+        if (code&&qty>0) parsed.push({code:code,qty:qty});
+      });
+
+      _logClear(tab);
+      if (!parsed.length) {
+        _logImport(tab, '\u26a0 Aucune ligne reconnue.\nFormat attendu (1 ligne par produit)\u00a0:\n  CODE123;5\n  CODE123 5\n  CODE123,5', 'warn');
+        return;
+      }
+      _logImport(tab, '\u2705 '+parsed.length+' lignes | '+(skipped>0?skipped+' ignor\u00e9es':''), 'ok');
+      _matchAndDisplay(parsed, 'Fichier\u00a0: '+file.name, tab);
+      _setDropOk(tab, file.name+' — '+parsed.length+' produits');
+    } catch(err) {
+      _logImport(tab, '\u274c Erreur\u00a0: '+err.message, 'err');
+    }
+  };
+  reader.onerror = function() { _logImport('txt','\u274c Impossible de lire le fichier','err'); };
+  reader.readAsText(file, 'UTF-8');
+}
+
+/* ── Saisie manuelle ─────────────────────────────────────────── */
+function parseManuel() {
+  var tab='manuel';
+  var text=(document.getElementById('import-textarea')||{}).value||'';
+  if (!text.trim()) { _logImport(tab,'\u26a0 Saisissez des produits ci-dessus','warn'); return; }
+
+  var lines=text.split(/\r?\n/);
   var parsed=[];
-  var seen={};
+  var SKIP=/^(code|ref|article|qte|qty)/i;
+  var SEP_RE=/^([A-Z0-9_\-]{2,25})\s*[;,|\t]\s*(\d+)/i;
+  var SPC_RE=/^([A-Z0-9_\-]{2,25})\s+(\d+)$/i;
 
-  // ── Nettoyer le texte ──────────────────────────────────────
-  // Remplacer les retours chariot multiples par un seul
-  var cleanText=text.replace(/\r\n/g,'\n').replace(/\r/g,'\n');
-
-  // ── Méthode 1 : parser ligne par ligne (format BDC MDM) ────
-  // Format: EAN CODE_MDM DESIGNATION... QTE,000 PRIX TOTAL
-  var lines=cleanText.split('\n');
   lines.forEach(function(line){
     line=line.trim();
-    if(!line||line.length<8) return;
-
-    // Ignorer lignes d'en-tête / pied de page
-    if(/^(C Article|D.signation|Cde |Code Client|Total Commande|N. Commande|\d+\/\d+$)/i.test(line)) return;
-
-    // Pattern principal : EAN (7-13 chiffres) + CODE + ... + QTE,000 + PRIX + TOTAL
-    var m=line.match(/(\d{7,13})\s+([A-Za-z][A-Za-z0-9_\-]{1,25})\s+.{3,60}?\s+(\d{1,5})[,\.](\d{3})\s+[\d,\.]+\s+[\d,\.]+/);
-    if(m){
-      var ean=m[1], codeMDM=m[2].toUpperCase(), qty=parseInt(m[3]);
-      if(qty>0){
-        // Chercher d'abord par code MDM
-        if(codeIndex[codeMDM]&&!seen[codeMDM]){
-          parsed.push({code:codeMDM,qty:qty});
-          seen[codeMDM]=true; return;
-        }
-        // Sinon par EAN
-        if(eanIndex[ean]&&!seen[ean]){
-          var prod=eanIndex[ean];
-          if(!seen[prod.code]){
-            parsed.push({code:prod.code,qty:qty});
-            seen[prod.code]=true; return;
-          }
-        }
-        // Code inconnu mais noter quand même
-        if(!seen[codeMDM]){
-          parsed.push({code:codeMDM,qty:qty});
-          seen[codeMDM]=true;
-        }
-      }
-      return;
-    }
-
-    // Pattern EAN seul (pas de code MDM séparé) : EAN EAN DESIGNATION QTE,000 PRIX TOTAL
-    var m2=line.match(/(\d{7,13})\s+\d{7,13}\s+.{3,60}?\s+(\d{1,5})[,\.](\d{3})\s+[\d,\.]+\s+[\d,\.]+/);
-    if(m2){
-      var ean=m2[1], qty=parseInt(m2[2]);
-      if(qty>0&&eanIndex[ean]&&!seen[ean]){
-        var prod=eanIndex[ean];
-        if(!seen[prod.code]){
-          parsed.push({code:prod.code,qty:qty});
-          seen[prod.code]=true;
-        }
-      }
-      return;
-    }
+    if(!line||line.startsWith('#')||SKIP.test(line)) return;
+    var m=line.match(SEP_RE)||line.match(SPC_RE);
+    if(!m) return;
+    var code=m[1].trim().toUpperCase(), qty=parseInt(m[2])||0;
+    if(code&&qty>0) parsed.push({code:code,qty:qty});
   });
 
-  // ── Méthode 2 : scan global du texte pour EAN connus ───────
-  // Si méthode 1 n'a rien trouvé (ex: PDF où le texte est concaténé sans \n)
-  if(!parsed.length){
-    // Chercher tous les EAN de 13 chiffres dans le texte brut
-    var eanPattern=/\b(\d{13})\b/g;
-    var em;
-    while((em=eanPattern.exec(cleanText))!==null){
-      var ean=em[1];
-      var prod=eanIndex[ean];
-      if(!prod) continue;
-      if(seen[prod.code]) continue;
-
-      // Chercher un nombre de quantité proche (dans les 80 chars suivants)
-      var after=cleanText.substring(em.index+13,em.index+200);
-      // Chercher QTE,000 ou QTE.000 (format MDM)
-      var qm=after.match(/(\d{1,5})[,\.](\d{3})\b/);
-      if(!qm) qm=after.match(/\b(\d{1,4})\b/);
-      if(qm){
-        var qty=parseInt(qm[1]);
-        if(qty>0&&qty<5000){
-          parsed.push({code:prod.code,qty:qty});
-          seen[prod.code]=true;
-        }
-      }
-    }
-
-    // Chercher aussi les EAN à 8 chiffres ou codes MDM connus
-    if(!parsed.length){
-      Object.keys(codeIndex).forEach(function(code){
-        var re=new RegExp('\\b'+code+'\\b','i');
-        var m=cleanText.match(re);
-        if(!m||seen[code]) return;
-        var idx=cleanText.indexOf(m[0]);
-        var after=cleanText.substring(idx+code.length,idx+code.length+100);
-        var qm=after.match(/(\d{1,5})[,\.](\d{3})/)||after.match(/\b(\d{1,4})\b/);
-        if(qm){
-          var qty=parseInt(qm[1]);
-          if(qty>0&&qty<5000){
-            parsed.push({code:code,qty:qty});
-            seen[code]=true;
-          }
-        }
-      });
-    }
+  _logClear(tab);
+  if (!parsed.length) {
+    _logImport(tab,'\u26a0 Aucune ligne reconnue.\nFormat\u00a0: CODE;QTE ou CODE QTE','warn');
+    return;
   }
-
-  document.getElementById('import-log').textContent='';
-  if(!parsed.length){
-    document.getElementById('import-log').textContent=
-      '\u26a0 Aucun produit d\u00e9tect\u00e9 dans ce PDF.\n\n'
-      +'Causes possibles\u00a0:\n'
-      +'  \u2022 PDF scanné (image) non lisible par le navigateur\n'
-      +'  \u2022 Format de ligne non reconnu\n\n'
-      +'Solution\u00a0: exportez le fichier en Excel (.xlsx) depuis votre logiciel.';
-    document.getElementById('import-log').style.whiteSpace='pre-wrap';
-  } else {
-    document.getElementById('import-log').textContent='';
-  }
-  _matchAndDisplay(parsed, 'PDF\u00a0: '+filename);
+  _logImport(tab,'\u2705 '+parsed.length+' ligne(s)','ok');
+  _matchAndDisplay(parsed,'Saisie manuelle',tab);
 }
 
-
-// ── Matcher les codes contre le catalogue ─────────────────────
-function _matchAndDisplay(parsed, sourceLabel){
-  var products=window.PRODUCTS||[];
+/* ── Match & Affichage ───────────────────────────────────────── */
+function _matchAndDisplay(parsed, sourceLabel, tab) {
+  var products = window.PRODUCTS||[];
   var codeIndex={};
   products.forEach(function(p){ codeIndex[p.code.toUpperCase()]=p; });
 
   _importItems=[];
-  parsed.forEach(function(item){
+  parsed.forEach(function(item) {
     var prod=codeIndex[item.code.toUpperCase()];
     _importItems.push({
-      code:item.code,
-      qty:item.qty,
-      libelle:prod?prod.libelle:'— non trouv\u00e9',
-      found:!!prod,
-      product:prod||null
+      code:    item.code,
+      qty:     item.qty,
+      libelle: prod ? prod.libelle : '— non trouv\u00e9 dans le catalogue',
+      found:   !!prod,
+      product: prod||null
     });
   });
 
-  var found=_importItems.filter(function(x){return x.found;}).length;
-  var notFound=_importItems.length-found;
+  var found    = _importItems.filter(function(x){return x.found;}).length;
+  var notFound = _importItems.length - found;
 
-  // Afficher r\u00e9sum\u00e9
-  var sumEl=document.getElementById('import-summary');
-  sumEl.innerHTML='<div class="import-sum-item"><div class="import-sum-val">'+_importItems.length+'</div><div class="import-sum-lbl">Lignes</div></div>'
-    +'<div class="import-sum-item"><div class="import-sum-val" style="color:var(--accent)">'+found+'</div><div class="import-sum-lbl">Trouv\u00e9s</div></div>'
-    +(notFound>0?'<div class="import-sum-item"><div class="import-sum-val" style="color:var(--danger)">'+notFound+'</div><div class="import-sum-lbl">Inconnus</div></div>':'');
-
-  // Afficher lignes
-  var headEl=document.getElementById('import-result-head');
-  headEl.textContent=sourceLabel;
-
-  var listEl=document.getElementById('import-rows-list');
-  if(!_importItems.length){
-    listEl.innerHTML='<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:12px">\u26a0 Aucun produit d\u00e9tect\u00e9 dans ce fichier.</div>';
-    document.getElementById('import-result').style.display='block';
-    return;
+  // Résumé
+  var sumEl=document.getElementById('import-summary-'+tab);
+  if (sumEl) {
+    sumEl.innerHTML=
+      '<div class="import-sum-item">'
+      +'<div class="import-sum-val">'+_importItems.length+'</div>'
+      +'<div class="import-sum-lbl">Lignes</div></div>'
+      +'<div class="import-sum-item">'
+      +'<div class="import-sum-val green">'+found+'</div>'
+      +'<div class="import-sum-lbl">Trouv\u00e9s</div></div>'
+      +(notFound>0
+        ?'<div class="import-sum-item">'
+          +'<div class="import-sum-val red">'+notFound+'</div>'
+          +'<div class="import-sum-lbl">Inconnus</div></div>'
+        :'');
   }
 
-  listEl.innerHTML=_importItems.map(function(item){
-    return '<div class="import-row">'
-      +'<span class="import-row-code">'+item.code+'</span>'
-      +'<span class="import-row-lib">'+item.libelle+'</span>'
-      +'<span class="import-row-qty">'+item.qty+'</span>'
-      +'<span class="import-row-status '+(item.found?'ok':'notfound')+'">'+(item.found?'\u2713':'?')+'</span>'
-      +'</div>';
-  }).join('');
+  // Label source
+  var lblEl=document.getElementById('import-result-label-'+tab);
+  if (lblEl) lblEl.textContent=sourceLabel;
 
-  document.getElementById('import-result').style.display='block';
-
-  if(found>0){
-    document.getElementById('import-panel-foot').style.display='flex';
+  // Lignes
+  var rowsEl=document.getElementById('import-rows-'+tab);
+  if (rowsEl) {
+    if (!_importItems.length) {
+      rowsEl.innerHTML='<div style="padding:18px;text-align:center;color:#b09a8a;font-size:12px">'
+        +'\u26a0 Aucun produit d\u00e9tect\u00e9 dans ce fichier.</div>';
+    } else {
+      rowsEl.innerHTML=_importItems.map(function(item){
+        var pn=item.product?getPrixNet(item.product)*item.qty*(parseFloat(item.product.pcb)||1):0;
+        return '<div class="import-row">'
+          +'<span class="import-row-code">'+item.code+'</span>'
+          +'<span class="import-row-lib" title="'+item.libelle+'">'+item.libelle.substring(0,34)+'</span>'
+          +'<span class="import-row-qty">\u00d7'+item.qty+'</span>'
+          +(item.found&&pn>0?'<span style="font-size:10px;color:#4a7c59;width:55px;text-align:right;flex-shrink:0">'+fmt2(pn)+'</span>':'<span style="width:55px"></span>')
+          +'<span class="import-row-status '+(item.found?'ok':'notfound')+'">'
+          +(item.found?'\u2713':'\u003f')+'</span>'
+          +'</div>';
+      }).join('');
+    }
   }
+
+  _showResult(tab, true);
+  _setFoot(found>0);
 }
 
-// ── Appliquer l'import dans le BDC ───────────────────────────
-function applyImport(){
+/* ── Appliquer l'import ──────────────────────────────────────── */
+function applyImport() {
   var products=window.PRODUCTS||[];
   var applied=0;
 
-  // D'abord remettre toutes les quantit\u00e9s \u00e0 0
-  for(var i=0;i<products.length;i++){
-    var p=products[i];
+  // Remettre tout à 0
+  products.forEach(function(p){
     qtys[p.code]=0;
-    var inp=document.getElementById('q-'+p.code);
-    if(inp) inp.value='';
-    var uvcEl=document.getElementById('u-'+p.code);
-    if(uvcEl) uvcEl.textContent='';
-    var totEl=document.getElementById('t-'+p.code);
-    if(totEl) totEl.textContent='';
-    var rowEl=document.getElementById('row-'+p.code);
-    if(rowEl) rowEl.classList.remove('has-qty');
-  }
+    var inp=document.getElementById('q-'+p.code); if(inp) inp.value='';
+    var uvc=document.getElementById('u-'+p.code)||document.getElementById('uvc-'+p.code);
+    if(uvc) uvc.textContent='—';
+    var tot=document.getElementById('t-'+p.code); if(tot) tot.textContent='';
+    var row=document.querySelector('tr[data-code="'+p.code+'"]');
+    if(row) row.classList.remove('has-qty');
+  });
 
-  // Appliquer les quantit\u00e9s import\u00e9es
+  // Appliquer les items importés
   _importItems.forEach(function(item){
-    if(!item.found||!item.product) return;
+    if (!item.found||!item.product) return;
     var p=item.product;
-    qtys[p.code]=item.qty;
-    applied++;
+    qtys[p.code]=item.qty; applied++;
     var inp=document.getElementById('q-'+p.code);
-    if(inp){ inp.value=item.qty; }
+    if (inp) { inp.value=item.qty; }
     var pcb=parseFloat(p.pcb)||1;
-    var uvcEl=document.getElementById('u-'+p.code);
-    if(uvcEl) uvcEl.textContent=item.qty*pcb;
-    var net=getPrixNet(p)*item.qty*pcb;
-    var totEl=document.getElementById('t-'+p.code);
-    if(totEl) totEl.textContent=fmt2(net);
-    var rowEl=document.getElementById('row-'+p.code);
-    if(rowEl) rowEl.classList.add('has-qty');
+    var uvc=document.getElementById('u-'+p.code)||document.getElementById('uvc-'+p.code);
+    if (uvc) uvc.textContent=item.qty*pcb;
+    var pn=getPrixNet(p)*item.qty*pcb;
+    var tot=document.getElementById('t-'+p.code);
+    if (tot) tot.textContent=fmt2(pn);
+    var row=document.querySelector('tr[data-code="'+p.code+'"]');
+    if (row) row.classList.add('has-qty');
   });
 
   updateTotals();
 
-  // Scroll vers la premi\u00e8re ligne import\u00e9e
-  var firstCode=_importItems.find(function(x){return x.found;});
-  if(firstCode){
-    var rowEl=document.getElementById('row-'+firstCode.code);
-    if(rowEl) setTimeout(function(){rowEl.scrollIntoView({behavior:'smooth',block:'center'});},200);
-  }
-
+  var sendAfter=(document.getElementById('import-send-after')||{}).checked;
   closeImportPanel();
+  showToast('\u2705 '+applied+' produits import\u00e9s'+(applied<_importItems.length?' (\u26a0 '+(_importItems.length-applied)+' non trouv\u00e9s)':''));
 
-  // Toast + ouvrir modal d'envoi
-  showToast('\u2705 '+applied+' produits import\u00e9s — v\u00e9rifiez et envoyez la commande');
-  setTimeout(function(){ openModal(); }, 600);
+  if (sendAfter && applied>0) {
+    setTimeout(function(){openModal();},500);
+  } else if (applied>0) {
+    var firstItem=_importItems.find(function(x){return x.found;});
+    if (firstItem) {
+      var row=document.querySelector('tr[data-code="'+firstItem.code+'"]');
+      if (row) setTimeout(function(){row.scrollIntoView({behavior:'smooth',block:'center'});},300);
+    }
+  }
 }
+
 
 
 
@@ -3879,43 +4024,147 @@ function draftInit(){
 <!-- ══ PANNEAU IMPORT ══════════════════════════════════════ -->
 <div class="import-overlay" id="import-overlay" onclick="closeImportPanel()"></div>
 <div class="import-panel" id="import-panel">
+
+  <!-- En-tête -->
   <div class="import-panel-head">
-    <div class="import-panel-title">&#128196;&nbsp;Importer une commande</div>
-    <button class="import-close" onclick="closeImportPanel()">&#10005;</button>
+    <div class="import-panel-title">
+      <span>&#128196;</span> Importer une commande client
+    </div>
+    <button class="import-close" onclick="closeImportPanel()" title="Fermer">&#10005;</button>
   </div>
-  <div class="import-panel-body">
-    <!-- Drop zone -->
-    <div class="import-drop" id="import-drop"
-      onclick="document.getElementById('import-file-input').click()"
+
+  <!-- Onglets -->
+  <div class="import-tabs">
+    <div class="import-tab active" id="itab-excel" onclick="switchImportTab('excel')">
+      <span class="import-tab-icon">&#128202;</span> Excel
+    </div>
+    <div class="import-tab" id="itab-pdf" onclick="switchImportTab('pdf')">
+      <span class="import-tab-icon">&#128196;</span> PDF
+    </div>
+    <div class="import-tab" id="itab-txt" onclick="switchImportTab('txt')">
+      <span class="import-tab-icon">&#128221;</span> Texte / CSV
+    </div>
+    <div class="import-tab" id="itab-manuel" onclick="switchImportTab('manuel')">
+      <span class="import-tab-icon">&#9998;</span> Saisie manuelle
+    </div>
+  </div>
+
+  <!-- Onglet Excel -->
+  <div class="import-tab-content active" id="icontent-excel">
+    <div class="import-drop" id="import-drop-excel"
+      onclick="document.getElementById('import-file-excel').click()"
       ondragover="event.preventDefault();this.classList.add('drag')"
       ondragleave="this.classList.remove('drag')"
-      ondrop="event.preventDefault();this.classList.remove('drag');handleImportFile(event.dataTransfer.files[0])">
+      ondrop="event.preventDefault();this.classList.remove('drag');handleImportFile(event.dataTransfer.files[0],'excel')">
+      <div class="import-drop-icon">&#128202;</div>
+      <div class="import-drop-title" id="import-drop-excel-title">Glissez votre fichier Excel</div>
+      <div class="import-drop-sub">ou cliquez pour parcourir</div>
+      <div class="import-drop-hint">.xlsx &nbsp;&bull;&nbsp; .xls &nbsp;&bull;&nbsp; .ods</div>
+      <input type="file" id="import-file-excel" accept=".xlsx,.xls,.ods,.csv" style="display:none"
+        onchange="handleImportFile(this.files[0],'excel')">
+    </div>
+    <div class="import-help">
+      <strong>Colonnes reconnues automatiquement&nbsp;:</strong><br>
+      Code article&nbsp;: <code>Code</code> <code>Ref</code> <code>CodeArticle</code> <code>Article</code><br>
+      Quantit&eacute;&nbsp;: <code>Qte</code> <code>Quantite</code> <code>Qty</code> <code>Colis</code> <code>NbColis</code><br>
+      <em>Tous les noms de colonnes sont accept&eacute;s en majuscules/minuscules.</em>
+    </div>
+    <div class="import-log" id="import-log-excel"></div>
+    <div class="import-result" id="import-result-excel">
+      <div class="import-result-label" id="import-result-label-excel"></div>
+      <div class="import-summary" id="import-summary-excel"></div>
+      <div class="import-rows" id="import-rows-excel"></div>
+    </div>
+  </div>
+
+  <!-- Onglet PDF -->
+  <div class="import-tab-content" id="icontent-pdf">
+    <div class="import-drop" id="import-drop-pdf"
+      onclick="document.getElementById('import-file-pdf').click()"
+      ondragover="event.preventDefault();this.classList.add('drag')"
+      ondragleave="this.classList.remove('drag')"
+      ondrop="event.preventDefault();this.classList.remove('drag');handleImportFile(event.dataTransfer.files[0],'pdf')">
       <div class="import-drop-icon">&#128196;</div>
-      <div class="import-drop-txt">Glissez votre fichier ici</div>
-      <div class="import-drop-sub">Excel (.xlsx, .xls) ou PDF — colonnes Code + Quantit&#233;</div>
-      <input type="file" id="import-file-input" accept=".xlsx,.xls,.pdf" style="display:none"
-        onchange="handleImportFile(this.files[0])">
+      <div class="import-drop-title" id="import-drop-pdf-title">Glissez votre bon de commande PDF</div>
+      <div class="import-drop-sub">ou cliquez pour parcourir</div>
+      <div class="import-drop-hint">.pdf</div>
+      <input type="file" id="import-file-pdf" accept=".pdf" style="display:none"
+        onchange="handleImportFile(this.files[0],'pdf')">
     </div>
-    <!-- Aide format -->
-    <div style="margin-top:12px;padding:10px 14px;background:#f0f7f2;border-radius:7px;font-size:11px;color:var(--accent);line-height:1.7">
-      <strong>Formats accept&#233;s&nbsp;:</strong><br>
-      &#8226; Excel&nbsp;: colonnes <code>Code</code> + <code>Qte</code> (ou Quantite, Qty, Colis&#8230;)<br>
-      &#8226; PDF&nbsp;: lignes avec code produit et quantit&#233; d&#233;tect&#233;s automatiquement
+    <div class="import-help">
+      <strong>Extraction automatique&nbsp;:</strong><br>
+      Le syst&egrave;me d&eacute;tecte les codes produit MDM et les quantit&eacute;s dans votre PDF.<br>
+      <em>Fonctionne avec la plupart des BDC fournisseurs. PDFs scann&eacute;s non support&eacute;s.</em>
     </div>
-    <!-- R&#233;sultat -->
-    <div class="import-result" id="import-result" style="display:none">
-      <div class="import-result-head" id="import-result-head"></div>
-      <div class="import-summary" id="import-summary"></div>
-      <div id="import-rows-list"></div>
+    <div class="import-log" id="import-log-pdf"></div>
+    <div class="import-result" id="import-result-pdf">
+      <div class="import-result-label" id="import-result-label-pdf"></div>
+      <div class="import-summary" id="import-summary-pdf"></div>
+      <div class="import-rows" id="import-rows-pdf"></div>
     </div>
-    <div id="import-log" style="margin-top:10px;font-size:11px;color:var(--text-muted)"></div>
   </div>
-  <div class="import-panel-foot" id="import-panel-foot" style="display:none">
-    <button class="btn-cancel" onclick="closeImportPanel()" style="flex:1">Annuler</button>
-    <button onclick="applyImport()" style="flex:2;padding:9px;background:var(--accent);color:#fff;border:none;border-radius:7px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer">
-      &#10003;&nbsp;Appliquer &amp; envoyer
+
+  <!-- Onglet TXT/CSV -->
+  <div class="import-tab-content" id="icontent-txt">
+    <div class="import-drop" id="import-drop-txt"
+      onclick="document.getElementById('import-file-txt').click()"
+      ondragover="event.preventDefault();this.classList.add('drag')"
+      ondragleave="this.classList.remove('drag')"
+      ondrop="event.preventDefault();this.classList.remove('drag');handleImportFile(event.dataTransfer.files[0],'txt')">
+      <div class="import-drop-icon">&#128221;</div>
+      <div class="import-drop-title" id="import-drop-txt-title">Glissez votre fichier texte</div>
+      <div class="import-drop-sub">ou cliquez pour parcourir</div>
+      <div class="import-drop-hint">.txt &nbsp;&bull;&nbsp; .csv &nbsp;&bull;&nbsp; .tsv</div>
+      <input type="file" id="import-file-txt" accept=".txt,.csv,.tsv" style="display:none"
+        onchange="handleImportFile(this.files[0],'txt')">
+    </div>
+    <div class="import-help">
+      <strong>Formats accept&eacute;s (1 ligne par produit)&nbsp;:</strong><br>
+      <code>CODE123;5</code> &nbsp; <code>CODE123,5</code> &nbsp; <code>CODE123 5</code> &nbsp; <code>CODE123|5</code><br>
+      Avec ent&ecirc;te&nbsp;: <code>Code;Qte</code> puis les lignes produits.<br>
+      S&eacute;parateurs&nbsp;: point-virgule, virgule, tabulation, espace, pipe.
+    </div>
+    <div class="import-log" id="import-log-txt"></div>
+    <div class="import-result" id="import-result-txt">
+      <div class="import-result-label" id="import-result-label-txt"></div>
+      <div class="import-summary" id="import-summary-txt"></div>
+      <div class="import-rows" id="import-rows-txt"></div>
+    </div>
+  </div>
+
+  <!-- Onglet Saisie manuelle -->
+  <div class="import-tab-content" id="icontent-manuel">
+    <div style="font-size:12px;color:#7a6655;margin-bottom:10px">
+      Saisissez les codes et quantit&eacute;s directement, un par ligne.<br>
+      Format&nbsp;: <code style="background:#f0ebe8;padding:1px 5px;border-radius:3px">CODE;QTE</code> ou <code style="background:#f0ebe8;padding:1px 5px;border-radius:3px">CODE QTE</code>
+    </div>
+    <textarea id="import-textarea" rows="12"
+      style="width:100%;padding:10px 12px;border:1.5px solid #e5dcd5;border-radius:8px;font-family:monospace;font-size:12px;resize:vertical;outline:none;color:#2d2018;line-height:1.7"
+      placeholder="ABRCOU200;10&#10;ABRCOU5;2&#10;AIL100;6&#10;..."></textarea>
+    <button onclick="parseManuel()"
+      style="width:100%;padding:9px;background:#4a7c59;color:#fff;border:none;border-radius:7px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit">
+      &#128269;&nbsp; Analyser la saisie
     </button>
+    <div class="import-log" id="import-log-manuel"></div>
+    <div class="import-result" id="import-result-manuel">
+      <div class="import-result-label" id="import-result-label-manuel"></div>
+      <div class="import-summary" id="import-summary-manuel"></div>
+      <div class="import-rows" id="import-rows-manuel"></div>
+    </div>
   </div>
+
+  <!-- Pied de panneau -->
+  <div class="import-panel-foot" id="import-panel-foot">
+    <button class="import-btn-cancel" onclick="closeImportPanel()">Annuler</button>
+    <button class="import-btn-apply" onclick="applyImport()">
+      &#10003;&nbsp; Appliquer &amp; ouvrir la commande
+    </button>
+    <label class="import-send-after">
+      <input type="checkbox" id="import-send-after" checked>
+      Envoyer apr&egrave;s
+    </label>
+  </div>
+
 </div>
 
 </body>

@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LOAC DEV Solutions — CRM & Commandes pour producteurs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --vert: #1a6b47;
+    --vert-clair: #2a9d6a;
+    --vert-pale: #e8f5ef;
+    --terre: #3d2b1f;
+    --sable: #f5f0e8;
+    --blanc: #fdfcf9;
+    --gris: #6b6560;
+    --gris-leger: #ede8e0;
+    --accent: #c8402a;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--blanc);
+    color: var(--terre);
+    overflow-x: hidden;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 48px;
+    background: rgba(253,252,249,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--gris-leger);
+  }
+  .nav-logo {
+    font-family: 'DM Serif Display', serif;
+    font-size: 20px;
+    color: var(--vert);
+    letter-spacing: -0.3px;
+  }
+  .nav-logo span { color: var(--terre); }
+  .nav-links { display: flex; gap: 32px; list-style: none; }
+  .nav-links a { font-size: 14px; color: var(--gris); text-decoration: none; font-weight: 400; transition: color 0.2s; }
+  .nav-links a:hover { color: var(--vert); }
+  .nav-cta {
+    background: var(--vert);
+    color: #fff;
+    padding: 9px 22px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background 0.2s;
+  }
+  .nav-cta:hover { background: var(--vert-clair); }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    padding: 120px 48px 80px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-bg {
+    position: absolute; inset: 0; z-index: 0;
+    background:
+      radial-gradient(ellipse 60% 50% at 80% 50%, rgba(26,107,71,0.08) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 60% at 10% 80%, rgba(200,64,42,0.05) 0%, transparent 60%);
+  }
+  .hero-grid-pattern {
+    position: absolute; inset: 0; z-index: 0;
+    background-image:
+      linear-gradient(var(--gris-leger) 1px, transparent 1px),
+      linear-gradient(90deg, var(--gris-leger) 1px, transparent 1px);
+    background-size: 48px 48px;
+    opacity: 0.5;
+    mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
+  }
+  .hero-content { position: relative; z-index: 1; max-width: 680px; }
+  .hero-eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--vert-pale);
+    border: 1px solid rgba(26,107,71,0.2);
+    color: var(--vert);
+    font-size: 12px;
+    font-weight: 500;
+    padding: 6px 14px;
+    border-radius: 100px;
+    margin-bottom: 28px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .hero-eyebrow::before { content: '●'; font-size: 8px; animation: pulse 2s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(42px, 6vw, 72px);
+    line-height: 1.05;
+    letter-spacing: -1.5px;
+    color: var(--terre);
+    margin-bottom: 24px;
+  }
+  h1 em {
+    font-style: italic;
+    color: var(--vert);
+  }
+  .hero-sub {
+    font-size: 18px;
+    color: var(--gris);
+    line-height: 1.65;
+    max-width: 520px;
+    margin-bottom: 40px;
+    font-weight: 300;
+  }
+  .hero-actions { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .btn-primary {
+    background: var(--vert);
+    color: #fff;
+    padding: 14px 28px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-flex; align-items: center; gap: 8px;
+    transition: background 0.2s, transform 0.15s;
+  }
+  .btn-primary:hover { background: var(--vert-clair); transform: translateY(-1px); }
+  .btn-secondary {
+    color: var(--vert);
+    font-size: 15px;
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-flex; align-items: center; gap: 6px;
+    border-bottom: 1.5px solid var(--vert);
+    padding-bottom: 1px;
+    transition: opacity 0.2s;
+  }
+  .btn-secondary:hover { opacity: 0.7; }
+
+  .hero-visual {
+    position: absolute; right: -40px; top: 50%; transform: translateY(-50%);
+    width: 480px; z-index: 1;
+    opacity: 0; animation: fadeInRight 0.8s ease 0.4s forwards;
+  }
+  @keyframes fadeInRight { from {opacity:0;transform:translateY(-50%) translateX(40px)} to {opacity:1;transform:translateY(-50%) translateX(0)} }
+  @keyframes fadeInUp { from {opacity:0;transform:translateY(30px)} to {opacity:1;transform:translateY(0)} }
+
+  .hero-content { animation: fadeInUp 0.7s ease 0.1s both; }
+
+  .mock-crm {
+    background: #fff;
+    border-radius: 16px;
+    border: 1px solid var(--gris-leger);
+    box-shadow: 0 32px 80px rgba(61,43,31,0.12), 0 8px 24px rgba(61,43,31,0.06);
+    overflow: hidden;
+    font-size: 12px;
+  }
+  .mock-topbar {
+    background: var(--terre);
+    padding: 12px 16px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .mock-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .mock-title { color: rgba(255,255,255,0.6); font-size: 11px; margin-left: 8px; font-family: 'DM Sans', sans-serif; }
+  .mock-body { padding: 16px; }
+  .mock-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 8px 10px;
+    border-radius: 6px;
+    margin-bottom: 4px;
+    transition: background 0.15s;
+  }
+  .mock-row:hover { background: var(--sable); }
+  .mock-row-name { font-weight: 500; color: var(--terre); font-size: 12px; }
+  .mock-row-sub { color: var(--gris); font-size: 10px; margin-top: 1px; }
+  .mock-badge {
+    font-size: 10px; padding: 3px 8px; border-radius: 100px;
+    font-weight: 500;
+  }
+  .badge-green { background: var(--vert-pale); color: var(--vert); }
+  .badge-orange { background: #fff3e0; color: #e65100; }
+  .badge-gray { background: var(--gris-leger); color: var(--gris); }
+  .mock-stat-row { display: flex; gap: 8px; margin-bottom: 12px; }
+  .mock-stat {
+    flex: 1; background: var(--sable); border-radius: 8px;
+    padding: 10px; text-align: center;
+  }
+  .mock-stat-val { font-size: 18px; font-weight: 500; color: var(--vert); font-family: 'DM Serif Display', serif; }
+  .mock-stat-lbl { font-size: 9px; color: var(--gris); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.4px; }
+
+  /* SECTION GÉNÉRALE */
+  section { padding: 100px 48px; }
+  .section-eyebrow {
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--vert);
+    margin-bottom: 16px;
+  }
+  h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(32px, 4vw, 52px);
+    line-height: 1.1;
+    letter-spacing: -0.8px;
+    margin-bottom: 20px;
+  }
+  h2 em { font-style: italic; color: var(--vert); }
+
+  /* PROBLÈME */
+  .pb-section { background: var(--sable); }
+  .pb-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; max-width: 1100px; margin: 0 auto; }
+  .pb-list { list-style: none; margin-top: 32px; }
+  .pb-list li {
+    display: flex; align-items: flex-start; gap: 14px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--gris-leger);
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--gris);
+  }
+  .pb-list li:last-child { border-bottom: none; }
+  .pb-icon {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: #fff;
+    border: 1px solid var(--gris-leger);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; flex-shrink: 0; margin-top: 2px;
+  }
+  .pb-visual {
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid var(--gris-leger);
+    padding: 24px;
+    box-shadow: 0 4px 24px rgba(61,43,31,0.06);
+  }
+  .pb-visual-title { font-size: 13px; font-weight: 500; color: var(--gris); margin-bottom: 16px; text-align: center; }
+  .chaos-items { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+  .chaos-item {
+    padding: 8px 14px; border-radius: 8px;
+    font-size: 13px; font-weight: 400;
+    border: 1px dashed var(--gris-leger);
+    color: var(--gris);
+    transform: rotate(var(--r, 0deg));
+  }
+
+  /* SOLUTION / FONCTIONNALITÉS */
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-top: 48px;
+    max-width: 1100px;
+    margin-left: auto; margin-right: auto;
+  }
+  .feature-card {
+    background: #fff;
+    border: 1px solid var(--gris-leger);
+    border-radius: 12px;
+    padding: 28px;
+    transition: box-shadow 0.2s, transform 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .feature-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: var(--vert);
+    transform: scaleX(0);
+    transition: transform 0.3s;
+    transform-origin: left;
+  }
+  .feature-card:hover { box-shadow: 0 8px 32px rgba(61,43,31,0.08); transform: translateY(-2px); }
+  .feature-card:hover::before { transform: scaleX(1); }
+  .feature-icon { font-size: 28px; margin-bottom: 16px; display: block; }
+  .feature-title { font-family: 'DM Serif Display', serif; font-size: 20px; margin-bottom: 10px; }
+  .feature-desc { font-size: 14px; color: var(--gris); line-height: 1.65; font-weight: 300; }
+
+  /* TARIFS */
+  .pricing-section { background: var(--terre); color: #fff; }
+  .pricing-section h2 { color: #fff; }
+  .pricing-section h2 em { color: var(--vert-clair); }
+  .pricing-section .section-eyebrow { color: rgba(255,255,255,0.5); }
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    max-width: 900px;
+    margin: 48px auto 0;
+  }
+  .pricing-card {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 16px;
+    padding: 36px 28px;
+    text-align: center;
+    transition: background 0.2s, transform 0.2s;
+    position: relative;
+  }
+  .pricing-card:hover { background: rgba(255,255,255,0.1); transform: translateY(-2px); }
+  .pricing-card.featured {
+    background: var(--vert);
+    border-color: var(--vert-clair);
+  }
+  .pricing-badge {
+    position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+    background: var(--accent);
+    color: #fff;
+    font-size: 11px; font-weight: 500;
+    padding: 4px 14px;
+    border-radius: 100px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+  .pricing-plan { font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.6); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.8px; }
+  .featured .pricing-plan { color: rgba(255,255,255,0.8); }
+  .pricing-price { font-family: 'DM Serif Display', serif; font-size: 52px; line-height: 1; margin-bottom: 4px; }
+  .pricing-freq { font-size: 13px; color: rgba(255,255,255,0.5); margin-bottom: 24px; }
+  .pricing-setup { font-size: 12px; color: rgba(255,255,255,0.5); margin-bottom: 24px; margin-top: -12px; }
+  .pricing-features { list-style: none; text-align: left; margin-bottom: 32px; }
+  .pricing-features li { font-size: 14px; color: rgba(255,255,255,0.8); padding: 7px 0; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+  .pricing-features li::before { content: '✓'; color: var(--vert-clair); font-weight: 700; font-size: 12px; flex-shrink: 0; }
+  .featured .pricing-features li::before { color: rgba(255,255,255,0.9); }
+  .btn-pricing {
+    display: block; width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 14px; font-weight: 500;
+    text-decoration: none;
+    text-align: center;
+    background: rgba(255,255,255,0.12);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.2);
+    transition: background 0.2s;
+  }
+  .btn-pricing:hover { background: rgba(255,255,255,0.22); }
+  .featured .btn-pricing { background: #fff; color: var(--vert); border-color: #fff; }
+  .featured .btn-pricing:hover { background: rgba(255,255,255,0.9); }
+
+  /* RÉFÉRENCES */
+  .refs-section { background: var(--vert-pale); }
+  .refs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; max-width: 900px; margin: 48px auto 0; }
+  .ref-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 28px;
+    border: 1px solid rgba(26,107,71,0.15);
+  }
+  .ref-header { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+  .ref-avatar {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--vert);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'DM Serif Display', serif;
+    font-size: 16px; color: #fff;
+  }
+  .ref-name { font-weight: 500; font-size: 15px; }
+  .ref-company { font-size: 13px; color: var(--gris); }
+  .ref-quote { font-size: 14px; color: var(--gris); line-height: 1.7; font-style: italic; font-weight: 300; }
+  .ref-quote::before { content: '"'; font-family: 'DM Serif Display', serif; font-size: 32px; color: var(--vert); line-height: 0; vertical-align: -12px; margin-right: 4px; }
+
+  /* CONTACT */
+  .contact-section { text-align: center; max-width: 600px; margin: 0 auto; }
+  .contact-section .section-inner { max-width: 600px; margin: 0 auto; }
+  .contact-form {
+    background: #fff;
+    border: 1px solid var(--gris-leger);
+    border-radius: 16px;
+    padding: 40px;
+    margin-top: 40px;
+    text-align: left;
+    box-shadow: 0 4px 32px rgba(61,43,31,0.06);
+  }
+  .form-row { margin-bottom: 18px; }
+  label { display: block; font-size: 13px; font-weight: 500; color: var(--terre); margin-bottom: 6px; }
+  input, textarea, select {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1px solid var(--gris-leger);
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--terre);
+    background: var(--sable);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  input:focus, textarea:focus, select:focus { border-color: var(--vert); background: #fff; }
+  textarea { resize: vertical; min-height: 90px; }
+  .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .btn-submit {
+    width: 100%;
+    background: var(--vert);
+    color: #fff;
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: background 0.2s;
+    margin-top: 8px;
+  }
+  .btn-submit:hover { background: var(--vert-clair); }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--gris-leger);
+    padding: 32px 48px;
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 13px; color: var(--gris);
+  }
+  .footer-logo { font-family: 'DM Serif Display', serif; font-size: 18px; color: var(--vert); }
+
+  /* RESPONSIVE */
+  @media (max-width: 900px) {
+    nav { padding: 14px 24px; }
+    .nav-links { display: none; }
+    section { padding: 70px 24px; }
+    .hero { padding: 100px 24px 60px; }
+    .hero-visual { display: none; }
+    .pb-grid, .features-grid, .pricing-grid, .refs-grid { grid-template-columns: 1fr; }
+    footer { flex-direction: column; gap: 12px; text-align: center; }
+    .form-row-2 { grid-template-columns: 1fr; }
+  }
+
+  /* ANIMATIONS SCROLL */
+  .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.6s ease, transform 0.6s ease; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">LOAC <span>DEV</span></div>
+  <ul class="nav-links">
+    <li><a href="#probleme">Le problème</a></li>
+    <li><a href="#solution">La solution</a></li>
+    <li><a href="#tarifs">Tarifs</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+  <a href="#contact" class="nav-cta">Demander une démo</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid-pattern"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow">CRM pour producteurs & artisans</div>
+    <h1>Vos commandes<br>revendeurs,<br><em>enfin organisées.</em></h1>
+    <p class="hero-sub">
+      Un outil sur mesure pour gérer vos bons de commande, suivre vos clients et piloter votre activité — sans Excel, sans WhatsApp, sans prise de tête.
+    </p>
+    <div class="hero-actions">
+      <a href="#contact" class="btn-primary">
+        Voir la démo gratuite →
+      </a>
+      <a href="#tarifs" class="btn-secondary">Voir les tarifs</a>
+    </div>
+  </div>
+
+  <div class="hero-visual">
+    <div class="mock-crm">
+      <div class="mock-topbar">
+        <div class="mock-dot" style="background:#ff5f57"></div>
+        <div class="mock-dot" style="background:#ffbd2e"></div>
+        <div class="mock-dot" style="background:#28c840"></div>
+        <span class="mock-title">CRM — Moulin des Moines</span>
+      </div>
+      <div class="mock-body">
+        <div class="mock-stat-row">
+          <div class="mock-stat"><div class="mock-stat-val">91 004 €</div><div class="mock-stat-lbl">CA Avril</div></div>
+          <div class="mock-stat"><div class="mock-stat-val">47</div><div class="mock-stat-lbl">Commandes</div></div>
+          <div class="mock-stat"><div class="mock-stat-val">23</div><div class="mock-stat-lbl">Clients actifs</div></div>
+        </div>
+        <div style="font-size:10px;color:var(--gris);margin-bottom:8px;font-weight:500;text-transform:uppercase;letter-spacing:0.5px">Dernières commandes</div>
+        <div class="mock-row"><div><div class="mock-row-name">Biocoop Lyon Centre</div><div class="mock-row-sub">14 mai · 12 produits</div></div><span class="mock-badge badge-green">Livrée</span></div>
+        <div class="mock-row"><div><div class="mock-row-name">La Vie Claire Grenoble</div><div class="mock-row-sub">15 mai · 8 produits</div></div><span class="mock-badge badge-orange">En cours</span></div>
+        <div class="mock-row"><div><div class="mock-row-name">Biomonde Saint-Étienne</div><div class="mock-row-sub">16 mai · 5 produits</div></div><span class="mock-badge badge-gray">Planifiée</span></div>
+        <div class="mock-row"><div><div class="mock-row-name">Naturalia Clermont</div><div class="mock-row-sub">17 mai · 10 produits</div></div><span class="mock-badge badge-green">Confirmée</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROBLÈME -->
+<section class="pb-section" id="probleme">
+  <div class="pb-grid">
+    <div class="reveal">
+      <div class="section-eyebrow">Le problème</div>
+      <h2>Gérer ses<br>revendeurs,<br>c'est <em>le chaos.</em></h2>
+      <ul class="pb-list">
+        <li>
+          <div class="pb-icon">📋</div>
+          <div>Vos bons de commande s'échangent par email, WhatsApp ou pire — par papier.</div>
+        </li>
+        <li>
+          <div class="pb-icon">📊</div>
+          <div>Vos fichiers Excel se multiplient et se contredisent d'une semaine à l'autre.</div>
+        </li>
+        <li>
+          <div class="pb-icon">🔍</div>
+          <div>Impossible de savoir en un coup d'œil ce qu'un client vous a commandé le mois dernier.</div>
+        </li>
+        <li>
+          <div class="pb-icon">⏱</div>
+          <div>Vous perdez des heures à ressaisir, relancer et réconcilier des commandes.</div>
+        </li>
+      </ul>
+    </div>
+    <div class="reveal" style="transition-delay:0.15s">
+      <div class="pb-visual">
+        <div class="pb-visual-title">La réalité de beaucoup de producteurs aujourd'hui</div>
+        <div class="chaos-items">
+          <div class="chaos-item" style="--r:-2deg">📎 BDC_Biocoop_avril_v3.xlsx</div>
+          <div class="chaos-item" style="--r:1.5deg">WhatsApp Biomonde</div>
+          <div class="chaos-item" style="--r:-1deg">📧 Re: Re: Commande semaine 18</div>
+          <div class="chaos-item" style="--r:2deg">📄 BDC papier signé (perdu ?)</div>
+          <div class="chaos-item" style="--r:-1.5deg">📱 SMS "tu peux noter 2 quinoa de plus"</div>
+          <div class="chaos-item" style="--r:1deg">📋 Post-it "frigo Naturalia"</div>
+          <div class="chaos-item" style="--r:-2.5deg">🗂 COMMANDES_2026_FINAL_v2.xlsx</div>
+          <div class="chaos-item" style="--r:1.5deg">📞 Appel non enregistré</div>
+        </div>
+        <div style="margin-top:20px;padding:14px;background:var(--sable);border-radius:8px;font-size:13px;color:var(--gris);text-align:center">
+          Résultat : erreurs, oublis, et heures perdues chaque semaine.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SOLUTION / FONCTIONNALITÉS -->
+<section id="solution">
+  <div style="max-width:1100px;margin:0 auto">
+    <div class="reveal" style="text-align:center;max-width:600px;margin:0 auto 0">
+      <div class="section-eyebrow">La solution</div>
+      <h2>Un outil <em>taillé</em> pour<br>votre métier.</h2>
+      <p style="font-size:16px;color:var(--gris);line-height:1.65;font-weight:300;margin-top:12px">
+        Conçu spécifiquement pour les petits producteurs et artisans qui vendent en réseau de revendeurs. Pas de formation, pas de serveur, opérationnel en 48h.
+      </p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card reveal">
+        <span class="feature-icon">📦</span>
+        <div class="feature-title">Bon de commande digital</div>
+        <p class="feature-desc">Vos revendeurs passent leurs commandes via une page web à votre image. Catalogue, remises par profil, total automatique — envoi direct par email.</p>
+      </div>
+      <div class="feature-card reveal" style="transition-delay:0.1s">
+        <span class="feature-icon">👥</span>
+        <div class="feature-title">CRM clients & prospects</div>
+        <p class="feature-desc">Historique complet par client, suivi des prospects, notes, relances. Tout ce dont vous avez besoin sans la complexité d'un outil pensé pour les grands comptes.</p>
+      </div>
+      <div class="feature-card reveal" style="transition-delay:0.2s">
+        <span class="feature-icon">📊</span>
+        <div class="feature-title">Tableau de bord CA</div>
+        <p class="feature-desc">Visualisez votre chiffre d'affaires mensuel, vos objectifs et vos tendances en temps réel. Comparez vos mois, identifiez vos meilleurs clients.</p>
+      </div>
+      <div class="feature-card reveal" style="transition-delay:0.05s">
+        <span class="feature-icon">🎨</span>
+        <div class="feature-title">À votre image</div>
+        <p class="feature-desc">Logo, couleurs, nom — l'outil reflète votre marque. Vos revendeurs voient votre identité, pas celle de leur outil de gestion.</p>
+      </div>
+      <div class="feature-card reveal" style="transition-delay:0.15s">
+        <span class="feature-icon">📥</span>
+        <div class="feature-title">Import catalogue Excel/PDF</div>
+        <p class="feature-desc">Importez votre catalogue existant en quelques secondes depuis un fichier Excel ou PDF. Pas de ressaisie, pas de perte de temps.</p>
+      </div>
+      <div class="feature-card reveal" style="transition-delay:0.25s">
+        <span class="feature-icon">☁️</span>
+        <div class="feature-title">Accessible partout</div>
+        <p class="feature-desc">Application web, aucune installation. Fonctionne sur ordinateur, tablette et mobile. Vos données sont sauvegardées en temps réel dans le cloud.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TARIFS -->
+<section class="pricing-section" id="tarifs">
+  <div style="max-width:900px;margin:0 auto;text-align:center">
+    <div class="reveal">
+      <div class="section-eyebrow">Tarifs</div>
+      <h2>Simple.<br><em>Transparent.</em> Sans surprise.</h2>
+      <p style="font-size:16px;color:rgba(255,255,255,0.6);line-height:1.65;margin-top:12px;font-weight:300">
+        Pas d'engagement longue durée. Un prix fixe, des fonctionnalités claires.
+      </p>
+    </div>
+    <div class="pricing-grid">
+      <div class="pricing-card reveal">
+        <div class="pricing-plan">Démarrage</div>
+        <div class="pricing-price">49€</div>
+        <div class="pricing-freq">/ mois</div>
+        <div class="pricing-setup">+ 150€ de mise en place</div>
+        <ul class="pricing-features">
+          <li>Bon de commande digital</li>
+          <li>Jusqu'à 30 produits catalogue</li>
+          <li>Gestion clients & prospects</li>
+          <li>1 profil de remise</li>
+          <li>Support par email</li>
+        </ul>
+        <a href="#contact" class="btn-pricing">Commencer</a>
+      </div>
+      <div class="pricing-card featured reveal" style="transition-delay:0.1s">
+        <div class="pricing-badge">Le plus populaire</div>
+        <div class="pricing-plan">Professionnel</div>
+        <div class="pricing-price">79€</div>
+        <div class="pricing-freq">/ mois</div>
+        <div class="pricing-setup">+ 250€ de mise en place</div>
+        <ul class="pricing-features">
+          <li>Tout le plan Démarrage</li>
+          <li>Catalogue illimité</li>
+          <li>Tableau de bord CA mensuel</li>
+          <li>Profils de remise illimités</li>
+          <li>Import Excel/PDF catalogue</li>
+          <li>Support prioritaire</li>
+        </ul>
+        <a href="#contact" class="btn-pricing">Commencer</a>
+      </div>
+      <div class="pricing-card reveal" style="transition-delay:0.2s">
+        <div class="pricing-plan">Sur mesure</div>
+        <div class="pricing-price">—</div>
+        <div class="pricing-freq">devis gratuit</div>
+        <div class="pricing-setup" style="visibility:hidden">—</div>
+        <ul class="pricing-features">
+          <li>Tout le plan Pro</li>
+          <li>Développements spécifiques</li>
+          <li>Intégration à vos outils</li>
+          <li>Formation sur site</li>
+          <li>Accompagnement dédié</li>
+          <li>SLA garanti</li>
+        </ul>
+        <a href="#contact" class="btn-pricing">Nous contacter</a>
+      </div>
+    </div>
+    <p style="font-size:13px;color:rgba(255,255,255,0.4);margin-top:28px">
+      1 mois offert pour les 3 premiers clients · Résiliable à tout moment
+    </p>
+  </div>
+</section>
+
+<!-- RÉFÉRENCES -->
+<section class="refs-section" id="references">
+  <div style="max-width:900px;margin:0 auto;text-align:center">
+    <div class="reveal">
+      <div class="section-eyebrow">Ils nous font confiance</div>
+      <h2>Des producteurs qui ont<br><em>repris le contrôle.</em></h2>
+    </div>
+    <div class="refs-grid">
+      <div class="ref-card reveal">
+        <div class="ref-header">
+          <div class="ref-avatar">MM</div>
+          <div>
+            <div class="ref-name">Moulin des Moines</div>
+            <div class="ref-company">Producteur de céréales bio · Alsace</div>
+          </div>
+        </div>
+        <p class="ref-quote">Depuis qu'on utilise l'outil LOAC DEV, nos revendeurs passent leurs commandes directement en ligne. On a éliminé quasiment tous les échanges par email et on voit notre CA en temps réel. Un gain de temps énorme.</p>
+      </div>
+      <div class="ref-card reveal" style="transition-delay:0.1s">
+        <div class="ref-header">
+          <div class="ref-avatar" style="background:#c8402a">BT</div>
+          <div>
+            <div class="ref-name">BIO N TRUFFE — Eridan</div>
+            <div class="ref-company">Spécialiste de la truffe bio · Périgord</div>
+          </div>
+        </div>
+        <p class="ref-quote">L'outil a été déployé en deux jours avec notre catalogue complet. Nos clients revendeurs ont adopté le bon de commande en ligne très rapidement. La gestion des remises par profil nous fait gagner beaucoup d'énergie.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="contact-section" style="margin:0 auto">
+    <div class="reveal">
+      <div class="section-eyebrow" style="text-align:center">Contact</div>
+      <h2 style="text-align:center">Discutons de<br><em>votre projet.</em></h2>
+      <p style="text-align:center;font-size:16px;color:var(--gris);line-height:1.65;font-weight:300;margin-top:12px">
+        Démo gratuite de 30 minutes. On regarde ensemble si l'outil correspond à votre situation, sans engagement.
+      </p>
+    </div>
+    <div class="contact-form reveal">
+      <div class="form-row-2">
+        <div class="form-row">
+          <label for="nom">Votre nom</label>
+          <input type="text" id="nom" placeholder="Jean Dupont">
+        </div>
+        <div class="form-row">
+          <label for="structure">Votre structure</label>
+          <input type="text" id="structure" placeholder="GAEC des Sources Bio">
+        </div>
+      </div>
+      <div class="form-row">
+        <label for="email">Email</label>
+        <input type="email" id="email" placeholder="contact@votrestructure.fr">
+      </div>
+      <div class="form-row">
+        <label for="situation">Votre situation actuelle</label>
+        <select id="situation">
+          <option value="">Sélectionnez...</option>
+          <option>Je gère mes commandes par email / WhatsApp</option>
+          <option>J'utilise Excel mais c'est compliqué</option>
+          <option>Je n'ai pas encore de système</option>
+          <option>J'ai un outil mais je veux mieux</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label for="message">Un mot sur votre activité (optionnel)</label>
+        <textarea id="message" placeholder="Ex : producteur de fromage bio, 15 revendeurs en PACA, environ 80 commandes/mois..."></textarea>
+      </div>
+      <button class="btn-submit" onclick="handleSubmit()">Demander une démo gratuite →</button>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">LOAC DEV Solutions</div>
+  <div>Développé avec soin pour les producteurs indépendants · Saint-Étienne</div>
+  <div>christophe@loacdev.fr</div>
+</footer>
+
+<script>
+  // Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
+  }, { threshold: 0.12 });
+  reveals.forEach(el => observer.observe(el));
+
+  // Form submit
+  function handleSubmit() {
+    const nom = document.getElementById('nom').value.trim();
+    const email = document.getElementById('email').value.trim();
+    if (!nom || !email) { alert('Merci de renseigner au minimum votre nom et votre email.'); return; }
+    const btn = document.querySelector('.btn-submit');
+    btn.textContent = '✓ Message envoyé — nous vous recontactons sous 24h';
+    btn.style.background = 'var(--vert-clair)';
+    btn.disabled = true;
+  }
+</script>
+</body>
+</html>
